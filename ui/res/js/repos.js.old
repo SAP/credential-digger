@@ -1,0 +1,203 @@
+
+// check no folders exception
+checkResultsCount();
+// add search action listener
+document.getElementById('search').addEventListener('input', function(event) {
+  search(this.value);
+});
+
+// get url
+var url = window.location.href;
+// get url params
+var urlParams = getAllUrlParams(url);
+// process search url param if existing
+if (urlParams.search != null) {
+  // set search term into search input
+  document.getElementById('search').value = urlParams.search;
+  // make search
+  search(urlParams.search);
+}
+
+// function for getting url params from url
+function getAllUrlParams (url) {
+  // get query string from url (optional) or window
+  var queryString = url ? url.split('?')[1] : window.location.search.slice(1);
+  // we'll store the parameters here
+  var obj = {};
+  // if query string exists
+  if (queryString) {
+    // stuff after # is not part of query string, so get rid of it
+    queryString = queryString.split('#')[0];
+    // split our query string into its component parts
+    var arr = queryString.split('&');
+
+    for (var i = 0; i < arr.length; i++) {
+      // separate the keys and the values
+      var a = arr[i].split('=');
+      // set parameter name and value (use 'true' if empty)
+      var paramName = a[0];
+      var paramValue = typeof (a[1]) === 'undefined' ? true : a[1];
+      // (optional) keep case consistent
+      paramName = paramName.toLowerCase();
+      if (typeof paramValue === 'string') paramValue = paramValue.toLowerCase();
+      // if the paramName ends with square brackets, e.g. colors[] or colors[2]
+      if (paramName.match(/\[(\d+)?\]$/)) {
+
+        // create key if it doesn't exist
+        var key = paramName.replace(/\[(\d+)?\]/, '');
+        if (!obj[key]) obj[key] = [];
+
+        // if it's an indexed array e.g. colors[2]
+        if (paramName.match(/\[\d+\]$/)) {
+          // get the index value and add the entry at the appropriate position
+          var index = /\[(\d+)\]/.exec(paramName)[1];
+          obj[key][index] = paramValue;
+        } else {
+          // otherwise add the value to the end of the array
+          obj[key].push(paramValue);
+        }
+      } else {
+        // we're dealing with a string
+        if (!obj[paramName]) {
+          // if it doesn't exist, create property
+          obj[paramName] = paramValue;
+        } else if (obj[paramName] && typeof obj[paramName] === 'string') {
+          // if property does exist and it's a string, convert it to an array
+          obj[paramName] = [obj[paramName]];
+          obj[paramName].push(paramValue);
+        } else {
+          // otherwise add the property
+          obj[paramName].push(paramValue);
+        }
+      }
+    }
+  }
+  return obj;
+}
+
+// filter folders on ui
+function search(searchValue) {
+  // get all repos from ui
+  var repos = document.getElementsByClassName('repo');
+  // step trough all the repos
+  for (var i = 0; i < repos.length; i++) {
+    // if no emty search value display repo
+    if (searchValue == null || searchValue == '') {
+      repos[i].style.display = 'table-row';
+    // if search value matches with repo name display repo
+    } else if (repos[i].children[0].innerText.includes(searchValue)) {
+      repos[i].style.display = 'table-row';
+    // else hide repo
+    } else {
+      repos[i].style.display = 'none';
+    }
+  }
+  // append search term to url params if it is not null or emty
+  if (searchValue != null && searchValue != '') {
+    if (url.includes('search=')) {
+      history.replaceState({}, '', url.substring(0, url.indexOf('search='))+'search='+searchValue);
+    } else if (url.includes('?')) {
+      history.replaceState({}, '', url+'&search='+searchValue);
+    } else {
+      history.replaceState({}, '', url+'?search='+searchValue);
+    }
+  // else clear url pararams
+  } else {
+    if (url.includes('search=')) {
+      history.replaceState({}, '', url.substring(0, url.indexOf('search=') - 1));
+    } else {
+      history.replaceState({}, '', url);
+    }
+  }
+  // check no folders exception
+  checkResultsCount();
+}
+// check no folders exception
+function checkResultsCount() {
+  // get all repos from ui
+  var repos = document.getElementsByClassName('repo');
+  // set up repo shown counter
+  var resultsCounter = 0;
+  // step trough all the repos
+  for (var i = 0; i < repos.length; i++) {
+    // if repo is show increase repo shown counter
+    if (repos[i].style.display != 'none') {
+      resultsCounter++;
+    }
+  }
+  // if repo shown counter is 0 (no repos displayed) show no repos found exception
+  if (resultsCounter == 0) {
+    document.getElementById('noEntries').style.display = 'block';
+  // else hide exception
+  } else {
+    document.getElementById('noEntries').style.display = 'none';
+  }
+}
+// add repo pop up
+// add action listener to add repo button
+document.getElementById('addRepo').addEventListener('click', function(event) {
+  // show popup
+  document.getElementById('addRepoModal').style.display = 'block';
+});
+
+// add action listener for window (clicking anywhere)
+window.addEventListener('click', function(event) {
+  // if user clicked in the modal area (area around the popup) hide popup
+  if (event.target == document.getElementById('addRepoModal')) {
+    closeAddRepo();
+  }
+});
+
+// add action listener to close add repo popup
+document.getElementById('cancelAddRepo').addEventListener('click', function(event) {
+  // close popup
+  closeAddRepo();
+});
+
+// add action listener to start repo scan
+document.getElementById('startRepoScan').addEventListener('click', function(event) {
+  // close popup
+  document.getElementById('addRepoModal').style.display = 'none';
+  // show loading popup
+});
+
+// add action listener to repo url input
+document.getElementById('repoLinkInput').addEventListener('input', function(event) {
+  // check if form is correctly filled
+  checkFormFilled();
+});
+
+// add action listener to repo scan config selector
+document.getElementById('configSelector').addEventListener('change', function(event) {
+  // check if forenameFolderModalrm is correctly filled
+  checkFormFilled();
+});
+
+// check if form is filled correctly and handle change
+function checkFormFilled() {
+  // get post repo scan button and form values
+  var postAddRepoButton = document.getElementById('startRepoScan');
+  var repoLink = document.getElementById('repoLinkInput').value;
+  var config = document.getElementById('configSelector').value;
+  // check if repo link is a valid url
+  var urlValid = repoLink.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+  // if url is valid and folder and config is set enable submit
+  if (urlValid && config != '') {
+    postAddRepoButton.disabled = false;
+    postAddRepoButton.classList.remove('disabledButton');
+    // else disable submit
+  } else {
+    postAddRepoButton.disabled = true;
+    postAddRepoButton.classList.add('disabledButton');
+  }
+}
+// close add repo pop up
+function closeAddRepo() {
+  // hide popup
+  document.getElementById('addRepoModal').style.display = 'none';
+  // reset input
+  document.getElementById('repoLinkInput').value = '';
+  document.getElementById('folderSelector').value = '';
+  document.getElementById("configSelector").checked = false;
+  checkFormFilled();
+}

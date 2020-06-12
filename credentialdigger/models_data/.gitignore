@@ -1,0 +1,8 @@
+# Ignore everything
+*
+
+# Except
+# itself
+!.gitignore
+# Module
+!__init__.py

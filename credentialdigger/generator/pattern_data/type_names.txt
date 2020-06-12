@@ -1,0 +1,10 @@
+new
+let
+var
+char
+byte
+double
+float
+int
+String
+bool

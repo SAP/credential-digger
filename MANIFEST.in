@@ -1,0 +1,3 @@
+include credentialdigger/models_data/*.bin
+include credentialdigger/generator/pattern_data/*.txt
+include credentialdigger/generator/pattern_data/*.json

@@ -1,0 +1,8 @@
+.moreButtonsRepos{
+  min-width: 503px;
+  justify-content: flex-end;
+}
+
+.dateCell{
+  min-width: 90px;
+}

@@ -1,0 +1,283 @@
+[
+  {
+    "id": 1,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "key = \"value\"",
+    "key": "key",
+    "value": "value"
+  },
+  {
+    "id": 2,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "key['value']",
+    "key": "key",
+    "value": "value"
+  },
+  {
+    "id": 3,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "key << object_1.method_1(\"value\")",
+    "key": "key",
+    "value": "value",
+    "object_1": "object_1",
+    "method_1": "method_1"
+  },
+  {
+    "id": 4,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "key.method_1('value')",
+    "key": "key",
+    "value": "value",
+    "method_1": "method_1"
+  },
+  {
+    "id": 5,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "object_1.key: value <- 'adress@gmail.com'",
+    "key": "key",
+    "value": "value",
+    "object_1": "object_1"
+  },
+  {
+    "id": 6,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "$key = type_1 function_1 type_1('value')",
+    "key": "key",
+    "value": "value",
+    "function_1": "function_1",
+    "type_1": "type_1"
+  },
+  {
+    "id": 7,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "public type_1 type_2 key = 'value'",
+    "key": "key",
+    "value": "value",
+    "type_1": "type_1",
+    "type_2": "type_2"
+  },
+  {
+    "id": 8,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "'key' => method_1('value')",
+    "key": "key",
+    "value": "value",
+    "method_1": "method_1"
+  },
+  {
+    "id": 9,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "type_1 key = 'value'",
+    "key": "key",
+    "value": "value",
+    "type_1": "type_1"
+  },
+  {
+    "id": 10,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "object_1['key']  = 'value'",
+    "key": "key",
+    "value": "value",
+    "object_1": "object_1"
+  },
+  {
+    "id": 11,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "method_1.key :\"value\"",
+    "key": "key",
+    "value": "value",
+    "method_1": "method_1"
+  },
+  {
+    "id": 12,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "object_1: {key: 'value'}",
+    "key": "key",
+    "value": "value",
+    "object_1": "object_1"
+  },
+  {
+    "id": 13,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "key = function_1('value')",
+    "key": "key",
+    "value": "value",
+    "function_1": "function_1"
+  },
+  {
+    "id": 14,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "key = object_1.function_1('value')",
+    "key": "key",
+    "value": "value",
+    "function_1": "function_1",
+    "object_1": "object_1"
+  },
+  {
+    "id": 15,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "object_1.method_1 :key => 'value'",
+    "key": "key",
+    "value": "value",
+    "object_1": "object_1",
+    "method_1": "method_1"
+  },
+  {
+    "id": 16,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "key = object_1.function_1('value')",
+    "key": "key",
+    "value": "value",
+    "object_1": "object_1",
+    "function_1": "function_1"
+  },
+  {
+    "id": 17,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "object_1.function_1(key: 'value')",
+    "key": "key",
+    "value": "value",
+    "function_1": "function_1",
+    "object_1": "object_1"
+  },
+  {
+    "id": 18,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "when(key.function_1()).method_1('value')",
+    "key": "key",
+    "value": "value",
+    "function_1": "function_1",
+    "method_1": "method_1"
+  },
+  {
+    "id": 19,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "key.function_1().method_1('value')",
+    "key": "key",
+    "value": "value",
+    "function_1": "function_1",
+    "method_1": "method_1"
+  },
+  {
+    "id": 20,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "type_1 key = object_1.function_1('value')",
+    "key": "key",
+    "value": "value",
+    "object_1": "object_1",
+    "function_1": "function_1",
+    "type_1": "type_1"
+  },
+  {
+    "id": 21,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "method_1('key'=>'value')",
+    "key": "key",
+    "value": "value",
+    "method_1": "method_1"
+  },
+  {
+    "id": 22,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "type_1 key { method_1 { method_2 'value' } }",
+    "key": "key",
+    "value": "value",
+    "method_1": "method_1",
+    "method_2": "method_2",
+    "type_1": "type_1"
+  },
+  {
+    "id": 23,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "type_1 function_1(type_1 key, type_2='value')",
+    "key": "key",
+    "value": "value",
+    "function_1": "function_1",
+    "type_1": "type_1",
+    "type_2": "type_2"
+  },
+  {
+    "id": 24,
+    "group": 1,
+    "subgroup": 1,
+    "pattern": "type_1 key = method_1('value')",
+    "key": "key",
+    "value": "value",
+    "method_1": "method_1",
+    "type_1": "type_1"
+  },
+  {
+    "id": 25,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "type_1 key = method_1() {credentials: 'value'}.function_1()",
+    "key": "key",
+    "value": "value",
+    "function_1": "function_1",
+    "method_1": "method_1",
+    "type_1": "type_1"
+  },
+  {
+    "id": 26,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "type_1 key = function_1(method_1(type_2 => 'value'))",
+    "key": "key",
+    "value": "value",
+    "function_1": "function_1",
+    "method_1": "method_1",
+    "type_1": "type_1",
+    "type_2": "type_2"
+  },
+  {
+    "id": 27,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "object_1.method_1(type_1 object_2.key = object_1.method_2('value'))",
+    "key": "key",
+    "value": "value",
+    "method_1": "method_1",
+    "method_2": "method_2",
+    "type_1": "type_1",
+    "object_1": "object_1",
+    "object_2": "object_2"
+  },
+  {
+    "id": 28,
+    "group": 2,
+    "subgroup": 1,
+    "pattern": "type_1 object_1 = object_2.method_1(type_2 key='value', type_3 function_1(key)='value')",
+    "key": "key",
+    "value": "value",
+    "method_1": "method_1",
+    "function_1": "function_1",
+    "type_1": "type_1",
+    "type_2": "type_2",
+    "type_3": "type_3",
+    "object_1": "object_1",
+    "object_2": "object_2"
+  }
+]

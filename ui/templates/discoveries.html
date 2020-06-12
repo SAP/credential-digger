@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!--discoveries list with search bar-->
+<div class="topicHeaderWrapper">
+  <h1 class="topicH1"> Discoveries</h1>
+  <span class="moreButtons moreButtonsDiscoveries">
+    <button id="newScan">New Scan</button>
+    <button id="deleteRepo">Delete Repo</button>
+    <button id="showFPs" onclick="switchFilter()">Hide FPs</button>
+  </span>
+</div>
+
+<div class="topicHeaderWrapper underTopicHeaderWrapper">
+  <h3 class="scanDescription">{{lendiscoveries}} Discoveries found</h3>
+</div>
+<div class="filtersWrapper">
+  {% for cat in all_categories %}
+  <button class="categoryToggle filters">
+    <span>{{cat}}</span>
+  </button>
+  {% endfor %}
+</div>
+<table id="discoveriesTable">
+  <colgroup>
+    <col width="180px"/>
+    <col width="680px"/>
+    <col width="140px"/>
+  </colgroup>
+
+  <!-- Header -->
+  <tr>
+    <th>Category</th>
+    <th>File Name</th>
+    <th>State</th>
+  </tr>
+
+  <!-- Content (filled with discoveries info) -->
+  {% for discovery in discoveries %}
+
+    <tr class="discoveryEntry tableRowContent discoveryGroup">
+      <td>{{discovery.cat}}</td>
+      <td><a class="tableRowContentLink" href="{{discovery.repo_url}}/blob/{{discovery.commit_id}}/{{discovery.file_name}}">{{discovery.file_name}}</a></td>
+      <td>{{discovery.state}}</td>
+    </tr>
+
+    <tr class="tableRowHover discoveryGroup">
+      <td colspan="3" class="expandTableRow">
+        <table class="snippetTable">
+
+          <!-- Commit reference -->
+          <tr>
+            <td colspan="3">
+              <div class="snippetHeader">
+                <span>Commit: {{discovery.commit_id}}</span>
+                <span class="moreButtons">
+                  <a class="linkButton" href="{{discovery.repo_url}}/commit/{{discovery.commit_id}}/" target="_blank">Open Commit</a>
+                </span>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Snippet -->
+          <tr class="snippetCodeLine" valign="top">
+            <td class="snippetLineCell">{{discovery.snippet}}</td>
+            <td class="snippetCodeCell"></td>
+          </tr>
+        </table>
+
+        <!-- Flag buttons -->
+        <div class="discoveryStateButtonWrapper">
+          <p class="formLabel flagsText"></p>
+          <span class="moreButtons moreButtonsAdressed">
+            <button onclick="location.href = '/fp/{{discovery.id}}?url={{discovery.repo_url}}'" class="">False positive</button>
+            <button onclick="location.href ='/addressing/{{discovery.id}}?url={{discovery.repo_url}}'" class="">Adress it</button>
+            <button onclick="location.href ='/not_relevant/{{discovery.id}}?url={{discovery.repo_url}}'" class="">Not relevant anymore</button>
+          </span>
+        </div>
+      </td>
+    </tr>
+
+  {% endfor %}
+</table>
+
+<p id="noEntries">Select Categories</p>
+<span id="loadMoreButtonWrapper"><button id="loadMoreButton">▼</button></span>
+
+<!-- Delete repo popup -->
+<div id="deleteRepoModal" class="modal">
+  <div class="modal-content">
+    <div class="topicHeaderWrapperAccept">
+      <h1 class="topicH1">Delete {{url}} Repo?</h1>
+    </div>
+    <span class="buttonsAccept">
+      <form action="/delete_repo" method="post">
+        <input name="repo_url" type="hidden" value="{{url}}">
+        <button type="submit">Delete Repo</button>
+      </form>
+      <button id="cancelDeleteRepo" class="buttonWarn">Cancel</button>
+    </span>
+  </div>
+</div>
+
+<!-- Scan repo popup -->
+<div id="addRepoModal" class="modal">
+  <div class="modal-content">
+    <div class="topicHeaderWrapper">
+      <h1 class="topicH1">Scan new Repo</h1>
+      <span id="cancelAddRepo" class="close">&times;</span>
+    </div>
+    <form name="scan_repo" action="/scan_repo" method="post">
+      <input id="repoLinkInput" type="link" name="repolink" class="textInput" value="{{url}}">
+      <p class="formLabel">Select rules (Regex | category):</p>
+      <select id="folderSelector" name="rid" class="formSelect" multiple>
+        {% for rule in ruleslist %}
+        <option value="{{rule.id}}">{{rule.regex}} | {{rule.category}}</option>
+        {% endfor %}
+      </select>
+      <input type="checkbox" id="configSelector" name="rid" value="all">Select all rules<br>
+      <div class="formFooter">
+        <span class="moreButtons">
+          <input type="hidden" name="freshtoggle" value="on">
+        </span>
+        <button id="startRepoScan" type="submit">Start Scan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script src="/res/js/discoveries.js"></script>
+<script src="/res/js/scan.js"></script>
+{% endblock %}
