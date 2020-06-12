@@ -1,0 +1,48 @@
+.snippetTable {
+  border: 1px solid rgb(158, 158, 158);
+  margin: 0;
+  table-layout: auto;
+}
+
+.snippetHeader {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px;
+  border-bottom: 1px solid rgb(158, 158, 158);
+}
+
+.snippetCodeLine {
+  font-family: SFMoncentero-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+  font-size: 12px;
+  background-color: white;
+}
+
+.snippetLineCell {
+  padding-right: 0;
+}
+
+.snippetCodeCell {
+  padding: 7px;
+  word-break: break-word;
+}
+
+.highlightedCode {
+  background: yellow;
+}
+
+.openFileButton {
+  display: none;
+}
+
+.discoveryStateButtonWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 7px;
+}
+
+.moreButtonsAdressed {
+  min-width: 453px;
+}

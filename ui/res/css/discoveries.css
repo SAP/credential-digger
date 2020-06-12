@@ -1,0 +1,53 @@
+.moreButtonsDiscoveries {
+  min-width: 530px;
+  justify-content: flex-end;
+}
+
+.filtersWrapper {
+  margin-left: -10px;
+  margin-bottom: 11.440px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.filters {
+  color: black;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 45px;
+  justify-content: center;
+}
+
+.filters:hover {
+  color: black;
+  border-color: #9e9e9e;
+}
+
+.filterNum {
+  font-size: 11px;
+}
+
+.timeDateCell {
+  min-width: 135px;
+}
+
+.discoveriesStateButtonWrapper{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 7px;
+}
+
+#loadMoreButtonWrapper{
+  width: 100%;
+  margin: 1em 0;
+  display: flex;
+  justify-content: center;
+  display: none;
+}
+
+#loadMoreButton{
+  border-radius: 100% !important;
+  margin: 0 !important;
+}

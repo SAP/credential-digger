@@ -1,0 +1,19 @@
+#file {
+  display: none;
+}
+
+.uploadButtonWrapper {
+  display: flex;
+  align-items: center;
+  margin-bottom: 21.440px;
+}
+
+.uploadButton {
+  width: fit-content;
+  margin: 0;
+  margin-right: 10px;
+}
+
+.textArea{
+  margin-top: 10px;
+}

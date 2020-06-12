@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Credential Digger</title>
+    <link rel="stylesheet" type="text/css" href="/res/css/base.css">
+    <link rel="stylesheet" type="text/css" href="/res/css/dashboard.css">
+    <link rel="stylesheet" type="text/css" href="/res/css/repos.css">
+    <link rel="stylesheet" type="text/css" href="/res/css/discoveries.css">
+    <link rel="stylesheet" type="text/css" href="/res/css/rules.css">
+    <link rel="stylesheet" type="text/css" href="/res/css/discovery.css">
+  </head>
+  <body>
+    <div class="headerToolbar">
+      <a class="headerItem headerTitle" href="/">
+        <img class="headerTitleIcon" src="/res/img/terminal.png">
+        Credential Digger
+      </a>
+      <div class="headerLinkList">
+        <a class="headerItem headerLink" href="/">Repositories</a>
+        <a class="headerItem headerLink" href="/rules">Rules</a>
+      </div>
+    </div>
+    <div class="contentBox">
+      {% block content %}
+      {% endblock %}
+    </div>
+  </body>
+</html>

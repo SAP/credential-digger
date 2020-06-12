@@ -1,0 +1,368 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  font-size: 17px;
+}
+
+.headerToolbar {
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  background-color: #3f51b5;
+  position: fixed;
+  width: 100%;
+  top: 0;
+}
+
+.headerItem {
+  height: 100%;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  color: white;
+  text-decoration: none;
+}
+
+.headerTitle {
+  font-size: 20px;
+}
+
+.headerTitleIcon {
+  margin-right: 10px;
+  height: 40px;
+}
+
+.headerLinkList {
+  display: flex;
+}
+
+.headerLink {
+  font-size: 20px;
+}
+
+.headerLink:hover {
+  background-color: #283593;
+}
+
+.contentBox {
+  max-width: 1000px;
+  margin: auto;
+  margin-top: 50px;
+}
+
+.topicHeaderWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.scanDescription {
+  margin: 0;
+}
+
+.underTopicHeaderWrapper {
+  margin-bottom: 21.440px;
+}
+
+.topicHeaderWrapperAccept {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.topicH1 {
+  margin: 21.440px 0;
+}
+
+button {
+  font-size: 17px;
+  background: transparent;
+  border: 1px solid rgb(158, 158, 158);
+  border-radius: 7px;
+  height: 35px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  outline: none;
+  color: #9e9e9e;
+  cursor: pointer;
+  margin-left: 10px;
+  text-decoration: none;
+}
+
+button:hover {
+  background: #3f51b5;
+  color: white;
+  border-color: #3f51b5;
+}
+
+.buttonWarn:hover {
+  background: #F44336;
+  border-color: #F44336;
+}
+
+.linkButton {
+  font-size: 17px;
+  background: transparent;
+  border: 1px solid rgb(158, 158, 158);
+  border-radius: 7px;
+  height: 33px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  outline: none;
+  color: #9e9e9e;
+  cursor: pointer;
+  margin-left: 10px;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.linkButton:hover {
+  background: #3f51b5;
+  color: white;
+  border-color: #3f51b5;
+}
+
+.disabledButton {
+  cursor: not-allowed;
+}
+
+.disabledButton:hover {
+  background: transparent;
+  color: #9e9e9e;
+  border-color: #9e9e9e;
+}
+
+.moreButtons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+#search {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgb(158, 158, 158);
+  border-radius: 7px;
+  font-size: 17px;
+  margin-bottom: 21.440px;
+  background-image: url('/res/img/search.png');
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  padding: 12px 12px 12px 40px;
+  outline: none;
+  background-position: 10px;
+  background-size: 23px;
+}
+
+#noEntries {
+  text-align: center;
+  display: none;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: white;
+  margin: auto;
+  padding: 0 21.440px 21.440px 21.440px;
+  border-radius: 7px;
+  max-width: 700px;
+}
+
+.close {
+  color: #9e9e9e;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.textInput {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgb(158, 158, 158);
+  border-radius: 7px;
+  font-size: 17px;
+  margin-bottom: 21.440px;
+  padding: 12px;
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.formLabel {
+  margin: 0;
+  margin-right: 10px;
+}
+
+.formSelect {
+  width: 100%;
+  border: 1px solid rgb(158, 158, 158);
+  border-radius: 7px;
+  font-size: 17px;
+  outline: none;
+  background: none;
+  padding: 6px;
+  margin-top: 10px;
+  margin-bottom: 21.440px;
+}
+
+.formFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buttonsAccept {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #9e9e9e;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked+.slider {
+  background-color: #3f51b5;
+}
+
+input:focus+.slider {
+  box-shadow: 0 0 1px #3f51b5;
+}
+
+input:checked+.slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+.loaderWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.loader {
+  border: 16px solid #f5f5f5;
+  border-radius: 50%;
+  border-top: 16px solid #3f51b5;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite;
+  /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  font-size: 17px;
+  margin-bottom: 21.440px;
+  table-layout: fixed;
+}
+
+th {
+  padding: 7px 7px;
+  border-bottom: 1px solid rgb(158, 158, 158);
+}
+
+td {
+  padding: 0;
+}
+
+.tableRowContent:hover {
+  background: #f5f5f5;
+}
+
+.tableRowContentLink {
+  display: flex;
+  align-items: center;
+  height: 19px;
+  width: calc(100% - 14px);
+  padding: 7px 7px;
+  text-decoration: none;
+  color: black;
+  border-bottom: 1px solid rgb(158, 158, 158);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.expandTableRow {
+  border-bottom: 1px solid rgb(158, 158, 158);
+  padding: 7px;
+  display: none;
+  background: #f5f5f5;
+}
+
+.clearFlagsButton {
+  display: none;
+}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!--general info boxes-->
+<div class="topicHeaderWrapper">
+  <h1 class="topicH1">General Info</h1>
+</div>
+<div class="generalInfoWrapper">
+  <div class="generalInfoLink">
+    <span>Repos</span>
+    <span class="generalInfoLinkCounter">{{len_repos}}</span>
+  </div>
+  <div class="generalInfoLink">
+    <span>Discoveries</span>
+    <span class="generalInfoLinkCounter">{{tot_discoveries}}</span>
+  </div>
+  <a class="generalInfoLink" href="/rules">
+    <span>Rules</span>
+    <span class="generalInfoLinkCounter">{{len_rules}}</span>
+  </a>
+</div>
+
+<!--repos with search bar-->
+<div class="topicHeaderWrapper">
+  <h1 class="topicH1" id="topic">All repos</h1>
+  <span class="moreButtons moreButtonsRepos">
+    <button id="addRepo">Scan Repo</button>
+  </span>
+</div>
+<input id="search" type="text" name="search" placeholder="Search...">
+<table>
+  <colgroup>
+    <col width="660px"/>
+    <col width="110px"/>
+    <col width="110px"/>
+    <col width="120px"/>
+  </colgroup>
+  <tr>
+    <th>Repository url</th>
+    <th>Discoveries</th>
+  </tr>
+  {% for repo in repos %}
+  <tr class="repo tableRowContent">
+    <td><a class="tableRowContentLink" href="/discoveries?url={{repo.url}}">{{repo.url}}</a></td>
+    <td><a class="tableRowContentLink" href="/discoveries?url={{repo.url}}">{{repo.lendiscoveries}}</a></td>
+  </tr>
+  {% endfor %}
+</table>
+<p id="noEntries">No repositories found</p>
+
+<!--add repo popup-->
+<div id="addRepoModal" class="modal">
+  <div class="modal-content">
+    <div class="topicHeaderWrapper">
+      <h1 class="topicH1">Scan new Repo</h1>
+      <span id="cancelAddRepo" class="close">&times;</span>
+    </div>
+    <form name="scan_repo" action="/scan_repo" method="post">
+      <input id="repoLinkInput" type="link" name="repolink" class="textInput" placeholder="GitHub Repo URL">
+      <p class="formLabel">Select category :</p>
+      <select id="ruleSelector" name="rid" class="formSelect" multiple>
+        {% for cat in categories %}
+        <option value="{{cat}}">{{cat}}</option>
+        {% endfor %}
+      </select>
+      <input type="checkbox" id="configSelector" name="rid" value="all">Select all rules<br>
+      <div class="formFooter">
+        <span class="moreButtons">
+          <input type="hidden" name="freshtoggle" value="on">
+        </span>
+        <button id="startRepoScan" type="submit">Start Scan</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script src="/res/js/repos.js"></script>
+<script src="/res/js/scan.js"></script>
+{% endblock %}
