@@ -1,0 +1,99 @@
+Credential Digger uses third-party software or other resources that may be distributed under licenses different than Credential Digger software.
+
+In the event that we overlooked to list required notice, please bring this to our attention by contacting us via this email: opensource@sap.com
+
+
+
+------------------------------------------------------------------------------------------
+
+
+Components:
+
+Component: fasttext
+Licensor: Facebook, Inc.
+Website: https://github.com/facebookresearch/fastText
+License: MIT License
+
+Component: GitPython
+Licensor: Michael Trier and contributors
+Website: https://github.com/gitpython-developers/GitPython
+License: BSD 3-clause "New" or "Revised" License
+
+Component: hyperscan
+Licensor: David Gidwani
+Website: https://github.com/darvid/python-hyperscan
+License: MIT License
+
+Component: libhyperscan
+Licensor: Intel Corporation
+Website: https://www.hyperscan.io
+License: BSD
+
+Component: leven
+Licensor: undefined
+Website: https://github.com/semanticize/leven
+License: Apache 2.0
+
+Component: nltk
+Licensor: NLTK Project
+Website: https://github.com/nltk/nltk
+License: Apache 2.0
+
+Component: numpy
+Licensor: NumPy Developers
+Website: https://github.com/numpy/numpy
+License: BSD 3-Clause "New" or "Revised" License
+
+Component: pandas
+Licensor: AQR Capital Management, LLC, Lambda Foundry, Inc., PyData Development Team
+Website: https://github.com/pandas-dev/pandas
+License: BSD 3-Clause License
+
+Component: plac
+Licensor: Michele Simionato
+Website: https://github.com/micheles/plac
+License: BSD 2-Clause "Simplified" License
+
+Component: psycopg2-binary
+Licensor: undefined
+Website: https://github.com/psycopg/psycopg2
+License: LGPL and BSD
+
+Component: PyGithub
+Licensor: undefined
+Website: https://github.com/PyGithub/PyGithub
+License: LGPL
+
+Component: python-string-utils
+Licensor: Davide Zanotti
+Website: https://github.com/daveoncode/python-string-utils
+License: MIT License
+
+Component: pyyaml
+Licensor: Ingy döt Net and Kirill Simonov
+Website: https://github.com/yaml/pyyaml
+License: MIT License
+
+Component: requests
+Licensor: Kenneth Reitz
+Website: https://github.com/psf/requests
+License: Apache 2.0
+
+Component: scikit-learn
+Licensor: scikit-learn developers
+Website: https://github.com/scikit-learn/scikit-learn
+License: New BSD License
+
+Component: srsly
+Licensor: ExplosionAI UG
+Website: https://github.com/explosion/srsly
+License: MIT License
+
+Component: tqdm
+Licensor: Casper da Costa-Luis, Google Inc., Noam Yorav-Raphael, and contributors
+Website: https://github.com/tqdm/tqdm
+License: MIT License and MPLv2.0
+
+
+
+--------------------------------------------------------------------------------------------------------------------------
