@@ -2,9 +2,9 @@
 
 Credential Diger is a Github scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc).
 Credential Digger has a clear advantage compared to the other Github scanners in terms of False Positive reduction in the scan reports. 
-Credential Digger is using two Machine Learning Models to identify false positivies especailla in the Password indetification:
-- The PATH Model: Identify all the portion of code that contains fake credentials used for testing and exemple purpose. (ex. Unit tests)
-- Snippet Model: Identify the portion of code used to authenticate with passwords that distinguish real and fake passwords.
+Credential Digger is using two Machine Learning Models to identify false positivies, especially in Password identification:
+- Path Model: Identify the portion of code that contains fake credentials used for testing and example purposes (ex. Unit tests).
+- Snippet Model: Identify the portion of code used to authenticate with passwords, and distinguish between real and fake passwords.
 
 ## Architecture
 
