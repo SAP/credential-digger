@@ -1,25 +1,32 @@
 # Credential Digger
 
+Credential Diger is a Github scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc).
+Credential Digger has a clear advantage compared to the other Github scanners in terms of False Positive reduction in the scan reports. 
+Credential Digger is using two Machine Learning Models to identify false positivies especailla in the Password indetification:
+- The PATH Model: Identify all the portion of code that contains fake credentials used for testing and exemple purpose. (ex. Unit tests)
+- Snippet Model: Identify the portion of code used to authenticate with passwords that distinguish real and fake passwords.
+
+## Architecture
+
 Credential digger finds credentials hardcoded in a repository.
 The tool is composed of:
 - Postgres database
 - Python client
 - User interface
 
-
-## Database
+### Database
 
 The database is structured in the following way (arrows point to foreign keys).
 
 ![DB Structure](github_assets/database.png)
 
 
-## Project structure
+### Project structure
 
 The project includes 3 components: a db (`sql` folder), a client
 (`credentialdigger` folder), and a UI (`ui` folder).
 
-#### `sql`
+##### `sql`
 `create_table.sql` defines the db schema.
 
 Note that, given the `file_name` and `commit_hash` of a discovery, both the
@@ -29,14 +36,14 @@ REPO_URL/commit/COMMIT_HASH
 REPO_URL/blob/COMMIT_HASH/file_name
 ```
 
-#### `credentialdigger`
+##### `credentialdigger`
 This client can be used to easily interact with the db.
 It offers a scanner for git repositories, based on
 [Hyperscan](https://www.hyperscan.io/) (others can be implemented).
 
 Please note that the database must be up and running.
 
-#### `ui`
+##### `ui`
 The ui can be used to easily perform scans and flag the discoveries.
 
 
