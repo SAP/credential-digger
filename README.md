@@ -8,7 +8,7 @@ Credential Digger is using two Machine Learning Models to identify false positiv
 
 ## Architecture
 
-Credential digger finds credentials hardcoded in a repository.
+Credential Digger finds credentials hardcoded in a repository.
 The tool is composed of:
 - Postgres database
 - Python client
