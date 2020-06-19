@@ -125,7 +125,17 @@ credentialdigger in order to avoid errors in linking.
 
 Refer to the Wiki for further information.
 
-**ML models are not supported yet in the ui**
+#### Integrate ML Models in the UI
+
+**ML models are not supported yet in the ui** "out of the box", but they can be
+enabled with a little effort.
+
+To use ML models in the docker container running the ui, set their address in
+the `.env` file. If the address is correct, the model will be installed at
+container building time.
+However, the current server is not executing any model during the scan of a
+repository. To enable a model, it must be listed as argument in the `scan`
+function (as would be done in the client).in the `ui/server.py` file.
 
 ## Usage (client)
 
