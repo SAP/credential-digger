@@ -21,6 +21,29 @@ class Client:
 
     def __init__(self, dbname, dbuser, dbpassword,
                  dbhost='localhost', dbport=5432):
+        """ Create a connection to the database.
+
+        The Client is the object in charge of all the operations on the
+        database, and in charge of launching the scans.
+
+        Parameters
+        ----------
+        dbname: str
+            The name of the database
+        dbuser: str
+            The user of the database
+        dbpassword: str
+            The password for the user
+        dbhost: str, default `localhost`
+            The host of the database
+        dbport: int, default `5432`
+            The port for the database connection
+
+        Raises
+        ------
+        OperationalError
+            If the Client cannot connect to the database
+        """
         self.db = connect(host=dbhost,
                           dbname=dbname,
                           user=dbuser,

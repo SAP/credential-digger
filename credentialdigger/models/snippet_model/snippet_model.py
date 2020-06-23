@@ -17,6 +17,24 @@ class SnippetModel(BaseModel):
                  binary_classifier='model_classifier.bin',
                  model_extractor='snippet_model',
                  binary_extractor='model_extractor.bin'):
+        """ This class classifies a discovery as a false positive according to
+        its code snippet.
+
+        First, the extractor model extracts a keypair from the code snippet,
+        and then the classifier model classifies the keypair as a false
+        positive (or not).
+
+        Parameters
+        ----------
+        model: str, default `snippet_model`
+            The name of the ML model with the classifier
+        binary_classifier: str, default `model_classifier.bin`
+            The name of the binary for the classifier
+        model_extractor: str, default `snippet_model`
+            The name of the ML model with the extractor
+        binary_extractor: str, default `model_extractor.bin`
+            The name of the binary for the extractor
+        """
         super().__init__(super().find_model_file(model, binary_classifier))
         self.model_extractor = fasttext.load_model(
             super().find_model_file(model_extractor, binary_extractor))
