@@ -1,3 +1,6 @@
+![Logo](github_assets/Logo-CD-Mint_48.png)
+
+
 # Credential Digger
 
 Credential Digger is a Github scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc).
