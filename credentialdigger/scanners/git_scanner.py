@@ -11,6 +11,16 @@ from .base_scanner import BaseScanner
 class GitScanner(BaseScanner):
 
     def __init__(self, rules):
+        """ Create the scanner for a git repository.
+
+        The scanner compiles a list of rules, and uses hyperscan for regular
+        expression matching.
+
+        Parameters
+        ----------
+        rules: list
+            A list of rules
+        """
         super().__init__(rules)
         self.stream = rules
 

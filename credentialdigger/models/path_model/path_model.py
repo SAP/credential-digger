@@ -8,6 +8,16 @@ from ..base_model import BaseModel
 class PathModel(BaseModel):
 
     def __init__(self, model='path_model', binary='model_path.bin'):
+        """ This class classifies a discovery as a false positive according to
+        its file path.
+
+        Parameters
+        ----------
+        model: str, default `path_model`
+            The name of the ML model
+        binary: str, default `model_path.bin`
+            The name of the binary
+        """
         super().__init__(super().find_model_file(model, binary))
 
     def analyze(self, discovery):
