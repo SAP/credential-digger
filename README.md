@@ -27,7 +27,7 @@ The database is structured in the following way (arrows point to foreign keys).
 ### Project structure
 
 The project includes 3 components: a db (`sql` folder), a client
-(`credentialdigger` folder), and a UI (`ui` folder).
+(`credentialdigger` folder), and a user interface (`ui` folder).
 
 ##### `sql`
 `create_table.sql` defines the db schema.
@@ -47,7 +47,7 @@ It offers a scanner for git repositories, based on
 Please note that the database must be up and running.
 
 ##### `ui`
-The ui can be used to easily perform scans and flag the discoveries.
+The user interface can be used to easily perform scans and flag the discoveries.
 
 
 ## Install
@@ -79,15 +79,24 @@ Execute step 1. as above
    ```bash
    sudo apt install libhyperscan-dev libpq-dev
    ```
-   Install the Python requirements from the `requirements.txt` file.
+
+4. Install the Python requirements from the `requirements.txt` file.
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Install the client
+5. Install the client
    ```bash
    python setup.py install
    ```
+
+### Pypi
+
+A package is available on pypi. Install the client:
+```bash
+pip install credentialdigger
+```
+Please note that the database must be run separately.
 
 
 ### Run the db on a different machine
@@ -97,12 +106,13 @@ repository on both of them.
 
 Then, execute the steps 1. and 2. as described in the installation section
 above on the machine running the db, and execute the steps described in the
-"build from scratch" section on the machine running the client.
+"build from scratch" section on the machine running the client (or install the
+client with `pip`).
 
 In case the db and the client/ui run on separate machines, the port of the db
 must be exposed.
 
-In case the ui must be run on a dedicated machine, update the `.env` as needed,
+In case the UI must be run on a dedicated machine, update the `.env` as needed,
 and run:
 ```bash
 sudo docker-compose up --build credential_digger
@@ -130,7 +140,7 @@ Refer to the Wiki for further information.
 
 #### Integrate ML Models in the UI
 
-**ML models are not supported yet in the ui** "out of the box", but they can be
+**ML models are not supported yet in the UI** "out of the box", but they can be
 enabled with a little effort.
 
 To use ML models in the docker container running the ui, set their address in
