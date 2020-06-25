@@ -5,7 +5,7 @@
 
 Credential Digger is a Github scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc).
 Credential Digger has a clear advantage compared to the other Github scanners in terms of False Positive reduction in the scan reports. 
-Credential Digger is using two Machine Learning Models to identify false positivies, especially in Password identification:
+Credential Digger is using two Machine Learning Models to identify false positives, especially in Password identification:
 - Path Model: Identify the portion of code that contains fake credentials used for testing and example purposes (ex. Unit tests).
 - Snippet Model: Identify the portion of code used to authenticate with passwords, and distinguish between real and fake passwords.
 
@@ -147,7 +147,7 @@ To use ML models in the docker container running the ui, set their address in
 the `.env` file. If the address is correct, the model will be installed at
 container building time.
 However, the current server is not executing any model during the scan of a
-repository. To enable a model, it must be listed as argument in the `scan`
+repository. To enable a model, it must be listed as an argument in the `scan`
 function (as would be done in the client).in the `ui/server.py` file.
 
 ## Usage (client)
