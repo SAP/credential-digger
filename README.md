@@ -6,8 +6,9 @@
 Credential Digger is a Github scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc).
 Credential Digger has a clear advantage compared to the other Github scanners in terms of False Positive reduction in the scan reports. 
 Credential Digger is using two Machine Learning Models to identify false positives, especially in Password identification:
-- Path Model: Identify the portion of code that contains fake credentials used for testing and example purposes (ex. Unit tests).
+- Path Model: Identify the portion of code that contains fake credentials used for testing and example purposes (e.g., Unit tests).
 - Snippet Model: Identify the portion of code used to authenticate with passwords, and distinguish between real and fake passwords.
+
 
 ## Architecture
 
@@ -64,7 +65,8 @@ The user interface can be used to easily perform scans and flag the discoveries.
    ```
    Consider not to expose the db port in production.
 
-The ui is available at http://localhost:5000/
+The ui is available at `http://localhost:5000/`
+
 
 ## Build from scratch
 
@@ -119,7 +121,7 @@ sudo docker-compose up --build credential_digger
 ```
 
 
-### Use machine learning models
+## Use machine learning models
 
 Machine learning models can be downloaded and used to automatically filter
 false positive discoveries during a scan.
@@ -133,22 +135,35 @@ export model_name=https://...
 python -m credentialdigger download model_name
 ```
 
-NB: Don't run the download command from the installation folder of
-credentialdigger in order to avoid errors in linking.
+If you build the code from scratch (i.e., you don't install the client via
+pip), don't run the download command from the installation folder of
+_credentialdigger_ in order to avoid errors in linking.
 
 Refer to the Wiki for further information.
 
-#### Integrate ML Models in the UI
+### File Path Model
+The File Path Model classifies a discovery as false positive according to its file
+path. A pre-trained Path Model [is available here](https://github.com/SAP/credential-digger/releases/download/v1.0.0/path_model-1.0.0.tar.gz).
+
+After installing _credentialdigger_, our pre-trained Path Model can be installed as follows.
+```bash
+export path_model=https://github.com/SAP/credential-digger/releases/download/v1.0.0/path_model-1.0.0.tar.gz
+python -m credentialdigger download path_model
+```
+
+### Integrate ML Models in the UI
 
 **ML models are not supported yet in the UI** "out of the box", but they can be
 enabled with a little effort.
 
 To use ML models in the docker container running the ui, set their address in
-the `.env` file. If the address is correct, the model will be installed at
-container building time.
+the `.env` file (the Path Model is already set).
+If the address is correct, the model will be installed at container building
+time.
 However, the current server is not executing any model during the scan of a
 repository. To enable a model, it must be listed as an argument in the `scan`
 function (as would be done in the client).in the `ui/server.py` file.
+
 
 ## Usage (client)
 
