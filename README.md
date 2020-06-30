@@ -176,3 +176,7 @@ c = Client(dbname='MYDB', dbuser='MYUSER', dbpassword='*****',
 
 ## Wiki
 Refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for further information.
+
+
+## News
+- [Credential Digger announcement](https://blogs.sap.com/2020/06/23/credential-digger-using-machine-learning-to-identify-hardcoded-credentials-in-github)
