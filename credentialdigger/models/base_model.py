@@ -3,13 +3,22 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import fasttext
+import keras.models
 import srsly
+import pickle
 
 
 class BaseModel(ABC):
 
-    def __init__(self, model):
-        self.model = fasttext.load_model(model)
+    def __init__(self, model, model_type='fasttext', tokenizer='tokenizer.pickle'):
+        self.model_type = model_type
+        if model_type == 'fasttext':
+            self.model = fasttext.load_model(model)
+        elif model_type == 'keras_support':
+            self.model = keras.models.load_model(model)
+            with open(tokenizer, 'rb') as handle:
+                self.tokenizer = pickle.load(handle)
+
 
     @abstractmethod
     def analyze(self, **kwargs):

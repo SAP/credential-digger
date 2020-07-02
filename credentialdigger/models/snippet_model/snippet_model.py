@@ -2,8 +2,11 @@ import re
 
 import fasttext
 import string_utils
+from keras_preprocessing.sequence import pad_sequences
+import numpy as np
 
 from ..base_model import BaseModel
+from ..keras_support import keras_constants, keras_functions
 
 EXTENSIONS = set(['py', 'rb', 'c', 'cpp', 'cs', 'js', 'php', 'h', 'java', 'pl',
                   'go'])
@@ -16,7 +19,9 @@ class SnippetModel(BaseModel):
                  model='snippet_model',
                  binary_classifier='model_classifier.bin',
                  model_extractor='snippet_model',
-                 binary_extractor='model_extractor.bin'):
+                 binary_extractor='model_extractor.bin',
+                 model_type='fasttext',
+                 tokenizer='tokenizer.pickle'):
         """ This class classifies a discovery as a false positive according to
         its code snippet.
 
@@ -35,7 +40,7 @@ class SnippetModel(BaseModel):
         binary_extractor: str, default `model_extractor.bin`
             The name of the binary for the extractor
         """
-        super().__init__(super().find_model_file(model, binary_classifier))
+        super().__init__(super().find_model_file(model, binary_classifier), model_type, tokenizer)
         self.model_extractor = fasttext.load_model(
             super().find_model_file(model_extractor, binary_extractor))
 
@@ -76,24 +81,52 @@ class SnippetModel(BaseModel):
             # since either the snippet is empty or there is just one word
             return True
 
-        if len(data) == 2:
-            # No need to pre-process data since we have only two words
-            # Predict if the string `word1 + ' ' + word2` is a false positive
-            label = self.model.predict(
-                data[0] + ' ' + data[1])[0]  # 0=label, 1=probability
-        else:
-            finish_labels = self._label_preprocess(data)
-            # Predict if the string `word1 + ' ' + word2` is a false positive
-            label = self.model.predict(
-                data[finish_labels[0]] + ' ' +
-                data[finish_labels[1]])[0]  # 0=label, 1=probability
+        if self.model_type == 'fasttext':
+            if len(data) == 2:
+                # No need to pre-process data since we have only two words
+                # Predict if the string `word1 + ' ' + word2` is a false positive
+                label = self.model.predict(
+                    data[0] + ' ' + data[1])[0]  # 0=label, 1=probability
+            else:
+                finish_labels = self._label_preprocess(data)
+                # Predict if the string `word1 + ' ' + word2` is a false positive
+                label = self.model.predict(
+                    data[finish_labels[0]] + ' ' +
+                    data[finish_labels[1]])[0]  # 0=label, 1=probability
 
-        label = label[0]  # label was a tuple of 1 element
+            label = label[0]  # label was a tuple of 1 element
 
-        # Last index of the prediction indicates the state
-        # 1 = false positive (test, dummy, etc.)
-        # 0 = true positive (supposedly)
-        return label.split('__')[-1] == '1'
+            # Last index of the prediction indicates the state
+            # 1 = false positive (test, dummy, etc.)
+            # 0 = true positive (supposedly)
+            return label.split('__')[-1] == '1'
+
+        elif self.model_type == 'keras':
+            if len(data) == 2:
+                ngrams = keras_functions.preprocess_keras_input(data)
+                data_grams = [ngrams]
+            else:
+                finish_labels = self._label_preprocess(data)
+                # Predict if the string `word1 + ' ' + word2` is a false positive
+                input_1 = data[finish_labels[0]]
+                input_2 = data[finish_labels[1]]
+                input_array = [[input_1, input_2]]
+                data_grams = []
+                for line in input_array:
+                    ngrams = keras_functions.preprocess_keras_input(line)
+                    data_grams.append(ngrams)
+
+            sequences = pad_sequences(self.tokenizer.texts_to_sequences(data_grams), maxlen=keras_constants.KERAS_MAXLEN)
+            numpy_array = np.array(sequences)
+            if len(numpy_array) == 0:
+                return False
+
+            label = self.model.predict_classes(numpy_array)[0][0]
+
+            # Last index of the prediction indicates the state
+            # 1 = false positive (test, dummy, etc.)
+            # 0 = true positive (supposedly)
+            return label == 1
 
     def _pre_process(self, raw_data):
         """ Extract words from snippet and fit them to the Java convention.
