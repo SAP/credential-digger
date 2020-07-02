@@ -143,7 +143,9 @@ document.getElementById('cancelUploadRule').addEventListener('click', function(e
 // add action listener for folder name input bar
 document.getElementById('file').addEventListener('change', function(event) {
   if (event.target.value != '') {
-    document.getElementById('path').innerHTML = event.target.value;
+    // replace the C:\fakepath\ from the prefix of the path and retrieve the file name only.
+    var path = event.target.value.replace(/^.*\\/,"");
+    document.getElementById('path').innerHTML = path;
     document.getElementById('startUploadRule').disabled = false;
   }
 });
