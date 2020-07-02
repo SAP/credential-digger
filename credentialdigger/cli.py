@@ -544,7 +544,7 @@ class Client:
             return False
 
     def scan(self, repo_url, category=None, scanner=GitScanner,
-             models=[], exclude=[], force=False, verbose=False,
+             models=None, exclude=None, force=False, verbose=False,
              generate_snippet_extractor=False):
         """ Launch the scan of a repository.
 
@@ -613,6 +613,11 @@ class Client:
             # Return discovery ids of non-false positives
             return discoveries
 
+        if models is None:
+            models = []
+        if exclude is None:
+            exclude = []
+            
         # Try to add the repository to the db
         if self.add_repo(repo_url):
             # The repository is new, scan from the first commit
@@ -740,7 +745,7 @@ class Client:
 
         return list(discoveries_ids)
 
-    def scan_user(self, username, category=None, models=[], exclude=[],
+    def scan_user(self, username, category=None, models=None, exclude=None,
                   verbose=False, generate_snippet_extractor=False):
         """ Scan all the repositories of a user on github.com.
 
@@ -773,6 +778,11 @@ class Client:
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives), grouped by repository.
         """
+        if models is None:
+            models = []
+        if exclude is None:
+            exclude = []
+
         g = Github()
         missing_ids = {}
         for repo in g.get_user(username).get_repos():
@@ -787,7 +797,7 @@ class Client:
         return missing_ids
 
     def scan_wiki(self, repo_url, category=None, scanner=GitScanner,
-                  models=[], exclude=[], verbose=False):
+                  models=None, exclude=None, verbose=False):
         """ Scan the wiki of a repository.
 
         This method simply generate the url of a wiki from the url of its repo,
@@ -818,6 +828,10 @@ class Client:
         """
         # The url of a wiki is same as the url of its repo, but ending with
         # `.wiki.git`
+        if models is None:
+            models = []
+        if exclude is None:
+            exclude = []
         return self.scan(repo_url + '.wiki.git', category, scanner, models,
                          exclude, verbose)
 
