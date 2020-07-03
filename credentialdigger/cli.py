@@ -156,6 +156,38 @@ class Client:
             self.db.rollback()
             return -1
 
+    def delete_rule(self, ruleid):
+        """ Add rules from a file.
+
+        Parameters
+        ----------
+        ruleid: int
+            The id of the rule that will be deleted.
+
+        Returns
+        ------
+        True
+            If the rule gets deleted successfully
+        False
+            If the removal operation fails
+        """
+
+        query = 'DELETE FROM rules WHERE id=%s'
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(query, (ruleid,))
+            self.db.commit()
+            return bool(cursor.fetchone()[0])
+        except (TypeError, IndexError):
+            """ A TypeError is raised if any of the required arguments is
+            missing. """
+            self.db.rollback()
+            return False
+        except Error:
+            self.db.rollback()
+            return False
+        return True
+
     def add_rules_from_files(self, filename):
         """ Add rules from a file.
 
