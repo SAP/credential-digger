@@ -1,6 +1,3 @@
-from . import *
-
-
 class ModelManager:
 
     def __init__(self, model, **kwargs):
