@@ -157,7 +157,7 @@ class Client:
             return -1
 
     def delete_rule(self, ruleid):
-        """ Add rules from a file.
+        """ Delete a rule from database
 
         Parameters
         ----------
@@ -166,10 +166,10 @@ class Client:
 
         Returns
         ------
-        True
-            If the rule gets deleted successfully
         False
             If the removal operation fails
+        True
+            Otherwise
         """
 
         query = 'DELETE FROM rules WHERE id=%s'
