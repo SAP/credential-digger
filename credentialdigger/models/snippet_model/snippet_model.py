@@ -100,14 +100,12 @@ class SnippetModel(BaseModel):
         if len(numpy_array) == 0:
             return False
 
-        #label = self.model.predict_classes(numpy_array)[0][0]
         fp_likelihood = self.model.predict(numpy_array)[0][0]
 
         # Last index of the prediction indicates the state
         # 1 = false positive (test, dummy, etc.)
         # 0 = true positive (supposedly)
         return fp_likelihood > snippet_constants.SNIPPET_LOWER_BOUND
-        # return label == 1
 
     def _pre_process(self, raw_data):
         """ Extract words from snippet and fit them to the Java convention.

@@ -610,7 +610,6 @@ class Client:
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        print("Started scan")
         def analyze_discoveries(model_manager, discoveries, verbose):
             """ Use a model to analyze a list of discoveries. """
             false_positives = set()
