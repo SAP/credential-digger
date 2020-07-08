@@ -19,7 +19,7 @@ class BaseModel(ABC):
     def analyze(self, **kwargs):
         pass
 
-    def get_path(self, model_name, keras_filename, tokenizer_name='tokenizer.pickle'):
+    def get_path(self, model_name, keras_filename, tokenizer_name=''):
         current_path = os.path.dirname(os.path.realpath(__file__))
         parent_path = current_path[:current_path.rfind("/")] + "/models_data/" + model_name + '/'
         return parent_path + keras_filename, parent_path + tokenizer_name

@@ -5,7 +5,7 @@ from keras.preprocessing.sequence import pad_sequences
 import numpy as np
 
 from ..base_model import BaseModel
-from ..keras_support import keras_constants, keras_functions
+from ..keras_support import path_constants, keras_functions
 
 
 class PathModel(BaseModel):
@@ -41,16 +41,18 @@ class PathModel(BaseModel):
         vector = self._preprocess_path(discovery['file_name'].strip())
 
         # Launch the prediction of the vector
-        ngrams = keras_functions.preprocess_keras_input(vector, keras_constants.CHAR_NGRAMS, keras_constants.WORD_NGRAMS)
-        sequences = pad_sequences(self.tokenizer.texts_to_sequences([ngrams]), maxlen=keras_constants.KERAS_MAXLEN)
+        ngrams = keras_functions.preprocess_keras_input(vector, path_constants.CHAR_NGRAMS, path_constants.WORD_NGRAMS)
+        sequences = pad_sequences(self.tokenizer.texts_to_sequences([ngrams]), maxlen=path_constants.KERAS_MAXLEN)
         if len(sequences) == 0:
             return False
-        label = self.model.predict_classes(np.array(sequences))[0][0]
+        #label = self.model.predict_classes(np.array(sequences))[0][0]
+        fp_likelihood = self.model.predict(np.array(sequences))[0][0]
 
         # Last index of the prediction indicates the state
         # 1 = false positive (test, dummy, etc.)
         # 0 = true positive (supposedly)
-        return label == 1
+        return fp_likelihood > path_constants.PATH_LOWER_BOUND
+        #return label == '__label__1'
 
     def _get_ext(self, path):
         """ Extract the extension from the path.

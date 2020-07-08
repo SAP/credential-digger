@@ -6,7 +6,7 @@ from keras_preprocessing.sequence import pad_sequences
 import numpy as np
 
 from ..base_model import BaseModel
-from ..keras_support import keras_constants, keras_functions
+from ..keras_support import snippet_constants, keras_functions
 
 EXTENSIONS = set(['py', 'rb', 'c', 'cpp', 'cs', 'js', 'php', 'h', 'java', 'pl',
                   'go'])
@@ -17,7 +17,7 @@ class SnippetModel(BaseModel):
 
     def __init__(self,
                  model='snippet_model',
-                 keras_classifier='model_classifier.bin',
+                 keras_classifier='model_classifier.h5',
                  model_extractor='snippet_model',
                  binary_extractor='model_extractor.bin',
                  tokenizer='tokenizer.pickle'):
@@ -41,8 +41,8 @@ class SnippetModel(BaseModel):
         """
         keras_path, tokenizer_path = super().get_path(model, keras_classifier, tokenizer)
         super().__init__(keras_path, tokenizer_path)
-        self.model_extractor = fasttext.load_model(
-            super().find_model_file(model_extractor, binary_extractor))
+        extractor_path, _ = super().get_path(model_extractor, binary_extractor)
+        self.model_extractor = fasttext.load_model(extractor_path)
 
     def analyze(self, discovery):
         """ Analyze a snippet and predict whether it is a false positive or not.
@@ -82,7 +82,7 @@ class SnippetModel(BaseModel):
             return True
 
         if len(data) == 2:
-            ngrams = keras_functions.preprocess_keras_input(data)
+            ngrams = keras_functions.preprocess_keras_input(data, char_ngrams=snippet_constants.CHAR_NGRAMS, word_ngrams=snippet_constants.WORD_NGRAMS)
             data_grams = [ngrams]
         else:
             finish_labels = self._label_preprocess(data)
@@ -92,20 +92,22 @@ class SnippetModel(BaseModel):
             input_array = [[input_1, input_2]]
             data_grams = []
             for line in input_array:
-                ngrams = keras_functions.preprocess_keras_input(line)
+                ngrams = keras_functions.preprocess_keras_input(line, char_ngrams=snippet_constants.CHAR_NGRAMS, word_ngrams=snippet_constants.WORD_NGRAMS)
                 data_grams.append(ngrams)
 
-        sequences = pad_sequences(self.tokenizer.texts_to_sequences(data_grams), maxlen=keras_constants.KERAS_MAXLEN)
+        sequences = pad_sequences(self.tokenizer.texts_to_sequences(data_grams), maxlen=snippet_constants.KERAS_MAXLEN)
         numpy_array = np.array(sequences)
         if len(numpy_array) == 0:
             return False
 
-        label = self.model.predict_classes(numpy_array)[0][0]
+        #label = self.model.predict_classes(numpy_array)[0][0]
+        fp_likelihood = self.model.predict(numpy_array)[0][0]
 
         # Last index of the prediction indicates the state
         # 1 = false positive (test, dummy, etc.)
         # 0 = true positive (supposedly)
-        return label == 1
+        return fp_likelihood > snippet_constants.SNIPPET_LOWER_BOUND
+        # return label == 1
 
     def _pre_process(self, raw_data):
         """ Extract words from snippet and fit them to the Java convention.

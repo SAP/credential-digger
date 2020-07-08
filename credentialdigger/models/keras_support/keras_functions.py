@@ -1,4 +1,4 @@
-def create_ngram_set(input_list, ngram_value=2):
+def create_ngram_set(input_list, ngram_value):
     """
     Extract a set of n-grams from a list of integers.
 
@@ -11,8 +11,8 @@ def create_ngram_set(input_list, ngram_value=2):
     return set(zip(*[input_list[i:] for i in range(ngram_value)]))
 
 
-def preprocess_keras_input(input, char_ngrams=3, word_ngrams=2):
-    word_pairs = create_ngram_set(input, word_ngrams)
+def preprocess_keras_input(sentences, char_ngrams, word_ngrams):
+    word_pairs = create_ngram_set(sentences, word_ngrams)
     ngrams = []
     for tpl in word_pairs:
         tpl_str = "<"
@@ -21,7 +21,7 @@ def preprocess_keras_input(input, char_ngrams=3, word_ngrams=2):
         tpl_str = tpl_str[:-1]
         tpl_str += ">"
         ngrams.append(tpl_str)
-    for word in input:
+    for word in sentences:
         word = "<" + str(word) + ">"
         ngrams.append(word)
         chars = list(word)
