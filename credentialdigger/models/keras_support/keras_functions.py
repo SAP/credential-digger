@@ -11,8 +11,23 @@ def create_ngram_set(input_list, ngram_value):
     return set(zip(*[input_list[i:] for i in range(ngram_value)]))
 
 
-def preprocess_keras_input(sentences, char_ngrams, word_ngrams):
-    word_pairs = create_ngram_set(sentences, word_ngrams)
+def preprocess_keras_input(words, char_ngrams, word_ngrams):
+    """ Extract sur- and subword encoding from a set of words
+     
+    Parameters
+    ----------
+    words : str
+        words to encode
+    char_ngrams : int
+        number of subwords to extract from each word
+    word_ngrams : int
+        size of tuples words are grouped into
+
+    Returns
+    -------
+
+    """
+    word_pairs = create_ngram_set(words, word_ngrams)
     ngrams = []
     for tpl in word_pairs:
         tpl_str = "<"
@@ -21,7 +36,7 @@ def preprocess_keras_input(sentences, char_ngrams, word_ngrams):
         tpl_str = tpl_str[:-1]
         tpl_str += ">"
         ngrams.append(tpl_str)
-    for word in sentences:
+    for word in words:
         word = "<" + str(word) + ">"
         ngrams.append(word)
         chars = list(word)

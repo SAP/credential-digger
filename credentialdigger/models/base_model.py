@@ -20,6 +20,24 @@ class BaseModel(ABC):
         pass
 
     def get_path(self, model_name, keras_filename, tokenizer_name=''):
+        """ Find the path of the file of a model.
+
+        Parameters
+        ----------
+        model_name: str
+            The name of the model (e.g., `path_model`).
+        keras_filename: str
+            The name of the file of the keras model (e.g., `path_model.h5`).
+
+        tokenizer_name: str
+            The name of the tokenizer corresponding to the keras model (e.g. `tokenizer.pickle`)
+
+        Returns
+        -------
+        str
+            The path to access the file `keras_filename` and its tokenizer
+
+        """
         current_path = os.path.dirname(os.path.realpath(__file__))
         parent_path = current_path[:current_path.rfind("/")] + "/models_data/" + model_name + '/'
         return parent_path + keras_filename, parent_path + tokenizer_name
