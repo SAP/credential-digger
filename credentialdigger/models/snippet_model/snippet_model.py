@@ -212,6 +212,6 @@ class SnippetModel(BaseModel):
         """ Remove junk from the beginning of a snippet.
         """
         return re.sub(
-            '^((\s*|\ *)\@\@.*\@\@(\s*|\ *)|(\s*|\ *)\+(\s*|\ *)|(\s*|\ *)\-(\s*|\ *)|(\s*|\ *))',
-            '',
+            r"^((\s*|\ *)\@\@.*\@\@(\s*|\ *)|(\s*|\ *)\+(\s*|\ *)|(\s*|\ *)\-(\s*|\ *)|(\s*|\ *))",
+            "",
             snippet).strip()

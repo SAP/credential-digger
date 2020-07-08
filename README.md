@@ -143,13 +143,18 @@ Refer to the Wiki for further information.
 
 ### File Path Model
 The File Path Model classifies a discovery as false positive according to its file
-path. A pre-trained Path Model [is available here](https://github.com/SAP/credential-digger/releases/download/v1.0.0/path_model-1.0.0.tar.gz).
+path when it indicates that the code portion is used for test or exmaple. A pre-trained Path Model [is available here](https://github.com/SAP/credential-digger/releases/download/v1.0.0/path_model-1.0.0.tar.gz).
 
 After installing _credentialdigger_, our pre-trained Path Model can be installed as follows.
 ```bash
 export path_model=https://github.com/SAP/credential-digger/releases/download/v1.0.0/path_model-1.0.0.tar.gz
 python -m credentialdigger download path_model
 ```
+### Code Snippet Model
+
+The code Snippet model identifies the password based authentication in a code and differeciate between real and fake passwords. A pre-trained Code Snippet Model [is available here](https://github.com/SAP/credential-digger/releases/download/SM-v1.0.0/snippet_model-1.0.0.tar.gz)
+
+WARNING: This Model is pre-trained with synthetic data in order to protect privacy. It will help to reduce the False Positives related to password recongnition but with a lower precision compared to a Model pre-trained with real data.
 
 ### Integrate ML Models in the UI
 
