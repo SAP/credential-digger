@@ -16,7 +16,7 @@ services:
   credential_digger:
     build:
       context: ./ui
-     dockerfile: Dockerfile
+      dockerfile: Dockerfile
       args:
         - path_model=$path_model
         - snippet_model=$snippet_model
