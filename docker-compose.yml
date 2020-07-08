@@ -13,18 +13,18 @@ services:
     # uncomment the ports only for development reasons
     ports:
       - "5432:${DBPORT}"
-#  credential_digger:
-#    build:
-#      context: ./ui
-#     dockerfile: Dockerfile
-#      args:
-#        - path_model=$path_model
-#        - snippet_model=$snippet_model
-#    container_name: credential_digger_backend
-#    restart: always
-#    env_file:
-#      - ./.env
-#    ports:
-#      - "5000:5000"
+  credential_digger:
+    build:
+      context: ./ui
+     dockerfile: Dockerfile
+      args:
+        - path_model=$path_model
+        - snippet_model=$snippet_model
+    container_name: credential_digger_backend
+    restart: always
+    env_file:
+      - ./.env
+    ports:
+      - "5000:5000"
 volumes:
   creddig_db:
