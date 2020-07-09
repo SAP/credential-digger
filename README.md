@@ -1,7 +1,7 @@
 ![Logo](github_assets/Logo-CD-Mint_48.png)
 
 
-# Credential Digger
+# Credential Digger - Supporting Keras Model
 
 Credential Digger is a Github scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc).
 Credential Digger has a clear advantage compared to the other Github scanners in terms of False Positive reduction in the scan reports. 
