@@ -41,7 +41,7 @@ def download(model, *pip_args):
     dl = download_model(model, pip_args)
     if dl != 0:  # if download subprocess doesn't return 0, exit
         sys.exit(dl)
-    print('Download successfull')
+    print('Download successful')
 
     # Create symlink because the model is installed via a shortcut like
     # 'path_model' (i.e., the name of the environment variable).

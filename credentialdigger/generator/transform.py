@@ -70,7 +70,7 @@ def build_dummy_dict(pattern):
     return dummy
 
 
-def run_transformation(tid, pattern, dummy_dict={}):
+def run_transformation(tid, pattern, dummy_dict=None):
     """ Run the transformation with id `tid` over the pattern, using values
     from the dummy_dict.
 
@@ -89,6 +89,9 @@ def run_transformation(tid, pattern, dummy_dict={}):
     str
         A transformed pattern
     """
+    if dummy_dict is None:
+        dummy_dict = {}
+
     # Ensure the transformation can be run on this pattern
     supported = _find_possible_transformations(pattern)
     if tid not in supported:
