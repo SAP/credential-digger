@@ -7,7 +7,7 @@ from ..base_model import BaseModel
 
 class PathModel(BaseModel):
 
-    def __init__(self, model='path_model', binary='model_path.bin'):
+    def __init__(self, model='path_model', binary='path_model.bin'):
         """ This class classifies a discovery as a false positive according to
         its file path.
 
