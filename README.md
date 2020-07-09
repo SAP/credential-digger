@@ -184,4 +184,5 @@ Refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for further i
 
 
 ## News
-- [Credential Digger announcement](https://blogs.sap.com/2020/06/23/credential-digger-using-machine-learning-to-identify-hardcoded-credentials-in-github)
+- [Credential Digger announcement](https://blogs.sap.com/2020/06/23/credential-digger-using-machine-learning-to-identify-hardcoded-credentials-in-github) 
+- [Credential Digger is now supporting Keras Machine learning Models](https://github.com/SAP/credential-digger/tree/keras_models)
