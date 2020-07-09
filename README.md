@@ -1,4 +1,4 @@
-# New Document![Logo](github_assets/Logo-CD-Mint_48.png)
+![Logo](github_assets/Logo-CD-Mint_48.png)
 
 # Credential Digger
 
