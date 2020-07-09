@@ -1,13 +1,16 @@
 import re
 
 from nltk.stem import PorterStemmer
+from keras.preprocessing.sequence import pad_sequences
+import numpy as np
 
 from ..base_model import BaseModel
+from ..keras_support import path_constants, keras_functions
 
 
 class PathModel(BaseModel):
 
-    def __init__(self, model='path_model', binary='model_path.bin'):
+    def __init__(self, model='path_model', keras_filename='model_path.h5', tokenizer='tokenizer.pickle'):
         """ This class classifies a discovery as a false positive according to
         its file path.
 
@@ -18,7 +21,8 @@ class PathModel(BaseModel):
         binary: str, default `model_path.bin`
             The name of the binary
         """
-        super().__init__(super().find_model_file(model, binary))
+        keras_path, tokenizer_path = super().get_path(model, keras_filename, tokenizer)
+        super().__init__(keras_path, tokenizer_path)
 
     def analyze(self, discovery):
         """ Analyze a path and predict whether it is a false positive or not.
@@ -37,14 +41,18 @@ class PathModel(BaseModel):
         vector = self._preprocess_path(discovery['file_name'].strip())
 
         # Launch the prediction of the vector
-        label = self.model.predict(vector)[0][0]
+        ngrams = keras_functions.preprocess_keras_input(vector, path_constants.CHAR_NGRAMS, path_constants.WORD_NGRAMS)
+        sequences = pad_sequences(self.tokenizer.texts_to_sequences([ngrams]), maxlen=path_constants.KERAS_MAXLEN)
+        if len(sequences) == 0:
+            return False
+        #label = self.model.predict_classes(np.array(sequences))[0][0]
+        fp_likelihood = self.model.predict(np.array(sequences))[0][0]
 
-        # Get the prediction value related to the current path (the vector)
-        # If prediction == __label__1, then it is detected as false positive
-        # If not detected it does not mean that it is not a false positive:
-        # it may still be a false positive, but it is not possible to detect it
-        # with this model
-        return label == '__label__1'
+        # Last index of the prediction indicates the state
+        # 1 = false positive (test, dummy, etc.)
+        # 0 = true positive (supposedly)
+        return fp_likelihood > path_constants.PATH_LOWER_BOUND
+        #return label == '__label__1'
 
     def _get_ext(self, path):
         """ Extract the extension from the path.

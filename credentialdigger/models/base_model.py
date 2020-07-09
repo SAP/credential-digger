@@ -1,19 +1,46 @@
-import pkg_resources
+import os
+import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-import fasttext
+import keras.models
+import pkg_resources
 import srsly
 
 
 class BaseModel(ABC):
 
-    def __init__(self, model):
-        self.model = fasttext.load_model(model)
+    def __init__(self, model, tokenizer):
+        self.model = keras.models.load_model(model)
+        with open(tokenizer, 'rb') as handle:
+            self.tokenizer = pickle.load(handle)
 
     @abstractmethod
     def analyze(self, **kwargs):
         pass
+
+    def get_path(self, model_name, keras_filename, tokenizer_name=''):
+        """ Find the path of the file of a model.
+
+        Parameters
+        ----------
+        model_name: str
+            The name of the model (e.g., `path_model`).
+        keras_filename: str
+            The name of the file of the keras model (e.g., `path_model.h5`).
+
+        tokenizer_name: str
+            The name of the tokenizer corresponding to the keras model (e.g. `tokenizer.pickle`)
+
+        Returns
+        -------
+        str
+            The path to access the file `keras_filename` and its tokenizer
+
+        """
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        parent_path = current_path[:current_path.rfind("/")] + "/models_data/" + model_name + '/'
+        return parent_path + keras_filename, parent_path + tokenizer_name
 
     def get_model_meta(self, model_path):
         """ Get model's meta.json from the directory path of the model, and

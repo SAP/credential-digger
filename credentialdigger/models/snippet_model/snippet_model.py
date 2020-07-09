@@ -2,8 +2,11 @@ import re
 
 import fasttext
 import string_utils
+from keras_preprocessing.sequence import pad_sequences
+import numpy as np
 
 from ..base_model import BaseModel
+from ..keras_support import snippet_constants, keras_functions
 
 EXTENSIONS = set(['py', 'rb', 'c', 'cpp', 'cs', 'js', 'php', 'h', 'java', 'pl',
                   'go'])
@@ -14,9 +17,10 @@ class SnippetModel(BaseModel):
 
     def __init__(self,
                  model='snippet_model',
-                 binary_classifier='model_classifier.bin',
+                 keras_classifier='model_classifier.h5',
                  model_extractor='snippet_model',
-                 binary_extractor='model_extractor.bin'):
+                 binary_extractor='model_extractor.bin',
+                 tokenizer='tokenizer.pickle'):
         """ This class classifies a discovery as a false positive according to
         its code snippet.
 
@@ -35,9 +39,10 @@ class SnippetModel(BaseModel):
         binary_extractor: str, default `model_extractor.bin`
             The name of the binary for the extractor
         """
-        super().__init__(super().find_model_file(model, binary_classifier))
-        self.model_extractor = fasttext.load_model(
-            super().find_model_file(model_extractor, binary_extractor))
+        keras_path, tokenizer_path = super().get_path(model, keras_classifier, tokenizer)
+        super().__init__(keras_path, tokenizer_path)
+        extractor_path, _ = super().get_path(model_extractor, binary_extractor)
+        self.model_extractor = fasttext.load_model(extractor_path)
 
     def analyze(self, discovery):
         """ Analyze a snippet and predict whether it is a false positive or not.
@@ -77,23 +82,30 @@ class SnippetModel(BaseModel):
             return True
 
         if len(data) == 2:
-            # No need to pre-process data since we have only two words
-            # Predict if the string `word1 + ' ' + word2` is a false positive
-            label = self.model.predict(
-                data[0] + ' ' + data[1])[0]  # 0=label, 1=probability
+            ngrams = keras_functions.preprocess_keras_input(data, char_ngrams=snippet_constants.CHAR_NGRAMS, word_ngrams=snippet_constants.WORD_NGRAMS)
+            data_grams = [ngrams]
         else:
             finish_labels = self._label_preprocess(data)
             # Predict if the string `word1 + ' ' + word2` is a false positive
-            label = self.model.predict(
-                data[finish_labels[0]] + ' ' +
-                data[finish_labels[1]])[0]  # 0=label, 1=probability
+            input_1 = data[finish_labels[0]]
+            input_2 = data[finish_labels[1]]
+            input_array = [[input_1, input_2]]
+            data_grams = []
+            for line in input_array:
+                ngrams = keras_functions.preprocess_keras_input(line, char_ngrams=snippet_constants.CHAR_NGRAMS, word_ngrams=snippet_constants.WORD_NGRAMS)
+                data_grams.append(ngrams)
 
-        label = label[0]  # label was a tuple of 1 element
+        sequences = pad_sequences(self.tokenizer.texts_to_sequences(data_grams), maxlen=snippet_constants.KERAS_MAXLEN)
+        numpy_array = np.array(sequences)
+        if len(numpy_array) == 0:
+            return False
+
+        fp_likelihood = self.model.predict(numpy_array)[0][0]
 
         # Last index of the prediction indicates the state
         # 1 = false positive (test, dummy, etc.)
         # 0 = true positive (supposedly)
-        return label.split('__')[-1] == '1'
+        return fp_likelihood > snippet_constants.SNIPPET_LOWER_BOUND
 
     def _pre_process(self, raw_data):
         """ Extract words from snippet and fit them to the Java convention.
