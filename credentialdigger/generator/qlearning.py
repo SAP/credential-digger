@@ -244,13 +244,12 @@ def _max_reward_next_step(pattern, dummy_dict, reference_stylometry,
     # Get all the transformations applicable to this pattern
     all_transformations = get_all_applicable_transformations(pattern)
     # Calculate the reward for each of them
-    for i in range(len(all_transformations)):
-        action = all_transformations[i]
+    for idx, transformation in enumerate(all_transformations):
         # Since most of the transformations modify the dummy_dict, we need
         # to run them on a deepcopy of the original one
-        trans_pattern = action(pattern, copy.deepcopy(dummy_dict))
+        trans_pattern = transformation(pattern, copy.deepcopy(dummy_dict))
         rew_value = _compute_reward(trans_pattern, reference_stylometry, args)
-        reward.append(Q_next_step[i] + rew_value)
+        reward.append(Q_next_step[idx] + rew_value)
 
     # Return max reward
     return max(reward)
