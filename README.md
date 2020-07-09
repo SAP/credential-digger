@@ -11,13 +11,10 @@ Credential Digger is a GitHub scanning tool that identifies hardcoded credential
 	-  [Build the database](#build-the-database)
 	-  [Configure the regular expressions Scanner](#configure-the-regular-expressions-scanner)
 	-  [Download machine learning models](#download-machine-learning-models)
-
 -  [Usage](#usage)
 	-  [Scan a repository](#scan-a-repository)
 	-  [Fine-tuning](#fine-tuning)
-
 -  [Wiki](#wiki)
-
 -  [News](#news)
 
 
@@ -25,13 +22,13 @@ Credential Digger is a GitHub scanning tool that identifies hardcoded credential
 
 > Credential Digger supports Python 3.6, and works only with LINUX systems.
 
-First, you need to install the regular expression matching library [Hyperscan]([https://github.com/intel/hyperscan](https://github.com/intel/hyperscan)), where you can find the complete installation process for all platforms [here]([https://github.com/intel/hyperscan](https://github.com/intel/hyperscan)). For Credential Digger, you can run :
+First, you need to install the regular expression matching library [Hyperscan](https://github.com/intel/hyperscan), where you can find the complete installation process for all platforms [here](http://intel.github.io/hyperscan/dev-reference/getting_started.html). For Credential Digger, you can run :
 
 ```bash
 sudo apt install libhyperscan-dev
 ```
 
-You also need to have [Docker]([https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)) and [Docker Compose]([https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/))
+You also need to have [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
 
   
 
@@ -120,7 +117,7 @@ _credentialdigger_ in order to avoid errors in linking.
   
 ## Usage
 
-To instanciate a client, connected to the database :
+To instanciate a client connected to the database :
 ```python
 from credentialdigger.cli import Client
 
