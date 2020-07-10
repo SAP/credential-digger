@@ -31,7 +31,9 @@ You need to have [Docker](https://docs.docker.com/engine/install/) and [Docker C
 To have a ready-to-use instance of Credential Digger, with the UI :
 
 ```bash
-sudo docker-compose up --build 
+cp .env.sample .env
+vim .env
+sudo docker-compose up --build
 ```
 
 The UI is available at http://localhost:5000/
