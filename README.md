@@ -62,7 +62,7 @@ python setup.py install
 
 ### Build the database
 
-Build the database and the UI : configure the `.env` file with your own credentials (by modifying POSTGRES_USER and POSTGRES_PASSWORD). The UI is available at http://localhost:5000/.
+Build the database: configure the `.env` file with your own credentials (by modifying POSTGRES_USER and POSTGRES_PASSWORD). The database is available at http://localhost:5432/.
 
   
 ```bash
