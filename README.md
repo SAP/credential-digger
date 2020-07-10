@@ -31,9 +31,9 @@ You need to have [Docker](https://docs.docker.com/engine/install/) and [Docker C
 To have a ready-to-use instance of Credential Digger, with the UI :
 
 ```bash
-export path_model=https://github.com/SAP/credential-digger/releases/download/PM-v1.0.1/path_model-1.0.1.tar.gz
-export snippet_model=https://github.com/SAP/credential-digger/releases/download/SM-v1.0.0/snippet_model-1.0.0.tar.gz
-sudo docker-compose up --build 
+cp .env.sample .env
+vim .env
+sudo docker-compose up --build
 ```
 
 The UI is available at http://localhost:5000/
