@@ -731,7 +731,7 @@ class Client:
             # If the SnippetModel is not chosen, but the generator flag is set
             # to True, do not generate the model (to save time and resources)
             if generate_snippet_extractor and debug:
-                logging.warning(msg=('generate_snippet_extractor=True but SnippetModel is not in the chosen models. No extractor to generate.'))
+                logging.debug(msg=('generate_snippet_extractor=True but SnippetModel is not in the chosen models. No extractor to generate.'))
 
         # For each of the new discovery ids, select it from the db and analyze
         # it. If it is classified as false positive, update the corresponding
