@@ -1,41 +1,54 @@
-# New Document![Logo](github_assets/Logo-CD-Mint_48.png)
+![Logo](github_assets/Logo-CD-Mint_48.png)
 
 # Credential Digger
 
 Credential Digger is a GitHub scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc), filtering the false positive data through machine learning models.
 
 -  [Requirements](#requirements)
--  [Install](#install)
+-  [Quick Install](#quick-install)
+-  [Install](#advanced-install)
 	-  [Install using pip](#install-using-pip)
 	-  [Install from source](#install-from-source)
 	-  [Build the database](#build-the-database)
-	-  [Configure the regular expressions Scanner](#configure-the-regular-expressions-scanner)
-	-  [Download machine learning models](#download-machine-learning-models)
-
+  -  [Download machine learning models](#download-machine-learning-models)
+-  [Configure the regular expressions Scanner](#configure-the-regular-expressions-scanner)
 -  [Usage](#usage)
 	-  [Scan a repository](#scan-a-repository)
 	-  [Fine-tuning](#fine-tuning)
-
 -  [Wiki](#wiki)
-
 -  [News](#news)
 
 
 ## Requirements
 
-> Credential Digger supports Python 3.6, and works only with LINUX systems.
+Credential Digger supports Python 3.6, and works only with LINUX systems.
 
-First, you need to install the regular expression matching library [Hyperscan]([https://github.com/intel/hyperscan](https://github.com/intel/hyperscan)), where you can find the complete installation process for all platforms [here]([https://github.com/intel/hyperscan](https://github.com/intel/hyperscan)). For Credential Digger, you can run :
+You need to have [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
+
+  
+## Quick Install
+
+To have a ready-to-use instance of Credential Digger, with the UI :
+
+```bash
+cp .env.sample .env
+vim .env
+sudo docker-compose up --build
+```
+
+The UI is available at http://localhost:5000/
+
+>  **WARNING**: The UI does not support the machine learning models for the moment. If you want to use the models, please follow the advanced install.
+
+## Advanced Install
+
+First, you need to install the regular expression matching library [Hyperscan](https://github.com/intel/hyperscan), where you can find the complete installation process for all platforms [here](http://intel.github.io/hyperscan/dev-reference/getting_started.html). Be sure to have `build-essential` and `python3-dev` too. 
 
 ```bash
 sudo apt install libhyperscan-dev
+sudo apt install build-essential
+sudo apt install python3-dev
 ```
-
-You also need to have [Docker]([https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)) and [Docker Compose]([https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/))
-
-  
-
-## Install
 
 ### Install using pip
 
@@ -65,29 +78,13 @@ python setup.py install
 
 ### Build the database
 
-Build the database and the UI : configure the `.env` file with your own credentials (by modifying POSTGRES_USER and POSTGRES_PASSWORD). The UI is available at http://localhost:5000/.
+Build the database: configure the `.env` file with your own credentials (by modifying POSTGRES_USER, POSTGRES_PASSWORD and POSTGRES_DB). The database is available at http://localhost:5432/.
 
   
 ```bash
 cp .env.sample .env
 vim .env # Insert real credentials
 sudo docker-compose up --build postgres
-```
-  
-### Configure the regular expressions Scanner
-
-One of the core component of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/master/resources/rules.yml)). We provide a list of patterns in the `rules.yml` file. In a Python terminal :
-
-  
-
-```python
-from credentialdigger.cli import Client
-
-c = Client(dbname='MYDB', dbuser='POSTGRES_USER',
-                          dbpassword='POSTGRES_PASSWORD',
-                          dbhost='localhost', dbport=5432)
-
-c.add_rules_from_file('credentialdigger/resources/rules.yml')
 ```
 
 ### Download machine learning models
@@ -117,10 +114,26 @@ _credentialdigger_ in order to avoid errors in linking.
   
 >  **WARNING**: We provide the pre-trained models, but we do not guarantee the efficiency of these models. If you want more accuracte machine learning models, you can train your own models (just replace the binaries by your own models) or use the fine-tuning option.
 
+## Configure the regular expressions Scanner
+
+One of the core component of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/master/resources/rules.yml)). We provide a list of patterns in the `rules.yml` file. In a Python terminal :
+
   
+
+```python
+from credentialdigger.cli import Client
+
+c = Client(dbname='MYDB', dbuser='POSTGRES_USER',
+                          dbpassword='POSTGRES_PASSWORD',
+                          dbhost='localhost', dbport=5432)
+
+c.add_rules_from_files('credentialdigger/resources/rules.yml')
+```
+
+
 ## Usage
 
-To instanciate a client, connected to the database :
+To instanciate a client connected to the database :
 ```python
 from credentialdigger.cli import Client
 
