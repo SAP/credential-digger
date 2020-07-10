@@ -10,7 +10,7 @@ from .generator import ExtractorGenerator
 from .models.model_manager import ModelManager
 from .scanners.git_scanner import GitScanner
 
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_commit')
 Discovery = namedtuple('Discovery',
@@ -611,10 +611,10 @@ class Client:
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        if debug:
-            logging.basicConfig(level=logging.DEBUG)
+        if debug is True:
+            logger.setLevel(level=logging.DEBUG)
         else:
-            logging.basicConfig(level=logging.INFO)
+            logger.setLevel(level=logging.INFO)
             
         def analyze_discoveries(model_manager, discoveries, debug):
             """ Use a model to analyze a list of discoveries. """
@@ -622,7 +622,7 @@ class Client:
 
             # Analyze all the discoveries ids with the current model
             if debug:
-                logging.debug(msg=('Analyzing discoveries with model %s' %
+                logger.debug(msg=('Analyzing discoveries with model %s' %
                       model_manager.model))
                 for i in tqdm(range(len(discoveries))):
                     did = discoveries[i]
@@ -635,10 +635,10 @@ class Client:
 
             # For each false positive, update the db
             if debug:
-                logging.debug(msg=('Model %s classified %s discoveries' % (
+                logger.debug(msg=('Model %s classified %s discoveries' % (
                     model_manager.model.__class__.__name__,
                     len(false_positives))))
-                logging.debug(msg=('Change state to these discoveries'))
+                logger.debug(msg=('Change state to these discoveries'))
                 fp_id = iter(false_positives)
                 for i in tqdm(range(len(false_positives))):
                     self.update_discovery(next(fp_id), 'false_positive')
@@ -666,7 +666,7 @@ class Client:
 
         # Force complete scan
         if force:
-            logging.debug(msg=('Force complete scan'))
+            logger.debug(msg=('Force complete scan'))
             from_commit = None
 
         # Prepare rules
@@ -678,12 +678,12 @@ class Client:
 
         # Call scanner
         s = scanner(rules)
-        logging.debug(msg=('Scanning commits...'))
+        logger.debug(msg=('Scanning commits...'))
         latest_commit, these_discoveries = s.scan(repo_url,
                                                   since_commit=from_commit)
 
         
-        logging.debug(msg=('Detected %s discoveries' % len(these_discoveries)))
+        logger.debug(msg=('Detected %s discoveries' % len(these_discoveries)))
 
         # Update latest commit of the repo
         self.update_repo(repo_url, latest_commit)
@@ -730,8 +730,8 @@ class Client:
         else:
             # If the SnippetModel is not chosen, but the generator flag is set
             # to True, do not generate the model (to save time and resources)
-            if generate_snippet_extractor and debug:
-                logging.debug(msg=('generate_snippet_extractor=True but SnippetModel is not in the chosen models. No extractor to generate.'))
+            if generate_snippet_extractor:
+                logger.debug(msg=('generate_snippet_extractor=True but SnippetModel is not in the chosen models. No extractor to generate.'))
 
         # For each of the new discovery ids, select it from the db and analyze
         # it. If it is classified as false positive, update the corresponding
@@ -741,7 +741,7 @@ class Client:
             try:
                 mm = ModelManager(model)
             except ModuleNotFoundError:
-                logging.warning(msg=('Model %s not found. Skip it.' % model))
+                logger.warning(msg=('Model %s not found. Skip it.' % model))
                 # Continue with another model (if any)
                 continue
 
@@ -756,11 +756,11 @@ class Client:
         # Yet, since the SnippetModel may be slow, run it only if we still have
         # discoveries to check
         if snippet_with_generator and len(discoveries_ids) == 0:
-            logging.debug(msg=('No more discoveries to filter. Skip SnippetModel.'))
+            logger.debug(msg=('No more discoveries to filter. Skip SnippetModel.'))
             return list(discoveries_ids)
         if snippet_with_generator:
             # Generate extractor and run the model
-            logging.info(msg=('Generating snippet model (it may take some time...)'))
+            logger.info(msg=('Generating snippet model (it may take some time...)'))
             extractor_folder, extractor_name = \
                 self._generate_snippet_extractor(repo_url)
             try:
@@ -774,7 +774,7 @@ class Client:
                                                       discoveries_ids,
                                                       debug)
             except ModuleNotFoundError:
-                logging.warning('SnippetModel not found. Skip it.')
+                logger.warning('SnippetModel not found. Skip it.')
 
         return list(discoveries_ids)
 
@@ -821,7 +821,7 @@ class Client:
         for repo in g.get_user(username).get_repos():
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
-            logging.debug(msg=('Scan %s' % repo.url))
+            logger.debug(msg=('Scan %s' % repo.url))
             missing_ids[repo_url] = self.scan(repo_url, category=category,
                                               models=models, exclude=exclude,
                                               scanner=GitScanner,
