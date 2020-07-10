@@ -94,7 +94,7 @@ def download_model(modelname, user_pip_args=None):
     """
     download_url = os.getenv(modelname)
     if not download_url:
-        logger.error('Error: model missing. Abort operation.')
+        logger.critical('Error: model missing. Abort operation.')
         return -1
     pip_args = ['--no-cache-dir']
     if user_pip_args:
