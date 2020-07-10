@@ -1,3 +1,4 @@
+import logging
 import json
 import pkg_resources
 import random
@@ -7,6 +8,8 @@ from pathlib import Path
 import fasttext
 import numpy as np
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 def _create_model_folder(url):
     """ Create the folder for the new model.
@@ -146,9 +149,9 @@ def _generate_training_dataset(training_data, temp_ds_path):
         except IndexError:
             # Should never occur since all the patterns have at least one key
             # and at least one value
-            print(row)
-            print('Text is missing either the key or the value.',
-                  'Skip this pattern.')
+            logger.error('%s\n%s\n%s','Text is missing either the key or the value.',
+                  'Skip this pattern.','The row in which the error has been detected : ')
+            logger.error(msg=row)
 
     random.shuffle(to_write)
 
@@ -201,7 +204,7 @@ def _train_model(input_ds, valid_ds, learning_rate=0.1, epoch_model=50,
                                       dim=word_vector_dim,
                                       ws=context_window,
                                       loss='ova')
-    print(model.test(valid_ds))
+    logger.info("%s : %s", "Evaluation of the model",str(model.test(valid_ds)))
     return model
 
 

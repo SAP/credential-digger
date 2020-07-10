@@ -1,3 +1,4 @@
+import logging
 import json
 import random
 import re
@@ -20,6 +21,8 @@ BLACKLISTED_NAMES = set(['changelog', 'contribute', 'docker-compose',
 BLACKLISTED_EXTS = set(['bin', 'csv', 'jpg', 'md', 'pdf', 'png', 'rst', 'svg',
                         'txt', 'yml'])
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class ExtractorGenerator:
 
@@ -45,8 +48,9 @@ class ExtractorGenerator:
         try:
             return self.train_model(corpus, repo_url)
         except FileExistsError:
-            print('Model for this developer already created.',
-                  'Do not generate a new one.')
+            logger.warning('%s\n%s',
+                'Model for this developer already created.',
+                'Do not generate a new one.')
             # Return the existing one
             return self._search_model_extractor(repo_url)
 
