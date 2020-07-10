@@ -42,10 +42,12 @@ The UI is available at http://localhost:5000/
 
 ## Advanced Install
 
-First, you need to install the regular expression matching library [Hyperscan](https://github.com/intel/hyperscan), where you can find the complete installation process for all platforms [here](http://intel.github.io/hyperscan/dev-reference/getting_started.html). For Credential Digger, you can run :
+First, you need to install the regular expression matching library [Hyperscan](https://github.com/intel/hyperscan), where you can find the complete installation process for all platforms [here](http://intel.github.io/hyperscan/dev-reference/getting_started.html). Be sure to have `build-essential` and `python3-dev` too. 
 
 ```bash
 sudo apt install libhyperscan-dev
+sudo apt install build-essential
+sudo apt install python3-dev
 ```
 
 ### Install using pip
@@ -76,7 +78,7 @@ python setup.py install
 
 ### Build the database
 
-Build the database: configure the `.env` file with your own credentials (by modifying POSTGRES_USER and POSTGRES_PASSWORD). The database is available at http://localhost:5432/.
+Build the database: configure the `.env` file with your own credentials (by modifying POSTGRES_USER, POSTGRES_PASSWORD and POSTGRES_DB). The database is available at http://localhost:5432/.
 
   
 ```bash
@@ -125,7 +127,7 @@ c = Client(dbname='MYDB', dbuser='POSTGRES_USER',
                           dbpassword='POSTGRES_PASSWORD',
                           dbhost='localhost', dbport=5432)
 
-c.add_rules_from_file('credentialdigger/resources/rules.yml')
+c.add_rules_from_files('credentialdigger/resources/rules.yml')
 ```
 
 
