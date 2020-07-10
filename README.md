@@ -52,7 +52,7 @@ sudo apt install python3-dev
 
 ### Install using pip
 
-You can either install from using `pip`or building from the source
+You can either install from using `pip` or building from the source
 
 ```bash
 pip install credentialdigger
@@ -112,11 +112,11 @@ python -m credentialdigger download snippet_model
 pip), don't run the download command from the installation folder of
 _credentialdigger_ in order to avoid errors in linking.
   
->  **WARNING**: We provide the pre-trained models, but we do not guarantee the efficiency of these models. If you want more accuracte machine learning models, you can train your own models (just replace the binaries by your own models) or use the fine-tuning option.
+>  **WARNING**: We provide the pre-trained models, but we do not guarantee the efficiency of these models. If you want more accurate machine learning models, you can train your own models (just replace the binaries by your own models) or use the fine-tuning option.
 
 ## Configure the regular expressions Scanner
 
-One of the core component of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/master/resources/rules.yml)). We provide a list of patterns in the `rules.yml` file. In a Python terminal :
+One of the core components of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/master/resources/rules.yml)). We provide a list of patterns in the `rules.yml` file. In a Python terminal :
 
   
 
@@ -133,7 +133,7 @@ c.add_rules_from_files('credentialdigger/resources/rules.yml')
 
 ## Usage
 
-To instanciate a client connected to the database :
+To instantiate a client connected to the database :
 ```python
 from credentialdigger.cli import Client
 
