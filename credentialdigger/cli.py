@@ -615,6 +615,7 @@ class Client:
             logging.basicConfig(level=logging.DEBUG)
         else:
             logging.basicConfig(level=logging.INFO)
+            
         def analyze_discoveries(model_manager, discoveries, debug):
             """ Use a model to analyze a list of discoveries. """
             false_positives = set()
@@ -665,8 +666,7 @@ class Client:
 
         # Force complete scan
         if force:
-            if debug:
-                logging.debug(msg=('Force complete scan'))
+            logging.debug(msg=('Force complete scan'))
             from_commit = None
 
         # Prepare rules
@@ -678,13 +678,12 @@ class Client:
 
         # Call scanner
         s = scanner(rules)
-        if debug:
-            logging.debug(msg=('Scanning commits...'))
+        logging.debug(msg=('Scanning commits...'))
         latest_commit, these_discoveries = s.scan(repo_url,
                                                   since_commit=from_commit)
 
-        if debug:
-            logging.debug(msg=('Detected %s discoveries' % len(these_discoveries)))
+        
+        logging.debug(msg=('Detected %s discoveries' % len(these_discoveries)))
 
         # Update latest commit of the repo
         self.update_repo(repo_url, latest_commit)
@@ -757,8 +756,7 @@ class Client:
         # Yet, since the SnippetModel may be slow, run it only if we still have
         # discoveries to check
         if snippet_with_generator and len(discoveries_ids) == 0:
-            if debug:
-                logging.debug(msg=('No more discoveries to filter. Skip SnippetModel.'))
+            logging.debug(msg=('No more discoveries to filter. Skip SnippetModel.'))
             return list(discoveries_ids)
         if snippet_with_generator:
             # Generate extractor and run the model
@@ -823,8 +821,7 @@ class Client:
         for repo in g.get_user(username).get_repos():
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
-            if debug:
-                logging.debug(msg=('Scan %s' % repo.url))
+            logging.debug(msg=('Scan %s' % repo.url))
             missing_ids[repo_url] = self.scan(repo_url, category=category,
                                               models=models, exclude=exclude,
                                               scanner=GitScanner,
