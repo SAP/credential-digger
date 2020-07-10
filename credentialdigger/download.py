@@ -16,11 +16,14 @@ import os
 import importlib
 import sys
 import subprocess
+import logging
 from pathlib import Path
 
 _data_path = Path(importlib.import_module(
     'credentialdigger').__file__).parent / 'models_data'
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # ############################################################################
 # Methods adapted from
@@ -41,7 +44,7 @@ def download(model, *pip_args):
     dl = download_model(model, pip_args)
     if dl != 0:  # if download subprocess doesn't return 0, exit
         sys.exit(dl)
-    print('Download successful')
+    logger.info(msg=('Download successful'))
 
     # Create symlink because the model is installed via a shortcut like
     # 'path_model' (i.e., the name of the environment variable).
@@ -63,8 +66,8 @@ def download(model, *pip_args):
         # Dirty, but since spacy.download and the auto-linking is
         # mostly a convenience wrapper, it's best to show a success
         # message and loading instructions, even if linking fails.
-        print(
-            "Download successful but linking failed",
+        logger.error(
+            "%s\n%s","Download successful but linking failed",
             "Creating a shortcut link for %s didn't work (maybe you "
             "don't have admin permissions?)" % model
         )
@@ -91,7 +94,7 @@ def download_model(modelname, user_pip_args=None):
     """
     download_url = os.getenv(modelname)
     if not download_url:
-        print('Error: model missing. Abort operation.')
+        logger.critical('Error: model missing. Abort operation.')
         return -1
     pip_args = ['--no-cache-dir']
     if user_pip_args:
@@ -165,14 +168,14 @@ def link(origin, link_name, force=True, model_path=None):
     else:
         model_path = Path(origin) if model_path is None else Path(model_path)
     if not model_path.exists():
-        print("Can't locate model data. "
+        logger.error("Can't locate model data. "
               "The data should be located in %s" % str(model_path))
 
     data_path = get_data_path()
 
     if not data_path or not data_path.exists():
         creddig_loc = Path(__file__).parent.parent
-        print(
+        logger.error(
             "Can't find the credentialdigger models data path to create model "
             "symlink. Make sure a directory `/models_data` exists within your "
             "credentialdigger installation and try again. The data directory "
@@ -182,7 +185,7 @@ def link(origin, link_name, force=True, model_path=None):
     link_path = get_data_path() / link_name
 
     if link_path.is_symlink() and not force:
-        print(
+        logger.warning(
             "Link %s already exists" % link_name,
             "To overwrite an existing link, use the --force flag"
         )
@@ -192,7 +195,7 @@ def link(origin, link_name, force=True, model_path=None):
         link_path.unlink()
     elif link_path.exists():  # does it exist otherwise?
         # NB: Check this last because valid symlinks also "exist".
-        print(
+        logger.warning(
             "Can't overwrite symlink %s" % link_name,
             "This can happen if your data directory contains a directory or "
             "file of the same name."
@@ -204,17 +207,17 @@ def link(origin, link_name, force=True, model_path=None):
         link_path.symlink_to(model_path)
     except:  # noqa: E722
         # This is quite dirty, but just making sure other errors are caught.
-        print(
+        logger.error(
             "Couldn't link model to %s" % link_name,
             "Creating a symlink in `credentialdigger/models_data` failed. "
             "Make sure you have the required permissions and try re-running "
             "the command as admin, or use a virtualenv. "
             "You can still create the symlink manually.",
         )
-        print(details)
+        logger.error(msg=details)
         raise
-    print("Linking successful", details)
-    print("You can now use the model from credentialdigger.")
+    logger.info("Linking successful.\nDetails : %s", details)
+    logger.info("You can now use the model from credentialdigger.")
 
 
 # ############################################################################

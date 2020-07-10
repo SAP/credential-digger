@@ -1,8 +1,11 @@
+import logging
 import random
 import json
 import pkg_resources
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 OPTIONS = {'function': [3, 4], 'method': [5, 6], 'object': [7, 8], 'type': [9]}
 
@@ -734,7 +737,7 @@ def generate_data(pattern, transformation_dict, multiplier=50):
                 values[max(0, i - 3): min(len(values) - 1, i + 3)])
         except FileNotFoundError:
             # Dataset not existing for this key
-            print('No dataset available for key %s. Skip this value.' % key)
+            logger.warning(msg=('No dataset available for key %s. Skip this value.' % key))
         except ValueError:
             # Value not found in dataset. Choose randomly in the whole dataset
             transformation_dict[key] = random.choice(values)
