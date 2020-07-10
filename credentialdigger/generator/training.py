@@ -149,7 +149,7 @@ def _generate_training_dataset(training_data, temp_ds_path):
         except IndexError:
             # Should never occur since all the patterns have at least one key
             # and at least one value
-            logger.error('%s\n%s\n%s\n','Text is missing either the key or the value.',
+            logger.error('%s\n%s\n%s','Text is missing either the key or the value.',
                   'Skip this pattern.','The row in which the error has been detected : ')
             logger.error(msg=row)
 
