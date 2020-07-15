@@ -11,4 +11,5 @@ ARG snippet_model
 
 COPY . /credential-digger-ui
 WORKDIR /credential-digger-ui/
-CMD [ "python", "./server.py" ]
+RUN chmod +x run.sh
+CMD [ "./run.sh" ]
