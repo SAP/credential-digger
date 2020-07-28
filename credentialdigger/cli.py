@@ -635,7 +635,8 @@ class Client:
             # For each false positive, update the db
             if debug:
                 logger.debug(
-                    f'Model {model_manager.model.__class__.__name__} classified {len(false_positives)} discoveries.')
+                    f'Model {model_manager.model.__class__.__name__} '
+                    f'classified {len(false_positives)} discoveries.')
                 logger.debug('Change state to these discoveries')
                 fp_id = iter(false_positives)
                 for i in tqdm(range(len(false_positives))):
@@ -729,7 +730,8 @@ class Client:
             # to True, do not generate the model (to save time and resources)
             if generate_snippet_extractor:
                 logger.debug(
-                    f'generate_snippet_extractor=True but SnippetModel is not in the chosen models. No extractor to generate.')
+                    f'generate_snippet_extractor=True but SnippetModel '
+                    'is not in the chosen models. No extractor to generate.')
 
         # For each of the new discovery ids, select it from the db and analyze
         # it. If it is classified as false positive, update the corresponding
@@ -737,7 +739,7 @@ class Client:
         for model in models:
             # Try to instantiate the model
             try:
-                mm=ModelManager(model)
+                mm = ModelManager(model)
             except ModuleNotFoundError:
                 logger.warning(f'Model {model} not found. Skip it.')
                 # Continue with another model (if any)
@@ -745,7 +747,7 @@ class Client:
 
             # Analyze discoveries with this model, and filter out false
             # positives
-            discoveries_ids=analyze_discoveries(mm,
+            discoveries_ids = analyze_discoveries(mm,
                                                   discoveries_ids,
                                                   debug)
 
@@ -765,11 +767,11 @@ class Client:
             try:
                 # Load SnippetModel with the generated extractor, instead
                 # of the default one (i.e., the pre-trained one)
-                mm=ModelManager('SnippetModel',
-                                  model_extractor = extractor_folder,
-                                  binary_extractor = extractor_name)
+                mm = ModelManager('SnippetModel',
+                                  model_extractor=extractor_folder,
+                                  binary_extractor=extractor_name)
 
-                discoveries_ids=analyze_discoveries(mm,
+                discoveries_ids = analyze_discoveries(mm,
                                                       discoveries_ids,
                                                       debug)
             except ModuleNotFoundError:
@@ -777,7 +779,7 @@ class Client:
 
         return list(discoveries_ids)
 
-    def scan_user(self, username, category = None, models = None, exclude = None,
+    def scan_user(self, username, category=None, models=None, exclude=None,
                   debug=False, generate_snippet_extractor=False):
         """ Scan all the repositories of a user on github.com.
 
