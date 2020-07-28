@@ -22,7 +22,7 @@ BLACKLISTED_EXTS = set(['bin', 'csv', 'jpg', 'md', 'pdf', 'png', 'rst', 'svg',
                         'txt', 'yml'])
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 
 class ExtractorGenerator:

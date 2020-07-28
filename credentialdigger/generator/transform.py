@@ -5,7 +5,7 @@ import pkg_resources
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 OPTIONS = {'function': [3, 4], 'method': [5, 6], 'object': [7, 8], 'type': [9]}
 
