@@ -69,7 +69,8 @@ def download(model, *pip_args):
         # message and loading instructions, even if linking fails.
         logger.error(
             f'Download successful but linking failed\n'
-            f'Creating a shortcut link for {model} didn\'t work (maybe you don\'t have admin permissions?)'
+            f'Creating a shortcut link for {model} did not work '
+            '(maybe you do not have admin permissions?)'
         )
     # If a model is downloaded and then loaded within the same process, our
     # is_package check currently fails, because pkg_resources.working_set
@@ -176,7 +177,8 @@ def link(origin, link_name, force=True, model_path=None):
     if not data_path or not data_path.exists():
         creddig_loc = Path(__file__).parent.parent
         logger.error(
-            'Can not find the credentialdigger models data path to create model symlink.\n'
+            'Can not find the credentialdigger models data path'
+            ' to create model symlink.\n'
             'Make sure a directory `/models_data` exists within your '
             'credentialdigger installation and try again.\n'
             f'The data directory should be located here: {str(creddig_loc)}'
