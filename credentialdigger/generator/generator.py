@@ -24,6 +24,7 @@ BLACKLISTED_EXTS = set(['bin', 'csv', 'jpg', 'md', 'pdf', 'png', 'rst', 'svg',
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 class ExtractorGenerator:
 
     def generate_leak_snippets(self, repo_url, num_extracts=30):
@@ -49,7 +50,7 @@ class ExtractorGenerator:
             return self.train_model(corpus, repo_url)
         except FileExistsError:
             logger.warning('Model for this developer already created. '
-                'Do not generate a new one.')
+                           'Do not generate a new one.')
             # Return the existing one
             return self._search_model_extractor(repo_url)
 
