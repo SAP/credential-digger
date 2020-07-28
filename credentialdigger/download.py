@@ -68,7 +68,7 @@ def download(model, *pip_args):
         # mostly a convenience wrapper, it's best to show a success
         # message and loading instructions, even if linking fails.
         logger.error(
-            f'Download successful but linking failed\n'
+            'Download successful but linking failed\n'
             f'Creating a shortcut link for {model} did not work '
             '(maybe you do not have admin permissions?)'
         )
@@ -198,7 +198,7 @@ def link(origin, link_name, force=True, model_path=None):
     elif link_path.exists():  # does it exist otherwise?
         # NB: Check this last because valid symlinks also "exist".
         logger.warning(
-            'Can not overwrite symlink {link_name}\n'
+            f'Can not overwrite symlink {link_name}\n'
             'This can happen if your data directory contains a directory '
             'or file of the same name.'
         )
