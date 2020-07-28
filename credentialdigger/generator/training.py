@@ -9,7 +9,7 @@ import fasttext
 import numpy as np
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 
 def _create_model_folder(url):
