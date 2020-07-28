@@ -24,7 +24,7 @@ _data_path = Path(importlib.import_module(
     'credentialdigger').__file__).parent / 'models_data'
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 # ############################################################################
 # Methods adapted from
