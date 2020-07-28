@@ -730,7 +730,7 @@ class Client:
             # to True, do not generate the model (to save time and resources)
             if generate_snippet_extractor:
                 logger.debug(
-                    f'generate_snippet_extractor=True but SnippetModel '
+                    'generate_snippet_extractor=True but SnippetModel '
                     'is not in the chosen models. No extractor to generate.')
 
         # For each of the new discovery ids, select it from the db and analyze
