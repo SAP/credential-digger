@@ -17,4 +17,5 @@ if __name__ == "__main__":
         plac.call(commands[command], sys.argv[1:])
     else:
         logging.error(
-            f'Unknown command: {command}\nAvailable commands: {available_comamnds}')
+            f'Unknown command: {command}\n'
+            f'Available commands: {available_comamnds}')
