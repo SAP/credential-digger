@@ -11,7 +11,7 @@ from .models.model_manager import ModelManager
 from .scanners.git_scanner import GitScanner
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_commit')
 Discovery = namedtuple('Discovery',
@@ -681,7 +681,7 @@ class Client:
         latest_commit, these_discoveries = s.scan(repo_url,
                                                   since_commit=from_commit)
 
-        logger.debug(f'Detected {len(these_discoveries)} discoveries.')
+        logger.info(f'Detected {len(these_discoveries)} discoveries.')
 
         # Update latest commit of the repo
         self.update_repo(repo_url, latest_commit)
