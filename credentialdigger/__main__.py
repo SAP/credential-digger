@@ -10,7 +10,7 @@ if __name__ == "__main__":
     }
     available_comamnds = f'{", ".join(commands)}'
     if len(sys.argv) == 1:
-        logging.info(f'Available commands : {available_comamnds}')
+        logging.info(f'Available commands: {available_comamnds}')
     command = sys.argv.pop(1)
     sys.argv[0] = f'credentialdigger {command}'
     if command in commands:
