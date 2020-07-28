@@ -737,7 +737,7 @@ def generate_data(pattern, transformation_dict, multiplier=50):
                 values[max(0, i - 3): min(len(values) - 1, i + 3)])
         except FileNotFoundError:
             # Dataset not existing for this key
-            logger.warning(msg=('No dataset available for key %s. Skip this value.' % key))
+            logger.warning(f'No dataset available for key {key}. Skip this value.')
         except ValueError:
             # Value not found in dataset. Choose randomly in the whole dataset
             transformation_dict[key] = random.choice(values)
