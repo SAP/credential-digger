@@ -1,15 +1,15 @@
-import logging
 import json
+import logging
 import random
 import re
 import pkg_resources
 import shutil
+import string_utils
+import pandas as pd
 import tempfile
+
 from collections import Counter
 from pathlib import Path
-
-import pandas as pd
-import string_utils
 from git import Repo as GitRepo
 from tqdm import tqdm
 
@@ -48,8 +48,7 @@ class ExtractorGenerator:
         try:
             return self.train_model(corpus, repo_url)
         except FileExistsError:
-            logger.warning('%s\n%s',
-                'Model for this developer already created.',
+            logger.warning('Model for this developer already created. '
                 'Do not generate a new one.')
             # Return the existing one
             return self._search_model_extractor(repo_url)
