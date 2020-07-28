@@ -214,7 +214,7 @@ def link(origin, link_name, force=True, model_path=None):
             'the command as admin, or use a virtualenv. '
             'You can still create the symlink manually.',
         )
-        logger.error(msg=details)
+        logger.error(details)
         raise
     logger.info(f'Linking successful.\nDetails : {details}')
     logger.info('You can now use the model from credentialdigger.')
