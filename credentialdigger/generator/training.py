@@ -206,7 +206,7 @@ def _train_model(input_ds, valid_ds, learning_rate=0.1, epoch_model=50,
                                       dim=word_vector_dim,
                                       ws=context_window,
                                       loss='ova')
-    logger.info(f'Evaluation of the model : {model.test(valid_ds)}')
+    logger.info(f'Evaluation of the model: {model.test(valid_ds)}')
     return model
 
 
