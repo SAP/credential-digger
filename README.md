@@ -1,4 +1,4 @@
-![Logo](github_assets/Logo-CD-Mint_48.png)
+![Logo](https://raw.githubusercontent.com/SAP/credential-digger/master/github_assets/Logo-CD-Mint_48.png)
 
 # Credential Digger
 
