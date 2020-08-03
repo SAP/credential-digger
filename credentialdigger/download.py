@@ -12,15 +12,19 @@ posteriori in order to provide additional features.
 In our use case these models are used to filter out false positive discoveries.
 """
 
-import os
 import importlib
+import logging
+import os
 import sys
 import subprocess
+
 from pathlib import Path
 
 _data_path = Path(importlib.import_module(
     'credentialdigger').__file__).parent / 'models_data'
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 # ############################################################################
 # Methods adapted from
@@ -41,7 +45,7 @@ def download(model, *pip_args):
     dl = download_model(model, pip_args)
     if dl != 0:  # if download subprocess doesn't return 0, exit
         sys.exit(dl)
-    print('Download successful')
+    logger.info('Download successful')
 
     # Create symlink because the model is installed via a shortcut like
     # 'path_model' (i.e., the name of the environment variable).
@@ -63,10 +67,10 @@ def download(model, *pip_args):
         # Dirty, but since spacy.download and the auto-linking is
         # mostly a convenience wrapper, it's best to show a success
         # message and loading instructions, even if linking fails.
-        print(
-            "Download successful but linking failed",
-            "Creating a shortcut link for %s didn't work (maybe you "
-            "don't have admin permissions?)" % model
+        logger.error(
+            'Download successful but linking failed\n'
+            f'Creating a shortcut link for {model} did not work '
+            '(maybe you do not have admin permissions?)'
         )
     # If a model is downloaded and then loaded within the same process, our
     # is_package check currently fails, because pkg_resources.working_set
@@ -91,7 +95,7 @@ def download_model(modelname, user_pip_args=None):
     """
     download_url = os.getenv(modelname)
     if not download_url:
-        print('Error: model missing. Abort operation.')
+        logger.critical('Error: model missing. Abort operation.')
         return -1
     pip_args = ['--no-cache-dir']
     if user_pip_args:
@@ -165,26 +169,27 @@ def link(origin, link_name, force=True, model_path=None):
     else:
         model_path = Path(origin) if model_path is None else Path(model_path)
     if not model_path.exists():
-        print("Can't locate model data. "
-              "The data should be located in %s" % str(model_path))
+        logger.error('Could not locate model data.\n'
+                     f'The data should be located in {str(model_path)}')
 
     data_path = get_data_path()
 
     if not data_path or not data_path.exists():
         creddig_loc = Path(__file__).parent.parent
-        print(
-            "Can't find the credentialdigger models data path to create model "
-            "symlink. Make sure a directory `/models_data` exists within your "
-            "credentialdigger installation and try again. The data directory "
-            "should be located here: %s" % str(creddig_loc)
+        logger.error(
+            'Can not find the credentialdigger models data path'
+            ' to create model symlink.\n'
+            'Make sure a directory `/models_data` exists within your '
+            'credentialdigger installation and try again.\n'
+            f'The data directory should be located here: {str(creddig_loc)}'
         )
 
     link_path = get_data_path() / link_name
 
     if link_path.is_symlink() and not force:
-        print(
-            "Link %s already exists" % link_name,
-            "To overwrite an existing link, use the --force flag"
+        logger.warning(
+            f'Link {link_name} already exists\n'
+            'To overwrite an existing link, use the --force flag'
         )
     elif link_path.is_symlink():  # does a symlink exist?
         # NB: It's important to check for is_symlink here and not for exists,
@@ -192,10 +197,10 @@ def link(origin, link_name, force=True, model_path=None):
         link_path.unlink()
     elif link_path.exists():  # does it exist otherwise?
         # NB: Check this last because valid symlinks also "exist".
-        print(
-            "Can't overwrite symlink %s" % link_name,
-            "This can happen if your data directory contains a directory or "
-            "file of the same name."
+        logger.warning(
+            f'Can not overwrite symlink {link_name}\n'
+            'This can happen if your data directory contains a directory '
+            'or file of the same name.'
         )
 
     details = "%s --> %s" % (str(model_path), str(link_path))
@@ -204,17 +209,17 @@ def link(origin, link_name, force=True, model_path=None):
         link_path.symlink_to(model_path)
     except:  # noqa: E722
         # This is quite dirty, but just making sure other errors are caught.
-        print(
-            "Couldn't link model to %s" % link_name,
-            "Creating a symlink in `credentialdigger/models_data` failed. "
-            "Make sure you have the required permissions and try re-running "
-            "the command as admin, or use a virtualenv. "
-            "You can still create the symlink manually.",
+        logger.error(
+            f'Could not link model to {link_name}'
+            'Creating a symlink in `credentialdigger/models_data` failed. '
+            'Make sure you have the required permissions and try re-running '
+            'the command as admin, or use a virtualenv. '
+            'You can still create the symlink manually.',
         )
-        print(details)
+        logger.error(details)
         raise
-    print("Linking successful", details)
-    print("You can now use the model from credentialdigger.")
+    logger.info(f'Linking successful.\nDetails : {details}')
+    logger.info('You can now use the model from credentialdigger.')
 
 
 # ############################################################################

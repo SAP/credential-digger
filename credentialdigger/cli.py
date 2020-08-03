@@ -1,3 +1,4 @@
+import logging
 import yaml
 
 from collections import namedtuple
@@ -9,7 +10,8 @@ from .generator import ExtractorGenerator
 from .models.model_manager import ModelManager
 from .scanners.git_scanner import GitScanner
 
-
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_commit')
 Discovery = namedtuple('Discovery',
@@ -576,7 +578,7 @@ class Client:
             return False
 
     def scan(self, repo_url, category=None, scanner=GitScanner,
-             models=None, exclude=None, force=False, verbose=False,
+             models=None, exclude=None, force=False, debug=False,
              generate_snippet_extractor=False):
         """ Launch the scan of a repository.
 
@@ -596,7 +598,7 @@ class Client:
         force: bool, default `False`
             Force a complete re-scan of the repository, in case it has already
             been scanned previously
-        verbose: bool, default `False`
+        debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
         generate_snippet_extractor: bool, default `False`
@@ -610,14 +612,17 @@ class Client:
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        def analyze_discoveries(model_manager, discoveries, verbose):
+        if debug is True:
+            logger.setLevel(level=logging.DEBUG)
+
+        def analyze_discoveries(model_manager, discoveries, debug):
             """ Use a model to analyze a list of discoveries. """
             false_positives = set()
 
             # Analyze all the discoveries ids with the current model
-            if verbose:
-                print('Analyzing discoveries with model %s' %
-                      model_manager.model)
+            if debug:
+                logger.debug(
+                    f'Analyzing discoveries with model {model_manager.model}')
                 for i in tqdm(range(len(discoveries))):
                     did = discoveries[i]
                     if model_manager.launch_model(self.get_discovery(did)):
@@ -628,11 +633,11 @@ class Client:
                         false_positives.add(did)
 
             # For each false positive, update the db
-            if verbose:
-                print('Model %s classified %s discoveries' % (
-                    model_manager.model.__class__.__name__,
-                    len(false_positives)))
-                print('Change state to these discoveries')
+            if debug:
+                logger.debug(
+                    f'Model {model_manager.model.__class__.__name__} '
+                    f'classified {len(false_positives)} discoveries.')
+                logger.debug('Change state to these discoveries')
                 fp_id = iter(false_positives)
                 for i in tqdm(range(len(false_positives))):
                     self.update_discovery(next(fp_id), 'false_positive')
@@ -649,7 +654,7 @@ class Client:
             models = []
         if exclude is None:
             exclude = []
-            
+
         # Try to add the repository to the db
         if self.add_repo(repo_url):
             # The repository is new, scan from the first commit
@@ -660,8 +665,7 @@ class Client:
 
         # Force complete scan
         if force:
-            if verbose:
-                print('Force complete scan')
+            logger.debug('Force complete scan')
             from_commit = None
 
         # Prepare rules
@@ -673,20 +677,18 @@ class Client:
 
         # Call scanner
         s = scanner(rules)
-        if verbose:
-            print('Scanning commits...')
+        logger.debug('Scanning commits...')
         latest_commit, these_discoveries = s.scan(repo_url,
                                                   since_commit=from_commit)
 
-        if verbose:
-            print('Detected %s discoveries' % len(these_discoveries))
+        logger.info(f'Detected {len(these_discoveries)} discoveries.')
 
         # Update latest commit of the repo
         self.update_repo(repo_url, latest_commit)
 
         # Insert the discoveries into the db
         discoveries_ids = list()
-        if verbose:
+        if debug:
             for i in tqdm(range(len(these_discoveries))):
                 curr_d = these_discoveries[i]
                 new_id = self.add_discovery(curr_d['file_name'],
@@ -726,10 +728,10 @@ class Client:
         else:
             # If the SnippetModel is not chosen, but the generator flag is set
             # to True, do not generate the model (to save time and resources)
-            if generate_snippet_extractor and verbose:
-                print('generate_snippet_extractor=True but SnippetModel is',
-                      'not in the chosen models.',
-                      'Do not generate the extractor.')
+            if generate_snippet_extractor:
+                logger.debug(
+                    'generate_snippet_extractor=True but SnippetModel '
+                    'is not in the chosen models. No extractor to generate.')
 
         # For each of the new discovery ids, select it from the db and analyze
         # it. If it is classified as false positive, update the corresponding
@@ -739,7 +741,7 @@ class Client:
             try:
                 mm = ModelManager(model)
             except ModuleNotFoundError:
-                print('Model %s not found. Skip it.' % model)
+                logger.warning(f'Model {model} not found. Skip it.')
                 # Continue with another model (if any)
                 continue
 
@@ -747,19 +749,19 @@ class Client:
             # positives
             discoveries_ids = analyze_discoveries(mm,
                                                   discoveries_ids,
-                                                  verbose)
+                                                  debug)
 
         # Check if we have to run the snippet model, and, in this case, if it
         # will use the pre-trained extractor or the generated one
         # Yet, since the SnippetModel may be slow, run it only if we still have
         # discoveries to check
         if snippet_with_generator and len(discoveries_ids) == 0:
-            if verbose:
-                print('No more discoveries to filter. Skip SnippetModel.')
+            logger.debug('No more discoveries to filter. Skip SnippetModel.')
             return list(discoveries_ids)
         if snippet_with_generator:
             # Generate extractor and run the model
-            print('Generate snippet model (it may take some time...)')
+            logger.info(
+                'Generating snippet model (it may take some time...)')
             extractor_folder, extractor_name = \
                 self._generate_snippet_extractor(repo_url)
             try:
@@ -771,14 +773,14 @@ class Client:
 
                 discoveries_ids = analyze_discoveries(mm,
                                                       discoveries_ids,
-                                                      verbose)
+                                                      debug)
             except ModuleNotFoundError:
-                print('SnippetModel not found. Skip it.')
+                logger.warning('SnippetModel not found. Skip it.')
 
         return list(discoveries_ids)
 
     def scan_user(self, username, category=None, models=None, exclude=None,
-                  verbose=False, generate_snippet_extractor=False):
+                  debug=False, generate_snippet_extractor=False):
         """ Scan all the repositories of a user on github.com.
 
         Find all the repositories of a user, and scan
@@ -796,7 +798,7 @@ class Client:
             A list of models for the ML false positives detection
         exclude: list, optional
             A list of rules to exclude
-        verbose: bool, default `False`
+        debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
         generate_snippet_extractor: bool, default `False`
@@ -820,16 +822,15 @@ class Client:
         for repo in g.get_user(username).get_repos():
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
-            if verbose:
-                print('Scan %s' % repo.url)
+            logger.debug(f'Scanning {repo.url}')
             missing_ids[repo_url] = self.scan(repo_url, category=category,
                                               models=models, exclude=exclude,
                                               scanner=GitScanner,
-                                              verbose=verbose)
+                                              debug=debug)
         return missing_ids
 
     def scan_wiki(self, repo_url, category=None, scanner=GitScanner,
-                  models=None, exclude=None, verbose=False):
+                  models=None, exclude=None, debug=False):
         """ Scan the wiki of a repository.
 
         This method simply generate the url of a wiki from the url of its repo,
@@ -848,7 +849,7 @@ class Client:
             A list of models for the ML false positives detection
         exclude: list, optional
             A list of rules to exclude
-        verbose: bool, default `False`
+        debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
 
@@ -865,7 +866,7 @@ class Client:
         if exclude is None:
             exclude = []
         return self.scan(repo_url + '.wiki.git', category, scanner, models,
-                         exclude, verbose)
+                         exclude, debug)
 
     def _generate_snippet_extractor(self, repo_url):
         """ Generate the snippet extractor model adapted to the stylometry of
