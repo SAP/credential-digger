@@ -1,7 +1,7 @@
 import logging
 import yaml
-
 from collections import namedtuple
+
 from github import Github
 from psycopg2 import connect, Error
 from tqdm import tqdm
@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_commit')
-Discovery = namedtuple('Discovery',
-                       'id file_name commit_id snippet repo_url rule_id state \
-                       timestamp')
+Discovery = namedtuple(
+    'Discovery',
+    'id file_name commit_id snippet repo_url rule_id state timestamp')
 
 
 class Client:

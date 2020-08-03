@@ -1,5 +1,5 @@
-import logging
 import json
+import logging
 import pkg_resources
 import random
 import shutil

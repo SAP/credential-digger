@@ -2,7 +2,6 @@ import json
 import logging
 import random
 import pkg_resources
-
 from pathlib import Path
 
 logger = logging.getLogger(__name__)

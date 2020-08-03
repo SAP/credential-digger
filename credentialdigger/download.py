@@ -17,7 +17,6 @@ import logging
 import os
 import sys
 import subprocess
-
 from pathlib import Path
 
 _data_path = Path(importlib.import_module(

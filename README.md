@@ -151,8 +151,8 @@ c = Client(dbname='MYDB',
 
 ```python
 new_discoveries = c.scan(repo_url='https://github.com/user/repo',
-                          models=['PathModel', 'SnippetModel'],
-                          verbose=True)
+                         models=['PathModel', 'SnippetModel'],
+                         verbose=True)
 ```
 
 Please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for further information on the arguments.

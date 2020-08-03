@@ -1,5 +1,6 @@
-import numpy as np
 from collections import Counter
+
+import numpy as np
 
 KEYWORDS = ['do', 'else-if', 'if', 'else', 'switch', 'for',
             'while', 'func', 'return', 'async']
