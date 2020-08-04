@@ -11,7 +11,7 @@ import os
 
 load_dotenv()
 
-app = Flask('__name__', static_folder='res')
+app = Flask('__name__', static_folder='ui/res', template_folder='ui/templates')
 app.config['UPLOAD_FOLDER'] = './backend'
 app.config['DEBUG'] = True  # Remove this line in production
 c = Client(dbname=os.getenv('POSTGRES_DB'),
