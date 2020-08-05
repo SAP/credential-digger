@@ -10,5 +10,6 @@ ARG path_model
 ARG snippet_model
 
 COPY . /credential-digger-ui
-RUN chmod +x /credential-digger-ui/run.sh
-CMD [ "./credential-digger-ui/run.sh" ]
+WORKDIR /credential-digger-ui/
+RUN chmod +x run.sh
+CMD [ "./run.sh" ]
