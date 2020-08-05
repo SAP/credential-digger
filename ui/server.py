@@ -11,8 +11,10 @@ import os
 
 load_dotenv()
 
+MODELS = ['SnippetModel', 'PathModel']
+
 app = Flask('__name__', static_folder='ui/res', template_folder='ui/templates')
-app.config['UPLOAD_FOLDER'] = './backend'
+app.config['UPLOAD_FOLDER'] = './ui/backend'
 app.config['DEBUG'] = True  # Remove this line in production
 c = Client(dbname=os.getenv('POSTGRES_DB'),
            dbuser=os.getenv('POSTGRES_USER'),
@@ -111,10 +113,10 @@ def scan_repo():
     ruleid = request.form.getlist('rid')
     for rule in ruleid:
         if rule == 'all':
-            c.scan(repolink)
+            c.scan(repolink, models=MODELS)
             break
         else:
-            c.scan(repolink, category=rule)
+            c.scan(repolink, category=rule, models=MODELS)
             break
     return redirect('/')
 
