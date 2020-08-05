@@ -11,7 +11,7 @@ import os
 
 load_dotenv()
 
-MODELS = ['SnippetModel', 'PathModel']
+MODELS = []
 
 app = Flask('__name__', static_folder='ui/res', template_folder='ui/templates')
 app.config['UPLOAD_FOLDER'] = './ui/backend'
