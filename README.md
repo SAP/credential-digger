@@ -1,7 +1,7 @@
 ![Logo](github_assets/Logo-CD-Mint_48.png)
 
 
-# Credential Digger
+# Credential Digger - Supporting Keras Model
 
 Credential Digger is a Github scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc).
 Credential Digger has a clear advantage compared to the other Github scanners in terms of False Positive reduction in the scan reports. 
@@ -59,24 +59,12 @@ The user interface can be used to easily perform scans and flag the discoveries.
    vim .env  # Insert real credentials
    ```
 
-2. Run the db and the ui using docker-compose:
-   ```bash
-   sudo docker-compose up --build
-   ```
-   Consider not to expose the db port in production.
-
-The ui is available at `http://localhost:5000/`
-
-
-## Build from scratch
-
-Execute step 1. as above
-
 2. Run the db using docker-compose:
    ```bash
    sudo docker-compose up --build postgres
    ```
-
+   Consider not to expose the db port in production.
+   
 3. Install the dependencies for the client.
    ```bash
    sudo apt install libhyperscan-dev libpq-dev
@@ -87,18 +75,18 @@ Execute step 1. as above
    pip install -r requirements.txt
    ```
 
-5. Install the client
-   ```bash
-   python setup.py install
-   ```
-
-### Pypi
-
-A package is available on pypi. Install the client:
+5. Set which models you want to use in `ui/server.py`
 ```bash
-pip install credentialdigger
+    MODELS = ['SnippetModel', 'PathModel']
 ```
-Please note that the database must be run separately.
+6. Run the ui:
+```bash
+    python3 -m ui.server
+```
+
+The ui is available at `http://localhost:5000/`
+
+__Warning: To use the keras models, make sure the credentialdigger pypi package is NOT installed__
 
 
 ### Run the db on a different machine
@@ -107,28 +95,32 @@ In case the db and the client are run on different machines, then clone this
 repository on both of them.
 
 Then, execute the steps 1. and 2. as described in the installation section
-above on the machine running the db, and execute the steps described in the
-"build from scratch" section on the machine running the client (or install the
-client with `pip`).
+above on the machine running the db, and execute the remaining steps on the machine 
+running the client.
 
 In case the db and the client/ui run on separate machines, the port of the db
 must be exposed.
 
-In case the UI must be run on a dedicated machine, update the `.env` as needed,
-and run:
-```bash
-sudo docker-compose up --build credential_digger
-```
-
-
 ## Use machine learning models
 
-Currently no pretrained keras models are provided. If available, the models and their respective tokenizers are expected to be found in the models_data directory, in their respective subdirectories. Note that `snippet_extractor` is still a fasttext model.
+Currently no pretrained keras models are provided. 
 
-The current server is not executing any model during the scan of a
-repository. To enable a model, it must be listed as an argument in the `scan`
-function (as would be done in the client).in the `ui/server.py` file.
+If available, the models and their respective tokenizers are expected to be found in the 
+`models_data` directory, in their respective subdirectories. Model hyperparameters can be found in the `models/keras_support` folder .
 
+Note that `snippet_extractor` is still a fasttext model.
+
+
+
+### File Path Model
+The File Path Model classifies a discovery as false positive according to its file
+path when it indicates that the code portion is used for test or example. A pre-trained Path Model [is available here](https://github.com/SAP/credential-digger/releases/download/v1.0.0/path_model-1.0.0.tar.gz).
+
+### Code Snippet Model
+
+The code Snippet model identifies the password based authentication in a code and differeciate between real and fake passwords.
+
+WARNING: This Model is pre-trained with synthetic data in order to protect privacy. It will help to reduce the False Positives related to password recongnition but with a lower precision compared to a Model pre-trained with real data.
 
 ## Usage (client)
 
