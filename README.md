@@ -108,13 +108,28 @@ Currently no pretrained keras models are provided.
 If available, the models and their respective tokenizers are expected to be found in the 
 `models_data` directory, in their respective subdirectories. Model hyperparameters can be found in the `models/keras_support` folder .
 
+Here is a typical directory example for keras models:
+
+```bash
+models_data
+│   ├── __init__.py
+│   ├── path_model
+│   │   ├── model_path.h5
+│   │   └── tokenizer.pickle
+│   └── snippet_model
+│       ├── model_classifier.h5
+│       ├── model_extractor.bin
+│       └── tokenizer.pickle
+
+```
+
 Note that `snippet_extractor` is still a fasttext model.
 
 
 
 ### File Path Model
 The File Path Model classifies a discovery as false positive according to its file
-path when it indicates that the code portion is used for test or example. A pre-trained Path Model [is available here](https://github.com/SAP/credential-digger/releases/download/v1.0.0/path_model-1.0.0.tar.gz).
+path when it indicates that the code portion is used for test or example.
 
 ### Code Snippet Model
 
