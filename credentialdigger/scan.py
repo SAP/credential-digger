@@ -1,6 +1,6 @@
 """
 The 'scan' module enables us to scan a git repository on the fly from the terminal.
-NOTE: Please make sure that the environmental variables have been exported.
+NOTE: Please make sure that the environment variables are exported.
 
 This command takes multiple arguments :
   repo_url              <Required> The URL of the git repository to be
