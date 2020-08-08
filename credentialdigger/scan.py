@@ -60,7 +60,6 @@ parser.add_argument(
     help='<Optional> If specified, scan the repo using all the \
                     rules of this category, otherwise use all the \
                     rules in the db')
-                    
 """
 This argument is deactivated since the scanner is 
 expecting a class, not a string.
