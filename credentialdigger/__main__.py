@@ -9,7 +9,7 @@ if __name__ == "__main__":
     available_comamnds = f'{", ".join(commands)}'
     if len(sys.argv) == 1:
         logging.error(
-            f'You have not called any command.\n\
+            f'You did not call any command.\n\
             Available commands: {available_comamnds}'
         )
         exit()
