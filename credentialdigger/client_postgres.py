@@ -45,10 +45,10 @@ class PgClient(Client):
                             port=dbport), 
                             Error)
     
-    def query_check(self, query, kwargs = None):
+    def query_check(self, query, args = None):
         cursor = self.db.cursor()
         try:
-            cursor.execute(query, kwargs)
+            cursor.execute(query, args)
             self.db.commit()
             return bool(cursor.fetchone()[0])
         except (TypeError, IndexError):
@@ -59,10 +59,10 @@ class PgClient(Client):
         except self.Error:
             self.db.rollback()
 
-    def query_id(self, query, kwargs = None):
+    def query_id(self, query, args = None):
         cursor = self.db.cursor()
         try:
-            cursor.execute(query, kwargs)
+            cursor.execute(query, args)
             self.db.commit()
             return int(cursor.fetchone()[0])
         except (TypeError, IndexError):

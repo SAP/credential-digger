@@ -21,10 +21,10 @@ class Interface(ABC):
         self.db = db
         self.Error = error
 
-    def query(self, query, kwargs = None):
+    def query(self, query, args = None):
         cursor = self.db.cursor()
         try:
-            cursor.execute(query, [kwargs])
+            cursor.execute(query, [args])
             self.db.commit()
         except (TypeError, IndexError):
             """ A TypeError is raised if any of the required arguments is
@@ -36,17 +36,17 @@ class Interface(ABC):
             return False
 
     @abstractmethod
-    def query_check(self, query, kwargs = None):
+    def query_check(self, query, args = None):
         return
 
     @abstractmethod
-    def query_id(self, query, kwargs = None):
+    def query_id(self, query, args = None):
         return
 
-    def query_as(self, query, cast, kwargs = None):
+    def query_as(self, query, cast, args = None):
         cursor = self.db.cursor()
         try:
-            cursor.execute(query, kwargs)
+            cursor.execute(query, args)
             return dict(cast(*cursor.fetchone())._asdict())
         except (TypeError, IndexError):
             """ A TypeError is raised if any of the required arguments is
@@ -86,7 +86,7 @@ class Client(Interface):
         """
         return self.query_id(
             query = query,
-            kwargs = (file_name, commit_id, snippet, repo_url,
+            args = (file_name, commit_id, snippet, repo_url,
                                    rule_id, state)
         )
 
@@ -106,7 +106,7 @@ class Client(Interface):
         bool
             `True` if the insert was successfull, `False` otherwise
         """
-        return self.query(query = query, kwargs = (repo_url))
+        return self.query(query = query, args = (repo_url))
 
     def add_rule(self, query, regex, category, description=''):
         """ Add a new rule.
@@ -125,7 +125,7 @@ class Client(Interface):
         int
             The id of the new rule (-1 in case of errors)
         """
-        return self.query_id(query = query, kwargs = (regex, category, description))
+        return self.query_id(query = query, args = (regex, category, description))
 
     def delete_rule(self, query, ruleid):
         """Delete a rule from database
@@ -172,7 +172,7 @@ class Client(Interface):
         """
         return self.query_check(
             query = query,
-            kwargs = (repo_url)
+            args = (repo_url)
         )
 
     def add_rules_from_files(self, filename):
@@ -319,7 +319,7 @@ class Client(Interface):
         return self.query_as(
             query = query, 
             cast = Rule,
-            kwargs = (rule_id)
+            args = (rule_id)
         )
 
     def get_discoveries(self, query, repo_url):
@@ -369,7 +369,7 @@ class Client(Interface):
         return self.query_as(
             query = query,
             cast = Discovery,
-            kwargs = (discovery_id)
+            args = (discovery_id)
         )
 
     def get_discovery_group(self, query, state_query, repo_url, state=None):
@@ -427,7 +427,7 @@ class Client(Interface):
         """
         return self.query_check(
             query = query,
-            kwargs = (last_commit, url)
+            args = (last_commit, url)
         )
 
     def update_discovery(self, query, discovery_id, new_state):
@@ -451,7 +451,7 @@ class Client(Interface):
 
         return self.query_check(
             query = query,
-            kwargs = (new_state, discovery_id)
+            args = (new_state, discovery_id)
         )
 
     def update_discovery_group(self, query, repo_url, file_name, snippet, new_state):
@@ -481,7 +481,7 @@ class Client(Interface):
             return False
         return self.query_check(
             query = query,
-            kwargs = (new_state, repo_url, file_name, snippet)
+            args = (new_state, repo_url, file_name, snippet)
         )
 
     def scan(self, repo_url, category=None, scanner=GitScanner,
