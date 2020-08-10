@@ -16,7 +16,7 @@ Discovery = namedtuple('Discovery',
                        timestamp')
 
 
-class Interface():
+class Interface(ABC):
     def __init__(self, db, error):
         self.db = db
         self.Error = error
@@ -35,11 +35,13 @@ class Interface():
             self.db.rollback()
             return False
 
+    @abstractmethod
     def query_check(self, query, kwargs = None):
-        pass
+        return
 
+    @abstractmethod
     def query_id(self, query, kwargs = None):
-        pass
+        return
 
     def query_as(self, query, cast, kwargs = None):
         cursor = self.db.cursor()
