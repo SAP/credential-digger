@@ -11,6 +11,7 @@ from .scanners.git_scanner import GitScanner
 
 from .client import Client, Rule, Repo, Discovery
 
+
 class SqliteClient(Client):
     def __init__(self, path):
         """ Create/connects to a sqlite database.
@@ -23,7 +24,7 @@ class SqliteClient(Client):
         path: str
             Database file (':memory:' is in RAM memory)
         """
-        super().__init__(connect(database = path), Error)
+        super().__init__(connect(database=path), Error)
         # Create database if not exist
         cursor = self.db.cursor()
         cursor.executescript("""
@@ -56,8 +57,8 @@ class SqliteClient(Client):
             );
         """)
         cursor.close()
-    
-    def query_check(self, query, args = None):
+
+    def query_check(self, query, args=None):
         cursor = self.db.cursor()
         try:
             cursor.execute(query, args)
@@ -72,7 +73,7 @@ class SqliteClient(Client):
             self.db.rollback()
         cursor.close()
 
-    def query_id(self, query, args = None):
+    def query_id(self, query, args=None):
         cursor = self.db.cursor()
         try:
             cursor.execute(query, args)
@@ -113,13 +114,13 @@ class SqliteClient(Client):
             The id of the new discovery (-1 in case of error)
         """
         return super().add_discovery(
-            file_name = file_name,
-            commit_id = commit_id,
-            snippet = snippet,
-            repo_url = repo_url,
-            rule_id = rule_id,
-            state = state,
-            query = 'INSERT INTO discoveries (file_name, commit_id, snippet, \
+            file_name=file_name,
+            commit_id=commit_id,
+            snippet=snippet,
+            repo_url=repo_url,
+            rule_id=rule_id,
+            state=state,
+            query='INSERT INTO discoveries (file_name, commit_id, snippet, \
             repo_url, rule_id, state) VALUES (?, ?, ?, ?, ?, ?)'
         )
 
@@ -139,8 +140,8 @@ class SqliteClient(Client):
         bool
             `True` if the insert was successfull, `False` otherwise
         """
-        return super().add_repo(repo_url=repo_url, 
-            query='INSERT INTO repos (url) VALUES (?);')
+        return super().add_repo(repo_url=repo_url,
+                                query='INSERT INTO repos (url) VALUES (?);')
 
     def add_rule(self, regex, category, description=''):
         """ Add a new rule.
@@ -160,10 +161,10 @@ class SqliteClient(Client):
             The id of the new rule (-1 in case of errors)
         """
         return super().add_rule(
-            regex = regex,
-            category = category,
-            description = description,
-            query = 'INSERT INTO rules (regex, category, description) VALUES (?, ?, ?)'
+            regex=regex,
+            category=category,
+            description=description,
+            query='INSERT INTO rules (regex, category, description) VALUES (?, ?, ?)'
         )
 
     def delete_rule(self, ruleid):
@@ -181,9 +182,9 @@ class SqliteClient(Client):
         True
             Otherwise
         """
-        return super().delete_rule(ruleid = ruleid,
-               query = 'DELETE FROM rules WHERE id=?')
-    
+        return super().delete_rule(ruleid=ruleid,
+                                   query='DELETE FROM rules WHERE id=?')
+
     def delete_repo(self, repo_url):
         """ Delete a repository.
 
@@ -198,8 +199,8 @@ class SqliteClient(Client):
             `True` if the repo was successfully deleted, `False` otherwise
         """
         return super().delete_repo(
-            repo_url = repo_url,
-            query = 'DELETE FROM repos WHERE url=?'
+            repo_url=repo_url,
+            query='DELETE FROM repos WHERE url=?'
         )
 
     def get_repo(self, repo_url):
@@ -237,7 +238,7 @@ class SqliteClient(Client):
             A list of rules (dictionaries)
         """
         return super().get_rules(category=category,
-            category_query='SELECT * FROM rules WHERE category=?')
+                                 category_query='SELECT * FROM rules WHERE category=?')
 
     def get_rule(self, rule_id):
         """ Get a rule.
@@ -252,8 +253,8 @@ class SqliteClient(Client):
         dict
             A rule
         """
-        return super().get_rule(rule_id = rule_id,
-            query='SELECT * FROM rules WHERE id=?')
+        return super().get_rule(rule_id=rule_id,
+                                query='SELECT * FROM rules WHERE id=?')
 
     def get_discoveries(self, repo_url):
         """ Get all the discoveries of a repository.
@@ -268,8 +269,8 @@ class SqliteClient(Client):
         list
             A list of discoveries (dictionaries)
         """
-        return super().get_discoveries(repo_url = repo_url,
-            query = 'SELECT * FROM discoveries WHERE repo_url=?')
+        return super().get_discoveries(repo_url=repo_url,
+                                       query='SELECT * FROM discoveries WHERE repo_url=?')
 
     def get_discovery(self, discovery_id):
         """ Get a discovery.
@@ -284,8 +285,8 @@ class SqliteClient(Client):
         dict
             A discovery
         """
-        super().get_discovery(discovery_id = discovery_id,
-            query = 'SELECT * FROM discoveries WHERE id=?')
+        super().get_discovery(discovery_id=discovery_id,
+                              query='SELECT * FROM discoveries WHERE id=?')
 
     def get_discovery_group(self, repo_url, state=None):
         """ Get all the discoveries of a repository, grouped by file_name,
@@ -306,13 +307,13 @@ class SqliteClient(Client):
             number of times that this couple occurs, and the state of the
             couple.
         """
-        return super().get_discovery_group(repo_url = repo_url,
-                state_query = 'SELECT file_name, snippet, count(id), state FROM \
+        return super().get_discovery_group(repo_url=repo_url,
+                                           state_query='SELECT file_name, snippet, count(id), state FROM \
                 discoveries WHERE repo_url=? AND state=? GROUP BY file_name,\
                 snippet, state',
-                query = 'SELECT file_name, snippet, count(id), state FROM discoveries \
+                                           query='SELECT file_name, snippet, count(id), state FROM discoveries \
                 WHERE repo_url=? GROUP BY file_name, snippet, state'
-        )
+                                           )
 
     def update_repo(self, url, last_commit):
         """ Update the last commit of a repo.
@@ -333,10 +334,10 @@ class SqliteClient(Client):
             `True` if the update is successful, `False` otherwise
         """
         super().update_repo(
-            url = url, last_commit = last_commit,
-            query = 'UPDATE repos SET last_commit=? WHERE url=?'
+            url=url, last_commit=last_commit,
+            query='UPDATE repos SET last_commit=? WHERE url=?'
         )
-    
+
     def update_discovery_group(self, repo_url, file_name, snippet, new_state):
         """ Change the state of a group of discoveries.
 
@@ -360,8 +361,8 @@ class SqliteClient(Client):
             `True` if the update is successful, `False` otherwise
         """
         super().update_discovery_group(
-            repo_url = repo_url, file_name = file_name,
-            snippet = snippet, new_state = new_state,
-            query = 'UPDATE discoveries SET state=? WHERE repo_url=? \
+            repo_url=repo_url, file_name=file_name,
+            snippet=snippet, new_state=new_state,
+            query='UPDATE discoveries SET state=? WHERE repo_url=? \
                     and file_name=? and snippet=?'
         )
