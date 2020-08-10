@@ -17,6 +17,15 @@ Discovery = namedtuple('Discovery',
 
 
 class Interface(ABC):
+    """
+    Abstract class that simplifies queries for python database module
+    that implements Python Database API Specification v2.0 (PEP 249).
+
+    Parameters
+    ----------
+    db: database class (as defined in Python Database API Specification v2.0 (PEP 249))
+    Error: base exception class for the corresponding database type
+    """
     def __init__(self, db, error):
         self.db = db
         self.Error = error
