@@ -57,10 +57,10 @@ class SqliteClient(Client):
         """)
         cursor.close()
     
-    def query_check(self, query, kwargs = None):
+    def query_check(self, query, args = None):
         cursor = self.db.cursor()
         try:
-            cursor.execute(query, kwargs)
+            cursor.execute(query, args)
             self.db.commit()
             return cursor.rowcount < 1
         except (TypeError, IndexError):
@@ -72,10 +72,10 @@ class SqliteClient(Client):
             self.db.rollback()
         cursor.close()
 
-    def query_id(self, query, kwargs = None):
+    def query_id(self, query, args = None):
         cursor = self.db.cursor()
         try:
-            cursor.execute(query, kwargs)
+            cursor.execute(query, args)
             self.db.commit()
             return cursor.lastrowid
         except (TypeError, IndexError):
