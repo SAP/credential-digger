@@ -1,3 +1,5 @@
+[![REUSE status](https://api.reuse.software/badge/github.com/SAP/credential-digger)](https://api.reuse.software/info/github.com/SAP/credential-digger)
+
 ![Logo](https://raw.githubusercontent.com/SAP/credential-digger/master/github_assets/Logo-CD-Mint_48.png)
 
 # Credential Digger
