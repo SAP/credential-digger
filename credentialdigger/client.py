@@ -1,9 +1,9 @@
 import logging
 import yaml
+from abc import ABC, abstractmethod
 from collections import namedtuple
 
 from github import Github
-from psycopg2 import connect, Error
 from tqdm import tqdm
 
 from .generator import ExtractorGenerator
@@ -12,6 +12,7 @@ from .scanners.git_scanner import GitScanner
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
 Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_commit')
 Discovery = namedtuple(
@@ -19,41 +20,63 @@ Discovery = namedtuple(
     'id file_name commit_id snippet repo_url rule_id state timestamp')
 
 
-class Client:
+class Interface(ABC):
+    """ Abstract class that simplifies queries for python database module
+    that implements Python Database API Specification v2.0 (PEP 249).
 
-    def __init__(self, dbname, dbuser, dbpassword,
-                 dbhost='localhost', dbport=5432):
-        """ Create a connection to the database.
+    Parameters
+    ----------
+    db: database class (as defined in Python Database API Specification v2.0
+        (PEP 249))
+    Error: base exception class for the corresponding database type
+    """
 
-        The Client is the object in charge of all the operations on the
-        database, and in charge of launching the scans.
+    def __init__(self, db, error):
+        self.db = db
+        self.Error = error
 
-        Parameters
-        ----------
-        dbname: str
-            The name of the database
-        dbuser: str
-            The user of the database
-        dbpassword: str
-            The password for the user
-        dbhost: str, default `localhost`
-            The host of the database
-        dbport: int, default `5432`
-            The port for the database connection
+    def query(self, query, args=None):
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(query, [args])
+            self.db.commit()
+        except (TypeError, IndexError):
+            """ A TypeError is raised if any of the required arguments is
+            missing. """
+            self.db.rollback()
+            return False
+        except self.Error:
+            self.db.rollback()
+            return False
 
-        Raises
-        ------
-        OperationalError
-            If the Client cannot connect to the database
-        """
-        self.db = connect(host=dbhost,
-                          dbname=dbname,
-                          user=dbuser,
-                          password=dbpassword,
-                          port=dbport)
+    @abstractmethod
+    def query_check(self, query, args=None):
+        return
 
-    def add_discovery(self, file_name, commit_id, snippet, repo_url, rule_id,
-                      state='new'):
+    @abstractmethod
+    def query_id(self, query, args=None):
+        return
+
+    def query_as(self, query, cast, args=None):
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(query, args)
+            return dict(cast(*cursor.fetchone())._asdict())
+        except (TypeError, IndexError):
+            """ A TypeError is raised if any of the required arguments is
+            missing. """
+            self.db.rollback()
+            return ()
+        except self.Error:
+            self.db.rollback()
+            return ()
+
+
+class Client(Interface):
+    def __init__(self, db, error):
+        super().__init__(db, error)
+
+    def add_discovery(self, query, file_name, commit_id, snippet, repo_url, rule_id, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -76,25 +99,13 @@ class Client:
         int
             The id of the new discovery (-1 in case of error)
         """
-        query = 'INSERT INTO discoveries (file_name, commit_id, snippet, \
-            repo_url, rule_id, state) VALUES (%s, %s, %s, %s, %s, %s) \
-            RETURNING id'
-        cursor = self.db.cursor()
-        try:
-            cursor.execute(query, (file_name, commit_id, snippet, repo_url,
-                                   rule_id, state))
-            self.db.commit()
-            return int(cursor.fetchone()[0])
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return -1
-        except Error:
-            self.db.rollback()
-            return -1
+        return self.query_id(
+            query=query,
+            args=(file_name, commit_id, snippet, repo_url,
+                  rule_id, state)
+        )
 
-    def add_repo(self, repo_url):
+    def add_repo(self, query, repo_url):
         """ Add a new repository.
 
         Do not set the latest commit (it will be set when the repository is
@@ -110,22 +121,9 @@ class Client:
         bool
             `True` if the insert was successfull, `False` otherwise
         """
-        query = 'INSERT INTO repos (url) VALUES (%s) RETURNING true'
-        cursor = self.db.cursor()
-        try:
-            cursor.execute(query, (repo_url,))
-            self.db.commit()
-            return bool(cursor.fetchone()[0])
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return False
-        except Error:
-            self.db.rollback()
-            return False
+        return self.query(query=query, args=(repo_url))
 
-    def add_rule(self, regex, category, description=''):
+    def add_rule(self, query, regex, category, description=''):
         """ Add a new rule.
 
         Parameters
@@ -142,24 +140,10 @@ class Client:
         int
             The id of the new rule (-1 in case of errors)
         """
-        query = 'INSERT INTO rules (regex, category, description) VALUES (%s, \
-        %s, %s) RETURNING id'
-        cursor = self.db.cursor()
-        try:
-            cursor.execute(query, (regex, category, description))
-            self.db.commit()
-            return int(cursor.fetchone()[0])
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return -1
-        except Error:
-            self.db.rollback()
-            return -1
+        return self.query_id(query=query, args=(regex, category, description))
 
-    def delete_rule(self, ruleid):
-        """ Delete a rule from database
+    def delete_rule(self, query, ruleid):
+        """Delete a rule from database
 
         Parameters
         ----------
@@ -173,8 +157,6 @@ class Client:
         True
             Otherwise
         """
-
-        query = 'DELETE FROM rules WHERE id=%s'
         cursor = self.db.cursor()
         try:
             cursor.execute(query, (ruleid,))
@@ -185,10 +167,28 @@ class Client:
             missing. """
             self.db.rollback()
             return False
-        except Error:
+        except self.Error:
             self.db.rollback()
             return False
         return True
+
+    def delete_repo(self, query, repo_url):
+        """ Delete a repository.
+
+        Parameters
+        ----------
+        repo_id: int
+            The id of the repo to delete
+
+        Returns
+        -------
+        bool
+            `True` if the repo was successfully deleted, `False` otherwise
+        """
+        return self.query_check(
+            query=query,
+            args=(repo_url)
+        )
 
     def add_rules_from_files(self, filename):
         """ Add rules from a file.
@@ -215,34 +215,6 @@ class Client:
                           rule['category'],
                           rule.get('description', ''))
 
-    def delete_repo(self, repo_url):
-        """ Delete a repository.
-
-        Parameters
-        ----------
-        repo_id: int
-            The id of the repo to delete
-
-        Returns
-        -------
-        bool
-            `True` if the repo was successfully deleted, `False` otherwise
-        """
-        query = 'DELETE FROM repos WHERE url=%s RETURNING true'
-        cursor = self.db.cursor()
-        try:
-            cursor.execute(query, (repo_url,))
-            self.db.commit()
-            return bool(cursor.fetchone()[0])
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return False
-        except Error:
-            self.db.rollback()
-            return False
-
     def get_repos(self):
         """ Get all the repositories.
 
@@ -267,11 +239,11 @@ class Client:
             missing. """
             self.db.rollback()
             return []
-        except Error:
+        except self.Error:
             self.db.rollback()
             return []
 
-    def get_repo(self, repo_url):
+    def get_repo(self, query, repo_url):
         """ Get a repository.
 
         Parameters
@@ -284,7 +256,6 @@ class Client:
         dict
             A repository (an empty dictionary if the url does not exist)
         """
-        query = 'SELECT * FROM repos WHERE url=%s'
         cursor = self.db.cursor()
         try:
             cursor.execute(query, (repo_url,))
@@ -298,11 +269,11 @@ class Client:
             missing. """
             self.db.rollback()
             return {}
-        except Error:
+        except self.Error:
             self.db.rollback()
             return {}
 
-    def get_rules(self, category=None):
+    def get_rules(self, category_query, category=None):
         """ Get the rules.
 
         Differently from other get methods, here we pass the category as
@@ -322,12 +293,17 @@ class Client:
             A list of rules (dictionaries)
         """
         query = 'SELECT * FROM rules'
-        if category:
-            query = 'SELECT * FROM rules WHERE category=%s'
+        if category is not None:
+            query = category_query
         cursor = self.db.cursor()
         try:
             all_rules = []
-            cursor.execute(query, (category,))
+
+            if category is not None:
+                cursor.execute(query, (category,))
+            else:
+                cursor.execute(query)
+
             result = cursor.fetchone()
             while result:
                 all_rules.append(dict(Rule(*result)._asdict()))
@@ -338,11 +314,11 @@ class Client:
             missing. """
             self.db.rollback()
             return []
-        except Error:
+        except self.Error:
             self.db.rollback()
             return []
 
-    def get_rule(self, rule_id):
+    def get_rule(self, query, rule_id):
         """ Get a rule.
 
         Parameters
@@ -355,21 +331,13 @@ class Client:
         dict
             A rule
         """
-        query = 'SELECT * FROM rules WHERE id=%s'
-        cursor = self.db.cursor()
-        try:
-            cursor.execute(query, (rule_id,))
-            return dict(Rule(*cursor.fetchone())._asdict())
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return ()
-        except Error:
-            self.db.rollback()
-            return ()
+        return self.query_as(
+            query=query,
+            cast=Rule,
+            args=(rule_id)
+        )
 
-    def get_discoveries(self, repo_url):
+    def get_discoveries(self, query, repo_url):
         """ Get all the discoveries of a repository.
 
         Parameters
@@ -382,7 +350,6 @@ class Client:
         list
             A list of discoveries (dictionaries)
         """
-        query = 'SELECT * FROM discoveries WHERE repo_url=%s'
         cursor = self.db.cursor()
         try:
             all_discoveries = []
@@ -397,11 +364,11 @@ class Client:
             missing. """
             self.db.rollback()
             return []
-        except Error:
+        except self.Error:
             self.db.rollback()
             return []
 
-    def get_discovery(self, discovery_id):
+    def get_discovery(self, query, discovery_id):
         """ Get a discovery.
 
         Parameters
@@ -414,21 +381,13 @@ class Client:
         dict
             A discovery
         """
-        query = 'SELECT * FROM discoveries WHERE id=%s'
-        cursor = self.db.cursor()
-        try:
-            cursor.execute(query, (discovery_id,))
-            return dict(Discovery(*cursor.fetchone())._asdict())
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return {}
-        except Error:
-            self.db.rollback()
-            return {}
+        return self.query_as(
+            query=query,
+            cast=Discovery,
+            args=(discovery_id)
+        )
 
-    def get_discovery_group(self, repo_url, state=None):
+    def get_discovery_group(self, query, state_query, repo_url, state=None):
         """ Get all the discoveries of a repository, grouped by file_name,
         snippet, and state.
 
@@ -447,17 +406,10 @@ class Client:
             number of times that this couple occurs, and the state of the
             couple.
         """
-        query = 'SELECT file_name, snippet, count(id), state FROM discoveries \
-            WHERE repo_url=%s GROUP BY file_name, snippet, state'
-        if state:
-            query = 'SELECT file_name, snippet, count(id), state FROM \
-                discoveries WHERE repo_url=%s AND state=%s GROUP BY file_name,\
-                snippet, state'
-
         cursor = self.db.cursor()
         try:
-            if state:
-                cursor.execute(query, (repo_url, state))
+            if state is not None:
+                cursor.execute(state_query, (repo_url, state))
             else:
                 cursor.execute(query, (repo_url,))
             return cursor.fetchall()
@@ -466,11 +418,11 @@ class Client:
             missing. """
             self.db.rollback()
             return []
-        except Error:
+        except self.Error:
             self.db.rollback()
             return []
 
-    def update_repo(self, url, last_commit):
+    def update_repo(self, query, url, last_commit):
         """ Update the last commit of a repo.
 
         After a scan, record what is the most recent commit scanned, such that
@@ -488,22 +440,12 @@ class Client:
         bool
             `True` if the update is successful, `False` otherwise
         """
-        query = 'UPDATE repos SET last_commit=%s WHERE url=%s RETURNING true'
-        cursor = self.db.cursor()
-        try:
-            cursor.execute(query, (last_commit, url))
-            self.db.commit()
-            return bool(cursor.fetchone()[0])
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return False
-        except Error:
-            self.db.rollback()
-            return False
+        return self.query_check(
+            query=query,
+            args=(last_commit, url)
+        )
 
-    def update_discovery(self, discovery_id, new_state):
+    def update_discovery(self, query, discovery_id, new_state):
         """ Change the state of a discovery.
 
         Parameters
@@ -521,22 +463,13 @@ class Client:
         if new_state not in ('new', 'false_positive', 'addressing',
                              'not_relevant', 'fixed'):
             return False
-        query = 'UPDATE discoveries SET state=%s WHERE id=%s RETURNING true'
-        cursor = self.db.cursor()
-        try:
-            cursor.execute(query, (new_state, discovery_id))
-            self.db.commit()
-            return bool(cursor.fetchone()[0])
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return False
-        except Error:
-            self.db.rollback()
-            return False
 
-    def update_discovery_group(self, repo_url, file_name, snippet, new_state):
+        return self.query_check(
+            query=query,
+            args=(new_state, discovery_id)
+        )
+
+    def update_discovery_group(self, query, repo_url, file_name, snippet, new_state):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
@@ -561,21 +494,10 @@ class Client:
         if new_state not in ('new', 'false_positive', 'addressing',
                              'not_relevant', 'fixed'):
             return False
-        query = 'UPDATE discoveries SET state=%s WHERE repo_url=%s and \
-            file_name=%s and snippet=%s RETURNING true'
-        cursor = self.db.cursor()
-        try:
-            cursor.execute(query, (new_state, repo_url, file_name, snippet))
-            self.db.commit()
-            return bool(cursor.fetchone()[0])
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return False
-        except Error:
-            self.db.rollback()
-            return False
+        return self.query_check(
+            query=query,
+            args=(new_state, repo_url, file_name, snippet)
+        )
 
     def scan(self, repo_url, category=None, scanner=GitScanner,
              models=None, exclude=None, force=False, debug=False,
