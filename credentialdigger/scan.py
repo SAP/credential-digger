@@ -34,7 +34,7 @@ import logging
 import os
 import sys
 
-from credentialdigger.cli import Client
+from credentialdigger.client_postgres import PgClient
 
 logger = logging.getLogger(__name__)
 
@@ -125,11 +125,11 @@ def scan(*pip_args):
     """
     args = parser.parse_args(pip_args)
 
-    c = Client(dbname=os.getenv('POSTGRES_DB'),
-               dbuser=os.getenv('POSTGRES_USER'),
-               dbpassword=os.getenv('POSTGRES_PASSWORD'),
-               dbhost=os.getenv('DBHOST'),
-               dbport=int(os.getenv('DBPORT')))
+    c = PgClient(dbname=os.getenv('POSTGRES_DB'),
+                 dbuser=os.getenv('POSTGRES_USER'),
+                 dbpassword=os.getenv('POSTGRES_PASSWORD'),
+                 dbhost=os.getenv('DBHOST'),
+                 dbport=int(os.getenv('DBPORT')))
 
     discoveries = c.scan(
         repo_url=args.repo_url,
