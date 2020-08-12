@@ -34,7 +34,7 @@ import logging
 import os
 import sys
 
-from credentialdigger.client_postgres import PgClient
+from credentialdigger import PgClient
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ parser.add_argument(
                     rules of this category, otherwise use all the \
                     rules in the db')
 """
-This argument is deactivated since the scanner is 
+This argument is deactivated since the scanner is
 expecting a class, not a string.
 
 parser.add_argument('--scanner',
@@ -110,17 +110,17 @@ parser.add_argument(
 def scan(*pip_args):
     """
     Scan a git repository.
-    
+
     Parameters
     ----------
     *pip_args
         Keyword arguments for pip.
-    
+
     Returns
     -------
         While this function returns nothing of use to the scanner itself, it gives an
         exit status (integer) that is equal to the number of discoveries.
-        If it exits with a value that is equal to 0, then it means that the repo 
+        If it exits with a value that is equal to 0, then it means that the repo
         contains no leaks.
     """
     args = parser.parse_args(pip_args)
