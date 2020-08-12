@@ -16,15 +16,16 @@ class SqliteClient(Client):
     def __init__(self, path):
         """ Create/connects to a sqlite database.
 
-        The SqliteClient is the interface object in charge of all the operations on the
-        database, and in charge of launching the scans.
+        The SqliteClient is the interface object in charge of all the
+        operations on the database, and in charge of launching the scans.
 
         Parameters
         ----------
         path: str
             Database file (':memory:' is in RAM memory)
         """
-        super().__init__(connect(database=path), Error)
+        super().__init__(connect(database=path, check_same_thread=False),
+                         Error)
         # Create database if not exist
         cursor = self.db.cursor()
         cursor.executescript("""
@@ -57,6 +58,7 @@ class SqliteClient(Client):
             );
         """)
         cursor.close()
+        self.db.commit()
 
     def query_check(self, query, args=None):
         cursor = self.db.cursor()
