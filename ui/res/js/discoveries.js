@@ -7,7 +7,7 @@ var filterFPs = false;
 var tableRows = document.getElementsByClassName('tableRowContent');
 // add action listeners to table rows
 for (var i = 0; i < tableRows.length; i++) {
-  tableRows[i].addEventListener('mouseover', function(event) {
+  tableRows[i].addEventListener('mouseover', function (event) {
     // open expand table row
     openExpandTableRow(event.currentTarget);
   });
@@ -41,18 +41,18 @@ function openExpandTableRow(tr) {
 
 // delete repo popup
 // add action listener to delete repo button
-document.getElementById('deleteRepo').addEventListener('click', function(event) {
+document.getElementById('deleteRepo').addEventListener('click', function (event) {
   // show popup
   document.getElementById('deleteRepoModal').style.display = 'block';
 });
 // add action listener for window (clicking anywhere)
-window.addEventListener('click', function(event) {
+window.addEventListener('click', function (event) {
   // if user clicks in the modal area (area around the popup) hide popup
   if (event.target == document.getElementById('deleteRepoModal')) {
     document.getElementById('deleteRepoModal').style.display = 'none';
   }
 });
-document.getElementById('cancelDeleteRepo').addEventListener('click', function(event) {
+document.getElementById('cancelDeleteRepo').addEventListener('click', function (event) {
   // hide popup
   document.getElementById('deleteRepoModal').style.display = 'none';
 });
@@ -60,30 +60,30 @@ document.getElementById('cancelDeleteRepo').addEventListener('click', function(e
 
 // New scan
 // add action listener to scan repo button
-document.getElementById('newScan').addEventListener('click', function(event) {
+document.getElementById('newScan').addEventListener('click', function (event) {
   // Show popup
   document.getElementById('addRepoModal').style.display = 'block';
 });
 // Add action listener for window (clicking anywhere)
-window.addEventListener('click', function(event) {
+window.addEventListener('click', function (event) {
   // if user clicks in the modal area (area around the popup) hide popup
   if (event.target == document.getElementById('addRepoModal')) {
     closeAddRepo();
   }
 });
 // add action listener to close scan repo popup
-document.getElementById('cancelAddRepo').addEventListener('click', function(event) {
+document.getElementById('cancelAddRepo').addEventListener('click', function (event) {
   // close popup
   closeAddRepo();
 });
 // add action listener to start repo scan
-document.getElementById('startRepoScan').addEventListener('click', function(event) {
+document.getElementById('startRepoScan').addEventListener('click', function (event) {
   // close popup
   document.getElementById('addRepoModal').style.display = 'none';
   // show loading popup
 });
 // add action listener to repo scan config selector
-document.getElementById('configSelector').addEventListener('change', function(event) {
+document.getElementById('configSelector').addEventListener('change', function (event) {
   // check if form is correctly filled
   var config = document.getElementById('configSelector').value;
   var postAddRepoButton = document.getElementById('startRepoScan');
@@ -103,7 +103,7 @@ function closeAddRepo() {
   // reset input
 }
 
-
+var allDiscoveries = document.getElementsByClassName('discoveryEntry');
 // Show/hide fp flag
 function switchFilter() {
   filterFPs = filterFPs ^ 1;
@@ -114,15 +114,16 @@ function switchFilter() {
 }
 
 function toggleFPs() {
-  if (filterFPs == false) {
-    location.reload();
-  }
-  var allDiscoveries = document.getElementsByClassName('discoveryEntry');
-  for (var i = 0; i < allDiscoveries.length; i += 2) {
+  let countDiscoveries = 0;
+  for (let i = 0; i < allDiscoveries.length; i++) {
     // If the discovery is not new, hide its row and the expandable one
-    if (allDiscoveries[i].children[2].valueOf().innerText != 'new') {
-      allDiscoveries[i].state.display = 'none';
-      allDiscoveries[i+1].state.display = 'none';
+    if (allDiscoveries[i].children[2].valueOf().innerText == 'false_positive') {
+      allDiscoveries[i].style.display = filterFPs ? 'none' : '';
+      countDiscoveries++;
     }
   }
+  document.getElementById('showFPs').innerHTML = filterFPs ? 'Show FPs' : 'Hide FPs';
+  document.getElementById('discoveriesCounter').innerHTML = filterFPs ?
+    `${allDiscoveries.length} discoveries found (${countDiscoveries} false positives are hidden)` :
+    `${allDiscoveries.length} discoveries found`;
 }
