@@ -1,4 +1,7 @@
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/credential-digger)](https://api.reuse.software/info/github.com/SAP/credential-digger)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+![PyPI](https://img.shields.io/pypi/v/credentialdigger)
+
 
 ![Logo](https://raw.githubusercontent.com/SAP/credential-digger/master/github_assets/Logo-CD-Mint_48.png)
 
