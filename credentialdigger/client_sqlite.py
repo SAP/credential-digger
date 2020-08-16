@@ -56,6 +56,8 @@ class SqliteClient(Client):
                 FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
                 FOREIGN KEY (rule_id) REFERENCES rules ON DELETE NO ACTION ON UPDATE CASCADE
             );
+
+            PRAGMA foreign_keys=ON
         """)
         cursor.close()
         self.db.commit()
