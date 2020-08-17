@@ -7,7 +7,7 @@ services:
       args:
         - path_model=$path_model
         - snippet_model=$snippet_model
-    container_name: credential_digger_backend
+    container_name: credential_digger_sqlite
     restart: always
     env_file:
       - ./.env
