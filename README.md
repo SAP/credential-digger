@@ -129,7 +129,7 @@ c = Client(dbname='MYDB',
            dbhost='localhost',
            dbport=5432)
 
-c.add_rules_from_files('credentialdigger/resources/rules.yml')
+c.add_rules_from_file('credentialdigger/resources/rules.yml')
 ```
 
 
