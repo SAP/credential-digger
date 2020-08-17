@@ -24,6 +24,7 @@ if os.getenv('USE_PG'):
 else:
     app.logger.info('Use Sqlite Client')
     c = SqliteClient(path='/credential-digger-ui/data.db')
+c.add_rules_from_file('/credential-digger-ui/backend/rules.yml')
 
 
 # ################### UI ####################
@@ -147,7 +148,7 @@ def upload_rule():
     file = request.files['filename']
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    c.add_rules_from_files(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    c.add_rules_from_file(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     return redirect('/rules')
 
 
