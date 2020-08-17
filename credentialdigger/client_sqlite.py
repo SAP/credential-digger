@@ -57,7 +57,7 @@ class SqliteClient(Client):
                 FOREIGN KEY (rule_id) REFERENCES rules ON DELETE NO ACTION ON UPDATE CASCADE
             );
 
-            PRAGMA foreign_keys=ON
+            PRAGMA foreign_keys=ON;
         """)
         cursor.close()
         self.db.commit()
