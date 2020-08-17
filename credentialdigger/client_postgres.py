@@ -1,15 +1,6 @@
 from psycopg2 import connect, Error
-import yaml
 
-from collections import namedtuple
-from github import Github
-from tqdm import tqdm
-
-from .generator import ExtractorGenerator
-from .models.model_manager import ModelManager
-from .scanners.git_scanner import GitScanner
-
-from .client import Client, Rule, Repo, Discovery
+from .client import Client
 
 
 class PgClient(Client):
@@ -17,8 +8,8 @@ class PgClient(Client):
                  dbhost='localhost', dbport=5432):
         """ Create a connection to the postgres database.
 
-        The PgClient is the interface object in charge of all the operations on the
-        database, and in charge of launching the scans.
+        The PgClient is the interface object in charge of all the operations on
+        the database, and in charge of launching the scans.
 
         Parameters
         ----------
@@ -108,8 +99,7 @@ class PgClient(Client):
             state=state,
             query='INSERT INTO discoveries (file_name, commit_id, snippet, \
             repo_url, rule_id, state) VALUES (%s, %s, %s, %s, %s, %s) \
-            RETURNING id'
-        )
+            RETURNING id')
 
     def add_repo(self, repo_url):
         """ Add a new repository.
@@ -127,8 +117,9 @@ class PgClient(Client):
         bool
             `True` if the insert was successfull, `False` otherwise
         """
-        return super().add_repo(repo_url=repo_url,
-                                query='INSERT INTO repos (url) VALUES (%s) RETURNING true')
+        return super().add_repo(
+            repo_url=repo_url,
+            query='INSERT INTO repos (url) VALUES (%s) RETURNING true')
 
     def add_rule(self, regex, category, description=''):
         """ Add a new rule.
@@ -152,8 +143,7 @@ class PgClient(Client):
             category=category,
             description=description,
             query='INSERT INTO rules (regex, category, description) \
-                    VALUES (%s, %s, %s) RETURNING id'
-        )
+                    VALUES (%s, %s, %s) RETURNING id')
 
     def delete_rule(self, ruleid):
         """Delete a rule from database
@@ -170,8 +160,9 @@ class PgClient(Client):
         True
             Otherwise
         """
-        return super().delete_rule(ruleid=ruleid,
-                                   query='DELETE FROM rules WHERE id=%s')
+        return super().delete_rule(
+            ruleid=ruleid,
+            query='DELETE FROM rules WHERE id=%s')
 
     def delete_repo(self, repo_url):
         """ Delete a repository.
@@ -188,8 +179,7 @@ class PgClient(Client):
         """
         return super().delete_repo(
             repo_url=repo_url,
-            query='DELETE FROM repos WHERE url=%s RETURNING true'
-        )
+            query='DELETE FROM repos WHERE url=%s RETURNING true')
 
     def get_repo(self, repo_url):
         """ Get a repository.
@@ -204,7 +194,9 @@ class PgClient(Client):
         dict
             A repository (an empty dictionary if the url does not exist)
         """
-        return super().get_repo(repo_url=repo_url, query='SELECT * FROM repos WHERE url=%s')
+        return super().get_repo(
+            repo_url=repo_url,
+            query='SELECT * FROM repos WHERE url=%s')
 
     def get_rules(self, category=None):
         """ Get the rules.
@@ -225,8 +217,9 @@ class PgClient(Client):
         list
             A list of rules (dictionaries)
         """
-        return super().get_rules(category=category,
-                                 category_query='SELECT * FROM rules WHERE category=%s')
+        return super().get_rules(
+            category=category,
+            category_query='SELECT * FROM rules WHERE category=%s')
 
     def get_rule(self, rule_id):
         """ Get a rule.
@@ -241,8 +234,9 @@ class PgClient(Client):
         dict
             A rule
         """
-        return super().get_rule(rule_id=rule_id,
-                                query='SELECT * FROM rules WHERE id=%s')
+        return super().get_rule(
+            rule_id=rule_id,
+            query='SELECT * FROM rules WHERE id=%s')
 
     def get_discoveries(self, repo_url):
         """ Get all the discoveries of a repository.
@@ -257,8 +251,9 @@ class PgClient(Client):
         list
             A list of discoveries (dictionaries)
         """
-        return super().get_discoveries(repo_url=repo_url,
-                                       query='SELECT * FROM discoveries WHERE repo_url=%s')
+        return super().get_discoveries(
+            repo_url=repo_url,
+            query='SELECT * FROM discoveries WHERE repo_url=%s')
 
     def get_discovery(self, discovery_id):
         """ Get a discovery.
@@ -273,8 +268,9 @@ class PgClient(Client):
         dict
             A discovery
         """
-        super().get_discovery(discovery_id=discovery_id,
-                              query='SELECT * FROM discoveries WHERE id=%s')
+        super().get_discovery(
+            discovery_id=discovery_id,
+            query='SELECT * FROM discoveries WHERE id=%s')
 
     def get_discovery_group(self, repo_url, state=None):
         """ Get all the discoveries of a repository, grouped by file_name,
@@ -295,13 +291,13 @@ class PgClient(Client):
             number of times that this couple occurs, and the state of the
             couple.
         """
-        return super().get_discovery_group(repo_url=repo_url,
-                                           state_query='SELECT file_name, snippet, count(id), state FROM \
-                discoveries WHERE repo_url=%s AND state=%s GROUP BY file_name,\
-                snippet, state',
-                                           query='SELECT file_name, snippet, count(id), state FROM discoveries \
-                WHERE repo_url=%s GROUP BY file_name, snippet, state'
-                                           )
+        return super().get_discovery_group(
+            repo_url=repo_url,
+            state_query='SELECT file_name, snippet, count(id), state FROM \
+            discoveries WHERE repo_url=%s AND state=%s GROUP BY file_name,\
+            snippet, state',
+            query='SELECT file_name, snippet, count(id), state FROM \
+            discoveries WHERE repo_url=%s GROUP BY file_name, snippet, state')
 
     def update_repo(self, url, last_commit):
         """ Update the last commit of a repo.
@@ -322,7 +318,8 @@ class PgClient(Client):
             `True` if the update is successful, `False` otherwise
         """
         super().update_repo(
-            url=url, last_commit=last_commit,
+            url=url,
+            last_commit=last_commit,
             query='UPDATE repos SET last_commit=%s WHERE url=%s RETURNING true'
         )
 
@@ -342,9 +339,9 @@ class PgClient(Client):
             `True` if the update is successful, `False` otherwise
         """
         super().update_discovery(
-            discovery_id=discovery_id, new_state=new_state,
-            query='UPDATE discoveries SET state=%s WHERE id=%s RETURNING true'
-        )
+            discovery_id=discovery_id,
+            new_state=new_state,
+            query='UPDATE discoveries SET state=%s WHERE id=%s RETURNING true')
 
     def update_discovery_group(self, repo_url, file_name, snippet, new_state):
         """ Change the state of a group of discoveries.
@@ -369,8 +366,9 @@ class PgClient(Client):
             `True` if the update is successful, `False` otherwise
         """
         super().update_discovery_group(
-            repo_url=repo_url, file_name=file_name,
-            snippet=snippet, new_state=new_state,
+            repo_url=repo_url,
+            file_name=file_name,
+            snippet=snippet,
+            new_state=new_state,
             query='UPDATE discoveries SET state=%s WHERE repo_url=%s \
-                    and file_name=%s and snippet=%s RETURNING true'
-        )
+            and file_name=%s and snippet=%s RETURNING true')
