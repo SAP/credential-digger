@@ -191,7 +191,7 @@ class Client(Interface):
             args=(repo_url)
         )
 
-    def add_rules_from_files(self, filename):
+    def add_rules_from_file(self, filename):
         """ Add rules from a file.
 
         Parameters
