@@ -30,17 +30,30 @@ You need to have [Docker](https://docs.docker.com/engine/install/) and [Docker C
 
 ## Quick Install
 
-To have a ready-to-use instance of Credential Digger, with the UI :
+To have a ready-to-use instance of Credential Digger, with the UI:
 
 ```bash
 cp .env.sample .env
-vim .env
 sudo docker-compose up --build
 ```
 
 The UI is available at http://localhost:5000/
 
 >  **WARNING**: The UI does not support the machine learning models for the moment. If you want to use the models, please follow the advanced install.
+
+The docker container for Credential Digger uses a local sqlite database.
+
+### Quick Install with an external database
+
+Another ready-to-use instance of Credential Digger with the UI, but using a dockerized postgres database instead of a local sqlite one:
+
+```bash
+cp .env.sample .env
+vim .env  # set credentials for postgres
+sudo docker-compose -f docker-compose.postgres.yml up --build
+```
+
+Differently from the sqlite version, here we need to configure the `.env` file with the credentials for postgres (by modifying POSTGRES_USER, POSTGRES_PASSWORD and POSTGRES_DB). The database is available also at http://localhost:5432/.
 
 
 ## Advanced Install
@@ -80,20 +93,9 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-### Build the database
-
-Build the database: configure the `.env` file with your own credentials (by modifying POSTGRES_USER, POSTGRES_PASSWORD and POSTGRES_DB). The database is available at http://localhost:5432/.
-
-
-```bash
-cp .env.sample .env
-vim .env # Insert real credentials
-sudo docker-compose up --build postgres
-```
-
 ### Download machine learning models
 
-Credential Digger leverages machine learning models to filter false positives, especially in the identification of passwords :
+Credential Digger leverages machine learning models to filter false positives, especially in the identification of passwords:
 
 - Path Model: Identify the test files, documentation, or example files containing fake credentials (e.g, unit tests)
 
@@ -120,18 +122,19 @@ _credentialdigger_ in order to avoid errors in linking.
 
 ## Configure the regular expressions Scanner
 
-One of the core components of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/master/resources/rules.yml)). We provide a list of patterns in the `rules.yml` file. In a Python terminal:
+One of the core components of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/master/ui/backend/rules.yml)). We provide a list of patterns in the `rules.yml` file, that are included in the UI.
+When following the advanced user steps, you need to set your own rules. In a Python terminal:
 
 ```python
-from credentialdigger.cli import Client
+from credentialdigger import PgClient
 
-c = Client(dbname='MYDB',
-           dbuser='POSTGRES_USER',
-           dbpassword='POSTGRES_PASSWORD',
-           dbhost='localhost',
-           dbport=5432)
+c = PgClient(dbname='MYDB',
+             dbuser='POSTGRES_USER',
+             dbpassword='POSTGRES_PASSWORD',
+             dbhost='localhost',
+             dbport=5432)
 
-c.add_rules_from_file('credentialdigger/resources/rules.yml')
+c.add_rules_from_file('path/to/rules.yml')
 ```
 
 
