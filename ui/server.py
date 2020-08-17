@@ -1,5 +1,5 @@
-import yaml
 import os
+import yaml
 from collections import defaultdict
 
 from credentialdigger import SqliteClient
@@ -13,6 +13,7 @@ load_dotenv()
 app = Flask('__name__', static_folder='res')
 app.config['UPLOAD_FOLDER'] = './backend'
 app.config['DEBUG'] = True  # Remove this line in production
+
 c = SqliteClient(path='/credential-digger-ui/data.db')
 
 
