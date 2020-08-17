@@ -185,7 +185,7 @@ class Client(Interface):
         bool
             `True` if the repo was successfully deleted, `False` otherwise
         """
-        return self.query_check(
+        return self.query(
             query=query,
             args=(repo_url)
         )
