@@ -56,6 +56,8 @@ class SqliteClient(Client):
                 FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
                 FOREIGN KEY (rule_id) REFERENCES rules ON DELETE NO ACTION ON UPDATE CASCADE
             );
+
+            PRAGMA foreign_keys=ON
         """)
         cursor.close()
         self.db.commit()
@@ -338,6 +340,26 @@ class SqliteClient(Client):
         super().update_repo(
             url=url, last_commit=last_commit,
             query='UPDATE repos SET last_commit=? WHERE url=?'
+        )
+
+    def update_discovery(self, discovery_id, new_state):
+        """ Change the state of a discovery.
+
+        Parameters
+        ----------
+        discovery_id: int
+            The id of the discovery to be updated
+        new_state: str
+            The new state of this discovery
+
+        Returns
+        -------
+        bool
+            `True` if the update is successful, `False` otherwise
+        """
+        super().update_discovery(
+            new_state=new_state, discovery_id=discovery_id,
+            query='UPDATE discoveries SET state=? WHERE id=?'
         )
 
     def update_discovery_group(self, repo_url, file_name, snippet, new_state):
