@@ -2,7 +2,7 @@ import os
 import yaml
 from collections import defaultdict
 
-from credentialdigger import SqliteClient
+from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
 from flask import Flask, request, render_template, redirect, send_file
 from werkzeug.utils import secure_filename
@@ -14,7 +14,16 @@ app = Flask('__name__', static_folder='res')
 app.config['UPLOAD_FOLDER'] = './backend'
 app.config['DEBUG'] = True  # Remove this line in production
 
-c = SqliteClient(path='/credential-digger-ui/data.db')
+if os.getenv('USE_PG'):
+    app.logger.info('Use Postgres Client')
+    c = PgClient(dbname=os.getenv('POSTGRES_DB'),
+                 dbuser=os.getenv('POSTGRES_USER'),
+                 dbpassword=os.getenv('POSTGRES_PASSWORD'),
+                 dbhost=os.getenv('DBHOST'),
+                 dbport=int(os.getenv('DBPORT')))
+else:
+    app.logger.info('Use Sqlite Client')
+    c = SqliteClient(path='/credential-digger-ui/data.db')
 
 
 # ################### UI ####################
