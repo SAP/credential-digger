@@ -76,7 +76,8 @@ class Client(Interface):
     def __init__(self, db, error):
         super().__init__(db, error)
 
-    def add_discovery(self, query, file_name, commit_id, snippet, repo_url, rule_id, state='new'):
+    def add_discovery(self, query, file_name, commit_id, snippet, repo_url,
+                      rule_id, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -469,7 +470,8 @@ class Client(Interface):
             args=(new_state, discovery_id)
         )
 
-    def update_discovery_group(self, query, repo_url, file_name, snippet, new_state):
+    def update_discovery_group(self, query, repo_url, file_name, snippet,
+                               new_state):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,

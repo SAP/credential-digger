@@ -1,15 +1,6 @@
 from sqlite3 import connect, Error
-import yaml
 
-from collections import namedtuple
-from github import Github
-from tqdm import tqdm
-
-from .generator import ExtractorGenerator
-from .models.model_manager import ModelManager
-from .scanners.git_scanner import GitScanner
-
-from .client import Client, Rule, Repo, Discovery
+from .client import Client
 
 
 class SqliteClient(Client):
