@@ -54,7 +54,10 @@ vim .env  # set credentials for postgres
 sudo docker-compose -f docker-compose.postgres.yml up --build
 ```
 
-Differently from the sqlite version, here we need to configure the `.env` file with the credentials for postgres (by modifying POSTGRES_USER, POSTGRES_PASSWORD and POSTGRES_DB). The database is available also at http://localhost:5432/.
+Differently from the sqlite version, here we need to configure the `.env` file with the credentials for postgres (by modifying POSTGRES_USER, POSTGRES_PASSWORD and POSTGRES_DB). The database is available also at localhost:5432, and can be accessed directly from the shell:
+```bash
+psql -d {POSTGRES_DB} -h 127.0.0.1 -p 5432 -U {POSTGRES_USER}
+```
 
 
 ## Advanced Install
@@ -108,9 +111,7 @@ Download the binaries:
 ```bash
 export path_model=https://github.com/SAP/credential-digger/releases/download/PM-v1.0.1/path_model-1.0.1.tar.gz
 export snippet_model=https://github.com/SAP/credential-digger/releases/download/SM-v1.0.0/snippet_model-1.0.0.tar.gz
-```
 
-```bash
 python -m credentialdigger download path_model
 python -m credentialdigger download snippet_model
 ```
