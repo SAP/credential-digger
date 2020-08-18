@@ -744,8 +744,7 @@ class Client(Interface):
         g = Github()
         missing_ids = {}
         for repo in g.get_user(username).get_repos():
-            if forks is False:
-                if repo.fork is True:
+            if forks is False and repo.fork is True:
                     # Ignore this repo since it is a fork
                     continue
             # Get repo clone url without .git at the end
