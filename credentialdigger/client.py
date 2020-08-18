@@ -729,6 +729,8 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
+        forks: bool, default `False`
+            Scan also repositories forked by this user
 
         Returns
         -------
@@ -744,9 +746,10 @@ class Client(Interface):
         g = Github()
         missing_ids = {}
         for repo in g.get_user(username).get_repos():
-            if forks is False and repo.fork is True:
-                    # Ignore this repo since it is a fork
-                    continue
+            if not forks and repo.fork:
+                # Ignore this repo since it is a fork
+                logger.debug(f'Ignore {repo} (it is a fork)')
+                continue
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
             logger.info(f'Scanning {repo.url}')
