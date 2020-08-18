@@ -704,7 +704,7 @@ class Client(Interface):
         return list(discoveries_ids)
 
     def scan_user(self, username, category=None, models=None, exclude=None,
-                  debug=False, generate_snippet_extractor=False):
+                  debug=False, generate_snippet_extractor=False, forks=False):
         """ Scan all the repositories of a user on github.com.
 
         Find all the repositories of a user, and scan
@@ -744,9 +744,12 @@ class Client(Interface):
         g = Github()
         missing_ids = {}
         for repo in g.get_user(username).get_repos():
+            if forks is False and repo.fork is True:
+                    # Ignore this repo since it is a fork
+                    continue
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
-            logger.debug(f'Scanning {repo.url}')
+            logger.info(f'Scanning {repo.url}')
             missing_ids[repo_url] = self.scan(repo_url, category=category,
                                               models=models, exclude=exclude,
                                               scanner=GitScanner,
