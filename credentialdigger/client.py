@@ -750,7 +750,7 @@ class Client(Interface):
                     continue
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
-            logger.debug(f'Scanning {repo.url}')
+            logger.info(f'Scanning {repo.url}')
             missing_ids[repo_url] = self.scan(repo_url, category=category,
                                               models=models, exclude=exclude,
                                               scanner=GitScanner,
