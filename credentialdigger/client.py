@@ -536,7 +536,7 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        if debug is True:
+        if debug:
             logger.setLevel(level=logging.DEBUG)
 
         def analyze_discoveries(model_manager, discoveries, debug):
@@ -748,7 +748,7 @@ class Client(Interface):
         for repo in g.get_user(username).get_repos():
             if not forks and repo.fork:
                 # Ignore this repo since it is a fork
-                logger.debug(f'Ignore {repo} (it is a fork)')
+                logger.info(f'Ignore {repo} (it is a fork)')
                 continue
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
