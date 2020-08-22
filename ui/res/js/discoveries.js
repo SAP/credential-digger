@@ -83,9 +83,9 @@ document.getElementById('startRepoScan').addEventListener('click', function (eve
   // show loading popup
 });
 // add action listener to repo scan config selector
-document.getElementById('configSelector').addEventListener('change', function (event) {
+document.getElementById('cbAllRules').addEventListener('change', function (event) {
   // check if form is correctly filled
-  var config = document.getElementById('configSelector').value;
+  var config = document.getElementById('cbAllRules').value;
   var postAddRepoButton = document.getElementById('startRepoScan');
   if (config != '') {
     postAddRepoButton.disabled = false;

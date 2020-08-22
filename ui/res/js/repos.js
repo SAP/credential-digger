@@ -38,7 +38,7 @@ document.getElementById('repoLinkInput').addEventListener('input', function(even
 });
 
 // add action listener to repo scan config selector
-document.getElementById('configSelector').addEventListener('change', function(event) {
+document.getElementById('cbAllRules').addEventListener('change', function(event) {
   // check if forenameFolderModalrm is correctly filled
   checkFormFilled();
 });
@@ -48,7 +48,7 @@ function checkFormFilled() {
   // get post repo scan button and form values
   var postAddRepoButton = document.getElementById('startRepoScan');
   var repoLink = document.getElementById('repoLinkInput').value;
-  var config = document.getElementById('configSelector').value;
+  var config = document.getElementById('cbAllRules').value;
   // check if repo link is a valid url
   var urlValid = repoLink.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
   // enable submit button if url is valid and config is set
@@ -69,6 +69,6 @@ function closeAddRepo() {
   // reset input
   document.getElementById('repoLinkInput').value = '';
   document.getElementById('ruleSelector').value = '';
-  document.getElementById('configSelector').checked = false;
+  document.getElementById('cbAllRules').checked = false;
   checkFormFilled();
 }
