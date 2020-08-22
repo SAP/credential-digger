@@ -46,13 +46,12 @@ document.getElementById('cbAllRules').addEventListener('change', function(event)
 // check if form is filled correctly and handle change
 function checkFormFilled() {
   // get post repo scan button and form values
-  var postAddRepoButton = document.getElementById('startRepoScan');
-  var repoLink = document.getElementById('repoLinkInput').value;
-  var config = document.getElementById('cbAllRules').value;
+  let postAddRepoButton = document.getElementById('startRepoScan');
+  let repoLink = document.getElementById('repoLinkInput').value;
   // check if repo link is a valid url
-  var urlValid = repoLink.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
-  // enable submit button if url is valid and config is set
-  if (urlValid && config != '') {
+  let urlValid = repoLink.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+  // enable submit button if url is valid
+  if (urlValid) {
     postAddRepoButton.disabled = false;
     postAddRepoButton.classList.remove('disabledButton');
     // else disable submit
@@ -69,6 +68,8 @@ function closeAddRepo() {
   // reset input
   document.getElementById('repoLinkInput').value = '';
   document.getElementById('ruleSelector').value = '';
+  document.getElementById('cbAllRules').checked = false;
+  document.getElementById('cbSnippetModel').checked = false;
   document.getElementById('cbAllRules').checked = false;
   checkFormFilled();
 }
