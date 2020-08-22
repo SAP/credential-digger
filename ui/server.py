@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from flask import Flask, request, render_template, redirect, send_file
 from werkzeug.utils import secure_filename
 
-
 load_dotenv()
 
 app = Flask('__name__', static_folder='res')
@@ -113,15 +112,22 @@ def not_relevant(id):
 
 @app.route('/scan_repo', methods=['POST'])
 def scan_repo():
+    #Get scan properties
     repolink = request.form['repolink']
-    ruleid = request.form.getlist('rid')
-    for rule in ruleid:
-        if rule == 'all':
-            c.scan(repolink)
-            break
-        else:
-            c.scan(repolink, category=rule)
-            break
+    rulesToUse = request.form.get('rule_to_use')
+    useSnippetModel = request.form.get('snippetModel')
+    usePathModel = request.form.get('pathModel')
+    #Set up models
+    models = []
+    if (useSnippetModel == 'snippet'):
+        models.append('SnippetModel')
+    if (usePathModel == 'path'):
+        models.append('PathModel')
+    #Scan
+    if rulesToUse == 'all':
+        c.scan(repolink, models=models)
+    else:
+        c.scan(repolink, models=models, category=rulesToUse)
     return redirect('/')
 
 
@@ -157,10 +163,11 @@ def download_rule():
     rules = c.get_rules()
     dictrules = defaultdict(list)
     for rule in rules:
-        dictrules['rules'].append(
-            {'regex': rule['regex'],
-             'category': rule['category'],
-             'description': rule['description']})
+        dictrules['rules'].append({
+            'regex': rule['regex'],
+            'category': rule['category'],
+            'description': rule['description']
+        })
 
     with open('./backend/Downloadrules.yml', 'w') as file:
         yaml.dump(dict(dictrules), file)
