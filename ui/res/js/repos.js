@@ -1,11 +1,11 @@
 // add search action listener
-document.getElementById('search').addEventListener('input', function(event) {
+document.getElementById('search').addEventListener('input', function() {
   search(this.value);
 });
 
 // add repo pop up
 // add action listener to add repo button
-document.getElementById('addRepo').addEventListener('click', function(event) {
+document.getElementById('addRepo').addEventListener('click', function() {
   // show popup
   document.getElementById('addRepoModal').style.display = 'block';
 });
@@ -19,26 +19,26 @@ window.addEventListener('click', function(event) {
 });
 
 // add action listener to close add repo popup
-document.getElementById('cancelAddRepo').addEventListener('click', function(event) {
+document.getElementById('cancelAddRepo').addEventListener('click', function() {
   // close popup
   closeAddRepo();
 });
 
 // add action listener to start repo scan
-document.getElementById('startRepoScan').addEventListener('click', function(event) {
+document.getElementById('startRepoScan').addEventListener('click', function() {
   // close popup
   document.getElementById('addRepoModal').style.display = 'none';
   // show loading popup
 });
 
 // add action listener to repo url input
-document.getElementById('repoLinkInput').addEventListener('input', function(event) {
+document.getElementById('repoLinkInput').addEventListener('input', function() {
   // check if form is correctly filled
   checkFormFilled();
 });
 
 // add action listener to repo scan config selector
-document.getElementById('cbAllRules').addEventListener('change', function(event) {
+document.getElementById('cbAllRules').addEventListener('change', function() {
   // check if forenameFolderModalrm is correctly filled
   checkFormFilled();
 });
