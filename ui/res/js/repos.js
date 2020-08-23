@@ -84,15 +84,13 @@ function editForm(enable, err, tooltip = '') {
   let postAddRepoButton = document.getElementById('startRepoScan');
   let repoLinkContainer = document.getElementById('repoLinkInput');
   let rulesList = document.getElementById('ruleSelector');
+  postAddRepoButton.disabled = !enable;
+  postAddRepoButton.title = tooltip;
   if (enable) {
-    postAddRepoButton.disabled = false;
-    postAddRepoButton.title = tooltip;
     postAddRepoButton.classList.remove('disabledButton');
     repoLinkContainer.style.border = '1px solid black';
     rulesList.style.border = '1px solid black';
   } else {
-    postAddRepoButton.disabled = true;
-    postAddRepoButton.title = tooltip;
     postAddRepoButton.classList.add('disabledButton');
     switch (err) {
       case Errors.URL:
