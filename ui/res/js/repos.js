@@ -25,7 +25,7 @@ window.addEventListener('click', function (event) {
 });
 
 // add action listener to close add repo popup
-document.getElementById('cancelAddRepo').addEventListener('click', closeAddRepo());
+document.getElementById('cancelAddRepo').addEventListener('click', closeAddRepo);
 
 // add action listener to start repo scan
 document.getElementById('startRepoScan').addEventListener('click', function () {
@@ -62,7 +62,7 @@ function checkFormFilled() {
   if (urlValid == null) {
     editForm(false, Errors.URL, 'The URL you have provided is invalid.');
   }
-  if (cBox.checked == false && rulesList.selectedIndex == -1) {
+  if (!cBox.checked && rulesList.selectedIndex == -1) {
     editForm(false, Errors.CATEGORY, 'Please select a category first.');
   }
 
