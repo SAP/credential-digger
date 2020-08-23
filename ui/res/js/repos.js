@@ -62,7 +62,7 @@ function checkFormFilled() {
   if (urlValid == null) {
     editForm(false, Errors.URL, 'The URL you have provided is invalid.');
   }
-  if (cBox.checked == true || rulesList.selectedIndex == -1) {
+  if (cBox.checked == false && rulesList.selectedIndex == -1) {
     editForm(false, Errors.CATEGORY, 'Please select a category first.');
   }
 
