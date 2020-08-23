@@ -48,14 +48,14 @@ document.getElementById('cbAllRules').addEventListener('change', checkFormFilled
  */
 
 function checkFormFilled() {
-  // get post repo scan button and form values
+  // get HTML elements
   let cBox = document.getElementById('cbAllRules');
   let rulesList = document.getElementById('ruleSelector');
   let repoLinkContainer = document.getElementById('repoLinkInput');
   let repoLink = repoLinkContainer.value;
   // check if repo link is a valid url
   let urlValid = repoLink.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
-  // enable submit button if url is valid
+  // check whether the form is correctly filled or not.
   if (urlValid || cBox.checked || rulesList.selectedIndex != -1) {
     editForm(true);
   }
