@@ -56,8 +56,6 @@ function checkFormFilled() {
   // check if repo link is a valid url
   let urlValid = repoLink.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
   // enable submit button if url is valid
-  console.log(urlValid);
-
   if (urlValid || cBox.checked || rulesList.selectedIndex != -1) {
     editForm(true);
   }
