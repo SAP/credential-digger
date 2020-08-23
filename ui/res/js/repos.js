@@ -4,45 +4,44 @@
  */
 const Errors = Object.freeze({ "URL": 1, "CATEGORY": 2 });
 
-window.onload = function () {
-  // add search action listener
-  document.getElementById('search').addEventListener('input', function () {
-    search(this.value);
-  });
+// add search action listener
+document.getElementById('search').addEventListener('input', function () {
+  search(this.value);
+});
 
-  // add repo pop up
-  // add action listener to add repo button
-  document.getElementById('addRepo').addEventListener('click', function () {
-    // show popup
-    document.getElementById('addRepoModal').style.display = 'block';
-  });
+// add repo pop up
+// add action listener to add repo button
+document.getElementById('addRepo').addEventListener('click', function () {
+  // show popup
+  document.getElementById('addRepoModal').style.display = 'block';
+});
 
-  // add action listener for window (clicking anywhere)
-  window.addEventListener('click', function (event) {
-    // if user clicked in the modal area (area around the popup) hide popup
-    if (event.target == document.getElementById('addRepoModal')) {
-      closeAddRepo();
-    }
-  });
+// add action listener for window (clicking anywhere)
+window.addEventListener('click', function (event) {
+  // if user clicked in the modal area (area around the popup) hide popup
+  if (event.target == document.getElementById('addRepoModal')) {
+    closeAddRepo();
+  }
+});
 
-  // add action listener to close add repo popup
-  document.getElementById('cancelAddRepo').addEventListener('click', closeAddRepo());
+// add action listener to close add repo popup
+document.getElementById('cancelAddRepo').addEventListener('click', closeAddRepo());
 
-  // add action listener to start repo scan
-  document.getElementById('startRepoScan').addEventListener('click', function () {
-    // close popup
-    document.getElementById('addRepoModal').style.display = 'none';
-    // show loading popup
-  });
+// add action listener to start repo scan
+document.getElementById('startRepoScan').addEventListener('click', function () {
+  // close popup
+  document.getElementById('addRepoModal').style.display = 'none';
+  // show loading popup
+});
 
-  document.getElementById('ruleSelector').addEventListener('change', checkFormFilled);
+document.getElementById('ruleSelector').addEventListener('change', checkFormFilled);
 
-  // add action listener to repo url input
-  document.getElementById('repoLinkInput').addEventListener('input', checkFormFilled);
+// add action listener to repo url input
+document.getElementById('repoLinkInput').addEventListener('input', checkFormFilled);
 
-  // add action listener to repo scan config selector
-  document.getElementById('cbAllRules').addEventListener('change', checkFormFilled);
-};
+// add action listener to repo scan config selector
+document.getElementById('cbAllRules').addEventListener('change', checkFormFilled);
+
 
 /**
  * Check if form is filled correctly and handle change
