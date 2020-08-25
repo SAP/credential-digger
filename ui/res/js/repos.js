@@ -4,7 +4,7 @@
  * - CATEGORY: The user must select one category.
  */
 const Errors = Object.freeze({ "URL": 1, "CATEGORY": 2 });
-
+checkFormFilled();
 // add search action listener
 document.getElementById('search').addEventListener('input', function () {
   search(this.value);

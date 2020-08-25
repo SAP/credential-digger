@@ -56,7 +56,7 @@
       <span id="cancelAddRepo" class="close">&times;</span>
     </div>
     <form name="scan_repo" action="/scan_repo" method="post">
-      <input id="repoLinkInput" type="link" name="repolink" class="textInput" placeholder="GitHub Repo URL">
+      <input id="repoLinkInput" type="link" name="repolink" class="textInput" placeholder="GitHub Repo URL" required>
       <p class="formLabel">Select category :</p>
       <select id="ruleSelector" name="rule_to_use" class="formSelect" size="4">
         {% for cat in categories %}
