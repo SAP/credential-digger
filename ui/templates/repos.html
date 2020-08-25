@@ -56,14 +56,16 @@
       <span id="cancelAddRepo" class="close">&times;</span>
     </div>
     <form name="scan_repo" action="/scan_repo" method="post">
-      <input id="repoLinkInput" type="link" name="repolink" class="textInput" placeholder="GitHub Repo URL">
+      <input id="repoLinkInput" type="link" name="repolink" class="textInput" placeholder="GitHub Repo URL" required>
       <p class="formLabel">Select category :</p>
-      <select id="ruleSelector" name="rid" class="formSelect" multiple>
+      <select id="ruleSelector" name="rule_to_use" class="formSelect" size="4">
         {% for cat in categories %}
         <option value="{{cat}}">{{cat}}</option>
         {% endfor %}
       </select>
-      <input type="checkbox" id="configSelector" name="rid" value="all">Select all rules<br>
+      <input type="checkbox" id="cbAllRules" name="rule_to_use" value="all">Select all rules<br>
+      <input type="checkbox" id="cbSnippetModel" name="snippetModel" value="snippet">Use the Snippet model<br>
+      <input type="checkbox" id="cbPathModel" name="pathModel" value="path">Use the Path model<br>
       <div class="formFooter">
         <span class="moreButtons">
           <input type="hidden" name="freshtoggle" value="on">
