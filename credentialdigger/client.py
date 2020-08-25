@@ -188,7 +188,7 @@ class Client(Interface):
         """
         return self.query(
             query=query,
-            args=(repo_url)
+            args=(repo_url,)
         )
 
     def add_rules_from_file(self, filename):
@@ -335,7 +335,7 @@ class Client(Interface):
         return self.query_as(
             query=query,
             cast=Rule,
-            args=(rule_id)
+            args=(rule_id,)
         )
 
     def get_discoveries(self, query, repo_url):
@@ -385,7 +385,7 @@ class Client(Interface):
         return self.query_as(
             query=query,
             cast=Discovery,
-            args=(discovery_id)
+            args=(discovery_id,)
         )
 
     def get_discovery_group(self, query, state_query, repo_url, state=None):
