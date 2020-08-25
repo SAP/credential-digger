@@ -1,6 +1,7 @@
 /**
- * URL: The URL is invalid.
- * CATEGORY: The user must select one category.
+ * @description An enum-like type to represent errors.
+ * - URL: The URL is invalid.
+ * - CATEGORY: The user must select one category.
  */
 const Errors = Object.freeze({ "URL": 1, "CATEGORY": 2 });
 
@@ -70,8 +71,12 @@ function checkFormFilled() {
 
 /**
  * A function to enable/disable the scan button and highlight alarming sections.
- * @param {boolean} enable 
- * True: Enables the button | False: Disables the button
+ * @param {boolean} enable Takes two possible values
+ * - True: Enables the button
+ * - False: Disables the button
+ * @param {enum} err Represents the type of error
+ * - URL: The URL is invalid.
+ * - CATEGORY: The user must select one category.
  * @param {string} tooltip 
  * (Optional) Shows an error message when the mouse hovers on the disabled button
  */
