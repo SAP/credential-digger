@@ -232,8 +232,9 @@ class SqliteClient(Client):
         list
             A list of rules (dictionaries)
         """
-        return super().get_rules(category=category,
-                                 category_query='SELECT * FROM rules WHERE category=?')
+        return super().get_rules(
+            category=category,
+            category_query='SELECT * FROM rules WHERE category=?')
 
     def get_rule(self, rule_id):
         """ Get a rule.
@@ -264,8 +265,9 @@ class SqliteClient(Client):
         list
             A list of discoveries (dictionaries)
         """
-        return super().get_discoveries(repo_url=repo_url,
-                                       query='SELECT * FROM discoveries WHERE repo_url=?')
+        return super().get_discoveries(
+            repo_url=repo_url,
+            query='SELECT * FROM discoveries WHERE repo_url=?')
 
     def get_discovery(self, discovery_id):
         """ Get a discovery.
