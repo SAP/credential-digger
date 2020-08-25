@@ -112,18 +112,18 @@ def not_relevant(id):
 
 @app.route('/scan_repo', methods=['POST'])
 def scan_repo():
-    #Get scan properties
+    # Get scan properties
     repolink = request.form['repolink']
     rulesToUse = request.form.get('rule_to_use')
     useSnippetModel = request.form.get('snippetModel')
     usePathModel = request.form.get('pathModel')
-    #Set up models
+    # Set up models
     models = []
-    if (useSnippetModel == 'snippet'):
-        models.append('SnippetModel')
-    if (usePathModel == 'path'):
+    if usePathModel == 'path':
         models.append('PathModel')
-    #Scan
+    if useSnippetModel == 'snippet':
+        models.append('SnippetModel')
+    # Scan
     if rulesToUse == 'all':
         c.scan(repolink, models=models)
     else:
