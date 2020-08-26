@@ -53,7 +53,7 @@ class SqliteClient(Client):
         cursor.close()
         self.db.commit()
 
-    def query_check(self, query, args=None):
+    def query_check(self, query, *args):
         cursor = self.db.cursor()
         try:
             cursor.execute(query, args)
@@ -68,7 +68,7 @@ class SqliteClient(Client):
             self.db.rollback()
         cursor.close()
 
-    def query_id(self, query, args=None):
+    def query_id(self, query, *args):
         cursor = self.db.cursor()
         try:
             cursor.execute(query, args)

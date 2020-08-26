@@ -37,7 +37,7 @@ class PgClient(Client):
             port=dbport),
             Error)
 
-    def query_check(self, query, args=None):
+    def query_check(self, query, *args):
         cursor = self.db.cursor()
         try:
             cursor.execute(query, args)
@@ -51,7 +51,7 @@ class PgClient(Client):
         except self.Error:
             self.db.rollback()
 
-    def query_id(self, query, args=None):
+    def query_id(self, query, *args):
         cursor = self.db.cursor()
         try:
             cursor.execute(query, args)
