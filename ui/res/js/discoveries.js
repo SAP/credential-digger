@@ -7,10 +7,7 @@ var filterFPs = false;
 // scripts 
 window.onload = function () {
   filterFPs = sessionStorage.getItem('filterFPs');
-  if (filterFPs == 'None') {
-    filterFPs = false;
-  }
-  else if(filterFPs==true){
+  if (filterFPs == true) {
     toggleFPs();
   }
 };
