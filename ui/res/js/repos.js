@@ -86,7 +86,7 @@ function checkFormFilled() {
  * @param {enum} err Represents the type of error
  * - URL: The URL is invalid.
  * - CATEGORY: The user must select one category.
- * @param {string} tooltip 
+ * @param {string} tooltip
  * (Optional) Shows an error message when the mouse hovers on the disabled button
  */
 function editForm(enable, err, tooltip = '') {
@@ -123,4 +123,3 @@ function closeAddRepo() {
   document.getElementById('cbSnippetModel').checked = false;
   document.getElementById('cbAllRules').checked = false;
 }
-

@@ -1,10 +1,7 @@
-//var categoryToggleButtons = [];
-//var discoveries = [];
-//var requests = [];
 var filterFPs = false;
 
 // It is mandatory to wait for the window to load before executing the
-// scripts 
+// scripts
 window.onload = function () {
   filterFPs = sessionStorage.getItem('filterFPs');
   if (filterFPs == true) {
@@ -32,12 +29,6 @@ function openExpandTableRow(tr) {
     if (tr == tableRows[i]) {
       expandTableRows[i].style.display = 'table-cell';
       tableRows[i].style.background = '#f5f5f5';
-      /*
-      var markedSnippet = discovery[i].Snippet.replace(discovery[i].Content, '<span class="highlightedCode">' + discovery[i].Content + '</span>')
-      document.getElementsByClassName('snippetCodeCell')[i].innerHTML = markedSnippet;
-      // load additional data for snippet row
-      setSnippetRow(document.getElementsByClassName('expandTableRow')[i], discovery[i]);
-      */
     } else {
       // hide if not mouseover
       expandTableRows[i].style.display = 'none';
@@ -114,9 +105,9 @@ function closeAddRepo() {
 var allDiscoveries = document.getElementsByClassName('discoveryEntry');
 // Show/hide fp flag
 function switchFilter() {
-  //Swap the value of the filtering FLAG
+  // Swap the value of the filtering FLAG
   filterFPs = filterFPs ^ 1;
-  //Store the flag's value as long as the session is still running
+  // Store the flag's value as long as the session is still running
   sessionStorage.setItem('filterFPs', filterFPs);
   // Change color
   document.getElementById('showFPs').style.backgroundColor = '#0000ff';
