@@ -268,7 +268,7 @@ class PgClient(Client):
         dict
             A discovery
         """
-        super().get_discovery(
+        return super().get_discovery(
             discovery_id=discovery_id,
             query='SELECT * FROM discoveries WHERE id=%s')
 
