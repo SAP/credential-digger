@@ -282,8 +282,9 @@ class SqliteClient(Client):
         dict
             A discovery
         """
-        super().get_discovery(discovery_id=discovery_id,
-                              query='SELECT * FROM discoveries WHERE id=?')
+        return super().get_discovery(
+            discovery_id=discovery_id,
+            query='SELECT * FROM discoveries WHERE id=?')
 
     def get_discovery_group(self, repo_url, state=None):
         """ Get all the discoveries of a repository, grouped by file_name,
