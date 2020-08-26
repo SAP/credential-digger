@@ -35,13 +35,22 @@ document.getElementById('startRepoScan').addEventListener('click', function () {
   // show loading popup
 });
 
-document.getElementById('ruleSelector').addEventListener('change', checkFormFilled);
+// add action listener to repo category selector
+document.getElementById('ruleSelector').addEventListener('change', function () {
+  //Disable the 'Use all rules' checkbox when a category is being manually selected.
+  document.getElementById('cbAllRules').checked = false;
+  checkFormFilled();
+});
 
 // add action listener to repo url input
 document.getElementById('repoLinkInput').addEventListener('input', checkFormFilled);
 
-// add action listener to repo scan config selector
-document.getElementById('cbAllRules').addEventListener('change', checkFormFilled);
+// add action listener to checkbox that selects all the rules
+document.getElementById('cbAllRules').addEventListener('change', function () {
+  //Select no category if this checkbox is 'Active'
+  document.getElementById('ruleSelector').selectedIndex = -1;
+  checkFormFilled();
+});
 
 
 /**
