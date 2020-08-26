@@ -3,6 +3,14 @@
 //var requests = [];
 var filterFPs = false;
 
+// It is mandatory to wait for the window to load before executing the
+// scripts 
+window.onload = function () {
+  filterFPs = sessionStorage.getItem('filterFPs');
+  if (filterFPs == true) {
+    toggleFPs();
+  }
+};
 
 var tableRows = document.getElementsByClassName('tableRowContent');
 // add action listeners to table rows
@@ -23,7 +31,7 @@ function openExpandTableRow(tr) {
     // show if mouseover
     if (tr == tableRows[i]) {
       expandTableRows[i].style.display = 'table-cell';
-      tableRows[i].style.background = '#f5f5f5'
+      tableRows[i].style.background = '#f5f5f5';
       /*
       var markedSnippet = discovery[i].Snippet.replace(discovery[i].Content, '<span class="highlightedCode">' + discovery[i].Content + '</span>')
       document.getElementsByClassName('snippetCodeCell')[i].innerHTML = markedSnippet;
@@ -106,7 +114,10 @@ function closeAddRepo() {
 var allDiscoveries = document.getElementsByClassName('discoveryEntry');
 // Show/hide fp flag
 function switchFilter() {
+  //Swap the value of the filtering FLAG
   filterFPs = filterFPs ^ 1;
+  //Store the flag's value as long as the session is still running
+  sessionStorage.setItem('filterFPs', filterFPs);
   // Change color
   document.getElementById('showFPs').style.backgroundColor = '#0000ff';
   // Filter discoveries
