@@ -4,6 +4,11 @@
  * - CATEGORY: The user must select one category.
  */
 const Errors = Object.freeze({ "URL": 1, "CATEGORY": 2 });
+let listOfRepos;
+window.onload = function () {
+  listOfRepos = document.getElementsByClassName('repo tableRowContent');
+};
+
 checkFormFilled();
 // add search action listener
 document.getElementById('search').addEventListener('input', function () {
@@ -122,4 +127,32 @@ function closeAddRepo() {
   document.getElementById('cbAllRules').checked = false;
   document.getElementById('cbSnippetModel').checked = false;
   document.getElementById('cbAllRules').checked = false;
+}
+
+/**
+ * Searches for repos that have an URL that contains the __text__ argument.
+ * @param {string} text This argument is used to find all the repos that have an URL that matches its value.
+ * @param {boolean} hideNotMatching If set to __false__, the matching repos will not be removed from the UI.
+ * @returns Returns an object that has two attributes
+ * -  __text__: Equals the textual value that has been used to perform the search
+ * -  __indices__: An array that contains the indices of the matching repos. These indices can be used to access
+ *                the repo from the __listOfRepos__ array.
+ */
+function search(text, hideNotMatching = true) {
+  let listOfMatches = {
+    text: text,
+    indices: []
+  };
+  text = text.toLowerCase();
+  for (let i = 0; i < listOfRepos.length; i++) {
+    let element = listOfRepos[i];
+    if (!element.textContent.toLowerCase().includes(text)) {
+      if (hideNotMatching) { element.style.display = 'none'; }
+    }
+    else {
+      element.style.display = '';
+      listOfMatches.indices.push(i);
+    }
+  }
+  return listOfMatches;
 }
