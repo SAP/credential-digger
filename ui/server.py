@@ -64,9 +64,11 @@ def discoveries():
     # There may be missing ids. Restructure as a dict
     # There may be no mapping between list index and rule id
     # Not very elegant, but avoid IndexError
+    cat = set()
     rulesdict = {}
     for rule in rules:
         rulesdict[rule['id']] = rule
+        cat.add(rule['category'])
 
     categories_found = set()
 
@@ -80,7 +82,7 @@ def discoveries():
                            discoveries=discoveries,
                            lendiscoveries=len(discoveries),
                            all_categories=categories_found,
-                           ruleslist=rules)
+                           categories=list(cat))
 
 
 @app.route('/rules')
@@ -117,17 +119,22 @@ def scan_repo():
     rulesToUse = request.form.get('rule_to_use')
     useSnippetModel = request.form.get('snippetModel')
     usePathModel = request.form.get('pathModel')
+    # If the form does not contain the 'Force' checkbox,
+    # then 'forceScan' will be set to False; thus, ignored.
+    forceScan = request.form.get('forceScan') == 'force'
+
     # Set up models
     models = []
     if usePathModel == 'path':
         models.append('PathModel')
     if useSnippetModel == 'snippet':
         models.append('SnippetModel')
+    app.logger.info(repolink)
     # Scan
     if rulesToUse == 'all':
-        c.scan(repolink, models=models)
+        c.scan(repolink, models=models, force=forceScan)
     else:
-        c.scan(repolink, models=models, category=rulesToUse)
+        c.scan(repolink, models=models, category=rulesToUse, force=forceScan)
     return redirect('/')
 
 
