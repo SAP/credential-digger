@@ -129,7 +129,7 @@ def scan_repo():
         models.append('PathModel')
     if useSnippetModel == 'snippet':
         models.append('SnippetModel')
-    app.logger.info(repolink)
+        
     # Scan
     if rulesToUse == 'all':
         c.scan(repolink, models=models, force=forceScan)
