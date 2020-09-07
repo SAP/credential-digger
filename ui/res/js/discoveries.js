@@ -1,5 +1,6 @@
-var filterFPs = false;
-
+let filterFPs = false;
+// The list of the categories to skip while filtering.
+let categoriesToSkip = [];
 // It is mandatory to wait for the window to load before executing the
 // scripts
 window.onload = function () {
@@ -50,58 +51,31 @@ window.addEventListener('click', function (event) {
   if (event.target == document.getElementById('deleteRepoModal')) {
     document.getElementById('deleteRepoModal').style.display = 'none';
   }
+  if (event.target == document.getElementById('addRepoModal')) {
+    closeAddRepo();
+  }
+
 });
+
 document.getElementById('cancelDeleteRepo').addEventListener('click', function (event) {
   // hide popup
   document.getElementById('deleteRepoModal').style.display = 'none';
 });
 
+document.getElementById('cancelAddRepo').addEventListener('click', closeAddRepo);
 
 // New scan
 // add action listener to scan repo button
 document.getElementById('newScan').addEventListener('click', function (event) {
   // Show popup
   document.getElementById('addRepoModal').style.display = 'block';
+  document.getElementById('repoLinkInput').value = window.name;
+  checkFormFilled();
 });
-// Add action listener for window (clicking anywhere)
-window.addEventListener('click', function (event) {
-  // if user clicks in the modal area (area around the popup) hide popup
-  if (event.target == document.getElementById('addRepoModal')) {
-    closeAddRepo();
-  }
-});
-// add action listener to close scan repo popup
-document.getElementById('cancelAddRepo').addEventListener('click', function (event) {
-  // close popup
-  closeAddRepo();
-});
-// add action listener to start repo scan
-document.getElementById('startRepoScan').addEventListener('click', function (event) {
+document.getElementById('startRepoScan').addEventListener('click', function () {
   // close popup
   document.getElementById('addRepoModal').style.display = 'none';
-  // show loading popup
 });
-// add action listener to repo scan config selector
-document.getElementById('cbAllRules').addEventListener('change', function (event) {
-  // check if form is correctly filled
-  var config = document.getElementById('cbAllRules').value;
-  var postAddRepoButton = document.getElementById('startRepoScan');
-  if (config != '') {
-    postAddRepoButton.disabled = false;
-    postAddRepoButton.classList.remove('disabledButton');
-    // else disable submit
-  } else {
-    postAddRepoButton.disabled = true;
-    postAddRepoButton.classList.add('disabledButton');
-  }
-});
-// close scan repo pop up
-function closeAddRepo() {
-  // hide popup
-  document.getElementById('addRepoModal').style.display = 'none';
-  // reset input
-}
-
 var allDiscoveries = document.getElementsByClassName('discoveryEntry');
 // Show/hide fp flag
 function switchFilter() {
@@ -128,4 +102,68 @@ function toggleFPs() {
   document.getElementById('discoveriesCounter').innerHTML = filterFPs ?
     `${allDiscoveries.length} discoveries found (${countDiscoveries} false positives are hidden)` :
     `${allDiscoveries.length} discoveries found`;
+}
+
+// add action listener to checkbox that selects all the rules
+document.getElementById('cbAllRules').addEventListener('change', function () {
+  //Select no category if this checkbox is 'Active'
+  document.getElementById('ruleSelector').selectedIndex = -1;
+  checkFormFilled();
+});
+
+// add action listener to repo category selector
+document.getElementById('ruleSelector').addEventListener('change', function () {
+  //Disable the 'Use all rules' checkbox when a category is being manually selected.
+  document.getElementById('cbAllRules').checked = false;
+  checkFormFilled();
+});
+
+// A self-invoking function to assign functions to the filtering buttons
+(function catFilteringInit() {
+  let filteringButtons = document.getElementsByClassName('categoryToggle');
+  for (let i = 0; i < filteringButtons.length; i++) {
+    let buttonsContainer = filteringButtons[i];
+    buttonsContainer.onclick = clickedButton => {
+      let button = clickedButton.target;
+      const category = button.innerText;
+      const indexOfCat = categoriesToSkip.indexOf(category);
+      if (indexOfCat > -1) {
+        // Disable the filter
+        categoriesToSkip.splice(indexOfCat, 1);
+        button.style.background = 'white';
+      }
+      else {
+        // Enable the filter
+        categoriesToSkip.push(category);
+        button.style.background = 'dodgerblue';
+      }
+      filterCategories();
+    };
+  }
+
+}());
+
+/**
+ * A function to filter the discoveries based on their categories.
+ */
+function filterCategories() {
+  // No categories to filter
+  if (categoriesToSkip.length == 0) {
+    for (let i = 0; i < allDiscoveries.length; i++) {
+      let discovery = allDiscoveries[i];
+      discovery.style.display = '';
+    }
+  }
+  else {
+    for (let i = 0; i < allDiscoveries.length; i++) {
+      let discovery = allDiscoveries[i];
+      /**
+       * Ninja code : skip is a boolean. it is set to true if this discovery will be ignored
+       * false, otherwise.
+       */
+      const skip = (categoriesToSkip.indexOf(discovery.children[0].valueOf().innerText) == -1);
+      discovery.style.display = skip ? 'none' : '';
+    }
+  }
+
 }
