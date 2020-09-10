@@ -1,7 +1,6 @@
 """
 The 'add_rules' modules add scanning rules from a file to the database.
 This module supports both Sqlite & Postegres databases.
-NOTE: Please make sure that the environment variables are exported.
 
 This command takes multiple arguments:
 path_to_rules       <Required> The path of the file that contains the rules.
