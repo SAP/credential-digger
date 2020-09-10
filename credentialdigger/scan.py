@@ -1,6 +1,10 @@
 """
-The 'scan' module enables us to scan a git repository on the fly from the terminal.
-NOTE: Please make sure that the environment variables are exported.
+The 'scan' module can be used to scan a git repository on the fly from the
+terminal. It supports both the Sqlite and Postgres clients.
+
+NOTE: Postgres is used by default. Please make sure that the environment
+variables are exported and that the rules have already been added to the
+database.
 
 This command takes multiple arguments :
   repo_url              <Required> The URL of the git repository to be
@@ -24,6 +28,8 @@ This command takes multiple arguments :
                         the SnippetModel. The extractor is generated using the
                         ExtractorGenerator. If `False`, use the pre-trained
                         extractor model
+  --sqlite DB_PATH      <Optional> If specified, use the sqlite client and
+                        the db passed as argument (otherwise use postgres)
 
 Usage:
 python -m credentialdigger scan REPO_URL --force --debug
@@ -34,7 +40,7 @@ import logging
 import os
 import sys
 
-from credentialdigger import PgClient
+from credentialdigger import PgClient, SqliteClient
 
 logger = logging.getLogger(__name__)
 
@@ -101,10 +107,18 @@ parser.add_argument(
 parser.add_argument(
     '--generate_snippet_extractor',
     action='store_true',
-    help=
-    '<Optional> Generate the extractor model to be used in the SnippetModel.\
-                The extractor is generated using the ExtractorGenerator. If \
-                `False`, use the pre-trained extractor model')
+    help='<Optional> Generate the extractor model to be used in the \
+                     SnippetModel. The extractor is generated using the \
+                     ExtractorGenerator. If `False`, use the pre-trained \
+                     extractor model')
+
+parser.add_argument(
+    '--sqlite',
+    default=None,
+    type=str,
+    help='<Optional> If specified, scan the repo using the sqlite client \
+                     passing as argument the path of the db.\
+                     Otherwise, use postgres (must be up and running)')
 
 
 def scan(*pip_args):
@@ -118,18 +132,21 @@ def scan(*pip_args):
 
     Returns
     -------
-        While this function returns nothing of use to the scanner itself, it gives an
-        exit status (integer) that is equal to the number of discoveries.
-        If it exits with a value that is equal to 0, then it means that the repo
-        contains no leaks.
+        While this function returns nothing of use to the scanner itself, it
+        gives an exit status (integer) that is equal to the number of
+        discoveries. If it exits with a value that is equal to 0, then it means
+        that the scan detected no leaks in this repo.
     """
     args = parser.parse_args(pip_args)
 
-    c = PgClient(dbname=os.getenv('POSTGRES_DB'),
-                 dbuser=os.getenv('POSTGRES_USER'),
-                 dbpassword=os.getenv('POSTGRES_PASSWORD'),
-                 dbhost=os.getenv('DBHOST'),
-                 dbport=int(os.getenv('DBPORT')))
+    if args.sqlite:
+        c = SqliteClient(args.sqlite)
+    else:
+        c = PgClient(dbname=os.getenv('POSTGRES_DB'),
+                     dbuser=os.getenv('POSTGRES_USER'),
+                     dbpassword=os.getenv('POSTGRES_PASSWORD'),
+                     dbhost=os.getenv('DBHOST'),
+                     dbport=int(os.getenv('DBPORT')))
 
     discoveries = c.scan(
         repo_url=args.repo_url,
