@@ -161,6 +161,24 @@ new_discoveries = c.scan(repo_url='https://github.com/user/repo',
 
 Please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for further information on the arguments.
 
+### CLI - Command Line Interface
+
+Credential Digger also offers a simple CLI to scan a repository. The CLI supports both sqlite and postgres databases. In case of postgres, the user needs to export the credentials (the same appearing in the `.env` file) as environment variables. In case of sqlite, the path of the db must be passed as argument.
+```bash
+# Scan using SqliteClient
+python -m credentialdigger scan https://github.com/user/repo --sqlite cdigger.db
+
+# Scan using PgClient
+export POSTGRES_USER=...
+export ...
+python -m credentialdigger scan https://github.com/user/repo
+```
+
+Since rules are needed to scan a repository, the CLI also offers the possibility to add rules from a file.
+```bash
+# Add the rules to the database
+python -m credentialdigger add_rules /path/to/rules.yml --sqlite cdigger.db
+```
 
 ### Fine-tuning
 
