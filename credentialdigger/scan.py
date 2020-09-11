@@ -141,12 +141,14 @@ def scan(*pip_args):
 
     if args.sqlite:
         c = SqliteClient(args.sqlite)
+        logger.info('Database in use: Sqlite')
     else:
         c = PgClient(dbname=os.getenv('POSTGRES_DB'),
                      dbuser=os.getenv('POSTGRES_USER'),
                      dbpassword=os.getenv('POSTGRES_PASSWORD'),
                      dbhost=os.getenv('DBHOST'),
                      dbport=int(os.getenv('DBPORT')))
+        logger.info('Database in use: Postgres')
 
     discoveries = c.scan(
         repo_url=args.repo_url,
