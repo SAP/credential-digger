@@ -33,6 +33,7 @@ You can also use the issue tracker to request a new feature or enhancement.
 Even if you want to implement the feature yourself, please first submit an
 issue detailing your proposal so that we may discuss it with you and the
 community before moving forward.
+Please categorize your issue with the **proposal** (green) label.
 
 
 ## How to contribute code
