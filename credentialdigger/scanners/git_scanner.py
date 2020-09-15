@@ -1,9 +1,9 @@
+import hashlib
+import shutil
+
+import hyperscan
 from git import Repo as GitRepo
 from git import NULL_TREE
-
-import hashlib
-import hyperscan
-import shutil
 
 from .base_scanner import BaseScanner
 
