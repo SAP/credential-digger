@@ -1,24 +1,29 @@
+import os
+import yaml
 from collections import defaultdict
+
+from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
 from flask import Flask, request, render_template, redirect, send_file
 from werkzeug.utils import secure_filename
-
-from credentialdigger.cli import Client
-
-import yaml
-import os
-
 
 load_dotenv()
 
 app = Flask('__name__', static_folder='res')
 app.config['UPLOAD_FOLDER'] = './backend'
 app.config['DEBUG'] = True  # Remove this line in production
-c = Client(dbname=os.getenv('POSTGRES_DB'),
-           dbuser=os.getenv('POSTGRES_USER'),
-           dbpassword=os.getenv('POSTGRES_PASSWORD'),
-           dbhost=os.getenv('DBHOST'),
-           dbport=int(os.getenv('DBPORT')))
+
+if os.getenv('USE_PG'):
+    app.logger.info('Use Postgres Client')
+    c = PgClient(dbname=os.getenv('POSTGRES_DB'),
+                 dbuser=os.getenv('POSTGRES_USER'),
+                 dbpassword=os.getenv('POSTGRES_PASSWORD'),
+                 dbhost=os.getenv('DBHOST'),
+                 dbport=int(os.getenv('DBPORT')))
+else:
+    app.logger.info('Use Sqlite Client')
+    c = SqliteClient(path='/credential-digger-ui/data.db')
+c.add_rules_from_file('/credential-digger-ui/backend/rules.yml')
 
 
 # ################### UI ####################
@@ -59,9 +64,11 @@ def discoveries():
     # There may be missing ids. Restructure as a dict
     # There may be no mapping between list index and rule id
     # Not very elegant, but avoid IndexError
+    cat = set()
     rulesdict = {}
     for rule in rules:
         rulesdict[rule['id']] = rule
+        cat.add(rule['category'])
 
     categories_found = set()
 
@@ -75,7 +82,7 @@ def discoveries():
                            discoveries=discoveries,
                            lendiscoveries=len(discoveries),
                            all_categories=categories_found,
-                           ruleslist=rules)
+                           categories=list(cat))
 
 
 @app.route('/rules')
@@ -107,15 +114,27 @@ def not_relevant(id):
 
 @app.route('/scan_repo', methods=['POST'])
 def scan_repo():
+    # Get scan properties
     repolink = request.form['repolink']
-    ruleid = request.form.getlist('rid')
-    for rule in ruleid:
-        if rule == 'all':
-            c.scan(repolink)
-            break
-        else:
-            c.scan(repolink, category=rule)
-            break
+    rulesToUse = request.form.get('rule_to_use')
+    useSnippetModel = request.form.get('snippetModel')
+    usePathModel = request.form.get('pathModel')
+    # If the form does not contain the 'Force' checkbox,
+    # then 'forceScan' will be set to False; thus, ignored.
+    forceScan = request.form.get('forceScan') == 'force'
+
+    # Set up models
+    models = []
+    if usePathModel == 'path':
+        models.append('PathModel')
+    if useSnippetModel == 'snippet':
+        models.append('SnippetModel')
+        
+    # Scan
+    if rulesToUse == 'all':
+        c.scan(repolink, models=models, force=forceScan)
+    else:
+        c.scan(repolink, models=models, category=rulesToUse, force=forceScan)
     return redirect('/')
 
 
@@ -142,7 +161,7 @@ def upload_rule():
     file = request.files['filename']
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    c.add_rules_from_files(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    c.add_rules_from_file(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     return redirect('/rules')
 
 
@@ -151,10 +170,11 @@ def download_rule():
     rules = c.get_rules()
     dictrules = defaultdict(list)
     for rule in rules:
-        dictrules['rules'].append(
-            {'regex': rule['regex'],
-             'category': rule['category'],
-             'description': rule['description']})
+        dictrules['rules'].append({
+            'regex': rule['regex'],
+            'category': rule['category'],
+            'description': rule['description']
+        })
 
     with open('./backend/Downloadrules.yml', 'w') as file:
         yaml.dump(dict(dictrules), file)
