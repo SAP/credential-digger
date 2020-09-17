@@ -8,9 +8,9 @@
 Credential Digger is a GitHub scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc), filtering the false positive data through machine learning models.
 
 -  [Requirements](#requirements)
--  [Quick Install](#quick-install)
+-  [Install](#install)
+-  [Quick setup with UI](#quick-setup)
 -  [Advanced Install](#advanced-install)
-	-  [Install using pip](#install-using-pip)
 	-  [Install from source](#install-from-source)
   	-  [Download machine learning models](#download-machine-learning-models)
 	-  [Configure the regular expressions Scanner](#configure-the-regular-expressions-scanner)
@@ -27,12 +27,27 @@ Credential Digger supports Python 3.6, and works only with LINUX systems.
 
 You need to have [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
 
+## Install
 
-## Quick Install
+You can either install the module using `pip` or [build it from the source](#install-from-source)
+
+```bash
+pip install credentialdigger
+```
+_Please make sure to add the [scanning rules](https://github.com/SAP/credential-digger/wiki/Rules) to the database before scanning a repo._
+
+#### _Scan your first repo for leaks_
+```bash
+python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db
+```
+
+## Quick Setup
 
 To have a ready-to-use instance of Credential Digger, with the UI:
 
 ```bash
+git clone https://github.com/SAP/credential-digger.git
+cd credential-digger
 cp .env.sample .env
 sudo docker-compose up --build
 ```
@@ -46,6 +61,8 @@ The docker container for Credential Digger uses a local sqlite database.
 Another ready-to-use instance of Credential Digger with the UI, but using a dockerized postgres database instead of a local sqlite one:
 
 ```bash
+git clone https://github.com/SAP/credential-digger.git
+cd credential-digger
 cp .env.sample .env
 vim .env  # set credentials for postgres
 sudo docker-compose -f docker-compose.postgres.yml up --build
@@ -65,13 +82,6 @@ sudo apt install build-essential
 sudo apt install python3-dev
 ```
 
-### Install using pip
-
-You can either install from using `pip` or building from the source
-
-```bash
-pip install credentialdigger
-```
 
 ### Install from source
 
@@ -81,7 +91,7 @@ Configure a virtual environment for Python 3 (optional) and clone the master bra
 virtualenv --system-site-packages -p python3 ./venv
 source ./venv/bin/activate
 
-git clone https://github.com//SAP/credential-digger.git
+git clone https://github.com/SAP/credential-digger.git
 cd credential-digger
 ```
 
