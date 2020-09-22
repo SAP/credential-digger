@@ -9,7 +9,7 @@ Credential Digger is a GitHub scanning tool that identifies hardcoded credential
 
 -  [Requirements](#requirements)
 -  [Install](#install)
--  [Quick setup with UI](#quick-setup)
+-  [Quick launch with UI](#quick-launch)
 -  [Advanced Install](#advanced-install)
 	-  [Install from source](#install-from-source)
   	-  [Download machine learning models](#download-machine-learning-models)
@@ -23,9 +23,9 @@ Credential Digger is a GitHub scanning tool that identifies hardcoded credential
 
 ## Requirements
 
-Credential Digger supports Python 3.6, and works only with LINUX systems.
+Credential Digger supports Python >= 3.6 and < 3.8, and works only with LINUX systems.
 
-You need to have [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
+[Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/) are needed if you want run an image of Credential Digger as a container, as discussed [here](#quick-launch).
 
 ## Install
 
@@ -41,7 +41,7 @@ _Please make sure to add the [scanning rules](https://github.com/SAP/credential-
 python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db
 ```
 
-## Quick Setup
+## Quick Launch
 
 To have a ready-to-use instance of Credential Digger, with the UI:
 
