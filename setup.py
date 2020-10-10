@@ -13,7 +13,7 @@ def requirements():
 
 setuptools.setup(
     name='credentialdigger',
-    version='1.0.3',
+    version='2.0.0',
     author='SAP SE',
     maintainer='Marco Rosa, Slim Trabelsi',
     maintainer_email='marco.rosa@sap.com, slim.trabelsi@sap.com',
