@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod
-from git import Repo as GitRepo
-
 import tempfile
+from abc import ABC, abstractmethod
+
+from git import Repo as GitRepo
 
 
 class BaseScanner(ABC):

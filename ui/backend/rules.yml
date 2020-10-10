@@ -1,0 +1,36 @@
+rules:
+  - regex: -----BEGIN [A-Z]+ PRIVATE KEY( BLOCK)?-----
+    category: crypto_key
+    description: private key
+
+  - regex: EAACEdEose0cBA[0-9A-Za-z]+
+    category: token
+    description: fb access token
+
+  - regex: '[0-9]+-[0-9A-Za-z_]{32}\.apps\.googleusercontent\.com'
+    category: token
+    description: google token
+
+  - regex: AKIA[0-9A-Z]{16}
+    category: token
+    description: amazon token
+
+  - regex: '[0-9a-fA-F]{7}\.[0-9a-fA-F]{32}'
+    category: token
+    description: instagram token
+
+  - regex: '[1-9][0-9]+-[0-9a-zA-Z]{40}'
+    category: token
+    description: twitter access token
+
+  - regex: 'key-[0-9a-zA-Z]{32}'
+    category: token
+    description: Mailgun API key
+
+  - regex: '[0-9a-f]{32}-us[0-9]{1,2}'
+    category: token
+    description: MailChimp API key
+
+  - regex: sshpass|password|pwd|passwd|pass
+    category: password
+    description: password keywords

@@ -10,8 +10,8 @@ var scanRepo = function(e) {
     renderModal();
 };
 
-const scanRepoForm = document.forms["scan_repo"]
-scanRepoForm.addEventListener("submit", scanRepo, true)
+const scanRepoForm = document.forms["scan_repo"];
+scanRepoForm.addEventListener("submit", scanRepo, true);
 
 function renderModal() {
     //if modal already exists on page, just show it
