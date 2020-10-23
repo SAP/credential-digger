@@ -16,10 +16,10 @@ from tqdm import tqdm
 from .qlearning import compute_dataset
 from .training import create_snippet_model
 
-BLACKLISTED_NAMES = set(['changelog', 'contribute', 'docker-compose',
-                         'dockerfile', 'license', 'makefile'])
-BLACKLISTED_EXTS = set(['bin', 'csv', 'jpg', 'md', 'pdf', 'png', 'rst', 'svg',
-                        'txt', 'yml'])
+EXCLUDED_NAMES = set(['changelog', 'contribute', 'docker-compose',
+                      'dockerfile', 'license', 'makefile'])
+EXCLUDED_EXTS = set(['bin', 'csv', 'jpg', 'md', 'pdf', 'png', 'rst', 'svg',
+                     'txt', 'yml'])
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -151,8 +151,8 @@ class ExtractorGenerator:
             current = repo_local_path / ranking[fi]
             # Some files cannot be used to produce extracts
             pp = Path(current).name
-            if pp[0] == '.' or pp.split('.')[-1] in BLACKLISTED_EXTS or \
-                    pp.split('.')[0].lower() in BLACKLISTED_NAMES:
+            if pp[0] == '.' or pp.split('.')[-1] in EXCLUDED_EXTS or \
+                    pp.split('.')[0].lower() in EXCLUDED_NAMES:
                 fi += 1
                 continue
             try:
