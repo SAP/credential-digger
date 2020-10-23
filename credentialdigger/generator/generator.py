@@ -16,10 +16,11 @@ from tqdm import tqdm
 from .qlearning import compute_dataset
 from .training import create_snippet_model
 
-EXCLUDED_NAMES = set(['changelog', 'contribute', 'docker-compose',
-                      'dockerfile', 'license', 'makefile'])
-EXCLUDED_EXTS = set(['bin', 'csv', 'jpg', 'md', 'pdf', 'png', 'rst', 'svg',
-                     'txt', 'yml'])
+EXCLUDED_NAMES = set(['changelog', 'codeowners', 'contribute',
+                      'docker-compose', 'dockerfile', 'jenkinsfile', 'license',
+                      'makefile', 'package', 'package-lock'])
+EXCLUDED_EXTS = set(['bin', 'csv', 'gz', 'jpg', 'md', 'pdf', 'png', 'rst',
+                     'svg', 'txt', 'yml', 'zip'])
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
