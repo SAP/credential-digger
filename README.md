@@ -1,7 +1,8 @@
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/credential-digger)](https://api.reuse.software/info/github.com/SAP/credential-digger)
-![PyPI](https://img.shields.io/pypi/v/credentialdigger)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/SAP/credential-digger?logo=github)
+![PyPI](https://img.shields.io/pypi/v/credentialdigger?logo=pypi)
 
-![Logo](https://raw.githubusercontent.com/SAP/credential-digger/master/github_assets/Logo-CD-Mint_48.png)
+![Logo](https://raw.githubusercontent.com/SAP/credential-digger/main/github_assets/Logo-CD-Mint_48.png)
 
 # Credential Digger
 
@@ -85,7 +86,7 @@ sudo apt install python3-dev
 
 ### Install from source
 
-Configure a virtual environment for Python 3 (optional) and clone the master branch
+Configure a virtual environment for Python 3 (optional) and clone the main branch
 
 ```bash
 virtualenv --system-site-packages -p python3 ./venv
@@ -129,7 +130,7 @@ _credentialdigger_ in order to avoid errors in linking.
 
 ### Configure the regular expressions Scanner
 
-One of the core components of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/master/ui/backend/rules.yml)). We provide a list of patterns in the `rules.yml` file, that are included in the UI.
+One of the core components of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/main/ui/backend/rules.yml)). We provide a list of patterns in the `rules.yml` file, that are included in the UI.
 
 When following the advanced user steps, you need to set your own rules. In a Python terminal:
 
