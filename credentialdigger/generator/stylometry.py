@@ -113,7 +113,7 @@ def _num_tokens(word_tokens, file_length):
 
 
 def _num_comments(snippet):
-    return np.log(snippet.count('\\') + snippet.count('#') + 1)
+    return np.log(snippet.count('//') + snippet.count('#') + 1)
 
 
 def _num_literals(snippet, file_length):
