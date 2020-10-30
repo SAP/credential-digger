@@ -481,7 +481,7 @@ class Client(Interface):
 
     def scan(self, repo_url, category=None, scanner=GitScanner,
              models=None, exclude=None, force=False, debug=False,
-             generate_snippet_extractor=False):
+             generate_snippet_extractor=False, git_token=None):
         """ Launch the scan of a repository.
 
         Parameters
@@ -507,6 +507,8 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
 
         Returns
         -------
@@ -580,6 +582,9 @@ class Client(Interface):
         # Call scanner
         s = scanner(rules)
         logger.debug('Scanning commits...')
+        if git_token:
+            logger.debug('Authenticate user with token')
+            repo_url = repo_url.replace('https://', f'https://{git_token}@')
         latest_commit, these_discoveries = s.scan(repo_url,
                                                   since_commit=from_commit)
 
@@ -682,8 +687,9 @@ class Client(Interface):
         return list(discoveries_ids)
 
     def scan_user(self, username, category=None, models=None, exclude=None,
-                  debug=False, generate_snippet_extractor=False, forks=False):
-        """ Scan all the repositories of a user on github.com.
+                  debug=False, generate_snippet_extractor=False, forks=False,
+                  git_token=None, api_endpoint='https://api.github.com'):
+        """ Scan all the repositories of a user.
 
         Find all the repositories of a user, and scan
         them. Please note that git limits the list of repositories to maximum
@@ -709,6 +715,10 @@ class Client(Interface):
             use the pre-trained extractor model
         forks: bool, default `False`
             Scan also repositories forked by this user
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
+        api_endpoint: str, default `https://api.github.com`
+            API endpoint of the git server (default is github.com)
 
         Returns
         -------
@@ -720,8 +730,11 @@ class Client(Interface):
             models = []
         if exclude is None:
             exclude = []
+        logger.debug(f'Use API endpoint {api_endpoint}')
+        if git_token:
+            logger.debug('Authenticate user with token')
 
-        g = Github()
+        g = Github(base_url=api_endpoint, login_or_token=git_token)
         missing_ids = {}
         for repo in g.get_user(username).get_repos():
             if not forks and repo.fork:
@@ -738,7 +751,7 @@ class Client(Interface):
         return missing_ids
 
     def scan_wiki(self, repo_url, category=None, scanner=GitScanner,
-                  models=None, exclude=None, debug=False):
+                  models=None, exclude=None, debug=False, git_token=None):
         """ Scan the wiki of a repository.
 
         This method simply generate the url of a wiki from the url of its repo,
@@ -760,6 +773,8 @@ class Client(Interface):
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
 
         Returns
         -------
@@ -773,6 +788,9 @@ class Client(Interface):
             models = []
         if exclude is None:
             exclude = []
+        if git_token:
+            logger.debug('Authenticate user with token')
+            repo_url = repo_url.replace('https://', f'https://{git_token}@')
         return self.scan(repo_url + '.wiki.git', category, scanner, models,
                          exclude, debug)
 
