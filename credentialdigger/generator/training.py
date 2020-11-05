@@ -88,6 +88,14 @@ def _fill_model_structure(model_folder, model_name, model_version='1.0.0'):
         the folder identified as `snippet_model_author-version`)
     """
     def create_model_meta(folder, model_name, version):
+        """
+        Create meta - compatible with meta.
+
+        Args:
+            folder: (todo): write your description
+            model_name: (str): write your description
+            version: (str): write your description
+        """
         metafile = {
             'name': model_name,
             'version': version,

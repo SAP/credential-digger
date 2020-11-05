@@ -109,35 +109,89 @@ def _keyword_occurences(snippet, file_length):
 
 
 def _num_tokens(word_tokens, file_length):
+    """
+    Returns a list of tokens for a tokenized.
+
+    Args:
+        word_tokens: (str): write your description
+        file_length: (str): write your description
+    """
     return word_tokens / file_length
 
 
 def _num_comments(snippet):
+    """
+    Return the number of comments in the snippet.
+
+    Args:
+        snippet: (todo): write your description
+    """
     return np.log(snippet.count('//') + snippet.count('#') + 1)
 
 
 def _num_literals(snippet, file_length):
+    """
+    Determine the number of snippet.
+
+    Args:
+        snippet: (todo): write your description
+        file_length: (str): write your description
+    """
     return len([c for c in snippet if c.isalnum()]) / file_length
 
 
 def _avg_line_length(snippet):
+    """
+    Returns the length of a snippet.
+
+    Args:
+        snippet: (str): write your description
+    """
     return np.mean([len(c) for c in snippet.split('\n')])
 
 
 def _std_line_length(snippet):
+    """
+    Returns the length of the snippet line.
+
+    Args:
+        snippet: (str): write your description
+    """
     return np.std([len(c) for c in snippet.split('\n')])
 
 
 def _num_space(snippet, file_length):
+    """
+    Return the number of space in file_length.
+
+    Args:
+        snippet: (todo): write your description
+        file_length: (str): write your description
+    """
     return np.log(snippet.count(' ') + 1) / file_length
 
 
 def _white_space_ratio(snippet, num_space, file_length):
+    """
+    The number of - space ratio in a space.
+
+    Args:
+        snippet: (todo): write your description
+        num_space: (int): write your description
+        file_length: (str): write your description
+    """
     return np.log(snippet.count('\n') + snippet.count(' ') + 1) / (
         file_length - num_space)
 
 
 def _compute_special_characters(snippet, file_length):
+    """
+    Compute special special characters.
+
+    Args:
+        snippet: (todo): write your description
+        file_length: (str): write your description
+    """
     return [
         np.log(snippet.count('_') + 1) / file_length,
         np.log(snippet.count('=') + 1) / file_length,
@@ -151,6 +205,13 @@ def _compute_special_characters(snippet, file_length):
 
 
 def _word_occurences(corpus_word_unigram, word_unigram_snippet):
+    """
+    Returns a list of unigramram words.
+
+    Args:
+        corpus_word_unigram: (todo): write your description
+        word_unigram_snippet: (todo): write your description
+    """
     output = []
     other = 0
     for key in corpus_word_unigram:
