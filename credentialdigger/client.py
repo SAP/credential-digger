@@ -32,6 +32,14 @@ class Interface(ABC):
     """
 
     def __init__(self, db, error):
+        """
+        Initialize the database.
+
+        Args:
+            self: (todo): write your description
+            db: (todo): write your description
+            error: (str): write your description
+        """
         self.db = db
         self.Error = error
 
@@ -51,10 +59,24 @@ class Interface(ABC):
 
     @abstractmethod
     def query_check(self, query, *args):
+        """
+        Query the given query and return a query.
+
+        Args:
+            self: (todo): write your description
+            query: (str): write your description
+        """
         return
 
     @abstractmethod
     def query_id(self, query, *args):
+        """
+        Returns a query id.
+
+        Args:
+            self: (todo): write your description
+            query: (str): write your description
+        """
         return
 
     def query_as(self, query, cast, *args):
@@ -74,6 +96,14 @@ class Interface(ABC):
 
 class Client(Interface):
     def __init__(self, db, error):
+        """
+        Initialize the error.
+
+        Args:
+            self: (todo): write your description
+            db: (todo): write your description
+            error: (str): write your description
+        """
         super().__init__(db, error)
 
     def add_discovery(self, query, file_name, commit_id, snippet, repo_url,

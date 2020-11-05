@@ -2,11 +2,21 @@ import setuptools
 
 
 def readme():
+    """
+    Reads the readme file
+
+    Args:
+    """
     with open('README.md') as f:
         return f.read()
 
 
 def requirements():
+    """
+    Return a list.
+
+    Args:
+    """
     with open('requirements.txt') as f:
         return f.read().splitlines()
 

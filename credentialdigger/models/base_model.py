@@ -9,10 +9,23 @@ import srsly
 class BaseModel(ABC):
 
     def __init__(self, model):
+        """
+        Initialize model.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+        """
         self.model = fasttext.load_model(model)
 
     @abstractmethod
     def analyze(self, **kwargs):
+        """
+        Analyze the filter.
+
+        Args:
+            self: (todo): write your description
+        """
         pass
 
     def get_model_meta(self, model_path):

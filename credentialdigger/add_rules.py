@@ -24,6 +24,13 @@ logger = logging.getLogger(__name__)
 
 class customParser(argparse.ArgumentParser):
     def error(self, message):
+        """
+        Prints a message.
+
+        Args:
+            self: (todo): write your description
+            message: (str): write your description
+        """
         logger.error(f'{message}')
         self.print_help()
         exit()

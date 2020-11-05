@@ -26,6 +26,12 @@ class GitScanner(BaseScanner):
 
     @property
     def stream(self):
+        """
+        Returns the stream of the stream.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._stream
 
     @stream.setter
@@ -218,6 +224,12 @@ class GitScanner(BaseScanner):
 class ResultHandler:
 
     def __init__(self):
+        """
+        Initialize the result.
+
+        Args:
+            self: (todo): write your description
+        """
         self.result = None
 
     def handle_results(self, eid, start, end, flags, context):

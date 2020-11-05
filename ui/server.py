@@ -29,6 +29,11 @@ c.add_rules_from_file('/credential-digger-ui/backend/rules.yml')
 # ################### UI ####################
 @app.route('/')
 def root():
+    """
+    Show the root.
+
+    Args:
+    """
     repos = c.get_repos()
 
     # Discoveries per repo
@@ -56,6 +61,11 @@ def root():
 
 @app.route('/discoveries', methods=['GET'])
 def discoveries():
+    """
+    Discover discovery discovery discovery.
+
+    Args:
+    """
     # Get all the discoveries of this repository
     url = request.args.get('url')
     discoveries = c.get_discoveries(url)
@@ -87,12 +97,23 @@ def discoveries():
 
 @app.route('/rules')
 def rules():
+    """
+    Render the rules.
+
+    Args:
+    """
     rules = c.get_rules()
     return render_template('rules.html', rules=rules)
 
 
 @app.route('/fp/<id>', methods=['GET'])
 def fp(id):
+    """
+    Redirect to a discovery.
+
+    Args:
+        id: (int): write your description
+    """
     url = request.args.get('url')
     c.update_discovery(id, 'false_positive')
     return redirect('/discoveries?url=%s' % url)
@@ -100,6 +121,12 @@ def fp(id):
 
 @app.route('/addressing/<id>', methods=['GET'])
 def addressing(id):
+    """
+    Add a discovery.
+
+    Args:
+        id: (str): write your description
+    """
     url = request.args.get('url')
     c.update_discovery(id, 'addressing')
     return redirect('/discoveries?url=%s' % url)
@@ -107,6 +134,12 @@ def addressing(id):
 
 @app.route('/not_relevant/<id>', methods=['GET'])
 def not_relevant(id):
+    """
+    Show a discovery.
+
+    Args:
+        id: (int): write your description
+    """
     url = request.args.get('url')
     c.update_discovery(id, 'not_relevant')
     return redirect('/discoveries?url=%s' % url)
@@ -114,6 +147,11 @@ def not_relevant(id):
 
 @app.route('/scan_repo', methods=['POST'])
 def scan_repo():
+    """
+    Scan for a repository.
+
+    Args:
+    """
     # Get scan properties
     repolink = request.form['repolink']
     rulesToUse = request.form.get('rule_to_use')
@@ -140,24 +178,44 @@ def scan_repo():
 
 @app.route('/delete_repo', methods=['POST'])
 def delete_repo():
+    """
+    Deletes a repo.
+
+    Args:
+    """
     c.delete_repo(**request.values)
     return redirect('/')
 
 
 @app.route('/add_rule', methods=['POST'])
 def add_rule():
+    """
+    Add a new rule.
+
+    Args:
+    """
     c.add_rule(**request.values)
     return redirect('/rules')
 
 
 @app.route('/delete_rule', methods=['POST'])
 def delete_rule():
+    """
+    Deletes a rule.
+
+    Args:
+    """
     c.delete_rule(**request.values)
     return redirect('/rules')
 
 
 @app.route('/upload_rule', methods=['POST'])
 def upload_rule():
+    """
+    Upload a rule.
+
+    Args:
+    """
     file = request.files['filename']
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -167,6 +225,11 @@ def upload_rule():
 
 @app.route('/download_rule')
 def download_rule():
+    """
+    Download rules. rules
+
+    Args:
+    """
     rules = c.get_rules()
     dictrules = defaultdict(list)
     for rule in rules:
