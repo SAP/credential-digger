@@ -584,8 +584,11 @@ class Client(Interface):
         logger.debug('Scanning commits...')
         if git_token:
             logger.debug('Authenticate user with token')
-            repo_url = repo_url.replace('https://', f'https://{git_token}@')
-        latest_commit, these_discoveries = s.scan(repo_url,
+            repo_url_scan = repo_url.replace('https://',
+                                             f'https://{git_token}@')
+        else:
+            repo_url_scan = repo_url
+        latest_commit, these_discoveries = s.scan(repo_url_scan,
                                                   since_commit=from_commit)
 
         logger.info(f'Detected {len(these_discoveries)} discoveries.')
