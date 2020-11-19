@@ -62,13 +62,20 @@ class GitScanner(BaseScanner):
         Returns
         -------
         str
-            The latest commit
+            The latest commit (`None` if the repository is empty)
         list
-            A list of discoveries (dictionaries)
+            A list of discoveries (dictionaries). If there are no discoveries
+            return an empty list
         """
         project_path = self.clone_git_repo(git_url)
         repo = GitRepo(project_path)
-        latest_commit = repo.rev_parse('HEAD').hexsha
+
+        try:
+            latest_commit = repo.rev_parse('HEAD').hexsha
+        except BadName:
+            # The repository is empty
+            return None, []
+
         already_searched = set()
         discoveries = []
 
