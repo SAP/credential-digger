@@ -114,3 +114,6 @@ config.py
 
 # MacOS junk
 .DS_Store
+
+# IDE
+.vscode
