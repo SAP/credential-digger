@@ -750,6 +750,7 @@ class Client(Interface):
             missing_ids[repo_url] = self.scan(repo_url, category=category,
                                               models=models, exclude=exclude,
                                               scanner=GitScanner,
+                                              git_token=git_token,
                                               debug=debug)
         return missing_ids
 
@@ -793,9 +794,8 @@ class Client(Interface):
             exclude = []
         if git_token:
             logger.debug('Authenticate user with token')
-            repo_url = repo_url.replace('https://', f'https://{git_token}@')
         return self.scan(repo_url + '.wiki.git', category, scanner, models,
-                         exclude, debug)
+                         exclude, debug=debug, git_token=git_token)
 
     def _generate_snippet_extractor(self, repo_url):
         """ Generate the snippet extractor model adapted to the stylometry of
