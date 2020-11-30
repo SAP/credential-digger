@@ -8,6 +8,7 @@
 
 Credential Digger is a GitHub scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc), filtering the false positive data through machine learning models.
 
+-  [Why](#why)
 -  [Requirements](#requirements)
 -  [Install](#install)
 -  [Quick launch with UI](#quick-launch)
@@ -19,8 +20,15 @@ Credential Digger is a GitHub scanning tool that identifies hardcoded credential
 	-  [Scan a repository](#scan-a-repository)
 	-  [Fine-tuning](#fine-tuning)
 -  [Wiki](#wiki)
+-  [Contributing](#contributing)
 -  [News](#news)
 
+## Why
+In data protection, one of the most critical threats is represented by hardcoded (or plaintext) credentials in open-source projects. Several tools are already available to detect leaks in open-source platforms, but the diversity of credentials (depending on multiple factors such as the programming language, code development conventions, or developers' personal habits) is a bottleneck for the effectiveness of these tools. Their lack of precision leads to a very high number of pieces of code incorrectly detected as leaked secrets. Data wrongly detected as a leak is called _false positive_ data, and compose the huge majority of the data detected by currently available tools.
+
+The goal of Credential Digger is to reduce the amount of false positive data on the output of the scanning phase by leveraging machine learning models.
+
+![Architecture](https://raw.githubusercontent.com/SAP/credential-digger/main/tutorials/img/architecture.png)
 
 ## Requirements
 
@@ -30,7 +38,7 @@ Credential Digger supports Python >= 3.6 and < 3.8, and works only with LINUX sy
 
 ## Install
 
-You can either install the module using `pip` or [build it from the source](#install-from-source)
+You can either install the module using `pip` or [build it from source](#install-from-source)
 
 ```bash
 pip install credentialdigger
@@ -107,9 +115,9 @@ python setup.py install
 
 Credential Digger leverages machine learning models to filter false positives, especially in the identification of passwords:
 
-- Path Model: Identify the test files, documentation, or example files containing fake credentials (e.g., unit tests)
+- Path Model: A lot of fake credentials reside in example files such as documentation, examples or test files, since it is very common for developers to provide test code for their projects. The Path Model analyzes the path of each discovery and classifies it as false positive when needed.
 
-- Snippet Model: Identify the portion of code used to authenticate with passwords, and distinguish between real and dummy passwords.
+- Snippet Model: Identify the portion of code used to authenticate with passwords, and distinguish between real and dummy passwords. This model is composed of a pre-processing step (Extractor) and a classification step (Classifier).
 
 
 Download the binaries:
@@ -125,7 +133,7 @@ python -m credentialdigger download snippet_model
 pip), don't run the download command from the installation folder of
 _credentialdigger_ in order to avoid errors in linking.
 
->  **WARNING**: We provide the pre-trained models, but we do not guarantee the efficiency of these models. If you want more accurate machine learning models, you can train your own models (just replace the binaries by your own models) or use the fine-tuning option.
+>  **WARNING**: We provide the pre-trained models, but we do not guarantee the efficiency of these models. If you want more accurate machine learning models, you can train your own models (just replace the binaries with your own models) or use the fine-tuning option.
 
 
 ### Configure the regular expressions Scanner
@@ -201,6 +209,9 @@ If you want to activate this option, set `generate_snippet_extractor=True`. You 
 
 For further information, please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki)
 
+## Contributing
+
+We invite your participation to the project through issues and pull requests. Please refer to the [Contributing guidelines](https://github.com/SAP/credential-digger/blob/main/CONTRIBUTING.md) for how to contribute.
 
 ## News
 
