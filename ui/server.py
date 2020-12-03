@@ -1,15 +1,19 @@
 import os
+import sys
 from collections import defaultdict
 
 import yaml
-from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, send_file
 from werkzeug.utils import secure_filename
 
-load_dotenv()
-
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+if True:
+    # Load credentialdigger from local repo instead of pip
+    sys.path.insert(0, os.path.join(APP_ROOT, '..'))
+    from credentialdigger import PgClient, SqliteClient
+
+load_dotenv()
 
 app = Flask('__name__', static_folder=os.path.join(APP_ROOT, './res'),
             template_folder=os.path.join(APP_ROOT, './templates'))
