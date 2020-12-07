@@ -32,7 +32,7 @@ The goal of Credential Digger is to reduce the amount of false positive data on 
 
 ## Requirements
 
-Credential Digger supports Python >= 3.6 and < 3.8, and works only with LINUX systems.
+Credential Digger supports Python >= 3.6 and <= 3.8, and works only with LINUX systems.
 
 [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/) are needed if you want run an image of Credential Digger as a container, as discussed [here](#quick-launch).
 
