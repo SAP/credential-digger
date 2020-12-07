@@ -1,16 +1,23 @@
 import os
-import yaml
+import sys
 from collections import defaultdict
 
-from credentialdigger import PgClient, SqliteClient
+import yaml
 from dotenv import load_dotenv
-from flask import Flask, request, render_template, redirect, send_file
+from flask import Flask, redirect, render_template, request, send_file
 from werkzeug.utils import secure_filename
+
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+if True:
+    # Load credentialdigger from local repo instead of pip
+    sys.path.insert(0, os.path.join(APP_ROOT, '..'))
+    from credentialdigger import PgClient, SqliteClient
 
 load_dotenv()
 
-app = Flask('__name__', static_folder='res')
-app.config['UPLOAD_FOLDER'] = './backend'
+app = Flask('__name__', static_folder=os.path.join(APP_ROOT, './res'),
+            template_folder=os.path.join(APP_ROOT, './templates'))
+app.config['UPLOAD_FOLDER'] = os.path.join(APP_ROOT, './backend')
 app.config['DEBUG'] = True  # Remove this line in production
 
 if os.getenv('USE_PG'):
@@ -22,8 +29,8 @@ if os.getenv('USE_PG'):
                  dbport=int(os.getenv('DBPORT')))
 else:
     app.logger.info('Use Sqlite Client')
-    c = SqliteClient(path='/credential-digger-ui/data.db')
-c.add_rules_from_file('/credential-digger-ui/backend/rules.yml')
+    c = SqliteClient(path=os.path.join(APP_ROOT, './data.db'))
+c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
 
 
 # ################### UI ####################
@@ -129,7 +136,7 @@ def scan_repo():
         models.append('PathModel')
     if useSnippetModel == 'snippet':
         models.append('SnippetModel')
-        
+
     # Scan
     if rulesToUse == 'all':
         c.scan(repolink, models=models, force=forceScan)
@@ -176,9 +183,9 @@ def download_rule():
             'description': rule['description']
         })
 
-    with open('./backend/Downloadrules.yml', 'w') as file:
+    with open(os.path.join(APP_ROOT, './backend/Downloadrules.yml'), 'w') as file:
         yaml.dump(dict(dictrules), file)
-    return send_file('./backend/Downloadrules.yml', as_attachment=True)
+    return send_file(os.path.join(APP_ROOT, './backend/Downloadrules.yml'), as_attachment=True)
 
 
 app.run(host='0.0.0.0', port=5000)
