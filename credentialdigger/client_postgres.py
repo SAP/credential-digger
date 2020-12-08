@@ -258,6 +258,31 @@ class PgClient(Client):
             repo_url=repo_url,
             query='SELECT * FROM discoveries WHERE repo_url=%s')
 
+    def get_files_summary(self, repo_url):
+        """ Get aggregated discoveries info on all files of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+
+        Returns
+        -------
+        list
+            A list of files with aggregated data (dictionaries)
+        """
+        return super().get_files_summary(
+            repo_url=repo_url,
+            query=(
+                "SELECT file_name,"
+                " COUNT(*) FILTER (WHERE state='new') AS new,"
+                " COUNT(*) FILTER (WHERE state='false_positive') AS false_positives,"
+                " COUNT(*) FILTER (WHERE state='addressing') AS addressing,"
+                " COUNT(*) FILTER (WHERE state='not_relevant') AS not_relevant"
+                " FROM discoveries WHERE repo_url=%s"
+                " GROUP BY file_name"
+            ))
+
     def get_discovery(self, discovery_id):
         """ Get a discovery.
 

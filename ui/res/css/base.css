@@ -366,3 +366,7 @@ td {
 .clearFlagsButton {
   display: none;
 }
+
+.hidden {
+  display: none;
+}
