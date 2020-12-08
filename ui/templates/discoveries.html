@@ -32,6 +32,7 @@
   <tr>
     <th>Category</th>
     <th>File Name</th>
+    <th>Line Number</th>
     <th>State</th>
   </tr>
 
@@ -43,6 +44,8 @@
     <td><a class="tableRowContentLink"
         href="{{discovery.repo_url}}/blob/{{discovery.commit_id}}/{{discovery.file_name}}">{{discovery.file_name}}</a>
     </td>
+    <!-- Line number -->
+    <td>{{discovery.line_number}}</td>
     <td>{{discovery.state}}</td>
   </tr>
 
