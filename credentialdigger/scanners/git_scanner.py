@@ -1,5 +1,6 @@
 import hashlib
 import shutil
+import re
 
 import hyperscan
 from git import Repo as GitRepo
@@ -207,18 +208,29 @@ class GitScanner(BaseScanner):
             A list of dictionaries (each dictionary is a discovery)
         """
         detections = []
+        r = re.compile(r"@@\s*\-\d+(\,\d+)?\s\+(\d+)((\,\d+)?).*@@")
         rows = printable_diff.split('\n')
+        line_number = 1
         for row in rows:
             if row.startswith('-') or len(row) > 500:
                 # Take into consideration only added lines that are shorter
                 # than 500 characters
                 continue
+            if row.startswith('@@'):
+                # If the row is a git diff hunk header, get the first addition
+                # line number in the header and go to the next line
+                r_groups = re.search(r, row)
+                if r_groups is not None:
+                    line_number = int(r_groups.group(2))
+                    continue
+
             rh = ResultHandler()
             self.stream.scan(row,
                              match_event_handler=rh.handle_results,
-                             context=[row, filename, commit_hash])
+                             context=[row, filename, commit_hash, line_number])
             if rh.result:
                 detections.append(rh.result)
+            line_number += 1
         return detections
 
 
@@ -244,12 +256,13 @@ class ResultHandler:
         flags
             Not implemented by the library
         context: list
-            Metadata (composed by snippet, filename, hash)
+            Metadata (composed by snippet, filename, hash, line_number)
         """
-        snippet, filename, commit_hash = context
+        snippet, filename, commit_hash, line_number = context
 
         meta_data = {'file_name': filename,
                      'commit_id': commit_hash,
+                     'line_number': line_number,
                      'snippet': snippet,
                      'rule_id': eid,
                      'state': 'new'}
