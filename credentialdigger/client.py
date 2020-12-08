@@ -18,6 +18,9 @@ Repo = namedtuple('Repo', 'url last_commit')
 Discovery = namedtuple(
     'Discovery',
     'id file_name commit_id line_number snippet repo_url rule_id state timestamp')
+FilesSummary = namedtuple(
+    'FilesSummary',
+    'file_name new false_positives addressing not_relevant')
 
 
 class Interface(ABC):
@@ -353,6 +356,37 @@ class Client(Interface):
                 all_discoveries.append(dict(Discovery(*result)._asdict()))
                 result = cursor.fetchone()
             return all_discoveries
+        except (TypeError, IndexError):
+            """ A TypeError is raised if any of the required arguments is
+            missing. """
+            self.db.rollback()
+            return []
+        except self.Error:
+            self.db.rollback()
+            return []
+
+    def get_files_summary(self, query, repo_url):
+        """ Get aggregated discoveries info on all files of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+
+        Returns
+        -------
+        list
+            A list of files with aggregated data (dictionaries)
+        """
+        cursor = self.db.cursor()
+        try:
+            files = []
+            cursor.execute(query, (repo_url,))
+            result = cursor.fetchone()
+            while result:
+                files.append(dict(FilesSummary(*result)._asdict()))
+                result = cursor.fetchone()
+            return files
         except (TypeError, IndexError):
             """ A TypeError is raised if any of the required arguments is
             missing. """

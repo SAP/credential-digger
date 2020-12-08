@@ -4,7 +4,7 @@ from collections import defaultdict
 
 import yaml
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, request, send_file
+from flask import Flask, redirect, render_template, request, send_file, jsonify
 from werkzeug.utils import secure_filename
 
 load_dotenv()
@@ -66,7 +66,6 @@ def root():
 def discoveries():
     # Get all the discoveries of this repository
     url = request.args.get('url')
-    discoveries = c.get_discoveries(url)
 
     rules = c.get_rules()
     # There may be missing ids. Restructure as a dict
@@ -77,20 +76,17 @@ def discoveries():
     for rule in rules:
         rulesdict[rule['id']] = rule
         cat.add(rule['category'])
-
-    categories_found = set()
-
-    # Add the category to each discovery
-    for discovery in discoveries:
-        discovery['cat'] = rulesdict[discovery['rule_id']]['category']
-        categories_found.add(discovery['cat'])
-
-    return render_template('discoveries.html',
+    return render_template('discoveries/listing.html',
                            url=url,
-                           discoveries=discoveries,
-                           lendiscoveries=len(discoveries),
-                           all_categories=categories_found,
                            categories=list(cat))
+
+
+@app.route('/discoveries-data', methods=['GET'])
+def descoveries_data():
+    # Get all the discoveries of this repository
+    url = request.args.get('url')
+    discoveries = c.get_files_summary(url)
+    return jsonify(discoveries)
 
 
 @app.route('/rules')
