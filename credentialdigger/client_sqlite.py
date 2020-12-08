@@ -38,6 +38,7 @@ class SqliteClient(Client):
                 id INTEGER,
                 file_name TEXT NOT NULL,
                 commit_id TEXT NOT NULL,
+                line_number INTEGER DEFAULT -1,
                 snippet TEXT DEFAULT '',
                 repo_url TEXT,
                 rule_id INTEGER,
@@ -84,8 +85,8 @@ class SqliteClient(Client):
             return -1
         cursor.close()
 
-    def add_discovery(self, file_name, commit_id, snippet, repo_url, rule_id,
-                      state='new'):
+    def add_discovery(self, file_name, commit_id, line_number, snippet,
+                      repo_url, rule_id, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -94,6 +95,8 @@ class SqliteClient(Client):
             The name of the file that produced the discovery
         commit_id: str
             The id of the commit introducing the discovery
+        line_number: str
+            The line number of the discovery in the file
         snippet: str
             The line matched during the scan
         repo_url: str
@@ -111,12 +114,13 @@ class SqliteClient(Client):
         return super().add_discovery(
             file_name=file_name,
             commit_id=commit_id,
+            line_number=line_number,
             snippet=snippet,
             repo_url=repo_url,
             rule_id=rule_id,
             state=state,
-            query='INSERT INTO discoveries (file_name, commit_id, snippet, \
-            repo_url, rule_id, state) VALUES (?, ?, ?, ?, ?, ?)'
+            query='INSERT INTO discoveries (file_name, commit_id, line_number, \
+            snippet, repo_url, rule_id, state) VALUES (?, ?, ?, ?, ?, ?, ?)'
         )
 
     def add_repo(self, repo_url):
