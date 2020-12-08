@@ -18,6 +18,7 @@ CREATE TABLE discoveries (
   id SERIAL NOT NULL UNIQUE,
   file_name TEXT NOT NULL,
   commit_id TEXT NOT NULL,
+  line_number INTEGER DEFAULT -1,
   snippet TEXT DEFAULT '',
   repo_url TEXT,
   rule_id INTEGER,
