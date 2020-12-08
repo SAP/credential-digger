@@ -66,8 +66,8 @@ class PgClient(Client):
             self.db.rollback()
             return -1
 
-    def add_discovery(self, file_name, commit_id, snippet, repo_url, rule_id,
-                      state='new'):
+    def add_discovery(self, file_name, commit_id, line_number, snippet,
+                      repo_url, rule_id, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -76,6 +76,8 @@ class PgClient(Client):
             The name of the file that produced the discovery
         commit_id: str
             The id of the commit introducing the discovery
+        line_number: str
+            The line number of the discovery in the file
         snippet: str
             The line matched during the scan
         repo_url: str
@@ -93,13 +95,14 @@ class PgClient(Client):
         return super().add_discovery(
             file_name=file_name,
             commit_id=commit_id,
+            line_number=line_number,
             snippet=snippet,
             repo_url=repo_url,
             rule_id=rule_id,
             state=state,
-            query='INSERT INTO discoveries (file_name, commit_id, snippet, \
-            repo_url, rule_id, state) VALUES (%s, %s, %s, %s, %s, %s) \
-            RETURNING id')
+            query='INSERT INTO discoveries (file_name, commit_id, line_number, \
+            snippet, repo_url, rule_id, state) VALUES \
+            (%s, %s, %s, %s, %s, %s, %s) RETURNING id')
 
     def add_repo(self, repo_url):
         """ Add a new repository.
