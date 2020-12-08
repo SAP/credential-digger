@@ -7,13 +7,14 @@ from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, send_file
 from werkzeug.utils import secure_filename
 
+load_dotenv()
+
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-if True:
+if os.getenv("LOCAL_REPO"):
     # Load credentialdigger from local repo instead of pip
     sys.path.insert(0, os.path.join(APP_ROOT, '..'))
-    from credentialdigger import PgClient, SqliteClient
 
-load_dotenv()
+from credentialdigger import PgClient, SqliteClient  # noqa
 
 app = Flask('__name__', static_folder=os.path.join(APP_ROOT, './res'),
             template_folder=os.path.join(APP_ROOT, './templates'))
