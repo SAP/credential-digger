@@ -48,6 +48,7 @@ body {
   max-width: 1000px;
   margin: auto;
   margin-top: 50px;
+  padding: 30px;
 }
 
 .topicHeaderWrapper {
@@ -326,7 +327,6 @@ table {
   border-collapse: collapse;
   font-size: 17px;
   margin-bottom: 21.440px;
-  table-layout: fixed;
 }
 
 th {

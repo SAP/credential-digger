@@ -1,15 +1,12 @@
 .generalInfoWrapper {
-  margin: -10px;
   font-size: 17px;
   display: flex;
+  justify-content: stretch;
 }
 
 .generalInfoLink {
-  float: left;
-  width: calc(33.3333% - 42px);
+  flex: 1;
   height: 80px;
-  display: flex;
-  align-items: center;
   text-decoration: none;
   border: 1px solid rgb(158, 158, 158);
   border-radius: 7px;
@@ -21,6 +18,13 @@
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
+  box-sizing: border-box;
+}
+.generalInfoLink:first-child {
+  margin-left: 0;
+}
+.generalInfoLink:last-child {
+  margin-right: 0;
 }
 
 .generalInfoLink:hover {
@@ -33,4 +37,8 @@
 
 .bottomSpacer {
   margin-bottom: 21.440px
+}
+
+.contentBox table td {
+  width: 100%;
 }
