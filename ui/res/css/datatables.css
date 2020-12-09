@@ -1,0 +1,76 @@
+table.dataTable {
+  padding-top: 20px;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.dataTable tr:first-child th:first-child {
+  border-right: 1px solid #949da8;
+}
+
+.dataTable tr:first-child th:last-child {
+  border-left: 1px solid #949da8;
+}
+
+.dataTable td:not(:last-child) {
+  border-right: 1px solid #dee2e6;
+}
+
+.dataTable tr:not(:last-child) td {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.dataTable tbody tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.dataTable thead tr:first-child th {
+  border-top: 1px solid #949da8;
+}
+
+.dataTable thead tr:last-child th:not(:last-child) {
+  border-right: none;
+}
+
+table.dataTable thead th, table.dataTable thead td {
+  border-bottom: 1px solid #949da8;
+  padding: 10px 18px 10px 10px;
+}
+
+.dataTable th {
+  text-transform: uppercase;
+  font-size: 13px;
+  background: #f6f6f6;
+}
+
+.dataTable td.filename {
+  font-size: 15px;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 350px;
+  position: relative;
+}
+
+.dataTable td.filename a, .dataTable td.filename a:active {
+  color: inherit;
+}
+
+.dataTable td.filename:hover {
+  overflow: visible;
+}
+
+.dataTable td.filename:hover a {
+  background: white;
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  bottom: -5px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: calc(100% + 10px);
+  padding: 0 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
+}

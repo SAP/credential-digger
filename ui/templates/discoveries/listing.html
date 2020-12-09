@@ -21,21 +21,19 @@
   </button>
   {% endfor %}
 </div> -->
-<table id="discoveriesTable" style="width: 100%">
+<table id="discoveriesTable" class="dataTable" style="width: 100%">
   <!-- Header -->
   <thead>
     <tr>
-      <th>Filename</th>
-      <th colspan="4">Discoveries</th>
-      <th>Bulk actions</th>
+      <th rowspan="2">Filename</th>
+      <th colspan="4" class="dt-center">Discoveries</th>
+      <th rowspan="2" class="dt-center">Bulk actions</th>
     </tr>
     <tr>
-      <th></th>
-      <th>New</th>
-      <th>FPs</th>
+      <th>Leaks</th>
+      <th>False positives</th>
       <th>Addressing</th>
       <th>Not relevant</th>
-      <th></th>
     </tr>
   </thead>
   <!-- Content (filled with discoveries info) -->

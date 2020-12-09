@@ -1,3 +1,7 @@
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
@@ -12,6 +16,7 @@ body {
   position: fixed;
   width: 100%;
   top: 0;
+  z-index: 1;
 }
 
 .headerItem {
@@ -342,15 +347,18 @@ td {
   background: #f5f5f5;
 }
 
+.tableRowContent {
+  border-bottom: 1px solid rgb(158, 158, 158);
+}
+
 .tableRowContentLink {
   display: flex;
   align-items: center;
-  height: 19px;
+  height: 34px;
   width: calc(100% - 14px);
   padding: 7px 7px;
   text-decoration: none;
   color: black;
-  border-bottom: 1px solid rgb(158, 158, 158);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -369,4 +377,116 @@ td {
 
 .hidden {
   display: none;
+}
+
+
+/* Button group */
+.btn-group {
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  position: relative;
+}
+.btn-group .hidden {
+  display: none;
+}
+.btn-group .dropdown {
+  position: absolute;
+  right: 0;
+  left: 0;
+  display: none;
+}
+.btn-group.active .dropdown {
+  display: block;
+}
+
+.dropdown .primary, .primary .default-btn, .primary .dropdown-opener {
+  background-color: #007bff;
+  color: white;
+  border-color: #0065d1;
+}
+
+.dropdown .danger, .danger .default-btn, .danger .dropdown-opener {
+  background-color: #dc3545;
+  color: white;
+  border-color: #b6202f;
+}
+
+.dropdown .warning, .warning .default-btn, .warning .dropdown-opener {
+  background-color: #ffc107;
+  color: black;
+  border-color: #cc9900;
+}
+
+.dropdown .success, .success .default-btn, .success .dropdown-opener {
+  background-color: #43cb63;
+  color: black;
+  border-color: #2fac4c;
+}
+
+.dropdown .light, .light .default-btn, .light .dropdown-opener {
+  background-color: #f8f9fa;
+  color: black;
+  border-color: #dee3e8;
+}
+
+.btn-group .btn, .btn-group .dropdown-opener {
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 20px;
+  transition: all 0.05s ease-in-out;
+  border-width: 1px;
+  border-style: solid;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-group .btn:hover, .btn-group .dropdown-opener:hover {
+  box-shadow: 0px 0px 0px 100px rgba(0, 0, 0, 0.1) inset;
+}
+.btn-group .btn:active, .btn-group .dropdown-opener:active {
+  box-shadow: 0px 0px 0px 100px rgba(0, 0, 0, 0.2) inset, 0px 0px 5px 1px rgba(0, 0, 0, 0.15) inset;
+}
+.btn-group .default-btn {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border-right: none;
+}
+.btn-group .dropdown-opener {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  width: 100%;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.btn-group .dropdown-opener:after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 8px solid white;
+}
+.btn-group .dropdown {
+  z-index: 1;
+  box-shadow: 0px 5px 10px 0 rgba(0, 0, 0, 0.3);
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  overflow: hidden;
+}
+.btn-group .dropdown .btn {
+  border-top: 0;
+  height: 40px;
+}
+.btn-group.active .default-btn {
+  border-bottom-left-radius: 0;
+}
+.btn-group.active .dropdown-opener {
+  border-bottom-right-radius: 0;
+}
+
+.btn-group {
+  font-size: 15px
 }

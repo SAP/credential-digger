@@ -1,21 +1,85 @@
+const buttonGroupTemplate = `
+<div class="btn-group danger">
+  <div class="btn default-btn">Mark all as FPs</div>
+  <label class="dropdown-container">
+    <div class="dropdown-opener"></div>
+    <div class="dropdown">
+      <div class="btn light">Mark all as addressing</div>
+      <div class="btn light">Mark all as not relevant</div>
+    </div>
+  </label>
+</div>`
+
 $(document).ready(function() {
-  console.log("test");
+  const repoUrl = document.querySelector('#repo-url').innerText;
   $('#discoveriesTable').DataTable({
-    responsive: true,
-    ajax: {
+    responsive: true, // Enable dataTables' responsive features
+    pageLength: 25, // Default # of records shown in the table
+    ajax: { // AJAX source info
       url: "/discoveries-data",
-      data: { url: document.querySelector('#repo-url').innerText },
-      dataSrc: ''
+      data: { url: repoUrl },
+      dataSrc: function(json) {
+        return json.map(item => {
+          return {
+            ...item,
+            file_name: `<a href="/discoveries?url=${repoUrl}&file=${item.file_name}">${item.file_name}</a>`
+          }
+        })
+      }
     },
-    columns: [
-      { data: "file_name" },
-      { data: "new" },
-      { data: "false_positives" },
-      { data: "addressing" },
-      { data: "not_relevant" }
-    ]
+    order: [[1, "desc"]], // Set default column sorting
+    columns: [ // Table columns definition
+      { 
+        data: "file_name",
+        className: "filename"
+      }, { 
+        data: "new", // Mapping to the source json
+        className: "dt-center"
+      }, { 
+        data: "false_positives",
+        className: "dt-center"
+      }, { 
+        data: "addressing",
+        className: "dt-center"
+      }, { 
+        data: "not_relevant",
+        className: "dt-center"
+      }, { 
+        data: null,
+        defaultContent: buttonGroupTemplate
+      }
+    ],
   });
+
+  initButtonGroup();
 });
+
+function initButtonGroup() {
+  // Only have one button group active at a time
+  var activeBtnGroup = null;
+
+  // Toggle button dropdown when clicking on the opener
+  document.addEventListener('click', e => {
+    if(!e.target.matches('.btn-group .dropdown-opener, .btn-group .dropdown .btn')) return;
+    const parent = e.target.closest('.btn-group');
+    const dropdownOpen = parent.classList.contains('active');
+    if(dropdownOpen) {
+      parent.classList.remove('active');
+      activeBtnGroup = null;  
+    } else {
+      if(activeBtnGroup) activeBtnGroup.classList.remove('active');
+      parent.classList.add('active');
+      activeBtnGroup = parent;
+    }
+  });
+
+  // Close button dropdown when clicking outside of the button
+  document.addEventListener('click', e => {
+    if(!activeBtnGroup || activeBtnGroup.contains(e.target)) return;
+    activeBtnGroup.classList.remove('active');
+    activeBtnGroup = null;
+  });
+}
 
 // delete repo popup
 // add action listener to delete repo button
