@@ -21,7 +21,7 @@ app = Flask('__name__', static_folder=os.path.join(APP_ROOT, './res'),
 app.config['UPLOAD_FOLDER'] = os.path.join(APP_ROOT, './backend')
 app.config['DEBUG'] = True  # Remove this line in production
 
-if os.getenv('USE_PG'):
+if os.getenv('USE_PG') == 'True':
     app.logger.info('Use Postgres Client')
     c = PgClient(dbname=os.getenv('POSTGRES_DB'),
                  dbuser=os.getenv('POSTGRES_USER'),
