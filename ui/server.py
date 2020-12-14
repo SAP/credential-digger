@@ -27,14 +27,14 @@ if os.getenv('USE_PG') == 'True':
                  dbuser=os.getenv('POSTGRES_USER'),
                  dbpassword=os.getenv('POSTGRES_PASSWORD'),
                  dbhost=os.getenv('DBHOST'),
-                 dbport=int(os.getenv('DBPORT')))
+                 dbport=os.getenv('DBPORT'))
 else:
     app.logger.info('Use Sqlite Client')
     c = SqliteClient(path=os.path.join(APP_ROOT, './data.db'))
 c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
 
 
-# ################### UI ####################
+# ################### ROUTES ####################
 @app.route('/')
 def root():
     repos = c.get_repos()
@@ -66,6 +66,7 @@ def root():
 def discoveries():
     # Get all the discoveries of this repository
     url = request.args.get('url')
+    file = request.args.get('file')
 
     rules = c.get_rules()
     # There may be missing ids. Restructure as a dict
@@ -76,17 +77,15 @@ def discoveries():
     for rule in rules:
         rulesdict[rule['id']] = rule
         cat.add(rule['category'])
-    return render_template('discoveries/listing.html',
-                           url=url,
-                           categories=list(cat))
-
-
-@app.route('/discoveries-data', methods=['GET'])
-def descoveries_data():
-    # Get all the discoveries of this repository
-    url = request.args.get('url')
-    discoveries = c.get_files_summary(url)
-    return jsonify(discoveries)
+    if file is None:
+        return render_template('discoveries/listing.html',
+                               url=url,
+                               categories=list(cat))
+    else:
+        return render_template('discoveries/detail.html',
+                               url=url,
+                               file=file,
+                               categories=list(cat))
 
 
 @app.route('/rules')
@@ -95,25 +94,25 @@ def rules():
     return render_template('rules.html', rules=rules)
 
 
-@app.route('/fp/<id>', methods=['GET'])
-def fp(id):
-    url = request.args.get('url')
-    c.update_discovery(id, 'false_positive')
-    return redirect('/discoveries?url=%s' % url)
+# @app.route('/fp/<id>', methods=['GET'])
+# def fp(id):
+#     url = request.args.get('url')
+#     c.update_discovery(id, 'false_positive')
+#     return redirect('/discoveries?url=%s' % url)
 
 
-@app.route('/addressing/<id>', methods=['GET'])
-def addressing(id):
-    url = request.args.get('url')
-    c.update_discovery(id, 'addressing')
-    return redirect('/discoveries?url=%s' % url)
+# @app.route('/addressing/<id>', methods=['GET'])
+# def addressing(id):
+#     url = request.args.get('url')
+#     c.update_discovery(id, 'addressing')
+#     return redirect('/discoveries?url=%s' % url)
 
 
-@app.route('/not_relevant/<id>', methods=['GET'])
-def not_relevant(id):
-    url = request.args.get('url')
-    c.update_discovery(id, 'not_relevant')
-    return redirect('/discoveries?url=%s' % url)
+# @app.route('/not_relevant/<id>', methods=['GET'])
+# def not_relevant(id):
+#     url = request.args.get('url')
+#     c.update_discovery(id, 'not_relevant')
+#     return redirect('/discoveries?url=%s' % url)
 
 
 @app.route('/scan_repo', methods=['POST'])
@@ -183,6 +182,33 @@ def download_rule():
     with open(os.path.join(APP_ROOT, './backend/Downloadrules.yml'), 'w') as file:
         yaml.dump(dict(dictrules), file)
     return send_file(os.path.join(APP_ROOT, './backend/Downloadrules.yml'), as_attachment=True)
+
+
+# ################### JSON APIs ####################
+
+@app.route('/get_discoveries_data', methods=['GET'])
+def descoveries_data():
+    # Get all the discoveries of this repository
+    url = request.args.get('url')
+    file = request.args.get('file')
+    if file is None:
+        discoveries = c.get_files_summary(url)
+    else:
+        discoveries = c.get_discoveries(url, file)
+    return jsonify(discoveries)
+
+
+@app.route('/update_discovery_group', methods=['POST'])
+def update_discovery_group():
+    state = request.form.get('state')
+    url = request.form.get('url')
+    file = request.form.get('file')
+    snippet = request.form.get('snippet')
+    response = c.update_discovery_group(state, url, file, snippet)
+    if response is False:
+        return 'Error in updatating the discovery group', 500
+    else:
+        return 'OK', 200
 
 
 app.run(host='0.0.0.0', port=5000)

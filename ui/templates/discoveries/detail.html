@@ -3,11 +3,11 @@
 
 <!-- Repo info top bar -->
 <div class="repo-info grey-color">
-  <a href="/">
+  <a href="/discoveries?url={{url}}">
     <span class="icon icon-keyboard_arrow_left"></span>
-    <span class="link-text">Go back to all repos</span>
+    <span class="link-text">Go back to all files</span>
   </a>
-  <a href="{{url}}" target="_blank" class="repo-link">
+  <a href="{{url}}" target="_blank">
     <span class="icon icon-github"></span>
     <span class="link-text">{{url}}</span>
   </a>
@@ -17,33 +17,23 @@
 <div class="topicHeaderWrapper">
   <h1 class="topicH1">Discoveries</h1>
   <span class="moreButtons moreButtonsDiscoveries">
-    <button id="newScan" class="btn outline-bg">
-      <span class="icon icon-refresh"></span>
-      <span>Rescan</span>
-    </button>
-    <button id="deleteRepo" class="btn danger-bg">
-      <span class="icon icon-delete_outline"></span>
-      <span>Delete Repo</span>
-    </button>
+    <button id="newScan">Rescan</button>
+    <button id="deleteRepo">Delete Repo</button>
+    <button id="showFPs" onclick="switchFilter()">Hide FPs</button>
   </span>
 </div>
 
 <div class="topicHeaderWrapper underTopicHeaderWrapper">
   <h3 class="scanDescription"><span id="discoveriesCounter"></span> discoveries found</h3>
 </div>
-<table id="listing-table" class="dataTable" style="width: 100%">
+<table id="detail-table" class="dataTable" style="width: 100%">
   <!-- Header -->
   <thead>
     <tr>
-      <th rowspan="2">Filename</th>
-      <th colspan="4" class="dt-center">Discoveries</th>
-      <th rowspan="2" class="dt-center">Actions</th>
-    </tr>
-    <tr>
-      <th>Leaks</th>
-      <th>False positives</th>
-      <th>Addressing</th>
-      <th>Not relevant</th>
+      <th class="dt-center">Category</th>
+      <th>Snippet</th>
+      <th class="dt-center">State</th>
+      <th class="dt-center">Actions</th>
     </tr>
   </thead>
   <!-- Content (filled with discoveries info) -->
