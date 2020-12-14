@@ -20,7 +20,7 @@ Discovery = namedtuple(
     'id file_name commit_id line_number snippet repo_url rule_id state timestamp')
 FilesSummary = namedtuple(
     'FilesSummary',
-    'file_name new false_positives addressing not_relevant')
+    'file_name tot_discoveries new false_positives addressing not_relevant')
 
 
 class Interface(ABC):
@@ -334,7 +334,7 @@ class Client(Interface):
         """
         return self.query_as(query, Rule, rule_id,)
 
-    def get_discoveries(self, query, repo_url):
+    def get_discoveries(self, query, repo_url, file_name=None):
         """ Get all the discoveries of a repository.
 
         Parameters
@@ -350,7 +350,9 @@ class Client(Interface):
         cursor = self.db.cursor()
         try:
             all_discoveries = []
-            cursor.execute(query, (repo_url,))
+            params = (repo_url,) if file_name is None else (
+                repo_url, file_name)
+            cursor.execute(query, params)
             result = cursor.fetchone()
             while result:
                 all_discoveries.append(dict(Discovery(*result)._asdict()))
@@ -487,8 +489,8 @@ class Client(Interface):
 
         return self.query_check(query, new_state, discovery_id)
 
-    def update_discovery_group(self, query, repo_url, file_name, snippet,
-                               new_state):
+    def update_discovery_group(self, query, new_state, repo_url, file_name,
+                               snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
@@ -496,14 +498,14 @@ class Client(Interface):
 
         Parameters
         ----------
+        new_state: str
+            The new state of these discoveries
         repo_url: str
             The url of the repository
         file_name: str
             The name of the file
-        snippet: str
+        snippet: str, optional
             The snippet
-        new_state: str
-            The new state of this discovery
 
         Returns
         -------
@@ -513,7 +515,10 @@ class Client(Interface):
         if new_state not in ('new', 'false_positive', 'addressing',
                              'not_relevant', 'fixed'):
             return False
-        return self.query_check(query, new_state, repo_url, file_name, snippet)
+        if snippet is None:
+            return self.query_check(query, new_state, repo_url, file_name)
+        else:
+            return self.query_check(query, new_state, repo_url, file_name, snippet)
 
     def scan(self, repo_url, category=None, scanner=GitScanner,
              models=None, exclude=None, force=False, debug=False,

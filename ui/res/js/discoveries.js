@@ -1,67 +1,159 @@
-const buttonGroupTemplate = `
-<div class="btn-group danger">
-  <div class="btn default-btn">Mark all as FPs</div>
-  <label class="dropdown-container">
-    <div class="dropdown-opener"></div>
-    <div class="dropdown">
-      <div class="btn light">Mark all as addressing</div>
-      <div class="btn light">Mark all as not relevant</div>
+const actionsTemplate = `
+<div class="btn-group" data-filename="{{filename}}">
+  <div class="btn default-btn primary-bg" data-state="false_positive">
+    <span class="icon icon-outlined_flag"></span>
+    <span>Mark all as FPs</span>
+  </div>
+  <div class="dropdown-container">
+    <div class="dropdown-opener primary-bg">
+      <span class="icon icon-keyboard_arrow_down"></span>
     </div>
-  </label>
-</div>`
+    <div class="dropdown">
+      <div class="btn light-bg danger-color" data-state="new">
+        <span class="icon icon-error_outline"></span>
+        <span>Mark all as leaks</span>
+      </div>
+      <div class="btn light-bg warning-color" data-state="addressing">
+        <span class="icon icon-timelapse"></span>
+        <span>Mark all as addressing</span>
+      </div>
+      <div class="btn light-bg grey-color" data-state="not_relevant">
+        <span class="icon icon-inbox"></span>
+        <span>Mark all as not relevant</span>
+      </div>
+    </div>
+  </div>
+</div>
+`
+
+const defaultTableSettings = {
+  responsive: true, // Enable dataTables' responsive features
+  pageLength: 10, // Default # of records shown in the table
+  language: {
+    search: '<span class="icon icon-search dt-icon"></span>',
+    paginate: {
+      previous: '<span class="icon icon-keyboard_arrow_left dt-icon"></span>',
+      next: '<span class="icon icon-keyboard_arrow_right dt-icon"></span>'
+    }
+  }
+}
+
 
 $(document).ready(function() {
+  if (document.querySelector('#listing-table')) initListingDataTable();
+  if (document.querySelector('#detail-table'))  initDetailDataTable();
+  initButtonGroup();
+});
+
+function initListingDataTable() {
   const repoUrl = document.querySelector('#repo-url').innerText;
-  $('#discoveriesTable').DataTable({
-    responsive: true, // Enable dataTables' responsive features
-    pageLength: 25, // Default # of records shown in the table
+  $('#listing-table').DataTable({
+    ...defaultTableSettings,
     ajax: { // AJAX source info
-      url: "/discoveries-data",
+      url: "/get_discoveries_data",
       data: { url: repoUrl },
-      dataSrc: function(json) {
+      dataSrc: function(json) { // Map json data before sending it to datatable
         return json.map(item => {
           return {
             ...item,
-            file_name: `<a href="/discoveries?url=${repoUrl}&file=${item.file_name}">${item.file_name}</a>`
+            file_name: `<a href="/discoveries?url=${repoUrl}&file=${item.file_name}">${item.file_name}</a>`,
+            actions: actionsTemplate.replace("{{filename}}", item.file_name)
           }
         })
       }
     },
-    order: [[1, "desc"]], // Set default column sorting
+    order: [[0, "asc"]], // Set default column sorting
     columns: [ // Table columns definition
       { 
         data: "file_name",
-        className: "filename"
+        className: "filename",
+        orderSequence: ["asc", "desc"]
       }, { 
         data: "new", // Mapping to the source json
-        className: "dt-center"
+        className: "dt-center",
+        orderSequence: ["desc", "asc"]
       }, { 
         data: "false_positives",
-        className: "dt-center"
+        className: "dt-center",
+        orderSequence: ["desc", "asc"]
       }, { 
         data: "addressing",
-        className: "dt-center"
+        className: "dt-center",
+        orderSequence: ["desc", "asc"]
       }, { 
         data: "not_relevant",
-        className: "dt-center"
+        className: "dt-center",
+        orderSequence: ["desc", "asc"]
       }, { 
-        data: null,
-        defaultContent: buttonGroupTemplate
+        data: "actions",
+        orderable: false
       }
     ],
+    initComplete: function(settings, json) {
+      const totalDiscoveries = json.reduce((sum, currItem) => 
+         sum + currItem.tot_discoveries, 0)
+      document.querySelector('#discoveriesCounter').innerText = totalDiscoveries;
+    }
   });
+}
 
-  initButtonGroup();
-});
+function initDetailDataTable() {
+  const repoUrl = document.querySelector('#repo-url').innerText;
+  const fileName = document.querySelector('#file-name').innerText;
+  $('#detail-table').DataTable({
+    ...defaultTableSettings,
+    ajax: { // AJAX source info
+      url: "/get_discoveries_data",
+      data: { 
+        url: repoUrl,
+        file: fileName
+      },
+      dataSrc: function(json) {
+        return json.map(item => {
+          return {
+            ...item,
+            actions: actionsTemplate
+          }
+        })
+      }
+    },
+    order: [[2, "desc"]], // Set default column sorting
+    columns: [ // Table columns definition
+      // { 
+      //   data: "file_name",
+      //   className: "filename"
+      // }, { 
+      //   data: "new", // Mapping to the source json
+      //   className: "dt-center"
+      // }, { 
+      //   data: "false_positives",
+      //   className: "dt-center"
+      // }, { 
+      //   data: "addressing",
+      //   className: "dt-center"
+      // }, { 
+      //   data: "not_relevant",
+      //   className: "dt-center"
+      // }, { 
+      //   data: "actions",
+      // }
+    ],
+    initComplete: function(settings, json) {
+      const totalDiscoveries = json.reduce((sum, currItem) => 
+         sum + currItem.tot_discoveries, 0)
+      document.querySelector('#discoveriesCounter').innerText = totalDiscoveries;
+    }
+  });
+}
 
 function initButtonGroup() {
+  const repoUrl = document.querySelector('#repo-url').innerText;
   // Only have one button group active at a time
   var activeBtnGroup = null;
 
   // Toggle button dropdown when clicking on the opener
-  document.addEventListener('click', e => {
-    if(!e.target.matches('.btn-group .dropdown-opener, .btn-group .dropdown .btn')) return;
-    const parent = e.target.closest('.btn-group');
+  $(document).on('click', '.btn-group .dropdown-opener, .btn-group .dropdown, .btn-group.active .default-btn', function() {
+    const parent = this.closest('.btn-group');
     const dropdownOpen = parent.classList.contains('active');
     if(dropdownOpen) {
       parent.classList.remove('active');
@@ -78,6 +170,24 @@ function initButtonGroup() {
     if(!activeBtnGroup || activeBtnGroup.contains(e.target)) return;
     activeBtnGroup.classList.remove('active');
     activeBtnGroup = null;
+  });
+
+  // Update discovery group
+  $(document).on('click', '.btn-group .btn', function() {
+    const filename = this.closest('.btn-group').dataset.filename;
+    const state = this.dataset.state;
+    $.ajax({
+      url: 'update_discovery_group',
+      method: 'POST',
+      data: {
+        state: state,
+        url: repoUrl,
+        file: filename
+      }, 
+      success: function() {
+        $('#listing-table').DataTable().ajax.reload();
+      }
+    })
   });
 }
 
