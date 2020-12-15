@@ -17,7 +17,7 @@ Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_commit')
 Discovery = namedtuple(
     'Discovery',
-    'id file_name commit_id snippet repo_url rule_id state timestamp')
+    'id file_name commit_id line_number snippet repo_url rule_id state timestamp')
 
 
 class Interface(ABC):
@@ -76,8 +76,8 @@ class Client(Interface):
     def __init__(self, db, error):
         super().__init__(db, error)
 
-    def add_discovery(self, query, file_name, commit_id, snippet, repo_url,
-                      rule_id, state='new'):
+    def add_discovery(self, query, file_name, commit_id, line_number, snippet,
+                      repo_url, rule_id, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -86,6 +86,8 @@ class Client(Interface):
             The name of the file that produced the discovery
         commit_id: str
             The id of the commit introducing the discovery
+        line_number: int
+            The line number of the discovery in the file
         snippet: str
             The line matched during the scan
         repo_url: str
@@ -101,8 +103,8 @@ class Client(Interface):
             The id of the new discovery (-1 in case of error)
         """
         return self.query_id(
-            query,
-            file_name, commit_id, snippet, repo_url, rule_id, state)
+            query, file_name,
+            commit_id, line_number, snippet, repo_url, rule_id, state)
 
     def add_repo(self, query, repo_url):
         """ Add a new repository.
@@ -603,6 +605,7 @@ class Client(Interface):
                 curr_d = these_discoveries[i]
                 new_id = self.add_discovery(curr_d['file_name'],
                                             curr_d['commit_id'],
+                                            curr_d['line_number'],
                                             curr_d['snippet'],
                                             repo_url,
                                             curr_d['rule_id'])
@@ -612,6 +615,7 @@ class Client(Interface):
             # IDs of the discoveries added to the db (needed in the ML)
             discoveries_ids = map(lambda d: self.add_discovery(d['file_name'],
                                                                d['commit_id'],
+                                                               d['line_number'],
                                                                d['snippet'],
                                                                repo_url,
                                                                d['rule_id']),
