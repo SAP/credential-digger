@@ -22,35 +22,13 @@ from credentialdigger import PgClient, SqliteClient
 logger = logging.getLogger(__name__)
 
 
-class customParser(argparse.ArgumentParser):
-    def error(self, message):
-        logger.error(f'{message}')
-        self.print_help()
-        exit()
-
-
-parser = customParser()
-
-parser.add_argument(
-    'path_to_rules',
-    type=str,
-    help='<Required> The path of the file that contains the rules.')
-
-parser.add_argument(
-    '--sqlite',
-    default=None,
-    type=str,
-    help='<Optional> If specified, scan the repo using the sqlite client \
-                     passing as argument the path of the db.\
-                     Otherwise, use postgres (must be up and running)')
-
-def add_rules(*pip_args):
+def add_rules(args):
     """
     Add rules to the database
 
     Parameters
     ----------
-    *pip_args
+    args TODO: 
         Keyword arguments for pip.
 
     Raises
@@ -64,8 +42,6 @@ def add_rules(*pip_args):
             and category) is missing
     """
 
-    args = parser.parse_args(pip_args)
-
     if args.sqlite:
         c = SqliteClient(args.sqlite)
         logger.info('Database in use: Sqlite')
@@ -74,7 +50,7 @@ def add_rules(*pip_args):
                      dbuser=os.getenv('POSTGRES_USER'),
                      dbpassword=os.getenv('POSTGRES_PASSWORD'),
                      dbhost=os.getenv('DBHOST'),
-                     dbport=int(os.getenv('DBPORT')))
+                     dbport=os.getenv('DBPORT'))
         logger.info('Database in use: Postgres')
 
     c.add_rules_from_file(args.path_to_rules)
