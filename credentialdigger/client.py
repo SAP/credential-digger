@@ -86,7 +86,7 @@ class Client(Interface):
             The name of the file that produced the discovery
         commit_id: str
             The id of the commit introducing the discovery
-        line_number: str
+        line_number: int
             The line number of the discovery in the file
         snippet: str
             The line matched during the scan
