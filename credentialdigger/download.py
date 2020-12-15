@@ -30,7 +30,7 @@ logging.basicConfig(level=logging.INFO)
 # https://github.com/explosion/spaCy/blob/master/spacy/cli/download.py
 
 
-def download(model, *pip_args):
+def download(args):
     """ Download a model and link it to the credental digger models_data
     folder.
 
@@ -38,10 +38,11 @@ def download(model, *pip_args):
     ----------
     model: str
         The name of the model. It must be an environment variable.
-    **pip_args
+    pip_args
         Keyword arguments for pip.
     """
-    dl = download_model(model, pip_args)
+    model = args.model
+    dl = download_model(model, args.pip_args)
     if dl != 0:  # if download subprocess doesn't return 0, exit
         sys.exit(dl)
     logger.info('Download successful')
