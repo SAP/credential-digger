@@ -51,8 +51,8 @@ def scan(args):
 
     Parameters
     ----------
-    args TODO:
-        Keyword arguments for pip.
+    args
+        Arguments from command line parser.
 
     Returns
     -------
