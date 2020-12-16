@@ -1,6 +1,7 @@
 import os
 import sys
 from collections import defaultdict
+from itertools import groupby
 
 import yaml
 from dotenv import load_dotenv
@@ -192,10 +193,40 @@ def descoveries_data():
     url = request.args.get('url')
     file = request.args.get('file')
     if file is None:
-        discoveries = c.get_files_summary(url)
+        response = c.get_files_summary(url)
     else:
         discoveries = c.get_discoveries(url, file)
-    return jsonify(discoveries)
+        # There may be missing ids. Restructure as a dict
+        # There may be no mapping between list index and rule id
+        # Not very elegant, but avoid IndexError
+        rules = c.get_rules()
+        rulesdict = {}
+        for rule in rules:
+            rulesdict[rule['id']] = rule
+
+        # Add the category to each discovery
+        categories_found = set()
+        for discovery in discoveries:
+            discovery['category'] = rulesdict[discovery['rule_id']]['category']
+            categories_found.add(discovery['category'])
+
+        response = [
+            {
+                "snippet": keys[0],
+                "category": keys[1],
+                "state": keys[2],
+                "occurrences": [
+                    {
+                        "line_number": i["line_number"],
+                        "commit_id": i["commit_id"]
+                    } for i in list(values)
+                ]
+            }
+            for keys, values in groupby(
+                discoveries, lambda i: (i["snippet"], i["category"], i["state"]))
+        ]
+
+    return jsonify(response)
 
 
 @app.route('/update_discovery_group', methods=['POST'])

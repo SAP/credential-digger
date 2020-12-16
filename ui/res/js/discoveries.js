@@ -26,8 +26,8 @@ const actionsTemplate = `
 </div>
 `
 
-const defaultTableSettings = {
-  responsive: true, // Enable dataTables' responsive features
+const defaultTableSettings = {  
+  responsive: true,
   pageLength: 10, // Default # of records shown in the table
   language: {
     search: '<span class="icon icon-search dt-icon"></span>',
@@ -38,8 +38,7 @@ const defaultTableSettings = {
   }
 }
 
-
-$(document).ready(function() {
+document.addEventListener("DOMContentLoaded", function() {
   if (document.querySelector('#listing-table')) initListingDataTable();
   if (document.querySelector('#detail-table'))  initDetailDataTable();
   initButtonGroup();
@@ -69,7 +68,7 @@ function initListingDataTable() {
         className: "filename",
         orderSequence: ["asc", "desc"]
       }, { 
-        data: "new", // Mapping to the source json
+        data: "new",
         className: "dt-center",
         orderSequence: ["desc", "asc"]
       }, { 
@@ -117,27 +116,22 @@ function initDetailDataTable() {
         })
       }
     },
-    order: [[2, "desc"]], // Set default column sorting
+    // order: [[2, "desc"]], // Set default column sorting
     columns: [ // Table columns definition
-      // { 
-      //   data: "file_name",
-      //   className: "filename"
-      // }, { 
-      //   data: "new", // Mapping to the source json
-      //   className: "dt-center"
-      // }, { 
-      //   data: "false_positives",
-      //   className: "dt-center"
-      // }, { 
-      //   data: "addressing",
-      //   className: "dt-center"
-      // }, { 
-      //   data: "not_relevant",
-      //   className: "dt-center"
-      // }, { 
-      //   data: "actions",
-      // }
+      { 
+        data: "category",
+        className: "dt-center"
+      }, { 
+        data: "snippet", 
+        className: "snippet"
+      }, { 
+        data: "state",
+        className: "dt-center"
+      }, { 
+        data: "actions",
+      }
     ],
+    responsive: false,  
     initComplete: function(settings, json) {
       const totalDiscoveries = json.reduce((sum, currItem) => 
          sum + currItem.tot_discoveries, 0)
@@ -166,7 +160,7 @@ function initButtonGroup() {
   });
 
   // Close button dropdown when clicking outside of the button
-  document.addEventListener('click', e => {
+  $(document).on('click', e => {
     if(!activeBtnGroup || activeBtnGroup.contains(e.target)) return;
     activeBtnGroup.classList.remove('active');
     activeBtnGroup = null;
