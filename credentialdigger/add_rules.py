@@ -1,5 +1,5 @@
 """
-The 'add_rules' modules add scanning rules from a file to the database.
+The 'add_rules' module adds scanning rules from a file to the database.
 This module supports both Sqlite & Postegres databases.
 
 This command takes multiple arguments:
@@ -28,8 +28,8 @@ def add_rules(args):
 
     Parameters
     ----------
-    args TODO: 
-        Keyword arguments for pip.
+    args
+        Arguments from command line parser.
 
     Raises
     ------

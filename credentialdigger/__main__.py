@@ -1,4 +1,8 @@
-from credentialdigger.cli import cli
+import sys
+import logging
+import argparse
+
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +15,7 @@ class customParser(argparse.ArgumentParser):
 
 
 if __name__ == "__main__":
-    from credentialdigger.cli import add_rules, download, scan
+    from credentialdigger import add_rules, download, scan
 
     # Main parser configuration
     main_parser = customParser('credentialdigger')
@@ -92,7 +96,9 @@ if __name__ == "__main__":
 
     # Run the parser
     if len(sys.argv) == 1:
-        return main_parser.print_help()
+        main_parser.print_help()
+        exit()
+
     args = main_parser.parse_args(sys.argv[1:])
-    load_dotenv(dotenv_path=args.dotenv)
+    load_dotenv(dotenv_path=args.dotenv, verbose=True)
     args.func(args)
