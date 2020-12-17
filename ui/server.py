@@ -27,7 +27,7 @@ if os.getenv('USE_PG'):
                  dbuser=os.getenv('POSTGRES_USER'),
                  dbpassword=os.getenv('POSTGRES_PASSWORD'),
                  dbhost=os.getenv('DBHOST'),
-                 dbport=int(os.getenv('DBPORT')))
+                 dbport=os.getenv('DBPORT'))
 else:
     app.logger.info('Use Sqlite Client')
     c = SqliteClient(path=os.path.join(APP_ROOT, './data.db'))
