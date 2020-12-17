@@ -38,7 +38,7 @@ def download(args):
     ----------
     model: str
         The name of the model. It must be an environment variable.
-    pip_args
+    pip_args: list
         Keyword arguments for pip.
     """
     model = args.model

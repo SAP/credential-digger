@@ -28,7 +28,7 @@ def add_rules(args):
 
     Parameters
     ----------
-    args
+    args: `argparse.Namespace`
         Arguments from command line parser.
 
     Raises

@@ -72,7 +72,7 @@ if __name__ == "__main__":
             category, otherwise use all the rules in the db')
     parser_scan.add_argument(
         '--models', default=None, nargs='+',
-        help='A list of models for the ML false positives detection.\n Cannot \
+        help='A list of models for the ML false positives detection.\nCannot \
             accept empty lists.')
     parser_scan.add_argument(
         '--exclude', default=None, nargs='+',
