@@ -51,7 +51,7 @@ def scan(args):
 
     Parameters
     ----------
-    args
+    args: `argparse.Namespace`
         Arguments from command line parser.
 
     Returns
@@ -61,7 +61,6 @@ def scan(args):
         discoveries. If it exits with a value that is equal to 0, then it means
         that the scan detected no leaks in this repo.
     """
-
     if args.sqlite:
         c = SqliteClient(args.sqlite)
         logger.info('Database in use: Sqlite')
