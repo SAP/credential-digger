@@ -1,10 +1,11 @@
 import os
 import sys
 from collections import defaultdict
+from itertools import groupby
 
 import yaml
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, request, send_file
+from flask import Flask, redirect, render_template, request, send_file, jsonify
 from werkzeug.utils import secure_filename
 
 load_dotenv()
@@ -21,7 +22,7 @@ app = Flask('__name__', static_folder=os.path.join(APP_ROOT, './res'),
 app.config['UPLOAD_FOLDER'] = os.path.join(APP_ROOT, './backend')
 app.config['DEBUG'] = True  # Remove this line in production
 
-if os.getenv('USE_PG'):
+if os.getenv('USE_PG') == 'True':
     app.logger.info('Use Postgres Client')
     c = PgClient(dbname=os.getenv('POSTGRES_DB'),
                  dbuser=os.getenv('POSTGRES_USER'),
@@ -34,7 +35,7 @@ else:
 c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
 
 
-# ################### UI ####################
+# ################### ROUTES ####################
 @app.route('/')
 def root():
     repos = c.get_repos()
@@ -66,7 +67,7 @@ def root():
 def discoveries():
     # Get all the discoveries of this repository
     url = request.args.get('url')
-    discoveries = c.get_discoveries(url)
+    file = request.args.get('file')
 
     rules = c.get_rules()
     # There may be missing ids. Restructure as a dict
@@ -77,20 +78,15 @@ def discoveries():
     for rule in rules:
         rulesdict[rule['id']] = rule
         cat.add(rule['category'])
-
-    categories_found = set()
-
-    # Add the category to each discovery
-    for discovery in discoveries:
-        discovery['cat'] = rulesdict[discovery['rule_id']]['category']
-        categories_found.add(discovery['cat'])
-
-    return render_template('discoveries.html',
-                           url=url,
-                           discoveries=discoveries,
-                           lendiscoveries=len(discoveries),
-                           all_categories=categories_found,
-                           categories=list(cat))
+    if file is None:
+        return render_template('discoveries/listing.html',
+                               url=url,
+                               categories=list(cat))
+    else:
+        return render_template('discoveries/detail.html',
+                               url=url,
+                               file=file,
+                               categories=list(cat))
 
 
 @app.route('/rules')
@@ -99,25 +95,25 @@ def rules():
     return render_template('rules.html', rules=rules)
 
 
-@app.route('/fp/<id>', methods=['GET'])
-def fp(id):
-    url = request.args.get('url')
-    c.update_discovery(id, 'false_positive')
-    return redirect('/discoveries?url=%s' % url)
+# @app.route('/fp/<id>', methods=['GET'])
+# def fp(id):
+#     url = request.args.get('url')
+#     c.update_discovery(id, 'false_positive')
+#     return redirect('/discoveries?url=%s' % url)
 
 
-@app.route('/addressing/<id>', methods=['GET'])
-def addressing(id):
-    url = request.args.get('url')
-    c.update_discovery(id, 'addressing')
-    return redirect('/discoveries?url=%s' % url)
+# @app.route('/addressing/<id>', methods=['GET'])
+# def addressing(id):
+#     url = request.args.get('url')
+#     c.update_discovery(id, 'addressing')
+#     return redirect('/discoveries?url=%s' % url)
 
 
-@app.route('/not_relevant/<id>', methods=['GET'])
-def not_relevant(id):
-    url = request.args.get('url')
-    c.update_discovery(id, 'not_relevant')
-    return redirect('/discoveries?url=%s' % url)
+# @app.route('/not_relevant/<id>', methods=['GET'])
+# def not_relevant(id):
+#     url = request.args.get('url')
+#     c.update_discovery(id, 'not_relevant')
+#     return redirect('/discoveries?url=%s' % url)
 
 
 @app.route('/scan_repo', methods=['POST'])
@@ -187,6 +183,63 @@ def download_rule():
     with open(os.path.join(APP_ROOT, './backend/Downloadrules.yml'), 'w') as file:
         yaml.dump(dict(dictrules), file)
     return send_file(os.path.join(APP_ROOT, './backend/Downloadrules.yml'), as_attachment=True)
+
+
+# ################### JSON APIs ####################
+
+@app.route('/get_discoveries_data', methods=['GET'])
+def descoveries_data():
+    # Get all the discoveries of this repository
+    url = request.args.get('url')
+    file = request.args.get('file')
+    if file is None:
+        response = c.get_files_summary(url)
+    else:
+        discoveries = c.get_discoveries(url, file)
+        # There may be missing ids. Restructure as a dict
+        # There may be no mapping between list index and rule id
+        # Not very elegant, but avoid IndexError
+        rules = c.get_rules()
+        rulesdict = {}
+        for rule in rules:
+            rulesdict[rule['id']] = rule
+
+        # Add the category to each discovery
+        categories_found = set()
+        for discovery in discoveries:
+            discovery['category'] = rulesdict[discovery['rule_id']]['category']
+            categories_found.add(discovery['category'])
+
+        response = [
+            {
+                "snippet": keys[0],
+                "category": keys[1],
+                "state": keys[2],
+                "occurrences": [
+                    {
+                        "line_number": i["line_number"],
+                        "commit_id": i["commit_id"]
+                    } for i in list(values)
+                ]
+            }
+            for keys, values in groupby(
+                discoveries, lambda i: (i["snippet"], i["category"], i["state"]))
+        ]
+
+    return jsonify(response)
+
+
+@app.route('/update_discovery_group', methods=['POST'])
+def update_discovery_group():
+    state = request.form.get('state')
+    url = request.form.get('url')
+    file = request.form.get('file')
+    snippet = request.form.get('snippet')
+    response = c.update_discovery_group(state, url, file, snippet)
+    if response is False:
+        return 'Error in updatating the discovery group', 500
+    else:
+        return 'OK', 200
 
 
 app.run(host='0.0.0.0', port=5000)

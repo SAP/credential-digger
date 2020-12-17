@@ -1,5 +1,4 @@
 .moreButtonsDiscoveries {
-  min-width: 530px;
   justify-content: flex-end;
 }
 
@@ -50,4 +49,41 @@
 #loadMoreButton{
   border-radius: 100% !important;
   margin: 0 !important;
+}
+
+.repo-info {
+  position: fixed;
+  top: 50px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  padding: 0 10px;
+  background: #eaeaea;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #bbb;
+}
+
+.repo-info a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.repo-info a:hover .link-text {
+  text-decoration: underline;
+}
+
+.repo-info a span {
+  vertical-align: middle;
+}
+
+.repo-info .icon {
+  font-size: 20px;
+  margin-right: 5px;
+}
+
+.contentBox {
+  margin-top: 90px;
 }

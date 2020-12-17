@@ -1,7 +1,11 @@
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-  font-size: 17px;
+  font-size: 16px;
 }
 
 .headerToolbar {
@@ -12,6 +16,7 @@ body {
   position: fixed;
   width: 100%;
   top: 0;
+  z-index: 1;
 }
 
 .headerItem {
@@ -48,6 +53,7 @@ body {
   max-width: 1000px;
   margin: auto;
   margin-top: 50px;
+  padding: 30px;
 }
 
 .topicHeaderWrapper {
@@ -88,12 +94,6 @@ button {
   cursor: pointer;
   margin-left: 10px;
   text-decoration: none;
-}
-
-button:hover {
-  background: #3f51b5;
-  color: white;
-  border-color: #3f51b5;
 }
 
 .buttonWarn:hover {
@@ -326,7 +326,6 @@ table {
   border-collapse: collapse;
   font-size: 17px;
   margin-bottom: 21.440px;
-  table-layout: fixed;
 }
 
 th {
@@ -342,15 +341,18 @@ td {
   background: #f5f5f5;
 }
 
+.tableRowContent {
+  border-bottom: 1px solid rgb(158, 158, 158);
+}
+
 .tableRowContentLink {
   display: flex;
   align-items: center;
-  height: 19px;
+  height: 34px;
   width: calc(100% - 14px);
   padding: 7px 7px;
   text-decoration: none;
   color: black;
-  border-bottom: 1px solid rgb(158, 158, 158);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -365,4 +367,163 @@ td {
 
 .clearFlagsButton {
   display: none;
+}
+
+.hidden {
+  display: none;
+}
+
+
+/* Button group */
+.btn-group {
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  position: relative;
+}
+.btn-group .hidden {
+  display: none;
+}
+.btn-group .dropdown {
+  position: absolute;
+  right: 0;
+  display: none;
+}
+.btn-group.active .dropdown {
+  display: block;
+}
+
+.btn .icon {
+  line-height: 1.5;
+  margin-right: 6px;
+  font-size: 18px;
+  vertical-align: middle;
+}
+
+.btn-group .btn, .btn-group .dropdown-opener {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px;
+  transition: all 0.05s ease-in-out;
+  border-width: 1px;
+  border-style: solid;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-group .btn {
+  justify-content: flex-start;
+}
+
+.btn:hover, .btn-group .dropdown-opener:hover {
+  box-shadow: 0px 0px 0px 100px rgba(0, 0, 0, 0.1) inset;
+}
+.btn:active, .btn-group .dropdown-opener:active {
+  box-shadow: 0px 0px 0px 100px rgba(0, 0, 0, 0.2) inset, 0px 0px 5px 1px rgba(0, 0, 0, 0.15) inset;
+}
+.btn-group .default-btn {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border-right: none;
+}
+
+.btn-group .default-btn .icon {
+  pointer-events: none;
+}
+
+.btn-group .dropdown-opener {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  width: 100%;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.btn-group .dropdown {
+  z-index: 1;
+  box-shadow: 0px 2px 10px 0 rgba(0, 0, 0, 0.4);
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  overflow: hidden;
+}
+
+.btn-group .dropdown .btn {
+  border-top: 0;
+}
+.btn-group.active .default-btn {
+  border-bottom-left-radius: 0;
+}
+.btn-group.active .dropdown-opener {
+  border-bottom-right-radius: 0;
+}
+
+.btn-group {
+  font-size: 15px
+}
+
+/* Colors */
+.primary-bg {
+  background-color: #5568d3;
+  color: #ffffff;
+  border-color: #293a9e;
+}
+
+.danger-bg {
+  background-color: #dc3545;
+  color: white;
+  border-color: #b6202f;
+}
+
+.warning-bg {
+  background-color: #ffc107;
+  color: black;
+  border-color: #cc9900;
+}
+
+.success-bg {
+  background-color: #43cb63;
+  color: black;
+  border-color: #2fac4c;
+}
+
+.light-bg {
+  background-color: white;
+  color: #dee3e8;
+  border-color: #dee3e8;
+}
+
+.outline-bg {
+  background-color: white;
+  color: #444;
+  border-color: #444;
+}
+
+.danger-color {
+  color: #d51515;
+}
+
+.warning-color { 
+  color: #eb8100;;
+}
+
+.grey-color {
+  color: #555;
+}
+
+@media (max-width: 1023px) {
+  .repo-info .repo-link .link-text {
+    display: none;
+  }
+  table.dataTable>tbody>tr.child span.dtr-title {
+    min-width: 150px;
+  }
+  table.dataTable>tbody>tr.child ul.dtr-details {
+    display: block;
+  }
+  table.dataTable>tbody>tr.child .dtr-data {
+    display: inline-block;
+  }
 }

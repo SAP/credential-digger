@@ -241,7 +241,7 @@ class PgClient(Client):
             rule_id=rule_id,
             query='SELECT * FROM rules WHERE id=%s')
 
-    def get_discoveries(self, repo_url):
+    def get_discoveries(self, repo_url, file_name=None):
         """ Get all the discoveries of a repository.
 
         Parameters
@@ -254,9 +254,39 @@ class PgClient(Client):
         list
             A list of discoveries (dictionaries)
         """
+        query = 'SELECT * FROM discoveries WHERE repo_url=%s'
+        if file_name:
+            query += ' AND file_name=%s'
         return super().get_discoveries(
             repo_url=repo_url,
-            query='SELECT * FROM discoveries WHERE repo_url=%s')
+            file_name=file_name,
+            query=query)
+
+    def get_files_summary(self, repo_url):
+        """ Get aggregated discoveries info on all files of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+
+        Returns
+        -------
+        list
+            A list of files with aggregated data (dictionaries)
+        """
+        return super().get_files_summary(
+            repo_url=repo_url,
+            query=(
+                "SELECT file_name,"
+                " COUNT(*) AS tot_discoveries,"
+                " COUNT(*) FILTER (WHERE state='new') AS new,"
+                " COUNT(*) FILTER (WHERE state='false_positive') AS false_positives,"
+                " COUNT(*) FILTER (WHERE state='addressing') AS addressing,"
+                " COUNT(*) FILTER (WHERE state='not_relevant') AS not_relevant"
+                " FROM discoveries WHERE repo_url=%s"
+                " GROUP BY file_name"
+            ))
 
     def get_discovery(self, discovery_id):
         """ Get a discovery.
@@ -346,7 +376,7 @@ class PgClient(Client):
             new_state=new_state,
             query='UPDATE discoveries SET state=%s WHERE id=%s RETURNING true')
 
-    def update_discovery_group(self, repo_url, file_name, snippet, new_state):
+    def update_discovery_group(self, new_state, repo_url, file_name, snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
@@ -354,24 +384,25 @@ class PgClient(Client):
 
         Parameters
         ----------
+        new_state: str
+            The new state of these discoveries
         repo_url: str
             The url of the repository
         file_name: str
             The name of the file
-        snippet: str
+        snippet: str, optional
             The snippet
-        new_state: str
-            The new state of this discovery
 
         Returns
         -------
         bool
             `True` if the update is successful, `False` otherwise
         """
+        query = 'UPDATE discoveries SET state=%s WHERE repo_url=%s \
+                and file_name=%s'
+        if snippet is not None:
+            query += ' and snippet=%s'
+        query += ' RETURNING true'
         super().update_discovery_group(
-            repo_url=repo_url,
-            file_name=file_name,
-            snippet=snippet,
-            new_state=new_state,
-            query='UPDATE discoveries SET state=%s WHERE repo_url=%s \
-            and file_name=%s and snippet=%s RETURNING true')
+            new_state=new_state, repo_url=repo_url, file_name=file_name,
+            snippet=snippet, query=query)

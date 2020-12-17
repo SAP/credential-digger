@@ -1,91 +1,54 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<!-- Repo info top bar -->
+<div class="repo-info grey-color">
+  <a href="/">
+    <span class="icon icon-keyboard_arrow_left"></span>
+    <span class="link-text">Go back to all repos</span>
+  </a>
+  <a href="{{url}}" target="_blank" class="repo-link">
+    <span class="icon icon-github"></span>
+    <span class="link-text">{{url}}</span>
+  </a>
+</div>
+
 <!--discoveries list with search bar-->
 <div class="topicHeaderWrapper">
-  <h1 class="topicH1"> Discoveries</h1>
+  <h1 class="topicH1">Discoveries</h1>
   <span class="moreButtons moreButtonsDiscoveries">
-    <button id="newScan">Rescan</button>
-    <button id="deleteRepo">Delete Repo</button>
-    <button id="showFPs" onclick="switchFilter()">Hide FPs</button>
+    <button id="newScan" class="btn outline-bg">
+      <span class="icon icon-refresh"></span>
+      <span>Rescan</span>
+    </button>
+    <button id="deleteRepo" class="btn danger-bg">
+      <span class="icon icon-delete_outline"></span>
+      <span>Delete Repo</span>
+    </button>
   </span>
 </div>
 
 <div class="topicHeaderWrapper underTopicHeaderWrapper">
-  <h3 id="discoveriesCounter" class="scanDescription">{{lendiscoveries}} Discoveries found</h3>
+  <h3 class="scanDescription"><span id="discoveriesCounter"></span> discoveries found</h3>
 </div>
-<div class="filtersWrapper">
-  {% for cat in all_categories %}
-  <button class="categoryToggle filters">
-    {{cat}}
-  </button>
-  {% endfor %}
-</div>
-<table id="discoveriesTable">
-  <colgroup>
-    <col width="180px" />
-    <col width="680px" />
-    <col width="140px" />
-  </colgroup>
-
+<table id="listing-table" class="dataTable" style="width: 100%">
   <!-- Header -->
-  <tr>
-    <th>Category</th>
-    <th>File Name</th>
-    <th>State</th>
-  </tr>
-
+  <thead>
+    <tr>
+      <th rowspan="2">Filename</th>
+      <th colspan="4" class="dt-center">Discoveries</th>
+      <th rowspan="2" class="dt-center">Actions</th>
+    </tr>
+    <tr>
+      <th>Leaks</th>
+      <th>False positives</th>
+      <th>Addressing</th>
+      <th>Not relevant</th>
+    </tr>
+  </thead>
   <!-- Content (filled with discoveries info) -->
-  {% for discovery in discoveries %}
-
-  <tr class="discoveryEntry tableRowContent discoveryGroup">
-    <td>{{discovery.cat}}</td>
-    <td><a class="tableRowContentLink"
-        href="{{discovery.repo_url}}/blob/{{discovery.commit_id}}/{{discovery.file_name}}">{{discovery.file_name}}</a>
-    </td>
-    <td>{{discovery.state}}</td>
-  </tr>
-
-  <tr class="tableRowHover discoveryGroup">
-    <td colspan="3" class="expandTableRow">
-      <table class="snippetTable">
-
-        <!-- Commit reference -->
-        <tr>
-          <td colspan="3">
-            <div class="snippetHeader">
-              <span>Commit: {{discovery.commit_id}}</span>
-              <span class="moreButtons">
-                <a class="linkButton" href="{{discovery.repo_url}}/commit/{{discovery.commit_id}}/" target="_blank">Open
-                  Commit</a>
-              </span>
-            </div>
-          </td>
-        </tr>
-
-        <!-- Snippet -->
-        <tr class="snippetCodeLine" valign="top">
-          <td class="snippetLineCell">{{discovery.snippet}}</td>
-          <td class="snippetCodeCell"></td>
-        </tr>
-      </table>
-
-      <!-- Flag buttons -->
-      <div class="discoveryStateButtonWrapper">
-        <p class="formLabel flagsText"></p>
-        <span class="moreButtons moreButtonsAdressed">
-          <button onclick="location.href = '/fp/{{discovery.id}}?url={{discovery.repo_url}}'" class="">False
-            positive</button>
-          <button onclick="location.href = '/addressing/{{discovery.id}}?url={{discovery.repo_url}}'" class="">Adress
-            it</button>
-          <button onclick="location.href = '/not_relevant/{{discovery.id}}?url={{discovery.repo_url}}'" class="">Not
-            relevant anymore</button>
-        </span>
-      </div>
-    </td>
-  </tr>
-
-  {% endfor %}
+  <tbody>
+  </tbody>
 </table>
 
 <p id="noEntries">Select Categories</p>
@@ -138,9 +101,14 @@
   </div>
 </div>
 
+<div id="repo-url" class="hidden">{{url}}</div>
+
 <script>
   window.name = "{{url}}";
 </script>
+<script src="/res/js/vendor/jquery-3.5.1.min.js"></script>
+<script src="/res/js/vendor/jquery.dataTables.min.js"></script>
+<script src="/res/js/utils.js"></script>
 <script src="/res/js/scanForm.js"></script>
 <script src="/res/js/discoveries.js"></script>
 <script src="/res/js/scan.js"></script>

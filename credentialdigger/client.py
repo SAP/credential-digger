@@ -18,6 +18,9 @@ Repo = namedtuple('Repo', 'url last_commit')
 Discovery = namedtuple(
     'Discovery',
     'id file_name commit_id line_number snippet repo_url rule_id state timestamp')
+FilesSummary = namedtuple(
+    'FilesSummary',
+    'file_name tot_discoveries new false_positives addressing not_relevant')
 
 
 class Interface(ABC):
@@ -221,25 +224,21 @@ class Client(Interface):
         list
             A list of repositories (dictionaries).
             An empty list if there are no repos (or in case of errors)
+
+        Raises
+        ------
+            TypeError
+                If any of the required arguments is missing
         """
         query = 'SELECT * FROM repos'
         cursor = self.db.cursor()
-        try:
-            all_repos = []
-            cursor.execute(query)
+        all_repos = []
+        cursor.execute(query)
+        result = cursor.fetchone()
+        while result:
+            all_repos.append(dict(Repo(*result)._asdict()))
             result = cursor.fetchone()
-            while result:
-                all_repos.append(dict(Repo(*result)._asdict()))
-                result = cursor.fetchone()
-            return all_repos
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return []
-        except self.Error:
-            self.db.rollback()
-            return []
+        return all_repos
 
     def get_repo(self, query, repo_url):
         """ Get a repository.
@@ -253,22 +252,18 @@ class Client(Interface):
         -------
         dict
             A repository (an empty dictionary if the url does not exist)
+
+        Raises
+        ------
+            TypeError
+                If any of the required arguments is missing
         """
         cursor = self.db.cursor()
-        try:
-            cursor.execute(query, (repo_url,))
-            result = cursor.fetchone()
-            if result:
-                return dict(Repo(*result)._asdict())
-            else:
-                return {}
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return {}
-        except self.Error:
-            self.db.rollback()
+        cursor.execute(query, (repo_url,))
+        result = cursor.fetchone()
+        if result:
+            return dict(Repo(*result)._asdict())
+        else:
             return {}
 
     def get_rules(self, category_query, category=None):
@@ -278,6 +273,8 @@ class Client(Interface):
         argument. This is due to the fact that categories may have a slash
         (e.g., `auth/password`). Encoding such categories in the url would
         cause an error on the server side.
+
+        NOTE: Here exceptions are suppressed in order to not stop the scanning.
 
         Parameters
         ----------
@@ -331,7 +328,7 @@ class Client(Interface):
         """
         return self.query_as(query, Rule, rule_id,)
 
-    def get_discoveries(self, query, repo_url):
+    def get_discoveries(self, query, repo_url, file_name=None):
         """ Get all the discoveries of a repository.
 
         Parameters
@@ -343,24 +340,49 @@ class Client(Interface):
         -------
         list
             A list of discoveries (dictionaries)
+
+        Raises
+        ------
+            TypeError
+                If any of the required arguments is missing
         """
         cursor = self.db.cursor()
-        try:
-            all_discoveries = []
-            cursor.execute(query, (repo_url,))
+        all_discoveries = []
+        params = (repo_url,) if file_name is None else (
+            repo_url, file_name)
+        cursor.execute(query, params)
+        result = cursor.fetchone()
+        while result:
+            all_discoveries.append(dict(Discovery(*result)._asdict()))
             result = cursor.fetchone()
-            while result:
-                all_discoveries.append(dict(Discovery(*result)._asdict()))
-                result = cursor.fetchone()
-            return all_discoveries
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return []
-        except self.Error:
-            self.db.rollback()
-            return []
+        return all_discoveries
+
+    def get_files_summary(self, query, repo_url):
+        """ Get aggregated discoveries info on all files of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+
+        Returns
+        -------
+        list
+            A list of files with aggregated data (dictionaries)
+
+        Raises
+        ------
+            TypeError
+                If any of the required arguments is missing
+        """
+        cursor = self.db.cursor()
+        files = []
+        cursor.execute(query, (repo_url,))
+        result = cursor.fetchone()
+        while result:
+            files.append(dict(FilesSummary(*result)._asdict()))
+            result = cursor.fetchone()
+        return files
 
     def get_discovery(self, query, discovery_id):
         """ Get a discovery.
@@ -395,22 +417,18 @@ class Client(Interface):
             A list of tuples. Each tuple is composed by file_name, snippet,
             number of times that this couple occurs, and the state of the
             couple.
+
+        Raises
+        ------
+            TypeError
+                If any of the required arguments is missing
         """
         cursor = self.db.cursor()
-        try:
-            if state is not None:
-                cursor.execute(state_query, (repo_url, state))
-            else:
-                cursor.execute(query, (repo_url,))
-            return cursor.fetchall()
-        except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
-            self.db.rollback()
-            return []
-        except self.Error:
-            self.db.rollback()
-            return []
+        if state is not None:
+            cursor.execute(state_query, (repo_url, state))
+        else:
+            cursor.execute(query, (repo_url,))
+        return cursor.fetchall()
 
     def update_repo(self, query, url, last_commit):
         """ Update the last commit of a repo.
@@ -453,8 +471,8 @@ class Client(Interface):
 
         return self.query_check(query, new_state, discovery_id)
 
-    def update_discovery_group(self, query, repo_url, file_name, snippet,
-                               new_state):
+    def update_discovery_group(self, query, new_state, repo_url, file_name,
+                               snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
@@ -462,14 +480,14 @@ class Client(Interface):
 
         Parameters
         ----------
+        new_state: str
+            The new state of these discoveries
         repo_url: str
             The url of the repository
         file_name: str
             The name of the file
-        snippet: str
+        snippet: str, optional
             The snippet
-        new_state: str
-            The new state of this discovery
 
         Returns
         -------
@@ -479,7 +497,11 @@ class Client(Interface):
         if new_state not in ('new', 'false_positive', 'addressing',
                              'not_relevant', 'fixed'):
             return False
-        return self.query_check(query, new_state, repo_url, file_name, snippet)
+        if snippet is None:
+            return self.query_check(query, new_state, repo_url, file_name)
+        else:
+            return self.query_check(
+                query, new_state, repo_url, file_name, snippet)
 
     def scan(self, repo_url, category=None, scanner=GitScanner,
              models=None, exclude=None, force=False, debug=False,
