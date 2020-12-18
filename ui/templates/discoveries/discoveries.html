@@ -3,11 +3,17 @@
 
 <!-- Repo info top bar -->
 <div class="repo-info grey-color">
-  <a href="/">
+  <a href="/files?url={{url}}">
     <span class="icon icon-keyboard_arrow_left"></span>
-    <span class="link-text">Go back to all repos</span>
+    <span class="link-text">Go back to all files</span>
   </a>
-  <a href="{{url}}" target="_blank" class="repo-link">
+  {% if file %}
+    <span title="{{file}}">
+      <span class="icon icon-insert_drive_file"></span>
+      <span class="topbar-filename">{{file}}</span>
+    </span>
+  {% endif %}
+  <a href="{{url}}" target="_blank" title="{{url}}">
     <span class="icon icon-github"></span>
     <span class="link-text">{{url}}</span>
   </a>
@@ -17,6 +23,31 @@
 <div class="topicHeaderWrapper">
   <h1 class="topicH1">Discoveries</h1>
   <span class="moreButtons moreButtonsDiscoveries">
+    <div class="btn-group">
+      <div class="btn primary-bg" data-state="false_positive">
+        <span class="icon icon-outlined_flag"></span>
+        <span>Mark all as FPs</span>
+      </div>
+      <div class="dropdown-container">
+        <div class="dropdown-opener primary-bg">
+          <span class="icon icon-keyboard_arrow_down"></span>
+        </div>
+        <div class="dropdown">
+          <div class="btn light-bg danger-color" data-state="new">
+            <span class="icon icon-error_outline"></span>
+            <span>Mark all as leak</span>
+          </div>
+          <div class="btn light-bg warning-color" data-state="addressing">
+            <span class="icon icon-timelapse"></span>
+            <span>Mark all as addressing</span>
+          </div>
+          <div class="btn light-bg grey-color" data-state="not_relevant">
+            <span class="icon icon-inbox"></span>
+            <span>Mark all as not relevant</span>
+          </div>
+        </div>
+      </div>
+    </div>
     <button id="newScan" class="btn outline-bg">
       <span class="icon icon-refresh"></span>
       <span>Rescan</span>
@@ -28,22 +59,22 @@
   </span>
 </div>
 
+
 <div class="topicHeaderWrapper underTopicHeaderWrapper">
   <h3 class="scanDescription"><span id="discoveriesCounter"></span> discoveries found</h3>
 </div>
-<table id="listing-table" class="dataTable" style="width: 100%">
+
+<table id="detail-table" class="dataTable" style="width: 100%">
   <!-- Header -->
   <thead>
     <tr>
-      <th rowspan="2">Filename</th>
-      <th colspan="4" class="dt-center">Discoveries</th>
-      <th rowspan="2" class="dt-center">Actions</th>
-    </tr>
-    <tr>
-      <th>Leaks</th>
-      <th>False positives</th>
-      <th>Addressing</th>
-      <th>Not relevant</th>
+      <th></th>
+      <th class="dt-center nowrap">Category</th>
+      <th>Snippet</th>
+      <th class="dt-center nowrap">State</th>
+      <th class="dt-center nowrap">Tot</th>
+      <th class="none">Occurrences</th>
+      <th class="dt-center">Actions</th>
     </tr>
   </thead>
   <!-- Content (filled with discoveries info) -->
@@ -102,6 +133,7 @@
 </div>
 
 <div id="repo-url" class="hidden">{{url}}</div>
+<div id="file-name" class="hidden">{{file}}</div>
 
 <script>
   window.name = "{{url}}";

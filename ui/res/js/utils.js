@@ -21,3 +21,15 @@ String.prototype.replaceList = function(replaceArray) {
 
   return target;
 }
+
+function decodeHTML(text) {
+  var textArea = document.createElement('textarea');
+  textArea.innerHTML = text;
+  return textArea.value;
+}
+
+function encodeHTML(text) {
+  var textArea = document.createElement('textarea');
+  textArea.innerText = text;
+  return textArea.innerHTML;
+}

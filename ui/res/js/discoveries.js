@@ -1,8 +1,8 @@
 const actionsTemplate = `
-<div class="btn-group" data-filename="{{filename}}">
-  <div class="btn default-btn primary-bg" data-state="false_positive">
+<div class="btn-group">
+  <div class="btn primary-bg" data-state="false_positive">
     <span class="icon icon-outlined_flag"></span>
-    <span>Mark all as FPs</span>
+    <span>{{mark}} FPs</span>
   </div>
   <div class="dropdown-container">
     <div class="dropdown-opener primary-bg">
@@ -11,22 +11,29 @@ const actionsTemplate = `
     <div class="dropdown">
       <div class="btn light-bg danger-color" data-state="new">
         <span class="icon icon-error_outline"></span>
-        <span>Mark all as leaks</span>
+        <span>{{mark}} leak</span>
       </div>
       <div class="btn light-bg warning-color" data-state="addressing">
         <span class="icon icon-timelapse"></span>
-        <span>Mark all as addressing</span>
+        <span>{{mark}} addressing</span>
       </div>
       <div class="btn light-bg grey-color" data-state="not_relevant">
         <span class="icon icon-inbox"></span>
-        <span>Mark all as not relevant</span>
+        <span>{{mark}} not relevant</span>
       </div>
     </div>
   </div>
 </div>
-`
+`;
 
-const defaultTableSettings = {  
+const states = {
+  new: "leak",
+  false_positive: "false positive",
+  addressing: "addressing",
+  not_relevant: "not relevant"
+}
+
+const defaultTableSettings = {
   responsive: true,
   pageLength: 10, // Default # of records shown in the table
   language: {
@@ -38,148 +45,220 @@ const defaultTableSettings = {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-  if (document.querySelector('#listing-table')) initListingDataTable();
-  if (document.querySelector('#detail-table'))  initDetailDataTable();
+document.addEventListener("DOMContentLoaded", function () {
+  if (document.querySelector('#listing-table')) initFilesDataTable();
+  if (document.querySelector('#detail-table')) initDiscoveriesDataTable();
   initButtonGroup();
+  initUpdateDiscoveries();
 });
 
-function initListingDataTable() {
+function initFilesDataTable() {
   const repoUrl = document.querySelector('#repo-url').innerText;
   $('#listing-table').DataTable({
     ...defaultTableSettings,
-    ajax: { // AJAX source info
-      url: "/get_discoveries_data",
-      data: { url: repoUrl },
-      dataSrc: function(json) { // Map json data before sending it to datatable
-        return json.map(item => {
-          return {
-            ...item,
-            file_name: `<a href="/discoveries?url=${repoUrl}&file=${item.file_name}">${item.file_name}</a>`,
-            actions: actionsTemplate.replace("{{filename}}", item.file_name)
-          }
-        })
-      }
-    },
-    order: [[0, "asc"]], // Set default column sorting
+    order: [[1, "desc"]], // Set default column sorting
     columns: [ // Table columns definition
-      { 
+      {
         data: "file_name",
         className: "filename",
         orderSequence: ["asc", "desc"]
-      }, { 
+      }, {
         data: "new",
         className: "dt-center",
         orderSequence: ["desc", "asc"]
-      }, { 
+      }, {
         data: "false_positives",
         className: "dt-center",
         orderSequence: ["desc", "asc"]
-      }, { 
+      }, {
         data: "addressing",
         className: "dt-center",
         orderSequence: ["desc", "asc"]
-      }, { 
+      }, {
         data: "not_relevant",
         className: "dt-center",
         orderSequence: ["desc", "asc"]
-      }, { 
+      }, {
         data: "actions",
         orderable: false
       }
     ],
-    initComplete: function(settings, json) {
-      const totalDiscoveries = json.reduce((sum, currItem) => 
-         sum + currItem.tot_discoveries, 0)
-      document.querySelector('#discoveriesCounter').innerText = totalDiscoveries;
-    }
-  });
-}
-
-function initDetailDataTable() {
-  const repoUrl = document.querySelector('#repo-url').innerText;
-  const fileName = document.querySelector('#file-name').innerText;
-  $('#detail-table').DataTable({
-    ...defaultTableSettings,
     ajax: { // AJAX source info
       url: "/get_discoveries_data",
-      data: { 
-        url: repoUrl,
-        file: fileName
-      },
-      dataSrc: function(json) {
+      data: { url: repoUrl },
+      dataSrc: function (json) {
+        // Map json data before sending it to datatable
         return json.map(item => {
           return {
             ...item,
-            actions: actionsTemplate
+            file_name: `
+            <a href="/discoveries?url=${repoUrl}&file=${item.file_name}">
+              ${item.file_name}
+            </a>`,
+            actions: actionsTemplate.replaceList([
+              ["{{mark}}", "Mark all as", true]
+            ])
           }
         })
       }
     },
-    // order: [[2, "desc"]], // Set default column sorting
-    columns: [ // Table columns definition
-      { 
-        data: "category",
-        className: "dt-center"
-      }, { 
-        data: "snippet", 
-        className: "snippet"
-      }, { 
-        data: "state",
-        className: "dt-center"
-      }, { 
-        data: "actions",
-      }
-    ],
-    responsive: false,  
-    initComplete: function(settings, json) {
-      const totalDiscoveries = json.reduce((sum, currItem) => 
-         sum + currItem.tot_discoveries, 0)
+    initComplete: function (settings, json) {
+      const totalDiscoveries = json.reduce((sum, currItem) =>
+        sum + currItem.tot_discoveries, 0)
       document.querySelector('#discoveriesCounter').innerText = totalDiscoveries;
     }
   });
 }
 
-function initButtonGroup() {
+function initDiscoveriesDataTable() {
   const repoUrl = document.querySelector('#repo-url').innerText;
+  const fileName = document.querySelector('#file-name').innerText;
+  $('#detail-table').DataTable({
+    ...defaultTableSettings,
+    order: [[3, "desc"]], // Set default column sorting
+    columns: [ // Table columns definition
+      {
+        data: null,
+        defaultContent: "",
+        orderable: false
+      }, {
+        data: "category",
+        className: "dt-center nowrap",
+      }, {
+        data: "snippet",
+        className: "snippet",
+      }, {
+        data: "state",
+        className: "dt-center nowrap",
+      }, {
+        data: "tot",
+        className: "dt-center nowrap",
+      }, {
+        data: "occurrences",
+        className: "none"
+      }, {
+        data: "actions",
+        orderable: false
+      }
+    ],
+    ajax: { // AJAX source info
+      url: "/get_discoveries_data",
+      data: {
+        url: repoUrl,
+        file: fileName
+      },
+      dataSrc: function (json) {
+        return json.map(item => {
+          // Map json data before sending it to datatable
+          const details = `
+          <table>
+            <thead>
+              <tr>
+              ${fileName ? '': '<th>File</th>'}
+              <th>Commit hash</th><th class="dt-center">Line number</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              ${item.occurrences.map(i => `
+                <tr>
+                  ${fileName ? "" : `<td class="filename"><span>${i.file_name}</span></td>`}
+                  <td class="width100">${i.commit_id}</td>
+                  <td class="dt-center">${i.line_number}</td>
+                  <td>
+                    <a class="btn btn-light grey-color" target="_blank" href="${repoUrl}/blob/${i.commit_id}/${i.file_name}#L${i.line_number}">
+                      <span class="icon icon-github"></span>
+                      <span>Show on GitHub</span>
+                    </a>
+                  </td>
+                </tr>
+              `).join('\n')}
+            </tbody>
+          </table>`;
+
+          return {
+            ...item,
+            state: states[item.state],
+            snippet: encodeHTML(item.snippet),
+            tot: item.occurrences.length,
+            occurrences: details,
+            actions: actionsTemplate.replaceList([
+              ["{{ids}}", item.occurrences.map(i => i.id)],
+              ["{{mark}}", "Mark as", true]
+            ])
+          }
+        })
+      }
+    },
+    initComplete: function (settings, json) {
+      const totalDiscoveries = json.reduce((sum, currItem) =>
+        sum + currItem.occurrences.length, 0)
+      document.querySelector('#discoveriesCounter').innerText = totalDiscoveries;
+    }
+  });
+  // $('#detail-table tbody').on('mouseenter mouseleave', 'tr[role="row"]', function () {
+  //   const tr = $(this).closest('tr');
+  //   const table = $('#detail-table').DataTable();
+  //   const row = table.row(tr);
+  //   if (row.child.isShown()) {
+  //     row.child.hide();
+  //     tr.removeClass('shown');
+  //   }
+  //   else {
+  //     row.child(row.data().details).show();
+  //     tr.addClass('shown');
+  //   }
+  // });
+}
+
+function initButtonGroup() {
   // Only have one button group active at a time
   var activeBtnGroup = null;
 
   // Toggle button dropdown when clicking on the opener
-  $(document).on('click', '.btn-group .dropdown-opener, .btn-group .dropdown, .btn-group.active .default-btn', function() {
+  $(document).on('click', '.btn-group .dropdown-opener, .btn-group .dropdown, .btn-group.active .default-btn', function () {
     const parent = this.closest('.btn-group');
     const dropdownOpen = parent.classList.contains('active');
-    if(dropdownOpen) {
+    if (dropdownOpen) {
       parent.classList.remove('active');
-      activeBtnGroup = null;  
+      activeBtnGroup = null;
     } else {
-      if(activeBtnGroup) activeBtnGroup.classList.remove('active');
+      if (activeBtnGroup) activeBtnGroup.classList.remove('active');
       parent.classList.add('active');
       activeBtnGroup = parent;
     }
   });
 
   // Close button dropdown when clicking outside of the button
-  $(document).on('click', e => {
-    if(!activeBtnGroup || activeBtnGroup.contains(e.target)) return;
+  $(document).on('click', function (e) {
+    if (!activeBtnGroup || activeBtnGroup.contains(e.target)) return;
     activeBtnGroup.classList.remove('active');
     activeBtnGroup = null;
   });
+}
+
+function initUpdateDiscoveries() {
+  const repoUrl = document.querySelector('#repo-url').innerText;
 
   // Update discovery group
-  $(document).on('click', '.btn-group .btn', function() {
-    const filename = this.closest('.btn-group').dataset.filename;
+  $(document).on('click', '.btn-group .btn', function () {
     const state = this.dataset.state;
+    let filename, snippet;
+    if (document.querySelector("#listing-table")) {
+      filename = this.closest('tr').querySelector('.filename').innerText;
+    } else {
+      filename = document.querySelector("#file-name").innerText;
+      snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
+    }
     $.ajax({
       url: 'update_discovery_group',
       method: 'POST',
       data: {
         state: state,
         url: repoUrl,
-        file: filename
-      }, 
-      success: function() {
-        $('#listing-table').DataTable().ajax.reload();
+        ...filename && { file: filename },
+        ...snippet && { snippet: decodeHTML(snippet) }
+      },
+      success: function () {
+        $('.dataTable').DataTable().ajax.reload();
       }
     })
   });
@@ -222,18 +301,6 @@ document.getElementById('startRepoScan').addEventListener('click', function () {
   // close popup
   document.getElementById('addRepoModal').style.display = 'none';
 });
-var allDiscoveries = document.getElementsByClassName('discoveryEntry');
-// Show/hide fp flag
-function switchFilter() {
-  // Swap the value of the filtering FLAG
-  filterFPs = filterFPs ^ 1;
-  // Store the flag's value as long as the session is still running
-  sessionStorage.setItem('filterFPs', filterFPs);
-  // Change color
-  document.getElementById('showFPs').style.backgroundColor = '#0000ff';
-  // Filter discoveries
-  toggleFPs();
-}
 
 // add action listener to checkbox that selects all the rules
 document.getElementById('cbAllRules').addEventListener('change', function () {
@@ -248,112 +315,3 @@ document.getElementById('ruleSelector').addEventListener('change', function () {
   document.getElementById('cbAllRules').checked = false;
   checkFormFilled();
 });
-
-/** LEGACY FUNCTIONS STILL TO IMPLEMENT */
-
-// let filterFPs = false;
-// // The list of the categories to skip while filtering.
-// let categoriesToSkip = [];
-// // It is mandatory to wait for the window to load before executing the
-// // scripts
-// window.onload = function () {
-//   filterFPs = sessionStorage.getItem('filterFPs');
-//   if (filterFPs == true) {
-//     toggleFPs();
-//   }
-// };
-
-// var tableRows = document.getElementsByClassName('tableRowContent');
-// // add action listeners to table rows
-// for (var i = 0; i < tableRows.length; i++) {
-//   tableRows[i].addEventListener('mouseover', function (event) {
-//     // open expand table row
-//     openExpandTableRow(event.currentTarget);
-//   });
-// }
-
-// function openExpandTableRow(tr) {
-//   // get all hidden expand table rows
-//   var expandTableRows = document.getElementsByClassName('expandTableRow');
-//   // get all table rows
-//   var tableRows = document.getElementsByClassName('tableRowContent');
-//   // step trough all expand table rows
-//   for (var i = 0; i < expandTableRows.length; i++) {
-//     // show if mouseover
-//     if (tr == tableRows[i]) {
-//       expandTableRows[i].style.display = 'table-cell';
-//       tableRows[i].style.background = '#f5f5f5';
-//     } else {
-//       // hide if not mouseover
-//       expandTableRows[i].style.display = 'none';
-//       tableRows[i].style.background = 'transparent';
-//     }
-//   }
-// }
-
-// function toggleFPs() {
-//   let countDiscoveries = 0;
-//   for (let i = 0; i < allDiscoveries.length; i++) {
-//     // If the discovery is not new, hide its row and the expandable one
-//     if (allDiscoveries[i].children[2].valueOf().innerText == 'false_positive') {
-//       allDiscoveries[i].style.display = filterFPs ? 'none' : '';
-//       countDiscoveries++;
-//     }
-//   }
-//   document.getElementById('showFPs').innerHTML = filterFPs ? 'Show FPs' : 'Hide FPs';
-//   document.getElementById('discoveriesCounter').innerHTML = filterFPs ?
-//     `${allDiscoveries.length} discoveries found (${countDiscoveries} false positives are hidden)` :
-//     `${allDiscoveries.length} discoveries found`;
-// }
-
-
-
-// // A self-invoking function to assign functions to the filtering buttons
-// (function catFilteringInit() {
-//   let filteringButtons = document.getElementsByClassName('categoryToggle');
-//   for (let i = 0; i < filteringButtons.length; i++) {
-//     let buttonsContainer = filteringButtons[i];
-//     buttonsContainer.onclick = clickedButton => {
-//       let button = clickedButton.target;
-//       const category = button.innerText;
-//       const indexOfCat = categoriesToSkip.indexOf(category);
-//       if (indexOfCat > -1) {
-//         // Disable the filter
-//         categoriesToSkip.splice(indexOfCat, 1);
-//         button.style.background = 'white';
-//       }
-//       else {
-//         // Enable the filter
-//         categoriesToSkip.push(category);
-//         button.style.background = 'dodgerblue';
-//       }
-//       filterCategories();
-//     };
-//   }
-
-// }());
-
-// /**
-//  * A function to filter the discoveries based on their categories.
-//  */
-// function filterCategories() {
-//   // No categories to filter
-//   if (categoriesToSkip.length == 0) {
-//     for (let i = 0; i < allDiscoveries.length; i++) {
-//       let discovery = allDiscoveries[i];
-//       discovery.style.display = '';
-//     }
-//   }
-//   else {
-//     for (let i = 0; i < allDiscoveries.length; i++) {
-//       let discovery = allDiscoveries[i];
-//       /**
-//        * Ninja code : skip is a boolean. it is set to true if this discovery will be ignored
-//        * false, otherwise.
-//        */
-//       const skip = (categoriesToSkip.indexOf(discovery.children[0].valueOf().innerText) == -1);
-//       discovery.style.display = skip ? 'none' : '';
-//     }
-//   }
-
-// }
