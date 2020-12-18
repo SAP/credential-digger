@@ -75,8 +75,23 @@
   text-decoration: underline;
 }
 
-.repo-info a span {
+.repo-info span {
   vertical-align: middle;
+}
+
+.repo-info > * > *:not(.icon) {
+  display: inline-block;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.repo-info > * {
+  max-width: 33%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .repo-info .icon {
@@ -86,4 +101,71 @@
 
 .contentBox {
   margin-top: 90px;
+}
+
+.dataTable td.filename {
+  font-size: 15px;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 350px;
+  position: relative;
+  width: 100%;
+}
+
+.dataTable td.filename a, .dataTable td.filename a:active {
+  color: inherit;
+}
+
+.dataTable td.filename:hover {
+  overflow: visible;
+}
+
+.dataTable td.filename:hover > * {
+  background: white;
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  bottom: -5px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: calc(100% + 10px);
+  padding: 0 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+}
+
+#listing-table tr:first-child th:first-child {
+  border-right: 1px solid #949da8;
+}
+
+#listing-table tr:first-child th:last-child {
+  border-left: 1px solid #949da8;
+}
+
+#listing-table thead tr:last-child th:not(:last-child) {
+  border-right: none;
+}
+
+table#listing-table thead th, table#listing-table thead td {
+  border-bottom: 1px solid #949da8;
+  padding: 10px 18px 10px 10px;
+}
+
+#detail-table th:not(:last-child) {
+  border-right: 1px solid #949da8;
+}
+
+#detail-table .btns-container {
+  display: flex;
+}
+
+.dataTable tbody .snippet {
+  width: 100%;
+  word-break: break-word;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.3px;
 }

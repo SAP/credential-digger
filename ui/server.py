@@ -63,6 +63,25 @@ def root():
                            categories=list(cat))
 
 
+@app.route('/files', methods=['GET'])
+def files():
+    # Get all the discoveries of this repository
+    url = request.args.get('url')
+
+    rules = c.get_rules()
+    # There may be missing ids. Restructure as a dict
+    # There may be no mapping between list index and rule id
+    # Not very elegant, but avoid IndexError
+    cat = set()
+    rulesdict = {}
+    for rule in rules:
+        rulesdict[rule['id']] = rule
+        cat.add(rule['category'])
+    return render_template('discoveries/files.html',
+                           url=url,
+                           categories=list(cat))
+
+
 @app.route('/discoveries', methods=['GET'])
 def discoveries():
     # Get all the discoveries of this repository
@@ -78,42 +97,16 @@ def discoveries():
     for rule in rules:
         rulesdict[rule['id']] = rule
         cat.add(rule['category'])
-    if file is None:
-        return render_template('discoveries/listing.html',
-                               url=url,
-                               categories=list(cat))
-    else:
-        return render_template('discoveries/detail.html',
-                               url=url,
-                               file=file,
-                               categories=list(cat))
+    return render_template('discoveries/discoveries.html',
+                           url=url,
+                           file=file,
+                           categories=list(cat))
 
 
 @app.route('/rules')
 def rules():
     rules = c.get_rules()
     return render_template('rules.html', rules=rules)
-
-
-# @app.route('/fp/<id>', methods=['GET'])
-# def fp(id):
-#     url = request.args.get('url')
-#     c.update_discovery(id, 'false_positive')
-#     return redirect('/discoveries?url=%s' % url)
-
-
-# @app.route('/addressing/<id>', methods=['GET'])
-# def addressing(id):
-#     url = request.args.get('url')
-#     c.update_discovery(id, 'addressing')
-#     return redirect('/discoveries?url=%s' % url)
-
-
-# @app.route('/not_relevant/<id>', methods=['GET'])
-# def not_relevant(id):
-#     url = request.args.get('url')
-#     c.update_discovery(id, 'not_relevant')
-#     return redirect('/discoveries?url=%s' % url)
 
 
 @app.route('/scan_repo', methods=['POST'])
@@ -210,6 +203,8 @@ def descoveries_data():
             discovery['category'] = rulesdict[discovery['rule_id']]['category']
             categories_found.add(discovery['category'])
 
+        discoveries = sorted(discoveries, key=lambda i: (
+            i["snippet"], i["category"], i["state"]))
         response = [
             {
                 "snippet": keys[0],
@@ -217,10 +212,12 @@ def descoveries_data():
                 "state": keys[2],
                 "occurrences": [
                     {
+                        "file_name": i["file_name"],
                         "line_number": i["line_number"],
-                        "commit_id": i["commit_id"]
+                        "commit_id": i["commit_id"],
+                        "id": i["id"]
                     } for i in list(values)
-                ]
+                ],
             }
             for keys, values in groupby(
                 discoveries, lambda i: (i["snippet"], i["category"], i["state"]))
