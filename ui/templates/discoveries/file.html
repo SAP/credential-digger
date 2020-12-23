@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Repo info top bar -->
+<div class="repo-info grey-color">
+  <a href="/files?url={{url}}">
+    <span class="icon icon-keyboard_arrow_left"></span>
+    <span class="link-text">Go back to all files</span>
+  </a>
+  <a href="{{url}}" class="repo-link" target="_blank" title="{{url}}">
+    <span class="icon icon-github"></span>
+    <span class="link-text">{{url}}</span>
+  </a>
+</div>
+
+<!--discoveries list with search bar-->
+<div class="topicHeaderWrapper">
+  <div class="filename-container">
+    <div class="icon icon-folder_open"></div>
+    <div>
+      <h1 class="topicH1"><span>File</span></h1>
+      <span class="topbar-filename">{{file}}</span>
+    </div>
+  </div>
+  <span class="moreButtons moreButtonsDiscoveries">
+    <div class="btn-group">
+      <div class="btn primary-bg" data-state="false_positive">
+        <span class="icon icon-outlined_flag"></span>
+        <span>Mark all as FPs</span>
+      </div>
+      <div class="dropdown-container">
+        <div class="dropdown-opener primary-bg">
+          <span class="icon icon-keyboard_arrow_down"></span>
+        </div>
+        <div class="dropdown">
+          <div class="btn light-bg danger-color" data-state="new">
+            <span class="icon icon-error_outline"></span>
+            <span>Mark all as leak</span>
+          </div>
+          <div class="btn light-bg warning-color" data-state="addressing">
+            <span class="icon icon-timelapse"></span>
+            <span>Mark all as addressing</span>
+          </div>
+          <div class="btn light-bg grey-color" data-state="not_relevant">
+            <span class="icon icon-inbox"></span>
+            <span>Mark all as not relevant</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </span>
+</div>
+
+<div class="topicHeaderWrapper underTopicHeaderWrapper">
+  <h3 class="scanDescription"><span id="discoveriesCounter"></span> discoveries found</h3>
+</div>
+
+<table id="detail-table" class="dataTable" style="width: 100%">
+  <!-- Header -->
+  <thead>
+    <tr>
+      <th></th>
+      <th class="dt-center nowrap">Category</th>
+      <th>Snippet</th>
+      <th class="dt-center nowrap">State</th>
+      <th class="dt-center nowrap">Tot</th>
+      <th class="none">Occurrences</th>
+      <th class="dt-center">Actions</th>
+    </tr>
+  </thead>
+  <!-- Content (filled with discoveries info) -->
+  <tbody></tbody>
+</table>
+
+<p id="noEntries">Select Categories</p>
+<span id="loadMoreButtonWrapper"><button id="loadMoreButton">▼</button></span>
+
+<div id="repo-url" class="hidden">{{url}}</div>
+<div id="file-name" class="hidden">{{file if file else ''}}</div>
+
+<script>
+  window.name = "{{url}}";
+</script>
+<script src="/res/js/vendor/jquery-3.5.1.min.js"></script>
+<script src="/res/js/vendor/jquery.dataTables.min.js"></script>
+<script src="/res/js/utils.js"></script>
+<script src="/res/js/scanForm.js"></script>
+<script src="/res/js/discoveries.js"></script>
+<script src="/res/js/scan.js"></script>
+{% endblock %}

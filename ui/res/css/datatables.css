@@ -89,11 +89,5 @@ body table.dataTable>tbody>tr.child:hover {
   table.dataTable>tbody>tr.child span.dtr-title {
     min-width: 150px;
   }
-  table.dataTable>tbody>tr.child ul.dtr-details {
-    display: block;
-  }
-  table.dataTable>tbody>tr.child .dtr-data {
-    display: inline-block;
-  }
 }
 

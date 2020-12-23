@@ -529,8 +529,22 @@ a.btn {
   width: 100%;
 }
 
+.topicH1 .icon {
+  margin-right: 10px;
+}
+
+.topicH1 span {
+  vertical-align: middle;
+}
+
 @media (max-width: 1023px) {
   .repo-info .repo-link .link-text {
     display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .contentBox {
+    padding: 10px;
   }
 }

@@ -97,10 +97,16 @@ def discoveries():
     for rule in rules:
         rulesdict[rule['id']] = rule
         cat.add(rule['category'])
-    return render_template('discoveries/discoveries.html',
-                           url=url,
-                           file=file,
-                           categories=list(cat))
+
+    if file:
+        return render_template('discoveries/file.html',
+                               url=url,
+                               file=file,
+                               categories=list(cat))
+    else:
+        return render_template('discoveries/discoveries.html',
+                               url=url,
+                               categories=list(cat))
 
 
 @app.route('/rules')
@@ -180,48 +186,57 @@ def download_rule():
 
 # ################### JSON APIs ####################
 
-@app.route('/get_discoveries_data', methods=['GET'])
-def descoveries_data():
+@app.route('/get_files', methods=['GET'])
+def get_files():
+    # Get all the discoveries of this repository
+    url = request.args.get('url')
+    files = c.get_files_summary(url)
+    return jsonify(files)
+
+
+@app.route('/get_discoveries', methods=['GET'])
+def get_discoveries():
     # Get all the discoveries of this repository
     url = request.args.get('url')
     file = request.args.get('file')
     if file is None:
-        response = c.get_files_summary(url)
+        discoveries = c.get_discoveries(url)
     else:
         discoveries = c.get_discoveries(url, file)
-        # There may be missing ids. Restructure as a dict
-        # There may be no mapping between list index and rule id
-        # Not very elegant, but avoid IndexError
-        rules = c.get_rules()
-        rulesdict = {}
-        for rule in rules:
-            rulesdict[rule['id']] = rule
 
-        # Add the category to each discovery
-        categories_found = set()
-        for discovery in discoveries:
-            discovery['category'] = rulesdict[discovery['rule_id']]['category']
-            categories_found.add(discovery['category'])
+    # There may be missing ids. Restructure as a dict
+    # There may be no mapping between list index and rule id
+    # Not very elegant, but avoid IndexError
+    rules = c.get_rules()
+    rulesdict = {}
+    for rule in rules:
+        rulesdict[rule['id']] = rule
 
-        discoveries = sorted(discoveries, key=lambda i: (
-            i["snippet"], i["category"], i["state"]))
-        response = [
-            {
-                "snippet": keys[0],
-                "category": keys[1],
-                "state": keys[2],
-                "occurrences": [
-                    {
-                        "file_name": i["file_name"],
-                        "line_number": i["line_number"],
-                        "commit_id": i["commit_id"],
-                        "id": i["id"]
-                    } for i in list(values)
-                ],
-            }
-            for keys, values in groupby(
-                discoveries, lambda i: (i["snippet"], i["category"], i["state"]))
-        ]
+    # Add the category to each discovery
+    categories_found = set()
+    for discovery in discoveries:
+        discovery['category'] = rulesdict[discovery['rule_id']]['category']
+        categories_found.add(discovery['category'])
+
+    discoveries = sorted(discoveries, key=lambda i: (
+        i["snippet"], i["category"], i["state"]))
+    response = [
+        {
+            "snippet": keys[0],
+            "category": keys[1],
+            "state": keys[2],
+            "occurrences": [
+                {
+                    "file_name": i["file_name"],
+                    "line_number": i["line_number"],
+                    "commit_id": i["commit_id"],
+                    "id": i["id"]
+                } for i in list(values)
+            ],
+        }
+        for keys, values in groupby(
+            discoveries, lambda i: (i["snippet"], i["category"], i["state"]))
+    ]
 
     return jsonify(response)
 
