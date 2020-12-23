@@ -5,3 +5,13 @@
 .dateCell{
   min-width: 90px;
 }
+
+.btns-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btns-container .btn:not(:last-child) {
+  margin-right: 10px;
+}
