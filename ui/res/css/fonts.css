@@ -1,9 +1,9 @@
 @font-face {
   font-family: 'icomoon';
   src:
-    url('/res/fonts/icomoon.ttf?zfoa0g') format('truetype'),
-    url('/res/fonts/icomoon.woff?zfoa0g') format('woff'),
-    url('/res/fonts/icomoon.svg?zfoa0g#icomoon') format('svg');
+    url('/res/fonts/icomoon.ttf?p1wyiv') format('truetype'),
+    url('/res/fonts/icomoon.woff?p1wyiv') format('woff'),
+    url('/res/fonts/icomoon.svg?p1wyiv#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -30,7 +30,7 @@
 .icon-error_outline:before {
   content: "\e900";
 }
-.icon-move_to_inbox:before {
+.icon-inbox:before {
   content: "\e903";
 }
 .icon-outlined_flag:before {
@@ -38,6 +38,9 @@
 }
 .icon-insert_drive_file:before {
   content: "\e90c";
+}
+.icon-folder_open:before {
+  content: "\e90d";
 }
 .icon-keyboard_arrow_down:before {
   content: "\e908";

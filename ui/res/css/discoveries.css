@@ -88,7 +88,6 @@
 }
 
 .repo-info > * {
-  max-width: 33%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -134,6 +133,11 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+  max-width: 70vw;
+  z-index: 1;
+  width: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #listing-table tr:first-child th:first-child {
@@ -169,3 +173,75 @@ table#listing-table thead th, table#listing-table thead td {
   line-height: 1.5;
   letter-spacing: -0.3px;
 }
+
+.hash {
+  width: 100%;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filename-container {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.filename-container .icon {
+  font-size: 32px;
+  margin-right: 15px;
+  margin-top: 4px;
+}
+
+.filename-container .topicH1 {
+  margin: 0;
+  margin-bottom: 3px;
+}
+
+.filename-container .topbar-filename {
+  font-size: 15px;
+  color: #666;
+}
+
+.underTopicHeaderWrapper {
+  margin-top: 35px;
+}
+
+.moreButtonsDiscoveries {
+  flex: 0;
+}
+
+@media (max-width: 1023px) {
+  .dataTable#detail-table td.filename {
+    max-width: 200px;
+  }
+}
+
+
+@media (max-width: 767px) {
+  .topicHeaderWrapper {
+    display: block;
+  }
+
+  .moreButtonsDiscoveries {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  .moreButtonsDiscoveries .btn {
+    margin-bottom: 10px;
+  }
+
+  #detail-table .hash {
+    display: none;
+  }
+
+  #detail-table .btn-text {
+    display: none;
+  }
+
+  .dataTable#detail-table td.filename {
+    max-width: 150px;
+  }
+}
+

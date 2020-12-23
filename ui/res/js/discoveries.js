@@ -84,7 +84,7 @@ function initFilesDataTable() {
       }
     ],
     ajax: { // AJAX source info
-      url: "/get_discoveries_data",
+      url: "/get_files",
       data: { url: repoUrl },
       dataSrc: function (json) {
         // Map json data before sending it to datatable
@@ -92,7 +92,7 @@ function initFilesDataTable() {
           return {
             ...item,
             file_name: `
-            <a href="/discoveries?url=${repoUrl}&file=${item.file_name}">
+            <a href="/discoveries?url=${repoUrl}&file=${encodeURIComponent(item.file_name)}">
               ${item.file_name}
             </a>`,
             actions: actionsTemplate.replaceList([
@@ -112,7 +112,7 @@ function initFilesDataTable() {
 
 function initDiscoveriesDataTable() {
   const repoUrl = document.querySelector('#repo-url').innerText;
-  const fileName = document.querySelector('#file-name').innerText;
+  const filename = document.querySelector('#file-name').innerText;
   $('#detail-table').DataTable({
     ...defaultTableSettings,
     order: [[3, "desc"]], // Set default column sorting
@@ -142,37 +142,43 @@ function initDiscoveriesDataTable() {
       }
     ],
     ajax: { // AJAX source info
-      url: "/get_discoveries_data",
+      url: "/get_discoveries",
       data: {
         url: repoUrl,
-        file: fileName
+        ...filename && { file: filename }
       },
       dataSrc: function (json) {
         return json.map(item => {
           // Map json data before sending it to datatable
           const details = `
+          <div>
           <table>
             <thead>
               <tr>
-              ${fileName ? '': '<th>File</th>'}
-              <th>Commit hash</th><th class="dt-center">Line number</th><th>Actions</th></tr>
+                ${filename ? '': '<th>File</th>'}
+                <th class="hash">Commit hash</th><th class="dt-center">Line number</th>
+                <th>Actions</th>
+              </tr>
             </thead>
             <tbody>
-              ${item.occurrences.map(i => `
+              ${item.occurrences.slice(0,10).map(i => `
                 <tr>
-                  ${fileName ? "" : `<td class="filename"><span>${i.file_name}</span></td>`}
-                  <td class="width100">${i.commit_id}</td>
+                  ${filename ? "" : `<td class="filename"><span>${i.file_name}</span></td>`}
+                  <td class="hash">${i.commit_id}</td>
                   <td class="dt-center">${i.line_number}</td>
                   <td>
                     <a class="btn btn-light grey-color" target="_blank" href="${repoUrl}/blob/${i.commit_id}/${i.file_name}#L${i.line_number}">
                       <span class="icon icon-github"></span>
-                      <span>Show on GitHub</span>
+                      <span class="btn-text">Show on GitHub</span>
                     </a>
                   </td>
                 </tr>
               `).join('\n')}
+              ${item.occurrences.length > 10 ? `
+              <tr><td colspan="${filename ? 3 : 4}">and ${item.occurrences.length - 10} more...<td></tr>
+              ` : ""}
             </tbody>
-          </table>`;
+          </table><div>`;
 
           return {
             ...item,
@@ -194,19 +200,6 @@ function initDiscoveriesDataTable() {
       document.querySelector('#discoveriesCounter').innerText = totalDiscoveries;
     }
   });
-  // $('#detail-table tbody').on('mouseenter mouseleave', 'tr[role="row"]', function () {
-  //   const tr = $(this).closest('tr');
-  //   const table = $('#detail-table').DataTable();
-  //   const row = table.row(tr);
-  //   if (row.child.isShown()) {
-  //     row.child.hide();
-  //     tr.removeClass('shown');
-  //   }
-  //   else {
-  //     row.child(row.data().details).show();
-  //     tr.addClass('shown');
-  //   }
-  // });
 }
 
 function initButtonGroup() {
@@ -276,18 +269,12 @@ window.addEventListener('click', function (event) {
   if (event.target == document.getElementById('deleteRepoModal')) {
     document.getElementById('deleteRepoModal').style.display = 'none';
   }
-  if (event.target == document.getElementById('addRepoModal')) {
-    closeAddRepo();
-  }
-
 });
 
 document.getElementById('cancelDeleteRepo').addEventListener('click', function (event) {
   // hide popup
   document.getElementById('deleteRepoModal').style.display = 'none';
 });
-
-document.getElementById('cancelAddRepo').addEventListener('click', closeAddRepo);
 
 // New scan
 // add action listener to scan repo button
