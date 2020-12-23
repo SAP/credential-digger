@@ -1,3 +1,45 @@
+document.addEventListener("DOMContentLoaded", function () {
+  initReposDataTable();
+});
+
+function initReposDataTable() {
+  $('#repos-table').DataTable({
+    ...defaultTableSettings,
+    order: [[0, "asc"]], // Set default column sorting
+    columns: [ // Table columns definition
+      {
+        data: "url",
+        orderSequence: ["asc", "desc"]
+      }, {
+        data: "lendiscoveries",
+        className: "dt-center",
+        orderSequence: ["desc", "asc"]
+      }, {
+        data: "actions"
+      }
+    ],
+    ajax: { // AJAX source info
+      url: "/get_repos",
+      dataSrc: function (json) {
+        // Map json data before sending it to datatable
+        return json.map(item => {
+          return {
+            ...item,
+            actions: `
+            <div class="btns-container">
+              <a class="btn outline-bg" href="/files?url=${item.url}">
+                <span class="icon icon-folder_open"></span><span>Files view</span>
+              </a>
+              <a class="btn outline-bg" href="/discoveries?url=${item.url}">
+                <span class="icon icon-error_outline"></span><span>Discoveries view</span>
+              </a>
+            </div>`
+          }
+        })
+      }
+    },
+  });
+}
 
 let listOfRepos;
 window.onload = function () {
@@ -5,10 +47,6 @@ window.onload = function () {
   checkFormFilled();
 };
 
-// add search action listener
-document.getElementById('search').addEventListener('input', function () {
-  search(this.value);
-});
 
 // add repo pop up
 // add action listener to add repo button
@@ -51,32 +89,3 @@ document.getElementById('cbAllRules').addEventListener('change', function () {
   document.getElementById('ruleSelector').selectedIndex = -1;
   checkFormFilled();
 });
-
-
-/**
- * Searches for repos that have an URL that contains the __text__ argument.
- * @param {string} text This argument is used to find all the repos that have an URL that matches its value.
- * @param {boolean} hideNotMatching If set to __false__, the matching repos will not be removed from the UI.
- * @returns Returns an object that has two attributes
- * -  __text__: Equals the textual value that has been used to perform the search
- * -  __indices__: An array that contains the indices of the matching repos. These indices can be used to access
- *                the repo from the __listOfRepos__ array.
- */
-function search(text, hideNotMatching = true) {
-  let listOfMatches = {
-    text: text,
-    indices: []
-  };
-  text = text.toLowerCase();
-  for (let i = 0; i < listOfRepos.length; i++) {
-    let element = listOfRepos[i];
-    if (!element.textContent.toLowerCase().includes(text)) {
-      if (hideNotMatching) { element.style.display = 'none'; }
-    }
-    else {
-      element.style.display = '';
-      listOfMatches.indices.push(i);
-    }
-  }
-  return listOfMatches;
-} 

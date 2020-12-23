@@ -190,13 +190,12 @@ table#listing-table thead th, table#listing-table thead td {
 
 .filename-container .icon {
   font-size: 32px;
-  margin-right: 15px;
-  margin-top: 4px;
+  margin-right: 12px;
+  margin-top: 5px;
 }
 
 .filename-container .topicH1 {
   margin: 0;
-  margin-bottom: 3px;
 }
 
 .filename-container .topbar-filename {

@@ -15,7 +15,13 @@
 
 <!--discoveries list with search bar-->
 <div class="topicHeaderWrapper">
-  <h1 class="topicH1"><span class="icon icon-error_outline"></span><span>Discoveries</span></h1>
+  <div class="filename-container">
+    <div class="icon icon-error_outline"></div>
+    <div>
+      <h1 class="topicH1"><span>Discoveries</span></h1>
+      <a href="/files?url={{url}}" class="topbar-filename">Go to files view</a>
+    </div>
+  </div>
   <span class="moreButtons moreButtonsDiscoveries">
     <button id="newScan" class="btn outline-bg">
       <span class="icon icon-refresh"></span>
@@ -105,9 +111,7 @@
 <script>
   window.name = "{{url}}";
 </script>
-<script src="/res/js/vendor/jquery-3.5.1.min.js"></script>
-<script src="/res/js/vendor/jquery.dataTables.min.js"></script>
-<script src="/res/js/utils.js"></script>
+
 <script src="/res/js/scanForm.js"></script>
 <script src="/res/js/discoveries.js"></script>
 <script src="/res/js/scan.js"></script>

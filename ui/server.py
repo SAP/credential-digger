@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 load_dotenv()
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-if os.getenv("LOCAL_REPO"):
+if os.getenv("LOCAL_REPO") == 'True':
     # Load credentialdigger from local repo instead of pip
     sys.path.insert(0, os.path.join(APP_ROOT, '..'))
 
@@ -55,7 +55,6 @@ def root():
         cat.add(rule['category'])
 
     return render_template('repos.html',
-                           repos=repos,
                            rules=rules,
                            tot_discoveries=tot_discoveries,
                            len_repos=len(repos),
@@ -185,6 +184,16 @@ def download_rule():
 
 
 # ################### JSON APIs ####################
+
+@app.route('/get_repos')
+def get_repos():
+    repos = c.get_repos()
+
+    for repo in repos:
+        repo['lendiscoveries'] = len(c.get_discoveries(repo['url']))
+
+    return jsonify(repos)
+
 
 @app.route('/get_files', methods=['GET'])
 def get_files():

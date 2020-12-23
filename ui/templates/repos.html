@@ -27,26 +27,15 @@
     <button id="addRepo">Scan Repo</button>
   </span>
 </div>
-<input id="search" type="text" name="search" placeholder="Search...">
-<table>
-  <colgroup>
-    <col width="660px"/>
-    <col width="110px"/>
-    <col width="110px"/>
-    <col width="120px"/>
-  </colgroup>
-  <tr>
-    <th>Repository url</th>
-    <th>Discoveries</th>
-  </tr>
-  {% for repo in repos %}
-  <tr class="repo tableRowContent">
-    <td><a class="tableRowContentLink" href="/files?url={{repo.url}}">{{repo.url}}</a></td>
-    <td><a class="tableRowContentLink" href="/files?url={{repo.url}}">{{repo.lendiscoveries}}</a></td>
-  </tr>
-  {% endfor %}
+<table id="repos-table" style="width: 100%">
+  <thead>
+    <tr>
+      <th>Repository url</th>
+      <th>Discoveries</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
 </table>
-<p id="noEntries">No repositories found</p>
 
 <!--add repo popup-->
 <div id="addRepoModal" class="modal">
