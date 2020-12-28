@@ -38,11 +38,51 @@ python -m credentialdigger scan REPO_URL --force --debug
 import logging
 import sys
 
-
 logger = logging.getLogger(__name__)
 
 
-def scan(args, client):
+def configure_parser(parser):
+    """
+    Configure arguments for command line parser.
+
+    Parameters
+    ----------
+    parser: `credentialdigger.cli.customParser`
+        Command line parser
+    """
+    parser.set_defaults(func=run)
+    parser.add_argument(
+        'repo_url', type=str,
+        help='The URL of the git repository to be scanned.')
+    parser.add_argument(
+        '--category', default=None, type=str,
+        help=' If specified, scan the repo using all the rules of this \
+            category, otherwise use all the rules in the db')
+    parser.add_argument(
+        '--models', default=None, nargs='+',
+        help='A list of models for the ML false positives detection.\nCannot \
+            accept empty lists.')
+    parser.add_argument(
+        '--exclude', default=None, nargs='+',
+        help='A list of rules to exclude')
+    parser.add_argument(
+        '--force', action='store_true',
+        help='Force a complete re-scan of the repository, in case it has \
+            already been scanned previously')
+    parser.add_argument(
+        '--debug', action='store_true',
+        help='Flag used to decide whether to visualize the progressbars \
+            during the scan (e.g., during the insertion of the detections in \
+            the db)')
+    parser.add_argument(
+        '--generate_snippet_extractor',
+        action='store_true',
+        help='Generate the extractor model to be used in the SnippetModel. \
+            The extractor is generated using the ExtractorGenerator. If \
+            `False`, use the pre-trained extractor model')
+
+
+def run(args, client):
     """
     Scan a git repository.
 
