@@ -18,7 +18,7 @@ class customParser(argparse.ArgumentParser):
 
 
 def main():
-    from . import scan, add_rules, download
+    from . import scan, add_rules, download, scan_user
 
     # Main parser configuration
     main_parser = customParser('credentialdigger')
@@ -56,6 +56,12 @@ def main():
         parents=[parser_dotenv, parser_sqlite])
     scan.configure_parser(parser_scan)
 
+    # scan_user subparser configuration
+    parser_scan_user = subparsers.add_parser(
+        'scan_user', help='Scan a GitHub user',
+        parents=[parser_dotenv, parser_sqlite])
+    scan_user.configure_parser(parser_scan_user)
+
     # Run the parser
     if len(sys.argv) == 1:
         main_parser.print_help()
@@ -65,7 +71,7 @@ def main():
     # If specified, load dotenv from the given path. Otherwise load from cwd
     load_dotenv(dotenv_path=args.dotenv, verbose=True)
 
-    if args.func in [scan.run, add_rules.run]:
+    if args.func in [scan.run, add_rules.run, scan_user.run]:
         # Connect to db only when running commands that need it
         if args.sqlite:
             client = SqliteClient(args.sqlite)
