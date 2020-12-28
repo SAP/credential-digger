@@ -17,7 +17,22 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def add_rules(args, client):
+def configure_parser(parser):
+    """
+    Configure arguments for command line parser.
+
+    Parameters
+    ----------
+    parser: `credentialdigger.cli.customParser`
+        Command line parser
+    """
+    parser.set_defaults(func=run)
+    parser.add_argument(
+        'path_to_rules', type=str,
+        help='The path of the file that contains the rules.')
+
+
+def run(args, client):
     """
     Add rules to the database
 
