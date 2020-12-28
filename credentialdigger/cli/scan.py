@@ -35,17 +35,14 @@ Usage:
 python -m credentialdigger scan REPO_URL --force --debug
 
 """
-import argparse
 import logging
-import os
 import sys
 
-from credentialdigger import PgClient, SqliteClient
 
 logger = logging.getLogger(__name__)
 
 
-def scan(args):
+def scan(args, client):
     """
     Scan a git repository.
 
@@ -53,6 +50,8 @@ def scan(args):
     ----------
     args: `argparse.Namespace`
         Arguments from command line parser.
+    client: `credentialdigger.Client`
+        Instance of the client on which to save results
 
     Returns
     -------
@@ -61,18 +60,8 @@ def scan(args):
         discoveries. If it exits with a value that is equal to 0, then it means
         that the scan detected no leaks in this repo.
     """
-    if args.sqlite:
-        c = SqliteClient(args.sqlite)
-        logger.info('Database in use: Sqlite')
-    else:
-        c = PgClient(dbname=os.getenv('POSTGRES_DB'),
-                     dbuser=os.getenv('POSTGRES_USER'),
-                     dbpassword=os.getenv('POSTGRES_PASSWORD'),
-                     dbhost=os.getenv('DBHOST'),
-                     dbport=os.getenv('DBPORT'))
-        logger.info('Database in use: Postgres')
 
-    discoveries = c.scan(
+    discoveries = client.scan(
         repo_url=args.repo_url,
         category=args.category,
         models=args.models,

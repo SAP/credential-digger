@@ -1,8 +1,11 @@
+import os
 import sys
 import logging
 import argparse
 
 from dotenv import load_dotenv
+
+from credentialdigger import PgClient, SqliteClient
 
 logger = logging.getLogger(__name__)
 
@@ -102,4 +105,19 @@ def main():
 
     args = main_parser.parse_args(sys.argv[1:])
     load_dotenv(dotenv_path=args.dotenv, verbose=True)
-    args.func(args)
+
+    if args.func in [scan, add_rules]:
+        # Connect to db only when running commands that need it
+        if args.sqlite:
+            client = SqliteClient(args.sqlite)
+            logger.info('Database in use: Sqlite')
+        else:
+            client = PgClient(dbname=os.getenv('POSTGRES_DB'),
+                              dbuser=os.getenv('POSTGRES_USER'),
+                              dbpassword=os.getenv('POSTGRES_PASSWORD'),
+                              dbhost=os.getenv('DBHOST'),
+                              dbport=os.getenv('DBPORT'))
+            logger.info('Database in use: Postgres')
+        args.func(args, client)
+    else:
+        args.func(args)

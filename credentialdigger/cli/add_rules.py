@@ -12,17 +12,12 @@ Usage:
 python -m credentialdigger add_rules /path/rules.yml
 
 """
-import argparse
 import logging
-import os
-import sys
-
-from credentialdigger import PgClient, SqliteClient
 
 logger = logging.getLogger(__name__)
 
 
-def add_rules(args):
+def add_rules(args, client):
     """
     Add rules to the database
 
@@ -30,6 +25,8 @@ def add_rules(args):
     ----------
     args: `argparse.Namespace`
         Arguments from command line parser.
+    client: `credentialdigger.Client`
+        Instance of the client on which to save results
 
     Raises
     ------
@@ -42,18 +39,7 @@ def add_rules(args):
             and category) is missing
     """
 
-    if args.sqlite:
-        c = SqliteClient(args.sqlite)
-        logger.info('Database in use: Sqlite')
-    else:
-        c = PgClient(dbname=os.getenv('POSTGRES_DB'),
-                     dbuser=os.getenv('POSTGRES_USER'),
-                     dbpassword=os.getenv('POSTGRES_PASSWORD'),
-                     dbhost=os.getenv('DBHOST'),
-                     dbport=os.getenv('DBPORT'))
-        logger.info('Database in use: Postgres')
-
-    c.add_rules_from_file(args.path_to_rules)
+    client.add_rules_from_file(args.path_to_rules)
 
     # This message will not be logged if the above operation fails,
     # hence raising an exception.
