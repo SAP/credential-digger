@@ -28,10 +28,10 @@ function initReposDataTable() {
             actions: `
             <div class="btns-container">
               <a class="btn outline-bg" href="/files?url=${item.url}">
-                <span class="icon icon-folder_open"></span><span>Files view</span>
+                <span class="icon icon-folder_open"></span><span>Files</span>
               </a>
               <a class="btn outline-bg" href="/discoveries?url=${item.url}">
-                <span class="icon icon-error_outline"></span><span>Discoveries view</span>
+                <span class="icon icon-error_outline"></span><span>Discoveries</span>
               </a>
             </div>`
           }
