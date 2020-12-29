@@ -12,6 +12,6 @@
   align-items: center;
 }
 
-.btns-container .btn:not(:last-child) {
-  margin-right: 10px;
+.btns-container .btn:not(:first-child) {
+  margin-left: 10px;
 }

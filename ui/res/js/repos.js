@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
+  initButtonGroup();
   initReposDataTable();
 });
 
@@ -15,7 +16,8 @@ function initReposDataTable() {
         className: "dt-center",
         orderSequence: ["desc", "asc"]
       }, {
-        data: "actions"
+        data: "actions",
+        orderable: false
       }
     ],
     ajax: { // AJAX source info
@@ -27,12 +29,24 @@ function initReposDataTable() {
             ...item,
             actions: `
             <div class="btns-container">
-              <a class="btn outline-bg" href="/files?url=${item.url}">
-                <span class="icon icon-folder_open"></span><span>Files</span>
-              </a>
-              <a class="btn outline-bg" href="/discoveries?url=${item.url}">
-                <span class="icon icon-error_outline"></span><span>Discoveries</span>
-              </a>
+              <div class="btn-group">
+                <a class="btn outline-bg" href="/files?url=${item.url}">
+                  <span class="icon icon-folder_open"></span><span>Files view</span>
+                </a>
+                <div class="dropdown-container">
+                  <div class="dropdown-opener outline-bg">
+                    <span class="icon icon-keyboard_arrow_down"></span>
+                  </div>
+                  <div class="dropdown">
+                    <a class="btn outline-bg" href="/discoveries?url=${item.url}">
+                      <span class="icon icon-error_outline"></span><span>Discoveries view</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <button id="deleteRepo" class="btn danger-bg">
+                <span class="icon icon-delete_outline"></span><span>Delete Repo</span>
+              </button>
             </div>`
           }
         })

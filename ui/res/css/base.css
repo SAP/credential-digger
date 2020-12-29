@@ -81,7 +81,7 @@ body {
 }
 
 button {
-  font-size: 17px;
+  font-size: 15px;
   background: transparent;
   border: 1px solid rgb(158, 158, 158);
   border-radius: 7px;
@@ -94,6 +94,7 @@ button {
   cursor: pointer;
   margin-left: 10px;
   text-decoration: none;
+  font-family: inherit;
 }
 
 .buttonWarn:hover {
