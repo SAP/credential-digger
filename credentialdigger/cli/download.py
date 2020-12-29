@@ -10,6 +10,20 @@ independent from credentialdigger, that can be downloaded and installed a
 posteriori in order to provide additional features.
 
 In our use case these models are used to filter out false positive discoveries.
+
+usage: credentialdigger download [-h] [--dotenv DOTENV]
+                                 model [pip_args [pip_args ...]]
+
+positional arguments:
+  model            The name of the model. It must be an environment variable.
+  pip_args         Keyword arguments for pip.
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --dotenv DOTENV  The path to the .env file which will be used in all
+                   commands. If not specified, the one in the current
+                   directory will be used (if present).
+
 """
 
 import importlib

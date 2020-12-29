@@ -18,7 +18,7 @@ class customParser(argparse.ArgumentParser):
 
 
 def main():
-    from . import scan, add_rules, download, scan_user
+    from . import scan, add_rules, download, scan_user, scan_wiki
 
     # Main parser configuration
     main_parser = customParser('credentialdigger')
@@ -31,12 +31,34 @@ def main():
         help='The path to the .env file which will be used in all \
             commands. If not specified, the one in the current directory will \
             be used (if present).')
+
     parser_sqlite = customParser(add_help=False)
     parser_sqlite.add_argument(
         '--sqlite', type=str, default=None,
         help='If specified, scan the repo using the sqlite client \
             passing as argument the path of the db. Otherwise, use postgres \
             (must be up and running)')
+
+    parser_scan_base = customParser(add_help=False)
+    parser_scan_base.add_argument(
+        '--category', default=None, type=str,
+        help='If specified, scan the repo using all the rules of this \
+            category, otherwise use all the rules in the db')
+    parser_scan_base.add_argument(
+        '--models', default=None, nargs='+',
+        help='A list of models for the ML false positives detection.\nCannot \
+            accept empty lists.')
+    parser_scan_base.add_argument(
+        '--exclude', default=None, nargs='+',
+        help='A list of rules to exclude')
+    parser_scan_base.add_argument(
+        '--debug', action='store_true',
+        help='Flag used to decide whether to visualize the progressbars \
+            during the scan (e.g., during the insertion of the detections in \
+            the db)')
+    parser_scan_base.add_argument(
+        '--git_token', default=None, type=str,
+        help='Git personal access token to authenticate to the git server')
 
     # download subparser configuration
     parser_download = subparsers.add_parser(
@@ -53,14 +75,20 @@ def main():
     # scan subparser configuration
     parser_scan = subparsers.add_parser(
         'scan', help='Scan a git repository',
-        parents=[parser_dotenv, parser_sqlite])
+        parents=[parser_dotenv, parser_sqlite, parser_scan_base])
     scan.configure_parser(parser_scan)
 
     # scan_user subparser configuration
     parser_scan_user = subparsers.add_parser(
         'scan_user', help='Scan a GitHub user',
-        parents=[parser_dotenv, parser_sqlite])
+        parents=[parser_dotenv, parser_sqlite, parser_scan_base])
     scan_user.configure_parser(parser_scan_user)
+
+    # scan_user subparser configuration
+    parser_scan_wiki = subparsers.add_parser(
+        'scan_wiki', help='Scan the wiki of a repository',
+        parents=[parser_dotenv, parser_sqlite, parser_scan_base])
+    scan_wiki.configure_parser(parser_scan_wiki)
 
     # Run the parser
     if len(sys.argv) == 1:
@@ -71,7 +99,7 @@ def main():
     # If specified, load dotenv from the given path. Otherwise load from cwd
     load_dotenv(dotenv_path=args.dotenv, verbose=True)
 
-    if args.func in [scan.run, add_rules.run, scan_user.run]:
+    if args.func in [scan.run, add_rules.run, scan_user.run, scan_wiki.run]:
         # Connect to db only when running commands that need it
         if args.sqlite:
             client = SqliteClient(args.sqlite)
