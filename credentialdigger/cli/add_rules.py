@@ -2,14 +2,20 @@
 The 'add_rules' module adds scanning rules from a file to the database.
 This module supports both Sqlite & Postegres databases.
 
-This command takes multiple arguments:
-path_to_rules       <Required> The path of the file that contains the rules.
+usage: credentialdigger add_rules [-h] [--dotenv DOTENV] [--sqlite SQLITE]
+                                  path_to_rules
 
---sqlite DB_PATH    <Optional> If specified, use the sqlite client and
-                        the db passed as argument (otherwise use postgres)
+positional arguments:
+  path_to_rules    The path of the file that contains the rules.
 
-Usage:
-python -m credentialdigger add_rules /path/rules.yml
+optional arguments:
+  -h, --help       show this help message and exit
+  --dotenv DOTENV  The path to the .env file which will be used in all
+                   commands. If not specified, the one in the current
+                   directory will be used (if present).
+  --sqlite SQLITE  If specified, scan the repo using the sqlite client passing
+                   as argument the path of the db. Otherwise, use postgres
+                   (must be up and running)
 
 """
 import logging
