@@ -1,0 +1,36 @@
+<!-- Scan repo popup -->
+<div id="addRepoModal" class="modal">
+  <div class="modal-content">
+    <div class="topicHeaderWrapper">
+      {% if rescan %}
+        <h1 class="topicH1">Rescanning the <a href="{{url}}" title="{{url}}"> repo</a></h1><br>
+      {% else %}
+        <h1 class="topicH1">Scan new Repo</h1>
+      {% endif %}
+      <span id="cancelAddRepo" class="close modal-closer">&times;</span>
+    </div>
+    <form name="scan_repo" action="/scan_repo" method="post">
+      <input id="repoLinkInput" type="link" name="repolink" class="textInput" placeholder="GitHub Repo URL"
+        style='display:none;'>
+      <p class="formLabel">Select category :</p>
+      <select id="ruleSelector" name="rule_to_use" class="formSelect" size="4">
+        {% for cat in categories %}
+          <option value="{{cat}}">{{cat}}</option>
+        {% endfor %}
+      </select>
+      <input type="checkbox" id="cbAllRules" name="rule_to_use" value="all">Select all rules<br>
+      <input type="checkbox" id="cbPathModel" name="pathModel" value="path">Use the Path model<br>
+      <input type="checkbox" id="cbSnippetModel" name="snippetModel" value="snippet">Use the Snippet model<br>
+      {% if rescan %}
+        <input type="checkbox" id="cbForce" name="forceScan" value="force" title="Scan the repo again completely from scratch"
+        >Force scan<br>
+      {% endif %}
+      <div class="formFooter">
+        <span class="moreButtons">
+          <input type="hidden" name="freshtoggle" value="on">
+        </span>
+        <button id="startRepoScan" type="submit">Start Scan</button>
+      </div>
+    </form>
+  </div>
+</div>

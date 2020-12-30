@@ -11,9 +11,9 @@ const Errors = Object.freeze({ "URL": 1, "CATEGORY": 2 });
  */
 function checkFormFilled() {
     // get HTML elements
-    let cBox = document.getElementById('cbAllRules');
-    let rulesList = document.getElementById('ruleSelector');
-    let repoLinkContainer = document.getElementById('repoLinkInput');
+    let cBox = document.querySelector('#cbAllRules');
+    let rulesList = document.querySelector('#ruleSelector');
+    let repoLinkContainer = document.querySelector('#repoLinkInput');
     let repoLink = repoLinkContainer.value;
     // check if repo link is a valid url
     let urlValid = repoLink.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
@@ -41,9 +41,9 @@ function checkFormFilled() {
  * (Optional) Shows an error message when the mouse hovers on the disabled button
  */
 function editForm(enable, err, tooltip = '') {
-    let postAddRepoButton = document.getElementById('startRepoScan');
-    let repoLinkContainer = document.getElementById('repoLinkInput');
-    let rulesList = document.getElementById('ruleSelector');
+    let postAddRepoButton = document.querySelector('#startRepoScan');
+    let repoLinkContainer = document.querySelector('#repoLinkInput');
+    let rulesList = document.querySelector('#ruleSelector');
     postAddRepoButton.disabled = !enable;
     postAddRepoButton.title = tooltip;
     if (enable) {
@@ -66,11 +66,11 @@ function editForm(enable, err, tooltip = '') {
 // close add repo pop up
 function closeAddRepo() {
     // hide popup
-    document.getElementById('addRepoModal').style.display = 'none';
+    document.querySelector('#addRepoModal').style.display = 'none';
     // reset input
-    document.getElementById('repoLinkInput').value = '';
-    document.getElementById('ruleSelector').value = '';
-    document.getElementById('cbAllRules').checked = false;
-    document.getElementById('cbSnippetModel').checked = false;
-    document.getElementById('cbAllRules').checked = false;
+    document.querySelector('#repoLinkInput').value = '';
+    document.querySelector('#ruleSelector').value = '';
+    document.querySelector('#cbAllRules').checked = false;
+    document.querySelector('#cbSnippetModel').checked = false;
+    document.querySelector('#cbAllRules').checked = false;
 }

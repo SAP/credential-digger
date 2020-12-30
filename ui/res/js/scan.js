@@ -15,7 +15,7 @@ scanRepoForm.addEventListener("submit", scanRepo, true);
 
 function renderModal() {
     //if modal already exists on page, just show it
-    okModal = document.getElementById('okModal');
+    okModal = document.querySelector('#okModal');
     if(okModal != null){
         okButton.style.display = 'block';
         return
@@ -37,9 +37,9 @@ function renderModal() {
     //insert into document
     document.body.insertAdjacentHTML('beforeend', modal);
 
-    okModal = document.getElementById('okModal');
+    okModal = document.querySelector('#okModal');
     okModal.style.display = 'block';
-    document.getElementById('okButton').onclick = function(){
+    document.querySelector('#okButton').onclick = function(){
         okModal.style.display = 'none';
     };
 }

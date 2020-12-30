@@ -176,6 +176,10 @@ button {
   background-color: rgba(0, 0, 0, 0.4);
 }
 
+.modal.open {
+  display: block;
+}
+
 .modal-content {
   background-color: white;
   margin: auto;

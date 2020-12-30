@@ -16,10 +16,10 @@ function checkResultsCount() {
   }
   // if rule shown counter is 0 (no rules displayed) show no rules found exception
   if (resultsCounter == 0) {
-    document.getElementById('noEntries').style.display = 'block';
+    document.querySelector('#noEntries').style.display = 'block';
   // else hide exception
   } else {
-    document.getElementById('noEntries').style.display = 'none';
+    document.querySelector('#noEntries').style.display = 'none';
   }
 }
 // add expand entry
@@ -33,7 +33,7 @@ for (var i = 0; i < tableRows.length; i++) {
   });
 }
 // add action listener to table on mouse leave
-document.getElementById('rulesTable').addEventListener('mouseleave', function(event) {
+document.querySelector('#rulesTable').addEventListener('mouseleave', function(event) {
   // close expandTableRow
   openExpandTableRow(null);
 });
@@ -105,65 +105,65 @@ for (var i = 0; i < closeDeleteRuleButtons.length; i++) {
 
 // upload rule popup
 // add action listener to upload rule button
-document.getElementById('uploadRule').addEventListener('click', function(event) {
+document.querySelector('#uploadRule').addEventListener('click', function(event) {
   // show popup
-  document.getElementById('uploadRuleModal').style.display = 'block';
+  document.querySelector('#uploadRuleModal').style.display = 'block';
 });
 
 
-document.getElementById('addrule').addEventListener('click', function(event) {
+document.querySelector('#addrule').addEventListener('click', function(event) {
   // show popup
-  document.getElementById('addrulepop').style.display = 'block';
+  document.querySelector('#addrulepop').style.display = 'block';
 });
 
 window.addEventListener('click', function(event) {
   // if user clicked in the modal area (area around the popup) hide popup
-  if (event.target == document.getElementById('addrulepop')) {
+  if (event.target == document.querySelector('#addrulepop')) {
     closeAddRule();
   }
 });
 
-document.getElementById('cancelAddRule').addEventListener('click', function(event) {
+document.querySelector('#cancelAddRule').addEventListener('click', function(event) {
   closeAddRule();
 });
 
 // add action listener for window (clicking anywhere)
 window.addEventListener('click', function(event) {
   // if user clicked in the modal area (area around the popup) hide popup
-  if (event.target == document.getElementById('uploadRuleModal')) {
+  if (event.target == document.querySelector('#uploadRuleModal')) {
     closeUploadRule();
   }
 });
 
 // add action listener to close upload rule popup
-document.getElementById('cancelUploadRule').addEventListener('click', function(event) {
+document.querySelector('#cancelUploadRule').addEventListener('click', function(event) {
   closeUploadRule();
 });
 
 // add action listener for folder name input bar
-document.getElementById('file').addEventListener('change', function(event) {
+document.querySelector('#file').addEventListener('change', function(event) {
   if (event.target.value != '') {
     // replace the C:\fakepath\ from the prefix of the path and retrieve the file name only.
     var path = event.target.value.replace(/^.*\\/,"");
-    document.getElementById('path').innerHTML = path;
-    document.getElementById('startUploadRule').disabled = false;
+    document.querySelector('#path').innerHTML = path;
+    document.querySelector('#startUploadRule').disabled = false;
   }
 });
 
 // close upload rule pop up
 function closeUploadRule() {
   // hide popup
-  document.getElementById('uploadRuleModal').style.display = 'none';
+  document.querySelector('#uploadRuleModal').style.display = 'none';
   // reset popup
-  document.getElementById('path').innerHTML = 'No File Selected';
-  document.getElementById('startUploadRule').disabled = true;
+  document.querySelector('#path').innerHTML = 'No File Selected';
+  document.querySelector('#startUploadRule').disabled = true;
 }
 
 function closeAddRule() {
   // hide popup
-  document.getElementById('addrulepop').style.display = 'none';
+  document.querySelector('#addrulepop').style.display = 'none';
   // reset input
-  document.getElementById('regexInput').value = '';
-  document.getElementById('catInput').value = '';
-  document.getElementById('descInput').value = '';
+  document.querySelector('#regexInput').value = '';
+  document.querySelector('#catInput').value = '';
+  document.querySelector('#descInput').value = '';
 }
