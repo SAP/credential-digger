@@ -27,7 +27,7 @@
       <span class="icon icon-refresh"></span>
       <span>Rescan</span>
     </button>
-    <button id="deleteRepo" class="btn danger-bg">
+    <button class="btn danger-bg modal-opener" data-modal="deleteRepoModal">
       <span class="icon icon-delete_outline"></span>
       <span>Delete Repo</span>
     </button>
@@ -60,58 +60,14 @@
 <p id="noEntries">Select Categories</p>
 <span id="loadMoreButtonWrapper"><button id="loadMoreButton">▼</button></span>
 
-<!-- Delete repo popup -->
-<div id="deleteRepoModal" class="modal">
-  <div class="modal-content">
-    <div class="topicHeaderWrapperAccept">
-      <h1 class="topicH1">Delete {{url}} Repo?</h1>
-    </div>
-    <span class="buttonsAccept">
-      <form action="/delete_repo" method="post">
-        <input name="repo_url" type="hidden" value="{{url}}">
-        <button type="submit">Delete Repo</button>
-      </form>
-      <button id="cancelDeleteRepo" class="buttonWarn">Cancel</button>
-    </span>
-  </div>
-</div>
+{% include 'shared/_deleteRepoModal.html' %}
 
-<!-- Scan repo popup -->
-<div id="addRepoModal" class="modal">
-  <div class="modal-content">
-    <div class="topicHeaderWrapper">
-      <h1 class="topicH1">Rescanning the <a href="{{url}}" title="{{url}}">repo</a></h1><br>
-      <span id="cancelAddRepo" class="close">&times;</span>
-    </div>
-    <form name="scan_repo" action="/scan_repo" method="post">
-      <input id="repoLinkInput" type="link" name="repolink" class="textInput" placeholder="GitHub Repo URL"
-        style='display:none;'>
-      <p class="formLabel">Select category :</p>
-      <select id="ruleSelector" name="rule_to_use" class="formSelect" size="4">
-        {% for cat in categories %}
-        <option value="{{cat}}">{{cat}}</option>
-        {% endfor %}
-      </select>
-      <input type="checkbox" id="cbAllRules" name="rule_to_use" value="all">Select all rules<br>
-      <input type="checkbox" id="cbPathModel" name="pathModel" value="path">Use the Path model<br>
-      <input type="checkbox" id="cbSnippetModel" name="snippetModel" value="snippet">Use the Snippet model<br>
-      <input type="checkbox" id="cbForce" name="forceScan" value="force" title="Scan the repo again completely from scratch"
-        >Force scan<br>
-      <div class="formFooter">
-        <span class="moreButtons">
-          <input type="hidden" name="freshtoggle" value="on">
-        </span>
-        <button id="startRepoScan" type="submit">Start Scan</button>
-      </div>
-    </form>
-  </div>
-</div>
+{% with rescan=True %}
+  {% include 'shared/_scanRepoModal.html' %}
+{% endwith %}
 
 <div id="repo-url" class="hidden">{{url}}</div>
 
-<script>
-  window.name = "{{url}}";
-</script>
 <script src="/res/js/scanForm.js"></script>
 <script src="/res/js/discoveries.js"></script>
 <script src="/res/js/scan.js"></script>

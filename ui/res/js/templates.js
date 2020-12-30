@@ -61,7 +61,7 @@ const reposActionsTemplate = url => `
       </div>
     </div>
   </div>
-  <button id="deleteRepo" class="btn danger-bg">
+  <button class="btn danger-bg modal-opener" data-modal="deleteRepoModal">
     <span class="icon icon-delete_outline"></span><span>Delete Repo</span>
   </button>
 </div>`;

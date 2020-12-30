@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (document.querySelector('#files-table')) initFilesDataTable();
   if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
   initUpdateDiscoveries();
+  initNewScan();
 });
 
 function initFilesDataTable() {
@@ -178,48 +179,18 @@ function initUpdateDiscoveries() {
   });
 }
 
-// delete repo popup
-// add action listener to delete repo button
-document.getElementById('deleteRepo').addEventListener('click', function (event) {
-  // show popup
-  document.getElementById('deleteRepoModal').style.display = 'block';
-});
-// add action listener for window (clicking anywhere)
-window.addEventListener('click', function (event) {
-  // if user clicks in the modal area (area around the popup) hide popup
-  if (event.target == document.getElementById('deleteRepoModal')) {
-    document.getElementById('deleteRepoModal').style.display = 'none';
-  }
-});
+function initNewScan() {
+  // add action listener to checkbox that selects all the rules
+  document.querySelector('#cbAllRules').addEventListener('change', function () {
+    //Select no category if this checkbox is 'Active'
+    document.querySelector('#ruleSelector').selectedIndex = -1;
+    checkFormFilled();
+  });
 
-document.getElementById('cancelDeleteRepo').addEventListener('click', function (event) {
-  // hide popup
-  document.getElementById('deleteRepoModal').style.display = 'none';
-});
-
-// New scan
-// add action listener to scan repo button
-document.getElementById('newScan').addEventListener('click', function (event) {
-  // Show popup
-  document.getElementById('addRepoModal').style.display = 'block';
-  document.getElementById('repoLinkInput').value = window.name;
-  checkFormFilled();
-});
-document.getElementById('startRepoScan').addEventListener('click', function () {
-  // close popup
-  document.getElementById('addRepoModal').style.display = 'none';
-});
-
-// add action listener to checkbox that selects all the rules
-document.getElementById('cbAllRules').addEventListener('change', function () {
-  //Select no category if this checkbox is 'Active'
-  document.getElementById('ruleSelector').selectedIndex = -1;
-  checkFormFilled();
-});
-
-// add action listener to repo category selector
-document.getElementById('ruleSelector').addEventListener('change', function () {
-  //Disable the 'Use all rules' checkbox when a category is being manually selected.
-  document.getElementById('cbAllRules').checked = false;
-  checkFormFilled();
-});
+  // add action listener to repo category selector
+  document.querySelector('#ruleSelector').addEventListener('change', function () {
+    //Disable the 'Use all rules' checkbox when a category is being manually selected.
+    document.querySelector('#cbAllRules').checked = false;
+    checkFormFilled();
+  });
+}
