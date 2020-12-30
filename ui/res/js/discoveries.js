@@ -1,13 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-  if (document.querySelector('#listing-table')) initFilesDataTable();
-  if (document.querySelector('#detail-table')) initDiscoveriesDataTable();
-  initButtonGroup();
+  if (document.querySelector('#files-table')) initFilesDataTable();
+  if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
   initUpdateDiscoveries();
 });
 
 function initFilesDataTable() {
   const repoUrl = document.querySelector('#repo-url').innerText;
-  $('#listing-table').DataTable({
+  $('#files-table').DataTable({
     ...defaultTableSettings,
     order: [[1, "desc"]], // Set default column sorting
     columns: [ // Table columns definition
@@ -48,9 +47,7 @@ function initFilesDataTable() {
             <a href="/discoveries?url=${repoUrl}&file=${encodeURIComponent(item.file_name)}">
               ${item.file_name}
             </a>`,
-            actions: actionsTemplate.replaceList([
-              ["{{mark}}", "Mark all as", true]
-            ])
+            actions: discoveriesBtnGroupTemplate("Mark all as")
           }
         })
       }
@@ -66,7 +63,7 @@ function initFilesDataTable() {
 function initDiscoveriesDataTable() {
   const repoUrl = document.querySelector('#repo-url').innerText;
   const filename = document.querySelector('#file-name').innerText;
-  $('#detail-table').DataTable({
+  $('#discoveries-table').DataTable({
     ...defaultTableSettings,
     order: [[3, "desc"]], // Set default column sorting
     columns: [ // Table columns definition
@@ -139,10 +136,7 @@ function initDiscoveriesDataTable() {
             snippet: encodeHTML(item.snippet),
             tot: item.occurrences.length,
             occurrences: details,
-            actions: actionsTemplate.replaceList([
-              ["{{ids}}", item.occurrences.map(i => i.id)],
-              ["{{mark}}", "Mark as", true]
-            ])
+            actions: discoveriesBtnGroupTemplate('Mark as')
           }
         })
       }
@@ -162,7 +156,7 @@ function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
     const state = this.dataset.state;
     let filename, snippet;
-    if (document.querySelector("#listing-table")) {
+    if (document.querySelector("#files-table")) {
       filename = this.closest('tr').querySelector('.filename').innerText;
     } else {
       filename = document.querySelector("#file-name").innerText;

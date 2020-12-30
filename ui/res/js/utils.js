@@ -1,13 +1,11 @@
 /**
- * replaceList - Replaces all occurrences of the strings in `replaceArray` with
- *    their corrispondence in the array
+ * Replaces all occurrences of the strings in `replaceArray` with their 
+ * corrispondence in the array
  * 
- * @param {Array} replaceList L'array di stringhe da sostituire, del formato
- *    [['replace me', 'with me', global RegExp? true:false],
- *    [..., ...]]
- *    Es. [['{{to replace}}', 'foo'], ['some', 'bar', true]]
- * @returns the string taken as input, where {{text}} is replaced with its corrispondence
- *    in the `replaceArray`.
+ * @param {Array} replaceList Array of strings to replace, in the format:
+ *    [['replace this', 'with this', global RegExp? true:false], [..., ...]]
+ * @returns the string taken as input, where text occurrences are replaced with  
+ *    their corrispondence in `replaceArray`.
  */
 String.prototype.replaceList = function(replaceArray) {
   let target = this;
@@ -22,40 +20,24 @@ String.prototype.replaceList = function(replaceArray) {
   return target;
 }
 
+/**
+ * Decodes an HTML string
+ * @param {String} text String containing encoded HTML
+ * @returns String containing the decoded HTML
+ */
 function decodeHTML(text) {
   var textArea = document.createElement('textarea');
   textArea.innerHTML = text;
   return textArea.value;
 }
 
+/**
+ * Encodes an HTML string
+ * @param {String} text String containing plain HTML
+ * @returns String containing the encoded HTML
+ */
 function encodeHTML(text) {
   var textArea = document.createElement('textarea');
   textArea.innerText = text;
   return textArea.innerHTML;
-}
-
-function initButtonGroup() {
-  // Only have one button group active at a time
-  var activeBtnGroup = null;
-
-  // Toggle button dropdown when clicking on the opener
-  $(document).on('click', '.btn-group .dropdown-opener, .btn-group .dropdown, .btn-group.active .default-btn', function () {
-    const parent = this.closest('.btn-group');
-    const dropdownOpen = parent.classList.contains('active');
-    if (dropdownOpen) {
-      parent.classList.remove('active');
-      activeBtnGroup = null;
-    } else {
-      if (activeBtnGroup) activeBtnGroup.classList.remove('active');
-      parent.classList.add('active');
-      activeBtnGroup = parent;
-    }
-  });
-
-  // Close button dropdown when clicking outside of the button
-  $(document).on('click', function (e) {
-    if (!activeBtnGroup || activeBtnGroup.contains(e.target)) return;
-    activeBtnGroup.classList.remove('active');
-    activeBtnGroup = null;
-  });
 }
