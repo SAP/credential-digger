@@ -140,28 +140,28 @@
   text-overflow: ellipsis;
 }
 
-#listing-table tr:first-child th:first-child {
+#files-table tr:first-child th:first-child {
   border-right: 1px solid #949da8;
 }
 
-#listing-table tr:first-child th:last-child {
+#files-table tr:first-child th:last-child {
   border-left: 1px solid #949da8;
 }
 
-#listing-table thead tr:last-child th:not(:last-child) {
+#files-table thead tr:last-child th:not(:last-child) {
   border-right: none;
 }
 
-table#listing-table thead th, table#listing-table thead td {
+table#files-table thead th, table#files-table thead td {
   border-bottom: 1px solid #949da8;
   padding: 10px 18px 10px 10px;
 }
 
-#detail-table th:not(:last-child) {
+#discoveries-table th:not(:last-child) {
   border-right: 1px solid #949da8;
 }
 
-#detail-table .btns-container {
+#discoveries-table .btns-container {
   display: flex;
 }
 
@@ -186,6 +186,7 @@ table#listing-table thead th, table#listing-table thead td {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
+  max-width: 70%;
 }
 
 .filename-container .icon {
@@ -201,6 +202,10 @@ table#listing-table thead th, table#listing-table thead td {
 .filename-container .topbar-filename {
   font-size: 15px;
   color: #666;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .underTopicHeaderWrapper {
@@ -211,8 +216,13 @@ table#listing-table thead th, table#listing-table thead td {
   flex: 0;
 }
 
+.filename-text-container {
+  flex: 1;
+  max-width: calc(100% - 40px);
+}
+
 @media (max-width: 1023px) {
-  .dataTable#detail-table td.filename {
+  .dataTable#discoveries-table td.filename {
     max-width: 200px;
   }
 }
@@ -231,15 +241,15 @@ table#listing-table thead th, table#listing-table thead td {
     margin-bottom: 10px;
   }
 
-  #detail-table .hash {
+  #discoveries-table .hash {
     display: none;
   }
 
-  #detail-table .btn-text {
+  #discoveries-table .btn-text {
     display: none;
   }
 
-  .dataTable#detail-table td.filename {
+  .dataTable#discoveries-table td.filename {
     max-width: 150px;
   }
 }
