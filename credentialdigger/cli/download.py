@@ -10,6 +10,20 @@ independent from credentialdigger, that can be downloaded and installed a
 posteriori in order to provide additional features.
 
 In our use case these models are used to filter out false positive discoveries.
+
+usage: credentialdigger download [-h] [--dotenv DOTENV]
+                                 model [pip_args [pip_args ...]]
+
+positional arguments:
+  model            The name of the model. It must be an environment variable.
+  pip_args         Keyword arguments for pip.
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --dotenv DOTENV  The path to the .env file which will be used in all
+                   commands. If not specified, the one in the current
+                   directory will be used (if present).
+
 """
 
 import importlib
@@ -25,12 +39,30 @@ _data_path = Path(importlib.import_module(
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+
+def configure_parser(parser):
+    """
+    Configure arguments for command line parser.
+
+    Parameters
+    ----------
+    parser: `credentialdigger.cli.customParser`
+        Command line parser
+    """
+    parser.set_defaults(func=run)
+    parser.add_argument(
+        'model', type=str,
+        help='The name of the model. It must be an environment variable.')
+    parser.add_argument(
+        'pip_args', nargs='*', default=None, help='Keyword arguments for pip.')
+
+
 # ############################################################################
 # Methods adapted from
 # https://github.com/explosion/spaCy/blob/master/spacy/cli/download.py
 
 
-def download(args):
+def run(args):
     """ Download a model and link it to the credental digger models_data
     folder.
 

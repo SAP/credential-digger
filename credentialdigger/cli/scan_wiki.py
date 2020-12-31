@@ -1,21 +1,20 @@
 """
-The 'scan' module can be used to scan a git repository on the fly from the
-terminal. It supports both the Sqlite and Postgres clients.
+The 'scan_wiki' module can be used to scan the wiki of a git repository on the 
+fly from the terminal. It supports both the Sqlite and Postgres clients.
 
 NOTE: Postgres is used by default. Please make sure that the environment
 variables are exported and that the rules have already been added to the
 database.
 
-usage: credentialdigger scan [-h] [--dotenv DOTENV] [--sqlite SQLITE]
-                             [--category CATEGORY]
-                             [--models MODELS [MODELS ...]]
-                             [--exclude EXCLUDE [EXCLUDE ...]] [--debug]
-                             [--git_token GIT_TOKEN] [--force]
-                             [--generate_snippet_extractor]
-                             repo_url
+usage: credentialdigger scan_wiki [-h] [--dotenv DOTENV] [--sqlite SQLITE]
+                                  [--category CATEGORY]
+                                  [--models MODELS [MODELS ...]]
+                                  [--exclude EXCLUDE [EXCLUDE ...]] [--debug]
+                                  [--git_token GIT_TOKEN]
+                                  repo_url
 
 positional arguments:
-  repo_url              The URL of the git repository to be scanned.
+  repo_url              The url of the repository
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -38,13 +37,6 @@ optional arguments:
   --git_token GIT_TOKEN
                         Git personal access token to authenticate to the git
                         server
-  --force               Force a complete re-scan of the repository, in case it
-                        has already been scanned previously
-  --generate_snippet_extractor
-                        Generate the extractor model to be used in the
-                        SnippetModel. The extractor is generated using the
-                        ExtractorGenerator. If `False`, use the pre-trained
-                        extractor model
 
 """
 import logging
@@ -65,17 +57,7 @@ def configure_parser(parser):
     parser.set_defaults(func=run)
     parser.add_argument(
         'repo_url', type=str,
-        help='The URL of the git repository to be scanned.')
-    parser.add_argument(
-        '--force', action='store_true',
-        help='Force a complete re-scan of the repository, in case it has \
-            already been scanned previously')
-    parser.add_argument(
-        '--generate_snippet_extractor',
-        action='store_true',
-        help='Generate the extractor model to be used in the SnippetModel. \
-            The extractor is generated using the ExtractorGenerator. If \
-            `False`, use the pre-trained extractor model')
+        help='The url of the repository')
 
 
 def run(client, args):
@@ -97,14 +79,12 @@ def run(client, args):
         that the scan detected no leaks in this repo.
     """
 
-    discoveries = client.scan(
+    discoveries = client.scan_wiki(
         repo_url=args.repo_url,
         category=args.category,
         models=args.models,
         exclude=args.exclude,
-        force=args.force,
         debug=args.debug,
-        generate_snippet_extractor=args.generate_snippet_extractor,
         git_token=args.git_token)
 
     sys.exit(len(discoveries))
