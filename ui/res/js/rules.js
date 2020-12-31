@@ -102,44 +102,6 @@ for (var i = 0; i < closeDeleteRuleButtons.length; i++) {
   });
 }
 
-
-// upload rule popup
-// add action listener to upload rule button
-document.querySelector('#uploadRule').addEventListener('click', function(event) {
-  // show popup
-  document.querySelector('#uploadRuleModal').style.display = 'block';
-});
-
-
-document.querySelector('#addrule').addEventListener('click', function(event) {
-  // show popup
-  document.querySelector('#addrulepop').style.display = 'block';
-});
-
-window.addEventListener('click', function(event) {
-  // if user clicked in the modal area (area around the popup) hide popup
-  if (event.target == document.querySelector('#addrulepop')) {
-    closeAddRule();
-  }
-});
-
-document.querySelector('#cancelAddRule').addEventListener('click', function(event) {
-  closeAddRule();
-});
-
-// add action listener for window (clicking anywhere)
-window.addEventListener('click', function(event) {
-  // if user clicked in the modal area (area around the popup) hide popup
-  if (event.target == document.querySelector('#uploadRuleModal')) {
-    closeUploadRule();
-  }
-});
-
-// add action listener to close upload rule popup
-document.querySelector('#cancelUploadRule').addEventListener('click', function(event) {
-  closeUploadRule();
-});
-
 // add action listener for folder name input bar
 document.querySelector('#file').addEventListener('change', function(event) {
   if (event.target.value != '') {
@@ -149,21 +111,3 @@ document.querySelector('#file').addEventListener('change', function(event) {
     document.querySelector('#startUploadRule').disabled = false;
   }
 });
-
-// close upload rule pop up
-function closeUploadRule() {
-  // hide popup
-  document.querySelector('#uploadRuleModal').style.display = 'none';
-  // reset popup
-  document.querySelector('#path').innerHTML = 'No File Selected';
-  document.querySelector('#startUploadRule').disabled = true;
-}
-
-function closeAddRule() {
-  // hide popup
-  document.querySelector('#addrulepop').style.display = 'none';
-  // reset input
-  document.querySelector('#regexInput').value = '';
-  document.querySelector('#catInput').value = '';
-  document.querySelector('#descInput').value = '';
-}
