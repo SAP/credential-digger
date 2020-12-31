@@ -38,16 +38,16 @@ def configure_parser(parser):
         help='The path of the file that contains the rules.')
 
 
-def run(args, client):
+def run(client, args):
     """
     Add rules to the database
 
     Parameters
     ----------
-    args: `argparse.Namespace`
-        Arguments from command line parser.
     client: `credentialdigger.Client`
         Instance of the client on which to save results
+    args: `argparse.Namespace`
+        Arguments from command line parser.
 
     Raises
     ------

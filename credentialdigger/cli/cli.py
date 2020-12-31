@@ -1,11 +1,10 @@
+import argparse
+import logging
 import os
 import sys
-import logging
-import argparse
-
-from dotenv import load_dotenv
 
 from credentialdigger import PgClient, SqliteClient
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +17,7 @@ class customParser(argparse.ArgumentParser):
 
 
 def main():
-    from . import scan, add_rules, download, scan_user, scan_wiki
+    from . import add_rules, download, scan, scan_user, scan_wiki
 
     # Main parser configuration
     main_parser = customParser('credentialdigger')
@@ -111,6 +110,6 @@ def main():
                               dbhost=os.getenv('DBHOST'),
                               dbport=os.getenv('DBPORT'))
             logger.info('Database in use: Postgres')
-        args.func(args, client)
+        args.func(client, args)
     else:
         args.func(args)
