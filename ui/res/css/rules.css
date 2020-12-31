@@ -17,3 +17,13 @@
 .textArea{
   margin-top: 10px;
 }
+
+.rules-buttons {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+}
+
+.rules-buttons .btn {
+  margin-bottom: 10px;
+}

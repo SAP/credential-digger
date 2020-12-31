@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-  if (document.querySelector('.btn-group')) initButtonGroup();
   if (document.querySelector('.modal')) initModals();
+  initButtonGroup();
 });
 
 /**
