@@ -141,6 +141,10 @@ button {
   justify-content: flex-end;
 }
 
+.moreButtons .btn {
+  margin-left: 10px;
+}
+
 #search {
   width: 100%;
   box-sizing: border-box;

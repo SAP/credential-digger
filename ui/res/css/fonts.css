@@ -1,9 +1,9 @@
 @font-face {
   font-family: 'icomoon';
   src:
-    url('/res/fonts/icomoon.ttf?p1wyiv') format('truetype'),
-    url('/res/fonts/icomoon.woff?p1wyiv') format('woff'),
-    url('/res/fonts/icomoon.svg?p1wyiv#icomoon') format('svg');
+    url('/res/fonts/icomoon.ttf?oadu8g') format('truetype'),
+    url('/res/fonts/icomoon.woff?oadu8g') format('woff'),
+    url('/res/fonts/icomoon.svg?oadu8g#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -30,6 +30,9 @@
 .icon-error_outline:before {
   content: "\e900";
 }
+.icon-add:before {
+  content: "\e90f";
+}
 .icon-inbox:before {
   content: "\e903";
 }
@@ -38,6 +41,12 @@
 }
 .icon-insert_drive_file:before {
   content: "\e90c";
+}
+.icon-file_download:before {
+  content: "\e910";
+}
+.icon-file_upload:before {
+  content: "\e911";
 }
 .icon-folder_open:before {
   content: "\e90d";
@@ -63,6 +72,15 @@
 .icon-search:before {
   content: "\e906";
 }
+.icon-track_changes:before {
+  content: "\e90e";
+}
 .icon-delete_outline:before {
   content: "\e905";
+}
+.icon-remove_moderator:before {
+  content: "\e912";
+}
+.icon-subscript:before {
+  content: "\e913";
 }

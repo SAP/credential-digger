@@ -2,6 +2,7 @@
   font-size: 17px;
   display: flex;
   justify-content: stretch;
+  margin-bottom: 40px;
 }
 
 .generalInfoLink {

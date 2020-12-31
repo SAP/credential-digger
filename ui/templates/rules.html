@@ -4,9 +4,18 @@
 <div class="topicHeaderWrapper">
   <h1 class="topicH1">Rules Regex</h1>
   <span class="moreButtons">
-    <button id="uploadRule"><span>Upload Rules Regex File</span></button>
-    <button id="addrule"><span>Add rule</span></button>
-    <button id="DownloadRuleRegex" onclick="location.href = '/download_rule';"><span>Download Rules Regex File</span></button>
+    <div id="DownloadRuleRegex" onclick="location.href = '/download_rule';" class="btn outline-bg">
+      <span class="icon icon-file_download"></span>
+      <span>Download Rules Regex File</span>
+    </div>
+    <div id="uploadRule" class="btn primary-bg modal-opener" data-modal="uploadRuleModal">
+      <span class="icon icon-file_upload"></span>
+      <span>Upload Rules Regex File</span>
+    </div>
+    <div id="addrule" class="btn primary-bg modal-opener" data-modal="addrulepop">
+      <span class="icon icon-add"></span>
+      <span>Add rule</span>
+    </div>
   </span>
 </div>
 
@@ -31,7 +40,10 @@
       <span class="formFooter">
         {{rule.description}}
         <span class="moreButtons">
-          <button class="deleteRule">Delete Rule</button>
+          <button class="btn danger-bg deleteRule">
+            <span class="icon icon-delete_outline"></span>
+            <span>Delete Rule</span>
+          </button>
         </span>
       </span>
     </td>
@@ -61,7 +73,7 @@
   <div class="modal-content">
     <div class="topicHeaderWrapper">
       <h1 class="topicH1">Upload Regex Rule File</h1>
-      <span id="cancelUploadRule" class="close">&times;</span>
+      <span id="cancelUploadRule" class="modal-closer close">&times;</span>
     </div>
     <form action="/upload_rule" method="post" enctype="multipart/form-data">
       <span class="uploadButtonWrapper">
@@ -83,7 +95,7 @@
   <div class="modal-content">
     <div class="topicHeaderWrapper">
       <h1 class="topicH1">Add rule</h1>
-      <span id="cancelAddRule" class="close">&times;</span>
+      <span id="cancelAddRule" class="modal-closer close">&times;</span>
     </div>
     <form action="/add_rule" method="post">
       <input id="regexInput" type="text" name="regex" class="textInput" placeholder="Regex">
