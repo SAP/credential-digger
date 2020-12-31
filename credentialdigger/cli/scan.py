@@ -78,16 +78,16 @@ def configure_parser(parser):
             `False`, use the pre-trained extractor model')
 
 
-def run(args, client):
+def run(client, args):
     """
     Scan a git repository.
 
     Parameters
     ----------
-    args: `argparse.Namespace`
-        Arguments from command line parser.
     client: `credentialdigger.Client`
         Instance of the client on which to save results
+    args: `argparse.Namespace`
+        Arguments from command line parser.
 
     Returns
     -------
