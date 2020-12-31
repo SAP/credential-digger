@@ -398,8 +398,9 @@ class PgClient(Client):
         bool
             `True` if the update is successful, `False` otherwise
         """
-        query = 'UPDATE discoveries SET state=%s WHERE repo_url=%s \
-                and file_name=%s'
+        query = 'UPDATE discoveries SET state=%s WHERE repo_url=%s'
+        if file_name is not None:
+            query += ' and file_name=%s'
         if snippet is not None:
             query += ' and snippet=%s'
         query += ' RETURNING true'

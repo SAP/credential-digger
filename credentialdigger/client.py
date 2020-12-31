@@ -471,12 +471,12 @@ class Client(Interface):
 
         return self.query_check(query, new_state, discovery_id)
 
-    def update_discovery_group(self, query, new_state, repo_url, file_name,
+    def update_discovery_group(self, query, new_state, repo_url, file_name=None,
                                snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
-        their filename,and their snippet.
+        their filename, and their snippet.
 
         Parameters
         ----------
@@ -499,6 +499,8 @@ class Client(Interface):
             return False
         if snippet is None:
             return self.query_check(query, new_state, repo_url, file_name)
+        elif file_name is None:
+            return self.query_check(query, new_state, repo_url, snippet)
         else:
             return self.query_check(
                 query, new_state, repo_url, file_name, snippet)
