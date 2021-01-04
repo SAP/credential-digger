@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   initReposDataTable();
   initAddRepo();
+  initDeleteRepo();
   initModals();
 });
 
@@ -65,5 +66,12 @@ function initAddRepo() {
     //Select no category if this checkbox is 'Active'
     document.querySelector('#ruleSelector').selectedIndex = -1;
     checkFormFilled();
+  });
+}
+
+function initDeleteRepo() {
+  $(document).on('click', '.delete-repo-btn', function() {
+    const url = this.dataset.url;
+    document.querySelector('#deleteRepoModal input[name="repo_url"]').value = url;
   });
 }

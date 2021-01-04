@@ -78,6 +78,7 @@ body {
 
 .topicH1 {
   margin: 21.440px 0;
+  word-break: break-word;
 }
 
 button {

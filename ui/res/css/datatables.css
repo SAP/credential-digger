@@ -81,6 +81,26 @@ body table.dataTable>tbody>tr.child:hover {
   background: #f9f9f9 !important;
 }
 
+.dataTables_wrapper .dataTables_processing {
+  top: 10px;
+  bottom: 0;
+  height: auto;
+  z-index: 1;
+  padding: 20px;
+  background: rgba(255,255,255,0.6);
+}
+
+.dataTables_wrapper .loaderWrapper {
+  height: 100%;
+  align-items: center;
+}
+
+.dataTables_wrapper .loader {
+  border-width: 4px;
+  width: 30px;
+  height: 30px;
+}
+
 @media (max-width: 1023px) {
   .dataTable td.filename:hover a {
     left: 35px;
