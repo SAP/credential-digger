@@ -50,7 +50,7 @@ function initFilesDataTable() {
             </a>`,
             actions: discoveriesBtnGroupTemplate("Mark all as")
           }
-        })
+        });
       }
     },
     initComplete: function (settings, json) {
@@ -157,12 +157,15 @@ function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
     const state = this.dataset.state;
     let filename, snippet;
+    const datatable = $('.dataTable').DataTable();
+
     if (document.querySelector("#files-table")) {
       filename = this.closest('tr').querySelector('.filename').innerText;
     } else {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
+    
     $.ajax({
       url: 'update_discovery_group',
       method: 'POST',
@@ -172,8 +175,11 @@ function initUpdateDiscoveries() {
         ...filename && { file: filename },
         ...snippet && { snippet: decodeHTML(snippet) }
       },
+      beforeSend: function() {
+        datatable.processing(true);
+      },
       success: function () {
-        $('.dataTable').DataTable().ajax.reload();
+        datatable.ajax.reload();
       }
     })
   });

@@ -1,3 +1,6 @@
+/**
+ * Mapping of possible states of a discovery in the format "key-description".
+ */
 const states = {
   new: "leak",
   false_positive: "false positive",
@@ -5,15 +8,21 @@ const states = {
   not_relevant: "not relevant"
 }
 
+/**
+ * Default dataTables object settings for all tables
+ */
 const defaultTableSettings = {
   responsive: true,
+  processing: true,
   pageLength: 10, // Default # of records shown in the table
   language: {
     search: '<span class="icon icon-search dt-icon"></span>',
     paginate: {
       previous: '<span class="icon icon-keyboard_arrow_left dt-icon"></span>',
       next: '<span class="icon icon-keyboard_arrow_right dt-icon"></span>'
-    }
+    },
+    loadingRecords: '&nbsp;',
+    processing: '<div class="loaderWrapper"><div class="loader"></div></div>'
   }
 }
 
@@ -61,7 +70,7 @@ const reposActionsTemplate = url => `
       </div>
     </div>
   </div>
-  <button class="btn danger-bg modal-opener" data-modal="deleteRepoModal">
+  <button class="btn danger-bg modal-opener delete-repo-btn" data-url="${url}" data-modal="deleteRepoModal">
     <span class="icon icon-delete_outline"></span><span>Delete Repo</span>
   </button>
 </div>`;
