@@ -5,12 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
   initModals();
 });
 
-let listOfRepos;
-window.onload = function () {
-  listOfRepos = document.getElementsByClassName('repo tableRowContent');
-  // validateForm();
-};
-
 function initReposDataTable() {
   $('#repos-table').DataTable({
     ...defaultTableSettings,

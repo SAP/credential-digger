@@ -1,3 +1,7 @@
+/* 
+ * Styles for the rules page.
+ */
+
 #file {
   display: none;
 }
@@ -12,10 +16,6 @@
   width: fit-content;
   margin: 0;
   margin-right: 10px;
-}
-
-.textArea{
-  margin-top: 10px;
 }
 
 .rules-buttons {

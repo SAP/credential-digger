@@ -61,7 +61,7 @@
   </tbody>
 </table>
 
-<!--add rule popup-->
+<!-- upload rule modal -->
 <div id="uploadRuleModal" class="modal">
   <div class="modal-content">
     <div class="topicHeaderWrapper">
@@ -71,19 +71,20 @@
     <form action="/upload_rule" method="post" enctype="multipart/form-data">
       <span class="uploadButtonWrapper">
         <input id="file" type="file" name="filename">
-        <label class="linkButton uploadButton" for="file">Choose a file</label>
+        <label class="btn outline-bg uploadButton" for="file">Choose a file</label>
         <p id="path" class="formLabel">No File selected</p>
       </span>
       <div class="formFooter">
         <span class="moreButtons">
         </span>
-        <button id="startUploadRule" type="submit">Upload Rules</button>
+        <button id="startUploadRule" type="submit" class="btn primary-bg">Upload Rules</button>
       </div>
     </form>
   </div>
 </div>
 
 
+<!-- add rule modal -->
 <div id="addrulepop" class="modal">
   <div class="modal-content">
     <div class="topicHeaderWrapper">
