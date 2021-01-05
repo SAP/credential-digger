@@ -27,13 +27,6 @@ function initRules() {
         resultsCounter++;
       }
     }
-    // if rule shown counter is 0 (no rules displayed) show no rules found exception
-    if (resultsCounter == 0) {
-      document.querySelector('#noEntries').style.display = 'block';
-    // else hide exception
-    } else {
-      document.querySelector('#noEntries').style.display = 'none';
-    }
   }
 
   // delete rule popup
