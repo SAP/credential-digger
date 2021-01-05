@@ -1,12 +1,21 @@
+/**
+ * Handles repository scan's form and interactions.
+ */
+
+/** 
+ * Register handlers on document ready event 
+ */
 document.addEventListener("DOMContentLoaded", function () {
-  // Use jQuery for easier event delegation
+  /** Remove error on input's change. */
   $(document).on('change', '.error', function() {
+    // Use jQuery for easier event delegation
     this.classList.remove('error');
 
     const next = this.nextSibling;
     if(next?.classList?.contains('error-message')) next.remove();
 
     if(!document.querySelector('.error')) {
+      // if there are no errors left, enable submit button
       const submitButton = document.querySelector('#startRepoScan');
       submitButton.disabled = false;
       submitButton.classList.remove('disabled');
@@ -14,33 +23,41 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+/** 
+ * Initialization of the form's event handlers 
+ */
 function initScanRepo() {
   const rulesSelect = document.querySelector('#ruleSelector');
   const rulesCheckbox = document.querySelector('#cbAllRules');
 
-  // add action listener to start repo scan
+  /** 
+   * Add listener to start repo scan: when the form is submitted, if it is 
+   * valid start the scan
+   */
   document.querySelector('#scan_repo').addEventListener('submit', function (e) {
     const formValid = validateForm();
     if(!formValid) {
       e.preventDefault();
       return;
     }
-
-    // close popup
+    // close popup and open ok modal
     document.querySelector('#addRepoModal').classList.remove('open');
-    // open ok modal
     document.querySelector("#okModal").classList.add('open');
   }, true);
 
-  // add action listener to repo category selector
+  /** 
+   * Add listener to repo category selector: uncheck he 'Use all rules' 
+   * checkbox when a category is being manually selected
+   */
   rulesSelect.addEventListener('change', function () {
-    // Uncheck the 'Use all rules' checkbox when a category is being manually selected.
     if(rulesSelect.selectedIndex != -1) rulesCheckbox.checked = false;
   });
 
-  // add action listener to checkbox that selects all the rules
+  /** 
+   * Add listener to checkbox that selects all the rules: remove selection of
+   * the rules select if this checkbox is checked
+   */
   rulesCheckbox.addEventListener('change', function () {
-    // Select no category if this checkbox is 'Active'
     rulesSelect.selectedIndex = -1;
     rulesSelect.dispatchEvent(new Event('change', { 'bubbles': true }))
   });
@@ -50,13 +67,13 @@ function initScanRepo() {
  * Check if form is filled correctly and handle change
  */
 function validateForm() {
-  // get HTML elements
+  // Get HTML elements
   const cBox = document.querySelector('#cbAllRules');
   const rulesList = document.querySelector('#ruleSelector');
   const repoLink = document.querySelector('#repoLinkInput');
-  // check if repo link is a valid url
+  // Check if repo link is a valid url
   const urlValid = repoLink.value.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
-  // check whether the form is correctly filled or not.
+  // Check whether the form is correctly filled or not
   let formValid = true;
   if (urlValid == null) {
     formValid = false;
@@ -75,6 +92,11 @@ function validateForm() {
   return formValid;
 }
 
+/**
+ * Add error class and error message to input
+ * @param {HTMLNode} input HTML input node
+ * @param {String} tooltip Error message to show below the input field
+ */
 function addError(input, tooltip = '') {
   input.classList.add('error');
 

@@ -155,6 +155,10 @@ label {
   cursor: pointer;
 }
 
+select option[value=""] {
+  display: none;
+}
+
 .textInput {
   width: 100%;
   box-sizing: border-box;

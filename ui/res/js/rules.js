@@ -1,8 +1,18 @@
+/**
+ * Handles all interactions in the repos view.
+*/
+
+/**
+ * Register handlers on document ready event
+ */
 document.addEventListener("DOMContentLoaded", function () {
   if (document.querySelector('#rules-table')) initRulesDataTable();
   initRules();
 });
 
+/**
+ * Initialize DataTable plugin on the page's table
+ */
 function initRulesDataTable() {
   $('#rules-table').DataTable({
     ...defaultTableSettings,
