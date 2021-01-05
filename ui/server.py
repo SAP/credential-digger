@@ -117,7 +117,7 @@ def rules():
 @app.route('/scan_repo', methods=['POST'])
 def scan_repo():
     # Get scan properties
-    repolink = request.form['repolink']
+    repolink = request.form['repolink'].strip()
     rulesToUse = request.form.get('rule_to_use')
     useSnippetModel = request.form.get('snippetModel')
     usePathModel = request.form.get('pathModel')

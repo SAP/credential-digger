@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (document.querySelector('#files-table')) initFilesDataTable();
   if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
   initUpdateDiscoveries();
-  initNewScan();
+  initScanRepo();
 });
 
 function initFilesDataTable() {
@@ -182,21 +182,5 @@ function initUpdateDiscoveries() {
         datatable.ajax.reload();
       }
     })
-  });
-}
-
-function initNewScan() {
-  // add action listener to checkbox that selects all the rules
-  document.querySelector('#cbAllRules').addEventListener('change', function () {
-    //Select no category if this checkbox is 'Active'
-    document.querySelector('#ruleSelector').selectedIndex = -1;
-    checkFormFilled();
-  });
-
-  // add action listener to repo category selector
-  document.querySelector('#ruleSelector').addEventListener('change', function () {
-    //Disable the 'Use all rules' checkbox when a category is being manually selected.
-    document.querySelector('#cbAllRules').checked = false;
-    checkFormFilled();
   });
 }

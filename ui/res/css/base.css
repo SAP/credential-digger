@@ -8,6 +8,10 @@ body {
   font-size: 16px;
 }
 
+label {
+  cursor: pointer;
+}
+
 .headerToolbar {
   height: 50px;
   display: flex;
@@ -206,7 +210,6 @@ button {
   border: 1px solid rgb(158, 158, 158);
   border-radius: 7px;
   font-size: 17px;
-  margin-bottom: 21.440px;
   padding: 12px;
   outline: none;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
@@ -226,7 +229,16 @@ button {
   background: none;
   padding: 6px;
   margin-top: 10px;
-  margin-bottom: 21.440px;
+}
+
+.form-item {
+  margin-bottom: 25px;   
+}
+
+.error-message {
+  font-size: 14px;
+  margin-top: 10px;
+  color: red;
 }
 
 .formFooter {
@@ -531,6 +543,10 @@ a.btn {
   color: #555;
 }
 
+.btn.disabled {
+  opacity: 0.6;
+}
+
 .nowrap {
   white-space: nowrap;
 }
@@ -545,6 +561,10 @@ a.btn {
 
 .topicH1 span {
   vertical-align: middle;
+}
+
+.error {
+  border: 2px solid red;
 }
 
 @media (max-width: 1023px) {

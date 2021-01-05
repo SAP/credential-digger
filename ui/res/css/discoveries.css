@@ -206,6 +206,7 @@ table#files-table thead th, table#files-table thead td {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  margin-top: 5px;
 }
 
 .underTopicHeaderWrapper {

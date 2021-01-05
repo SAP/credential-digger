@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   initReposDataTable();
-  initAddRepo();
+  initScanRepo();
   initDeleteRepo();
   initModals();
 });
@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
 let listOfRepos;
 window.onload = function () {
   listOfRepos = document.getElementsByClassName('repo tableRowContent');
-  checkFormFilled();
+  // validateForm();
 };
 
 function initReposDataTable() {
@@ -43,33 +43,8 @@ function initReposDataTable() {
   });
 }
 
-function initAddRepo() {
-  // add action listener to start repo scan
-  document.querySelector('#startRepoScan').addEventListener('click', function () {
-    // close popup
-    document.querySelector('#addRepoModal').classList.remove('open');
-    // show loading popup
-  });
-
-  // add action listener to repo category selector
-  document.querySelector('#ruleSelector').addEventListener('change', function () {
-    //Disable the 'Use all rules' checkbox when a category is being manually selected.
-    document.querySelector('#cbAllRules').checked = false;
-    checkFormFilled();
-  });
-
-  // add action listener to repo url input
-  document.querySelector('#repoLinkInput').addEventListener('input', checkFormFilled);
-
-  // add action listener to checkbox that selects all the rules
-  document.querySelector('#cbAllRules').addEventListener('change', function () {
-    //Select no category if this checkbox is 'Active'
-    document.querySelector('#ruleSelector').selectedIndex = -1;
-    checkFormFilled();
-  });
-}
-
 function initDeleteRepo() {
+  // Use jQuery for easier event delegation
   $(document).on('click', '.delete-repo-btn', function() {
     const url = this.dataset.url;
     document.querySelector('#deleteRepoModal input[name="repo_url"]').value = url;
