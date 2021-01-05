@@ -1,8 +1,12 @@
 /**
+ * Utility, stand-alone helper functions.
+ */
+
+/**
  * Replaces all occurrences of the strings in `replaceArray` with their 
  * corrispondence in the array
  * 
- * @param {Array} replaceList Array of strings to replace, in the format:
+ * @param {Array} replaceArray Array of strings to replace, in the format:
  *    [['replace this', 'with this', global RegExp? true:false], [..., ...]]
  * @returns the string taken as input, where text occurrences are replaced with  
  *    their corrispondence in `replaceArray`.

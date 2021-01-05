@@ -1,3 +1,10 @@
+/**
+ * Handles all interactions in the repos view.
+ */
+
+/**
+ * Register handlers on document ready event
+ */
 document.addEventListener("DOMContentLoaded", function () {
   initReposDataTable();
   initScanRepo();
@@ -5,6 +12,9 @@ document.addEventListener("DOMContentLoaded", function () {
   initModals();
 });
 
+/**
+ * Initialize DataTable plugin on the page's table
+ */
 function initReposDataTable() {
   $('#repos-table').DataTable({
     ...defaultTableSettings,
@@ -29,7 +39,27 @@ function initReposDataTable() {
         return json.map(item => {
           return {
             ...item,
-            actions: reposActionsTemplate(item.url)
+            actions: `
+            <div class="btns-container">
+              <div class="btn-group">
+                <a class="btn outline-bg" href="/files?url=${item.url}">
+                  <span class="icon icon-folder_open"></span><span>Files view</span>
+                </a>
+                <div class="dropdown-container">
+                  <div class="dropdown-opener outline-bg">
+                    <span class="icon icon-keyboard_arrow_down"></span>
+                  </div>
+                  <div class="dropdown">
+                    <a class="btn outline-bg" href="/discoveries?url=${item.url}">
+                      <span class="icon icon-error_outline"></span><span>Discoveries view</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <button class="btn danger-bg modal-opener delete-repo-btn" data-url="${item.url}" data-modal="deleteRepoModal">
+                <span class="icon icon-delete_outline"></span><span>Delete Repo</span>
+              </button>
+            </div>`
           }
         })
       }
@@ -37,6 +67,9 @@ function initReposDataTable() {
   });
 }
 
+/**
+ * Set repository url when deleting a repo
+ */
 function initDeleteRepo() {
   // Use jQuery for easier event delegation
   $(document).on('click', '.delete-repo-btn', function() {

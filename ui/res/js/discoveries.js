@@ -1,3 +1,11 @@
+/**
+ * Handles all interactions in the discoveries views (files listing, file 
+ * detail and discoveries).
+ */
+
+/**
+ * Register handlers on document ready event
+ */
 document.addEventListener("DOMContentLoaded", function () {
   if (document.querySelector('#files-table')) initFilesDataTable();
   if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
@@ -5,6 +13,9 @@ document.addEventListener("DOMContentLoaded", function () {
   initScanRepo();
 });
 
+/**
+ * Initialize DataTable plugin on the files listing page's table
+ */
 function initFilesDataTable() {
   const repoUrl = document.querySelector('#repo-url').innerText;
   $('#files-table').DataTable({
@@ -61,6 +72,9 @@ function initFilesDataTable() {
   });
 }
 
+/**
+ * Initialize DataTable plugin on the file detail and discoveries page's table
+ */
 function initDiscoveriesDataTable() {
   const repoUrl = document.querySelector('#repo-url').innerText;
   const filename = document.querySelector('#file-name').innerText;
@@ -150,11 +164,12 @@ function initDiscoveriesDataTable() {
   });
 }
 
+/**
+ * Event handler for update discoveries' button
+ */
 function initUpdateDiscoveries() {
-  const repoUrl = document.querySelector('#repo-url').innerText;
-
-  // Update discovery group
   $(document).on('click', '.btn-group .btn', function () {
+    const repoUrl = document.querySelector('#repo-url').innerText;
     const state = this.dataset.state;
     let filename, snippet;
     const datatable = $('.dataTable').DataTable();
@@ -184,3 +199,40 @@ function initUpdateDiscoveries() {
     })
   });
 }
+
+/**
+ * Mapping of possible states of a discovery in the format "key-description".
+ */
+const states = {
+  new: "leak",
+  false_positive: "false positive",
+  addressing: "addressing",
+  not_relevant: "not relevant"
+}
+
+const discoveriesBtnGroupTemplate = mark => `
+<div class="btn-group">
+  <div class="btn primary-bg" data-state="false_positive">
+    <span class="icon icon-outlined_flag"></span>
+    <span>${mark} FPs</span>
+  </div>
+  <div class="dropdown-container">
+    <div class="dropdown-opener primary-bg">
+      <span class="icon icon-keyboard_arrow_down"></span>
+    </div>
+    <div class="dropdown">
+      <div class="btn light-bg danger-color" data-state="new">
+        <span class="icon icon-error_outline"></span>
+        <span>${mark} leak</span>
+      </div>
+      <div class="btn light-bg warning-color" data-state="addressing">
+        <span class="icon icon-timelapse"></span>
+        <span>${mark} addressing</span>
+      </div>
+      <div class="btn light-bg grey-color" data-state="not_relevant">
+        <span class="icon icon-inbox"></span>
+        <span>${mark} not relevant</span>
+      </div>
+    </div>
+  </div>
+</div>`;

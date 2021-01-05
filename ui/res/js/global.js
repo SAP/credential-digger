@@ -1,10 +1,28 @@
+/**
+ * Default dataTables object settings for all tables
+ */
+const defaultTableSettings = {
+  responsive: true,
+  processing: true,
+  pageLength: 10, // Default # of records shown in the table
+  language: {
+    search: '<span class="icon icon-search dt-icon"></span>',
+    paginate: {
+      previous: '<span class="icon icon-keyboard_arrow_left dt-icon"></span>',
+      next: '<span class="icon icon-keyboard_arrow_right dt-icon"></span>'
+    },
+    loadingRecords: '&nbsp;',
+    processing: '<div class="loaderWrapper"><div class="loader"></div></div>'
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   if (document.querySelector('.modal')) initModals();
   initButtonGroup();
 });
 
 /**
- * Handle opening and closing of the dropdown in button groups
+ * Handle opening and closing of the dropdown in button groups,
  */
 function initButtonGroup() {
   // Only have one button group active at a time
@@ -34,12 +52,13 @@ function initButtonGroup() {
 }
 
 /**
- * Handle opening and closing of modals
+ * Handle opening and closing of modals.
  * 
  * Usage:
  *  - Add class `modal` and an id to the modal element 
  *  - Add class `modal-opener` and attribute `data-modal="MODAL-ID"` to the 
  *    button that opens the modal
+ *  - Add class `modal-closer` to the button that closes the modal
  */
 function initModals() {
   // Event listener to open modal
@@ -59,6 +78,11 @@ function initModals() {
   });
 }
 
+/**
+ * Register DataTable's `processing()` plugin on all tables.
+ * 
+ * See: https://datatables.net/plug-ins/api/processing()
+ */
 jQuery.fn.dataTable.Api.register( 'processing()', function ( show ) {
   return this.iterator( 'table', function ( ctx ) {
       ctx.oApi._fnProcessingDisplay( ctx, show );
