@@ -27,3 +27,11 @@
 .rules-buttons .btn {
   margin-bottom: 10px;
 }
+
+@media (max-width: 767px) {
+  .rules-buttons .btn {
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
+  }
+}

@@ -9,8 +9,8 @@
 document.addEventListener("DOMContentLoaded", function () {
   if (document.querySelector('#files-table')) initFilesDataTable();
   if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
+  if (document.querySelector('#addRepoModal')) initScanRepo();
   initUpdateDiscoveries();
-  initScanRepo();
 });
 
 /**

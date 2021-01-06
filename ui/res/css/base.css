@@ -74,7 +74,11 @@ body {
 .topicHeaderWrapper {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+}
+
+.topicHeaderWrapper .topicH1 {
+  margin-top: 0;
 }
 
 .scanDescription {
@@ -145,7 +149,7 @@ body {
 .modal-content {
   background-color: white;
   margin: auto;
-  padding: 0 21.440px 21.440px 21.440px;
+  padding: 21.440px;
   border-radius: 7px;
   max-width: 700px;
 }
@@ -455,7 +459,15 @@ a.btn {
 
 @media (max-width: 767px) {
   .contentBox {
-    padding: 10px;
+    padding: 30px 15px;
+  }
+
+  .headerTitleText {
+    display: none;
+  }
+
+  .modal-content {
+    width: calc(100vw - 20px);
   }
 }
 /* #endregion */

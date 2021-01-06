@@ -185,15 +185,35 @@ table#files-table thead th, table#files-table thead td {
 
 @media (max-width: 767px) {
   .topicHeaderWrapper {
-    display: block;
+    flex-wrap: wrap;
   }
 
   .moreButtonsDiscoveries {
     flex-wrap: wrap;
     justify-content: flex-start;
+    flex-basis: 100%;
+    margin-top: 20px
   }
+
+  .moreButtonsDiscoveries .divider {
+    display: none;
+  }
+
+  .moreButtonsDiscoveries .btn:first-child {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+
   .moreButtonsDiscoveries .btn {
     margin-bottom: 10px;
+    display: flex;
+    margin-left: 0;
+    justify-content: center;
+    width: calc(50% - 5px);
+  }
+
+  .moreButtonsDiscoveries .btn:last-child {
+    margin-left: 10px;
   }
 
   #discoveries-table .hash {
@@ -207,5 +227,14 @@ table#files-table thead th, table#files-table thead td {
   .dataTable#discoveries-table td.filename {
     max-width: 150px;
   }
+
+  #discoveries-table .dtr-data .btn .icon {
+    margin: 0;
+  }
 }
 
+@media (max-width: 450px) {
+  th.discoveries {
+    display: none;
+  }
+}
