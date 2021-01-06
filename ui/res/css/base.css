@@ -113,6 +113,14 @@ body {
 .topicH1 span {
   vertical-align: middle;
 }
+
+.divider {
+  border-right: 1px solid #ccc;
+  width: 1px;
+  height: 30px;
+  margin-left: 20px;
+  margin-right: 10px;
+}
 /* #endregion */
 
 /* #region: MODALS */

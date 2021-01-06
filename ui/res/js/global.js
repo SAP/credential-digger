@@ -74,6 +74,9 @@ function initModals() {
       const modal = e.target.closest('.modal');
       modal.classList.remove('open');
       modal.querySelector('form')?.reset();
+      modal.querySelectorAll('input, select, textarea, checkbox').forEach(node => {
+        node.dispatchEvent(new Event('change', { bubbles: true }))
+      });
     }
   });
 }

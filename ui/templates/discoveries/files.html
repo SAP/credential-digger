@@ -19,11 +19,15 @@
     <div class="icon icon-folder_open"></div>
     <div>
       <h1 class="topicH1"><span>Files</span></h1>
-      <a href="/discoveries?url={{url}}" class="topbar-filename">Go to discoveries view</a>
     </div>
   </div>
   <span class="moreButtons moreButtonsDiscoveries">
-    <button id="newScan" class="btn outline-bg modal-opener" data-modal="addRepoModal">
+    <a href="/discoveries?url={{url}}" class="btn outline-bg">
+      <span class="icon icon-error_outline"></span>
+      <span>Discoveries view</span>
+    </a>
+    <div class="divider"></div>
+    <button id="newScan" class="btn primary-bg modal-opener" data-modal="addRepoModal">
       <span class="icon icon-refresh"></span>
       <span>Rescan</span>
     </button>
