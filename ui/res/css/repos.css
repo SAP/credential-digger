@@ -53,3 +53,23 @@
 .btns-container .btn:not(:first-child) {
   margin-left: 10px;
 }
+
+td.dtr-control {
+  max-width: 90vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 767px) {
+  .generalInfoLinkCounter {
+    font-size: 30px;
+  }
+
+  .topicHeaderWrapper {
+    margin-bottom: 20px;
+  }
+  
+  #repos-table_wrapper {
+    margin-top: 40px;
+  }
+}
