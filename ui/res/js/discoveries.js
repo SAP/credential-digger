@@ -1,5 +1,5 @@
 /**
- * Handles all interactions in the discoveries views (files listing, file 
+ * Handles all interactions in the discoveries pages (files listing, file 
  * detail and discoveries).
  */
 

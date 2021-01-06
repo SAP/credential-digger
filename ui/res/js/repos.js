@@ -1,5 +1,5 @@
 /**
- * Handles all interactions in the repos view.
+ * Handles all interactions in the repos page.
  */
 
 /**
