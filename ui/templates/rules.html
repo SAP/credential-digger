@@ -30,36 +30,36 @@
   </thead>
   <tbody>
     {% for rule in rules %}
-  <tr>
-    <td class="dt-center">{{rule.category}}</td>
-    <td class="dt-center">{{rule.description}}</td>
-    <td>{{rule.regex}}</td>
-    <td>
-      <button class="btn danger-bg deleteRule">
-        <span class="icon icon-delete_outline"></span>
-        <span>Delete Rule</span>
-      </button>
-    </td>
-  </tr>
-
-  <!--delete rule popup-->
-  <div class="modal deleteRuleModal">
-    <div class="modal-content">
-      <div class="topicHeaderWrapperAccept">
-        <h1 class="topicH1">Delete {{rule.regex}} Rule ?</h1>
-      </div>
-      <span class="buttonsAccept">
-        <form action="/delete_rule" method="post">
-          <input name="ruleid" type="hidden" value="{{rule.id}}">
-          <button class="btn danger-bg" type="submit">Delete Rule</button>
-        </form>
-        <button class="cancelDeleteRule btn outline-bg">Cancel</button>
-      </span>
-    </div>
-  </div>
-  {% endfor %}
+      <tr>
+        <td class="dt-center">{{rule.category}}</td>
+        <td class="dt-center">{{rule.description}}</td>
+        <td class="rule-regex">{{rule.regex}}</td>
+        <td>
+          <button class="btn danger-bg deleteRule modal-opener" data-modal="deleteRuleModal" data-ruleid="{{rule.id}}">
+            <span class="icon icon-delete_outline"></span>
+            <span>Delete Rule</span>
+          </button>
+        </td>
+      </tr>
+    {% endfor %}
   </tbody>
 </table>
+
+<!--delete rule popup-->
+<div class="modal" id="deleteRuleModal">
+  <div class="modal-content">
+    <div class="topicHeaderWrapperAccept">
+      <h1 class="topicH1">Delete Rule "<span id="rule-regex"></span>" ?</h1>
+    </div>
+    <span class="buttonsAccept">
+      <form action="/delete_rule" method="post">
+        <input name="ruleid" type="hidden" id="rule-id">
+        <button class="btn danger-bg" type="submit">Delete Rule</button>
+      </form>
+      <button class="modal-closer btn outline-bg">Cancel</button>
+    </span>
+  </div>
+</div>
 
 <!-- upload rule modal -->
 <div id="uploadRuleModal" class="modal">
@@ -92,9 +92,15 @@
       <span id="cancelAddRule" class="modal-closer close">&times;</span>
     </div>
     <form action="/add_rule" method="post">
-      <input id="regexInput" type="text" name="regex" class="textInput" placeholder="Regex">
-      <input id="catInput" type="text" name="category" class="textInput" placeholder="category">
-      <textarea  id="descInput" type="text" name="description" class="textInput" placeholder="Description"></textarea>
+      <div class="form-item">
+        <input id="regexInput" type="text" name="regex" class="textInput" placeholder="Regex">
+      </div>
+      <div class="form-item">
+        <input id="catInput" type="text" name="category" class="textInput" placeholder="category">
+      </div>
+      <div class="form-item">
+        <textarea  id="descInput" type="text" name="description" class="textInput" placeholder="Description"></textarea>
+      </div>
       <div class="formFooter">
         <span></span>
         <button id="postAddFolder" type="submit">Add rule</button>
@@ -103,12 +109,5 @@
   </div>
 </div>
 
-<script>
-  if ({{rules}} == null) {
-    var rules = [];
-  } else {
-    var rules = {{rules}};
-  }
-</script>
 <script src="/res/js/rules.js"></script>
 {% endblock %}
