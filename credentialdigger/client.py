@@ -786,7 +786,7 @@ class Client(Interface):
                   models=None, exclude=None, debug=False, git_token=None):
         """ Scan the wiki of a repository.
 
-        This method simply generate the url of a wiki from the url of its repo,
+        This method simply generates the url of a wiki from the url of its repo,
         and uses the same `scan` method that we use for repositories.
 
         Parameters
