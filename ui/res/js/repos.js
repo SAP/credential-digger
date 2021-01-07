@@ -18,9 +18,14 @@ document.addEventListener("DOMContentLoaded", function () {
 function initReposDataTable() {
   $('#repos-table').DataTable({
     ...defaultTableSettings,
+    processing: false,
     order: [[0, "asc"]], // Set default column sorting
     columns: [ // Table columns definition
       {
+        data: "scan_active",
+        className: 'dt-center scan-status',
+        orderSequence: ["asc", "desc"]
+      }, {
         data: "url",
         orderSequence: ["asc", "desc"]
       }, {
@@ -39,6 +44,11 @@ function initReposDataTable() {
         return json.map(item => {
           return {
             ...item,
+            scan_active: item.scan_active ? `
+              <span class="loaderWrapper"><span class="loader"></span></span>
+            ` : `
+              <span class="icon icon-check_circle_outline"></span>
+            `,
             actions: `
             <div class="btns-container">
               <div class="btn-group">
@@ -66,6 +76,8 @@ function initReposDataTable() {
     },
   });
 }
+
+
 
 /**
  * Set repository url when deleting a repo
