@@ -2,6 +2,7 @@ import os
 import sys
 from collections import defaultdict
 from itertools import groupby
+import threading
 
 import yaml
 from dotenv import load_dotenv
@@ -114,32 +115,6 @@ def rules():
     return render_template('rules.html', rules=rules)
 
 
-@app.route('/scan_repo', methods=['POST'])
-def scan_repo():
-    # Get scan properties
-    repolink = request.form['repolink'].strip()
-    rulesToUse = request.form.get('rule_to_use')
-    useSnippetModel = request.form.get('snippetModel')
-    usePathModel = request.form.get('pathModel')
-    # If the form does not contain the 'Force' checkbox,
-    # then 'forceScan' will be set to False; thus, ignored.
-    forceScan = request.form.get('forceScan') == 'force'
-
-    # Set up models
-    models = []
-    if usePathModel == 'path':
-        models.append('PathModel')
-    if useSnippetModel == 'snippet':
-        models.append('SnippetModel')
-
-    # Scan
-    if rulesToUse == 'all':
-        c.scan(repolink, models=models, force=forceScan)
-    else:
-        c.scan(repolink, models=models, category=rulesToUse, force=forceScan)
-    return redirect('/')
-
-
 @app.route('/delete_repo', methods=['POST'])
 def delete_repo():
     c.delete_repo(**request.values)
@@ -185,12 +160,61 @@ def download_rule():
 
 # ################### JSON APIs ####################
 
+@app.route('/scan_repo', methods=['POST'])
+def scan_repo():
+    # Get scan properties
+    repolink = request.form['repolink'].strip()
+    rulesToUse = request.form.get('rule_to_use')
+    useSnippetModel = request.form.get('snippetModel')
+    usePathModel = request.form.get('pathModel')
+    # If the form does not contain the 'Force' checkbox,
+    # then 'forceScan' will be set to False; thus, ignored.
+    forceScan = request.form.get('forceScan') == 'force'
+
+    # Set up models
+    models = []
+    if usePathModel == 'path':
+        models.append('PathModel')
+    if useSnippetModel == 'snippet':
+        models.append('SnippetModel')
+
+    # Scan
+    args = {
+        "repo_url": repolink,
+        "models": models,
+        "force": forceScan
+    }
+    if rulesToUse != 'all':
+        args["category"] = rulesToUse
+    thread = threading.Thread(
+        name=f"credentialdigger@{repolink}", target=c.scan, kwargs=args)
+    thread.start()
+
+    return 'OK', 200
+
+
+@app.route('/get_active_scans')
+def get_active_scans():
+    active_scans = []
+    for thread in threading.enumerate():
+        if thread.name.startswith("credentialdigger"):
+            active_scans.append(thread.name.split("@")[1])
+    return jsonify(active_scans)
+
+
 @app.route('/get_repos')
 def get_repos():
-    repos = c.get_repos()
+    active_scans = []
+    for thread in threading.enumerate():
+        if thread.name.startswith("credentialdigger"):
+            active_scans.append(thread.name.split("@")[1])
 
+    repos = c.get_repos()
     for repo in repos:
         repo['lendiscoveries'] = len(c.get_discoveries(repo['url']))
+        repo['scan_active'] = False
+        if repo['url'] in active_scans:
+            repo['scan_active'] = True
 
     return jsonify(repos)
 
