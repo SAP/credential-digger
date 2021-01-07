@@ -1,21 +1,22 @@
 """
-The 'scan' module can be used to scan a git repository on the fly from the
+The 'scan_user' module can be used to scan a GitHub user on the fly from the
 terminal. It supports both the Sqlite and Postgres clients.
 
 NOTE: Postgres is used by default. Please make sure that the environment
 variables are exported and that the rules have already been added to the
 database.
 
-usage: credentialdigger scan [-h] [--dotenv DOTENV] [--sqlite SQLITE]
-                             [--category CATEGORY]
-                             [--models MODELS [MODELS ...]]
-                             [--exclude EXCLUDE [EXCLUDE ...]] [--debug]
-                             [--git_token GIT_TOKEN] [--force]
-                             [--generate_snippet_extractor]
-                             repo_url
+usage: credentialdigger scan_user [-h] [--dotenv DOTENV] [--sqlite SQLITE]
+                                  [--category CATEGORY]
+                                  [--models MODELS [MODELS ...]]
+                                  [--exclude EXCLUDE [EXCLUDE ...]] [--debug]
+                                  [--git_token GIT_TOKEN]
+                                  [--generate_snippet_extractor] [--forks]
+                                  [--api_endpoint API_ENDPOINT]
+                                  username
 
 positional arguments:
-  repo_url              The URL of the git repository to be scanned.
+  username              The username as on github.com
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -38,17 +39,17 @@ optional arguments:
   --git_token GIT_TOKEN
                         Git personal access token to authenticate to the git
                         server
-  --force               Force a complete re-scan of the repository, in case it
-                        has already been scanned previously
   --generate_snippet_extractor
                         Generate the extractor model to be used in the
                         SnippetModel. The extractor is generated using the
                         ExtractorGenerator. If `False`, use the pre-trained
                         extractor model
+  --forks               Scan also repositories forked by this user
+  --api_endpoint API_ENDPOINT
+                        API endpoint of the git server
 
 """
 import logging
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -64,23 +65,24 @@ def configure_parser(parser):
     """
     parser.set_defaults(func=run)
     parser.add_argument(
-        'repo_url', type=str,
-        help='The URL of the git repository to be scanned.')
+        'username', type=str,
+        help='The username as on github.com')
     parser.add_argument(
-        '--force', action='store_true',
-        help='Force a complete re-scan of the repository, in case it has \
-            already been scanned previously')
-    parser.add_argument(
-        '--generate_snippet_extractor',
-        action='store_true',
+        '--generate_snippet_extractor', action='store_true',
         help='Generate the extractor model to be used in the SnippetModel. \
             The extractor is generated using the ExtractorGenerator. If \
             `False`, use the pre-trained extractor model')
+    parser.add_argument(
+        '--forks', action='store_true', default=False,
+        help='Scan also repositories forked by this user')
+    parser.add_argument(
+        '--api_endpoint', type=str, default='https://api.github.com',
+        help='API endpoint of the git server')
 
 
 def run(client, args):
     """
-    Scan a git repository.
+    Scan a GitHub user.
 
     Parameters
     ----------
@@ -88,23 +90,17 @@ def run(client, args):
         Instance of the client on which to save results
     args: `argparse.Namespace`
         Arguments from command line parser.
-
-    Returns
-    -------
-        While this function returns nothing of use to the scanner itself, it
-        gives an exit status (integer) that is equal to the number of
-        discoveries. If it exits with a value that is equal to 0, then it means
-        that the scan detected no leaks in this repo.
     """
 
-    discoveries = client.scan(
-        repo_url=args.repo_url,
+    discoveries = client.scan_user(
+        username=args.username,
         category=args.category,
         models=args.models,
         exclude=args.exclude,
-        force=args.force,
         debug=args.debug,
         generate_snippet_extractor=args.generate_snippet_extractor,
-        git_token=args.git_token)
+        forks=args.forks,
+        git_token=args.git_token,
+        api_endpoint=args.api_endpoint)
 
-    sys.exit(len(discoveries))
+    logger.info(f"{len(discoveries)} repositories scanned.")
