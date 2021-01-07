@@ -208,7 +208,8 @@ class GitScanner(BaseScanner):
             A list of dictionaries (each dictionary is a discovery)
         """
         detections = []
-        r = re.compile(r"@@\s*\-\d+(\,\d+)?\s\+(\d+)((\,\d+)?).*@@")
+        r_hunkheader = re.compile(r"@@\s*\-\d+(\,\d+)?\s\+(\d+)((\,\d+)?).*@@")
+        r_hunkaddition = re.compile(r"^\+\s*(\S(.*\S)?)\s*$")
         rows = printable_diff.split('\n')
         line_number = 1
         for row in rows:
@@ -219,10 +220,15 @@ class GitScanner(BaseScanner):
             if row.startswith('@@'):
                 # If the row is a git diff hunk header, get the first addition
                 # line number in the header and go to the next line
-                r_groups = re.search(r, row)
+                r_groups = re.search(r_hunkheader, row)
                 if r_groups is not None:
                     line_number = int(r_groups.group(2))
                     continue
+            elif row.startswith('+'):
+                # Remove '+' character from diff hunk and trim row
+                r_groups = re.search(r_hunkaddition, row)
+                if r_groups is not None:
+                    row = r_groups.group(1)
 
             rh = ResultHandler()
             self.stream.scan(row,
