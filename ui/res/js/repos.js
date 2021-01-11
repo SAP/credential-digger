@@ -22,6 +22,7 @@ function initReposDataTable() {
     columns: [ // Table columns definition
       {
         data: "url",
+        className: "filename",
         orderSequence: ["asc", "desc"]
       }, {
         data: "lendiscoveries",
@@ -39,6 +40,7 @@ function initReposDataTable() {
         return json.map(item => {
           return {
             ...item,
+            url: `<span>${item.url}</span>`,
             actions: `
             <div class="btns-container">
               <div class="btn-group">
