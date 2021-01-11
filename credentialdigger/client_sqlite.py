@@ -274,6 +274,7 @@ class SqliteClient(Client):
             query += ' AND file_name=?'
         return super().get_discoveries(
             repo_url=repo_url,
+            file_name=file_name,
             query=query)
 
     def get_files_summary(self, repo_url):
