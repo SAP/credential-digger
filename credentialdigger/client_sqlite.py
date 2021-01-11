@@ -414,7 +414,7 @@ class SqliteClient(Client):
         """
         query = 'UPDATE discoveries SET state=? WHERE repo_url=?'
         if file_name is not None:
-            query += ' and file_name=%s'
+            query += ' and file_name=?'
         if snippet is not None:
             query += ' and snippet=?'
         super().update_discovery_group(
