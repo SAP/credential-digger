@@ -110,6 +110,10 @@ body {
   margin-left: 10px;
 }
 
+.moreButtons .btn-group .btn {
+  margin-left: 0;
+}
+
 .topicH1 .icon {
   margin-right: 10px;
 }

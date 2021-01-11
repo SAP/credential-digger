@@ -27,7 +27,7 @@ function initReposDataTable() {
         orderSequence: ["asc", "desc"]
       }, {
         data: "url",
-        className: 'filename',
+        className: "filename",
         orderSequence: ["asc", "desc"]
       }, {
         data: "lendiscoveries",
