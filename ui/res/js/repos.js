@@ -19,7 +19,7 @@ function initReposDataTable() {
   $('#repos-table').DataTable({
     ...defaultTableSettings,
     processing: false,
-    order: [[0, "asc"]], // Set default column sorting
+    order: [[0, "desc"]], // Set default column sorting
     columns: [ // Table columns definition
       {
         data: "scan_active",
@@ -27,6 +27,7 @@ function initReposDataTable() {
         orderSequence: ["asc", "desc"]
       }, {
         data: "url",
+        className: 'filename',
         orderSequence: ["asc", "desc"]
       }, {
         data: "lendiscoveries",
@@ -44,11 +45,11 @@ function initReposDataTable() {
         return json.map(item => {
           return {
             ...item,
+            url: `<span>${item.url}</span>`,
             scan_active: item.scan_active ? `
-              <span class="loaderWrapper"><span class="loader"></span></span>
+              <span class="icon icon-timelapse warning-color"></span>
             ` : `
-              <span class="icon icon-check_circle_outline"></span>
-            `,
+              <span class="icon icon-check_circle_outline success-color"></span>`,
             actions: `
             <div class="btns-container">
               <div class="btn-group">
@@ -75,9 +76,11 @@ function initReposDataTable() {
       }
     },
   });
+
+  setInterval(function() {
+    $('.dataTable').DataTable().ajax.reload();
+  }, POLLING_INTERVAL);
 }
-
-
 
 /**
  * Set repository url when deleting a repo

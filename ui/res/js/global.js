@@ -1,3 +1,6 @@
+// Interval for polling scanning status in repos datatable
+POLLING_INTERVAL = 5000;
+
 /**
  * Default dataTables object settings for all tables
  */

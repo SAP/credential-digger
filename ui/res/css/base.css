@@ -125,6 +125,10 @@ body {
   margin-left: 20px;
   margin-right: 10px;
 }
+
+.scan-status {
+  font-size: 18px;
+}
 /* #endregion */
 
 /* #region: MODALS */
@@ -435,6 +439,10 @@ a.btn {
   background-color: white;
   color: #444;
   border-color: #444;
+}
+
+.success-color {
+  color: #2fac4c;
 }
 
 .danger-color {
