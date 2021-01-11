@@ -274,6 +274,7 @@ class SqliteClient(Client):
             query += ' AND file_name=?'
         return super().get_discoveries(
             repo_url=repo_url,
+            file_name=file_name,
             query=query)
 
     def get_files_summary(self, repo_url):
@@ -294,10 +295,10 @@ class SqliteClient(Client):
             query=(
                 "SELECT file_name,"
                 " COUNT(*) AS tot_discoveries,"
-                " COUNT(*) FILTER (WHERE state='new') AS new,"
-                " COUNT(*) FILTER (WHERE state='false_positive') AS false_positives,"
-                " COUNT(*) FILTER (WHERE state='addressing') AS addressing,"
-                " COUNT(*) FILTER (WHERE state='not_relevant') AS not_relevant"
+                " COUNT(CASE WHEN state='new' THEN 1 END) AS new,"
+                " COUNT(CASE WHEN state='false_positive' THEN 1 END) AS false_positives,"
+                " COUNT(CASE WHEN state='addressing' THEN 1 END) AS addressing,"
+                " COUNT(CASE WHEN state='not_relevant' THEN 1 END) AS not_relevant"
                 " FROM discoveries WHERE repo_url=?"
                 " GROUP BY file_name"
             ))
@@ -411,8 +412,9 @@ class SqliteClient(Client):
         bool
             `True` if the update is successful, `False` otherwise
         """
-        query = 'UPDATE discoveries SET state=? WHERE repo_url=? \
-                and file_name=?'
+        query = 'UPDATE discoveries SET state=? WHERE repo_url=?'
+        if file_name is not None:
+            query += ' and file_name=?'
         if snippet is not None:
             query += ' and snippet=?'
         super().update_discovery_group(
