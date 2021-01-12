@@ -78,7 +78,7 @@ function initReposDataTable() {
   });
 
   setInterval(function() {
-    $('.dataTable').DataTable().ajax.reload();
+    $('.dataTable').DataTable().ajax.reload(null, false);
   }, POLLING_INTERVAL);
 }
 
