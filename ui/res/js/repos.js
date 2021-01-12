@@ -67,8 +67,11 @@ function initReposDataTable() {
                   </div>
                 </div>
               </div>
+              <a target="_blank" href="${item.url}" class="btn outline-bg">
+                <span class="icon icon-github"></span>
+              </a>
               <button class="btn danger-bg modal-opener delete-repo-btn" data-url="${item.url}" data-modal="deleteRepoModal">
-                <span class="icon icon-delete_outline"></span><span>Delete Repo</span>
+                <span class="icon icon-delete_outline"></span>
               </button>
             </div>`
           }
