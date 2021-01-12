@@ -328,9 +328,11 @@ button {
 
 .btn .icon {
   line-height: 1.5;
-  margin-right: 6px;
   font-size: 18px;
   vertical-align: middle;
+}
+.btn .icon + * {
+  margin-left: 6px;
 }
 
 .btn, .btn-group .dropdown-opener {
