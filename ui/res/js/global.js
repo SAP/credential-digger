@@ -84,6 +84,7 @@ function initModals() {
   });
 }
 
+$.fn.dataTable.ext.errMode = 'throw';
 /**
  * Register DataTable's `processing()` plugin on all tables.
  * 
