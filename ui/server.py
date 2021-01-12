@@ -193,15 +193,6 @@ def scan_repo():
     return 'OK', 200
 
 
-@app.route('/get_active_scans')
-def get_active_scans():
-    active_scans = []
-    for thread in threading.enumerate():
-        if thread.name.startswith("credentialdigger"):
-            active_scans.append(thread.name.split("@")[1])
-    return jsonify(active_scans)
-
-
 @app.route('/get_repos')
 def get_repos():
     active_scans = []
