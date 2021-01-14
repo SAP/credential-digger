@@ -304,6 +304,10 @@ button {
   font-family: inherit;
 }
 
+button:disabled, .button:disabled {
+  cursor: default;
+}
+
 .btn-group {
   display: flex;
   align-items: stretch;
@@ -362,10 +366,10 @@ a.btn {
   display: flex;
 }
 
-.btn:hover, .btn-group .dropdown-opener:hover {
+.btn:not(:disabled):not(.disabled):hover, .btn-group .dropdown-opener:hover {
   box-shadow: 0px 0px 0px 100px rgba(0, 0, 0, 0.1) inset;
 }
-.btn:active, .btn-group .dropdown-opener:active {
+.btn:not(:disabled):not(.disabled):active, .btn-group .dropdown-opener:active {
   box-shadow: 0px 0px 0px 100px rgba(0, 0, 0, 0.2) inset, 0px 0px 5px 1px rgba(0, 0, 0, 0.15) inset;
 }
 .btn-group > .btn {
