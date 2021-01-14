@@ -36,7 +36,16 @@ else:
 c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
 
 
+def _get_active_scans():
+    active_scans = []
+    for thread in threading.enumerate():
+        if thread.name.startswith("credentialdigger"):
+            active_scans.append(thread.name.split("@")[1])
+    return active_scans
+
 # ################### ROUTES ####################
+
+
 @app.route('/')
 def root():
     repos = c.get_repos()
@@ -77,8 +86,13 @@ def files():
     for rule in rules:
         rulesdict[rule['id']] = rule
         cat.add(rule['category'])
+
+    active_scans = _get_active_scans()
+    scanning = url in active_scans
+
     return render_template('discoveries/files.html',
                            url=url,
+                           scanning=scanning,
                            categories=list(cat))
 
 
@@ -98,14 +112,19 @@ def discoveries():
         rulesdict[rule['id']] = rule
         cat.add(rule['category'])
 
+    active_scans = _get_active_scans()
+    scanning = url in active_scans
+
     if file:
         return render_template('discoveries/file.html',
                                url=url,
                                file=file,
+                               scanning=scanning,
                                categories=list(cat))
     else:
         return render_template('discoveries/discoveries.html',
                                url=url,
+                               scanning=scanning,
                                categories=list(cat))
 
 
@@ -195,10 +214,7 @@ def scan_repo():
 
 @app.route('/get_repos')
 def get_repos():
-    active_scans = []
-    for thread in threading.enumerate():
-        if thread.name.startswith("credentialdigger"):
-            active_scans.append(thread.name.split("@")[1])
+    active_scans = _get_active_scans()
 
     repos = c.get_repos()
     for repo in repos:
@@ -263,6 +279,13 @@ def get_discoveries():
     ]
 
     return jsonify(response)
+
+
+@app.route('/get_scan_status')
+def get_scan_status():
+    url = request.args.get('url')
+    active_scans = _get_active_scans()
+    return jsonify({"scanning": url in active_scans})
 
 
 @app.route('/update_discovery_group', methods=['POST'])

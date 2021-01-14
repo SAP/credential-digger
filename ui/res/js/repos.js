@@ -45,7 +45,11 @@ function initReposDataTable() {
         return json.map(item => {
           return {
             ...item,
-            url: `<span>${item.url}</span>`,
+            url: `
+              <div>
+                <span>${item.url}</span>
+                <a target="_blank" href="${item.url}" class="icon icon-github github"></a>
+              </div>`,
             scan_active: item.scan_active ? `
               <span class="icon icon-timelapse warning-color"></span>
             ` : `
@@ -67,9 +71,6 @@ function initReposDataTable() {
                   </div>
                 </div>
               </div>
-              <a target="_blank" href="${item.url}" class="btn outline-bg">
-                <span class="icon icon-github"></span>
-              </a>
               <button class="btn danger-bg modal-opener delete-repo-btn" data-url="${item.url}" data-modal="deleteRepoModal">
                 <span class="icon icon-delete_outline"></span>
               </button>

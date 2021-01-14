@@ -27,9 +27,9 @@
       <span>Files view</span>
     </a>
     <div class="divider"></div>
-    <button id="newScan" class="btn primary-bg modal-opener" data-modal="addRepoModal">
-      <span class="icon icon-refresh"></span>
-      <span>Rescan</span>
+    <button id="newScan" class="btn modal-opener {{'warning-bg disabled' if scanning else 'primary-bg'}}" {{'disabled' if scanning}} data-modal="addRepoModal">
+      <span class="icon {{'icon-timelapse' if scanning else 'icon-refresh'}}"></span>
+      <span>{{'Scanning...' if scanning else 'Rescan'}}</span>
     </button>
     <button id="deleteRepo" class="btn danger-bg modal-opener" data-modal="deleteRepoModal">
       <span class="icon icon-delete_outline"></span>

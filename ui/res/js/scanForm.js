@@ -47,7 +47,10 @@ function initScanRepo() {
         // close popup and open ok modal
         document.querySelector('#addRepoModal').classList.remove('open');
         if($('#repos-table')) $('#repos-table').DataTable().ajax.reload();
-        // document.querySelector("#okModal").classList.add('open'); // TODO: transform into toast (reuse modal function)
+        if(document.querySelector('#newScan')) {
+          getScan();
+          scanInterval = setInterval(getScan, POLLING_INTERVAL);
+        }
       }
     });
   }, true);

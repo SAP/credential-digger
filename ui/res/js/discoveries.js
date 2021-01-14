@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
   if (document.querySelector('#addRepoModal')) initScanRepo();
   initUpdateDiscoveries();
+  initUpdateScanning();
 });
 
 /**
@@ -198,6 +199,44 @@ function initUpdateDiscoveries() {
       }
     })
   });
+}
+
+/**
+ * Periodically get updates on the scanning status if scanning
+ */
+function initUpdateScanning() {
+  // Get status only if scanning when loading the page
+  if(!document.querySelector('#newScan.disabled')) return;
+  scanInterval = setInterval(getScan, POLLING_INTERVAL);
+}
+
+let scanInterval = null;
+const getScan = function() {
+  const repoUrl = document.querySelector('#repo-url').innerText;
+  $.ajax({
+    url: '/get_scan_status',
+    data: {url: repoUrl},
+    success: function(json) {
+      const btn = document.querySelector('#newScan');
+      if(json.scanning) {
+        btn.disabled = true;
+        btn.classList.add('disabled');
+        btn.classList.add('warning-bg');
+        btn.classList.remove('primary-bg');
+        btn.innerHTML = `
+          <span class="icon icon-timelapse"></span><span>Scanning...</span>`;
+      } else {
+        clearInterval(scanInterval);
+        btn.disabled = false;
+        btn.classList.remove('disabled');
+        btn.classList.remove('warning-bg');
+        btn.classList.add('primary-bg');
+        btn.innerHTML = `
+          <span class="icon icon-refresh"></span><span>Rescan</span>`;
+        if($('#discoveries-table, #files-table')) $('.dataTable').DataTable().ajax.reload();
+      }
+    }
+  })
 }
 
 /**
