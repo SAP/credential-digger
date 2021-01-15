@@ -22,7 +22,7 @@ class SqliteClient(Client):
         cursor.executescript("""
             CREATE TABLE IF NOT EXISTS repos(
                 url TEXT NOT NULL UNIQUE,
-                last_commit TEXT,
+                last_scan INTEGER,
                 PRIMARY KEY (url)
             );
 
@@ -317,18 +317,18 @@ class SqliteClient(Client):
                 WHERE repo_url=? GROUP BY file_name, snippet, state'
                                            )
 
-    def update_repo(self, url, last_commit):
-        """ Update the last commit of a repo.
+    def update_repo(self, url, last_scan):
+        """ Update the last scan timestamp of a repo.
 
-        After a scan, record what is the most recent commit scanned, such that
+        After a scan, record the timestamp of the last scan, such that
         another (future) scan will not process the same commits twice.
 
         Parameters
         ----------
         url: str
             The url of the repository scanned
-        last_commit: str
-            The most recent commit scanned
+        last_scan: str
+            The timestamp of the last scan
 
         Returns
         -------
@@ -336,8 +336,8 @@ class SqliteClient(Client):
             `True` if the update is successful, `False` otherwise
         """
         super().update_repo(
-            url=url, last_commit=last_commit,
-            query='UPDATE repos SET last_commit=? WHERE url=?'
+            url=url, last_scan=last_scan,
+            query='UPDATE repos SET last_scan=? WHERE url=?'
         )
 
     def update_discovery(self, discovery_id, new_state):

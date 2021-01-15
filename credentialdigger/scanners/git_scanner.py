@@ -1,6 +1,7 @@
 import hashlib
 import shutil
 import re
+from datetime import datetime, timezone
 
 import hyperscan
 from git import Repo as GitRepo
@@ -48,15 +49,15 @@ class GitScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, git_url, since_commit=None, max_depth=1000000):
+    def scan(self, git_url, since_timestamp=0, max_depth=1000000):
         """ Scan a repository.
 
         Parameters
         ----------
         git_url: string
             The url of a git repository
-        since_commit: string, optional
-            The oldest commit to scan
+        since_timestamp: int, optional
+            The oldest timestamp to scan
         max_depth: int, optional
             The maximum number of commits to scan
 
@@ -72,7 +73,7 @@ class GitScanner(BaseScanner):
         repo = GitRepo(project_path)
 
         try:
-            latest_commit = repo.rev_parse('HEAD').hexsha
+            repo.rev_parse('HEAD').hexsha
         except BadName:
             # The repository is empty
             return None, []
@@ -89,7 +90,7 @@ class GitScanner(BaseScanner):
             # prev_commit is newer than curr_commit
             for curr_commit in repo.iter_commits(branch_name,
                                                  max_count=max_depth):
-                if curr_commit.hexsha == since_commit:
+                if curr_commit.committed_date < since_timestamp:
                     # We have reached the (chosen) oldest commit, so continue
                     # with another branch
                     break
@@ -128,12 +129,12 @@ class GitScanner(BaseScanner):
                                                               prev_commit)
                 prev_commit = curr_commit
 
-            # Handling the first commit (either since_commit or the oldest)
-            # If `since_commit` is set, then there is no need to scan it
+            # Handling the first commit (either from since_timestamp or the oldest)
+            # If `since_timestamp` is set, then there is no need to scan it
             # (because we have already scanned this diff at the previous step).
-            # If `since_commit` is None, we have reached the first commit of
+            # If `since_timestamp` is None, we have reached the first commit of
             # the repo, and the diff here must be calculated with an empty tree
-            if not since_commit:
+            if since_timestamp == 0:
                 diff = curr_commit.diff(NULL_TREE,
                                         create_patch=True,
                                         ignore_submodules='all',
@@ -145,9 +146,10 @@ class GitScanner(BaseScanner):
         # Delete repo folder
         shutil.rmtree(project_path)
 
+        now_timestamp = int(datetime.now(timezone.utc).timestamp())
         # Generate a list of discoveries and return it.
         # N.B.: This may become inefficient when the discoveries are many.
-        return latest_commit, discoveries
+        return now_timestamp, discoveries
 
     def _diff_worker(self, diff, commit):
         """ Compute the diff between two commits.
