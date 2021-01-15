@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 Rule = namedtuple('Rule', 'id regex category description')
-Repo = namedtuple('Repo', 'url last_commit')
+Repo = namedtuple('Repo', 'url last_scan')
 Discovery = namedtuple(
     'Discovery',
     'id file_name commit_id line_number snippet repo_url rule_id state timestamp')
@@ -40,6 +40,7 @@ class Interface(ABC):
         try:
             cursor.execute(query, args)
             self.db.commit()
+            return True
         except (TypeError, IndexError):
             """ A TypeError is raised if any of the required arguments is
             missing. """
@@ -412,25 +413,25 @@ class Client(Interface):
             self.db.rollback()
             return []
 
-    def update_repo(self, query, url, last_commit):
-        """ Update the last commit of a repo.
+    def update_repo(self, query, url, last_scan):
+        """ Update the last scan timestamp of a repo.
 
-        After a scan, record what is the most recent commit scanned, such that
+        After a scan, record the timestamp of the last scan, such that
         another (future) scan will not process the same commits twice.
 
         Parameters
         ----------
         url: str
             The url of the repository scanned
-        last_commit: str
-            The most recent commit scanned
+        last_scan: str
+            The timestamp of the last scan
 
         Returns
         -------
         bool
             `True` if the update is successful, `False` otherwise
         """
-        return self.query_check(query, last_commit, url)
+        return self.query_check(query, last_scan, url)
 
     def update_discovery(self, query, discovery_id, new_state):
         """ Change the state of a discovery.
@@ -491,6 +492,7 @@ class Client(Interface):
         repo_url: str
             The url of the repo to scan
         category: str, optional
+            self.db.commit()
             If specified, scan the repo using all the rules of this category,
             otherwise use all the rules in the db
         scanner: class, default: `GitScanner`
@@ -564,15 +566,15 @@ class Client(Interface):
         # Try to add the repository to the db
         if self.add_repo(repo_url):
             # The repository is new, scan from the first commit
-            from_commit = None
+            from_timestamp = 0
         else:
             # Get the latest commit recorded on the db
-            from_commit = self.get_repo(repo_url)['last_commit']
+            from_timestamp = self.get_repo(repo_url)['last_scan']
 
         # Force complete scan
         if force:
             logger.debug('Force complete scan')
-            from_commit = None
+            from_timestamp = 0
 
         # Prepare rules
         rules = self.get_rules(category)
@@ -590,13 +592,13 @@ class Client(Interface):
                                              f'https://{git_token}@')
         else:
             repo_url_scan = repo_url
-        latest_commit, these_discoveries = s.scan(repo_url_scan,
-                                                  since_commit=from_commit)
+        latest_timestamp, these_discoveries = s.scan(repo_url_scan,
+                                                     since_timestamp=from_timestamp)
 
         logger.info(f'Detected {len(these_discoveries)} discoveries.')
 
-        # Update latest commit of the repo
-        self.update_repo(repo_url, latest_commit)
+        # Update latest scan timestamp of the repo
+        self.update_repo(repo_url, latest_timestamp)
 
         # Insert the discoveries into the db
         discoveries_ids = list()
