@@ -210,7 +210,7 @@ class GitScanner(BaseScanner):
         detections = []
         r_hunkheader = re.compile(r"@@\s*\-\d+(\,\d+)?\s\+(\d+)((\,\d+)?).*@@")
         r_hunkaddition = re.compile(r"^\+\s*(\S(.*\S)?)\s*$")
-        rows = printable_diff.split('\n')
+        rows = printable_diff.splitlines()
         line_number = 1
         for row in rows:
             if row.startswith('-') or len(row) > 500:
