@@ -35,7 +35,24 @@ else:
 c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
 
 
+# ################### UTILS ####################
+
+def _get_rules():
+    # There may be missing ids. Restructure as a dict
+    # There may be no mapping between list index and rule id
+    # Not very elegant, but avoid IndexError
+    rules = c.get_rules()
+    cat = set()
+    rulesdict = {}
+    for rule in rules:
+        rulesdict[rule['id']] = rule
+        cat.add(rule['category'])
+
+    return rulesdict, cat
+
+
 # ################### ROUTES ####################
+
 @app.route('/')
 def root():
     repos = c.get_repos()
@@ -47,18 +64,12 @@ def root():
     # Total num of discoveries
     tot_discoveries = sum(map(lambda r: r.get('lendiscoveries', 0), repos))
 
-    rules = c.get_rules()
-
-    # Get rule categories
-    cat = set()
-    for rule in rules:
-        cat.add(rule['category'])
+    rulesdict, cat = _get_rules()
 
     return render_template('repos.html',
-                           rules=rules,
                            tot_discoveries=tot_discoveries,
                            len_repos=len(repos),
-                           len_rules=len(rules),
+                           len_rules=len(rulesdict),
                            categories=list(cat))
 
 
@@ -66,19 +77,9 @@ def root():
 def files():
     # Get all the discoveries of this repository
     url = request.args.get('url')
-
-    rules = c.get_rules()
-    # There may be missing ids. Restructure as a dict
-    # There may be no mapping between list index and rule id
-    # Not very elegant, but avoid IndexError
-    cat = set()
-    rulesdict = {}
-    for rule in rules:
-        rulesdict[rule['id']] = rule
-        cat.add(rule['category'])
+    rulesdict, cat = _get_rules()
     return render_template('discoveries/files.html',
-                           url=url,
-                           categories=list(cat))
+                           url=url, categories=list(cat))
 
 
 @app.route('/discoveries', methods=['GET'])
@@ -86,26 +87,14 @@ def discoveries():
     # Get all the discoveries of this repository
     url = request.args.get('url')
     file = request.args.get('file')
-
-    rules = c.get_rules()
-    # There may be missing ids. Restructure as a dict
-    # There may be no mapping between list index and rule id
-    # Not very elegant, but avoid IndexError
-    cat = set()
-    rulesdict = {}
-    for rule in rules:
-        rulesdict[rule['id']] = rule
-        cat.add(rule['category'])
+    rulesdict, cat = _get_rules()
 
     if file:
         return render_template('discoveries/file.html',
-                               url=url,
-                               file=file,
-                               categories=list(cat))
+                               url=url, file=file, categories=list(cat))
     else:
         return render_template('discoveries/discoveries.html',
-                               url=url,
-                               categories=list(cat))
+                               url=url, categories=list(cat))
 
 
 @app.route('/rules')
@@ -213,13 +202,7 @@ def get_discoveries():
     else:
         discoveries = c.get_discoveries(url, file)
 
-    # There may be missing ids. Restructure as a dict
-    # There may be no mapping between list index and rule id
-    # Not very elegant, but avoid IndexError
-    rules = c.get_rules()
-    rulesdict = {}
-    for rule in rules:
-        rulesdict[rule['id']] = rule
+    rulesdict, cat = _get_rules()
 
     # Add the category to each discovery
     categories_found = set()
