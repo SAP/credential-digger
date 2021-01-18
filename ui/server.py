@@ -2,6 +2,7 @@ import os
 import sys
 from collections import defaultdict
 from itertools import groupby
+import threading
 
 import yaml
 from dotenv import load_dotenv
@@ -36,6 +37,14 @@ c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
 
 
 # ################### UTILS ####################
+
+def _get_active_scans():
+    active_scans = []
+    for thread in threading.enumerate():
+        if thread.name.startswith("credentialdigger"):
+            active_scans.append(thread.name.split("@")[1])
+    return active_scans
+
 
 def _get_rules():
     # There may be missing ids. Restructure as a dict
@@ -77,9 +86,15 @@ def root():
 def files():
     # Get all the discoveries of this repository
     url = request.args.get('url')
+
     rulesdict, cat = _get_rules()
+    active_scans = _get_active_scans()
+    scanning = url in active_scans
+
     return render_template('discoveries/files.html',
-                           url=url, categories=list(cat))
+                           url=url,
+                           scanning=scanning,
+                           categories=list(cat))
 
 
 @app.route('/discoveries', methods=['GET'])
@@ -89,44 +104,26 @@ def discoveries():
     file = request.args.get('file')
     rulesdict, cat = _get_rules()
 
+    active_scans = _get_active_scans()
+    scanning = url in active_scans
+
     if file:
         return render_template('discoveries/file.html',
-                               url=url, file=file, categories=list(cat))
+                               url=url,
+                               file=file,
+                               scanning=scanning,
+                               categories=list(cat))
     else:
         return render_template('discoveries/discoveries.html',
-                               url=url, categories=list(cat))
+                               url=url,
+                               scanning=scanning,
+                               categories=list(cat))
 
 
 @app.route('/rules')
 def rules():
     rules = c.get_rules()
     return render_template('rules.html', rules=rules)
-
-
-@app.route('/scan_repo', methods=['POST'])
-def scan_repo():
-    # Get scan properties
-    repolink = request.form['repolink'].strip()
-    rulesToUse = request.form.get('rule_to_use')
-    useSnippetModel = request.form.get('snippetModel')
-    usePathModel = request.form.get('pathModel')
-    # If the form does not contain the 'Force' checkbox,
-    # then 'forceScan' will be set to False; thus, ignored.
-    forceScan = request.form.get('forceScan') == 'force'
-
-    # Set up models
-    models = []
-    if usePathModel == 'path':
-        models.append('PathModel')
-    if useSnippetModel == 'snippet':
-        models.append('SnippetModel')
-
-    # Scan
-    if rulesToUse == 'all':
-        c.scan(repolink, models=models, force=forceScan)
-    else:
-        c.scan(repolink, models=models, category=rulesToUse, force=forceScan)
-    return redirect('/')
 
 
 @app.route('/delete_repo', methods=['POST'])
@@ -174,12 +171,49 @@ def download_rule():
 
 # ################### JSON APIs ####################
 
+@app.route('/scan_repo', methods=['POST'])
+def scan_repo():
+    # Get scan properties
+    repolink = request.form['repolink'].strip()
+    rulesToUse = request.form.get('rule_to_use')
+    useSnippetModel = request.form.get('snippetModel')
+    usePathModel = request.form.get('pathModel')
+    # If the form does not contain the 'Force' checkbox,
+    # then 'forceScan' will be set to False; thus, ignored.
+    forceScan = request.form.get('forceScan') == 'force'
+
+    # Set up models
+    models = []
+    if usePathModel == 'path':
+        models.append('PathModel')
+    if useSnippetModel == 'snippet':
+        models.append('SnippetModel')
+
+    # Scan
+    args = {
+        "repo_url": repolink,
+        "models": models,
+        "force": forceScan
+    }
+    if rulesToUse != 'all':
+        args["category"] = rulesToUse
+    thread = threading.Thread(
+        name=f"credentialdigger@{repolink}", target=c.scan, kwargs=args)
+    thread.start()
+
+    return 'OK', 200
+
+
 @app.route('/get_repos')
 def get_repos():
-    repos = c.get_repos()
+    active_scans = _get_active_scans()
 
+    repos = c.get_repos()
     for repo in repos:
         repo['lendiscoveries'] = len(c.get_discoveries(repo['url']))
+        repo['scan_active'] = False
+        if repo['url'] in active_scans:
+            repo['scan_active'] = True
 
     return jsonify(repos)
 
@@ -231,6 +265,13 @@ def get_discoveries():
     ]
 
     return jsonify(response)
+
+
+@app.route('/get_scan_status')
+def get_scan_status():
+    url = request.args.get('url')
+    active_scans = _get_active_scans()
+    return jsonify({"scanning": url in active_scans})
 
 
 @app.route('/update_discovery_group', methods=['POST'])

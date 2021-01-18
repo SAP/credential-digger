@@ -1,3 +1,6 @@
+// Interval for polling scanning status in repos datatable
+POLLING_INTERVAL = 5000;
+
 /**
  * Default dataTables object settings for all tables
  */
@@ -81,6 +84,7 @@ function initModals() {
   });
 }
 
+$.fn.dataTable.ext.errMode = 'throw';
 /**
  * Register DataTable's `processing()` plugin on all tables.
  * 

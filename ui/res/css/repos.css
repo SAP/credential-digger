@@ -60,6 +60,24 @@ td.dtr-control {
   text-overflow: ellipsis;
 }
 
+td .github {
+  text-decoration: none;
+  margin-left: 10px;
+  vertical-align: middle;
+  font-size: 18px;
+  margin-right: 10px;
+  display: none;
+  transition: color .1s ease-out;
+}
+
+.dataTable td.filename a.github:hover {
+  color: #999;
+}
+
+.dataTable td.filename:hover .github {
+  display: block;
+}
+
 @media (max-width: 767px) {
   .generalInfoLinkCounter {
     font-size: 30px;

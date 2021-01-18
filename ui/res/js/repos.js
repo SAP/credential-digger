@@ -18,9 +18,14 @@ document.addEventListener("DOMContentLoaded", function () {
 function initReposDataTable() {
   $('#repos-table').DataTable({
     ...defaultTableSettings,
-    order: [[0, "asc"]], // Set default column sorting
+    processing: false,
+    order: [[0, "desc"]], // Set default column sorting
     columns: [ // Table columns definition
       {
+        data: "scan_active",
+        className: 'dt-center scan-status',
+        orderSequence: ["asc", "desc"]
+      }, {
         data: "url",
         className: "filename",
         orderSequence: ["asc", "desc"]
@@ -40,7 +45,15 @@ function initReposDataTable() {
         return json.map(item => {
           return {
             ...item,
-            url: `<span>${item.url}</span>`,
+            url: `
+              <div>
+                <span>${item.url}</span>
+                <a target="_blank" href="${item.url}" class="icon icon-github github"></a>
+              </div>`,
+            scan_active: item.scan_active ? `
+              <span class="icon icon-timelapse warning-color"></span>
+            ` : `
+              <span class="icon icon-check_circle_outline success-color"></span>`,
             actions: `
             <div class="btns-container">
               <div class="btn-group">
@@ -59,7 +72,7 @@ function initReposDataTable() {
                 </div>
               </div>
               <button class="btn danger-bg modal-opener delete-repo-btn" data-url="${item.url}" data-modal="deleteRepoModal">
-                <span class="icon icon-delete_outline"></span><span>Delete Repo</span>
+                <span class="icon icon-delete_outline"></span>
               </button>
             </div>`
           }
@@ -67,6 +80,10 @@ function initReposDataTable() {
       }
     },
   });
+
+  setInterval(function() {
+    $('.dataTable').DataTable().ajax.reload(null, false);
+  }, POLLING_INTERVAL);
 }
 
 /**
