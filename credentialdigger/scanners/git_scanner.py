@@ -63,8 +63,8 @@ class GitScanner(BaseScanner):
 
         Returns
         -------
-        str
-            The latest commit (`None` if the repository is empty)
+        int
+            The latest scan timestamp (now) (`None` if the repository is empty)
         list
             A list of discoveries (dictionaries). If there are no discoveries
             return an empty list
@@ -90,16 +90,15 @@ class GitScanner(BaseScanner):
             # prev_commit is newer than curr_commit
             for curr_commit in repo.iter_commits(branch_name,
                                                  max_count=max_depth):
-                if curr_commit.committed_date < since_timestamp:
-                    # We have reached the (chosen) oldest commit, so continue
-                    # with another branch
+                if curr_commit.committed_date <= since_timestamp:
+                    # We have reached the (chosen) oldest timestamp, so
+                    # continue with another branch
                     break
 
                 # if not prev_commit, then curr_commit is the newest commit
                 # (and we have nothing to diff with).
                 # But we will diff the first commit with NULL_TREE here to
-                # check the oldest code.
-                # In this way, no commit will be missed.
+                # check the oldest code. In this way, no commit will be missed.
                 # This is useful for git merge: in case of a merge, we have the
                 # same commits (prev and current) in two different branches.
                 # This trick avoids scanning twice the same commits
@@ -129,10 +128,11 @@ class GitScanner(BaseScanner):
                                                               prev_commit)
                 prev_commit = curr_commit
 
-            # Handling the first commit (either from since_timestamp or the oldest)
+            # Handling the first commit (either from since_timestamp or the
+            # oldest).
             # If `since_timestamp` is set, then there is no need to scan it
             # (because we have already scanned this diff at the previous step).
-            # If `since_timestamp` is None, we have reached the first commit of
+            # If `since_timestamp` is 0, we have reached the first commit of
             # the repo, and the diff here must be calculated with an empty tree
             if since_timestamp == 0:
                 diff = curr_commit.diff(NULL_TREE,

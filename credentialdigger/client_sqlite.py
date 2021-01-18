@@ -327,7 +327,7 @@ class SqliteClient(Client):
         ----------
         url: str
             The url of the repository scanned
-        last_scan: str
+        last_scan: int
             The timestamp of the last scan
 
         Returns
