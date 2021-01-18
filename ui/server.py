@@ -36,6 +36,8 @@ else:
 c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
 
 
+# ################### UTILS ####################
+
 def _get_active_scans():
     active_scans = []
     for thread in threading.enumerate():
@@ -43,8 +45,22 @@ def _get_active_scans():
             active_scans.append(thread.name.split("@")[1])
     return active_scans
 
-# ################### ROUTES ####################
 
+def _get_rules():
+    # There may be missing ids. Restructure as a dict
+    # There may be no mapping between list index and rule id
+    # Not very elegant, but avoid IndexError
+    rules = c.get_rules()
+    cat = set()
+    rulesdict = {}
+    for rule in rules:
+        rulesdict[rule['id']] = rule
+        cat.add(rule['category'])
+
+    return rulesdict, cat
+
+
+# ################### ROUTES ####################
 
 @app.route('/')
 def root():
@@ -57,18 +73,12 @@ def root():
     # Total num of discoveries
     tot_discoveries = sum(map(lambda r: r.get('lendiscoveries', 0), repos))
 
-    rules = c.get_rules()
-
-    # Get rule categories
-    cat = set()
-    for rule in rules:
-        cat.add(rule['category'])
+    rulesdict, cat = _get_rules()
 
     return render_template('repos.html',
-                           rules=rules,
                            tot_discoveries=tot_discoveries,
                            len_repos=len(repos),
-                           len_rules=len(rules),
+                           len_rules=len(rulesdict),
                            categories=list(cat))
 
 
@@ -77,16 +87,7 @@ def files():
     # Get all the discoveries of this repository
     url = request.args.get('url')
 
-    rules = c.get_rules()
-    # There may be missing ids. Restructure as a dict
-    # There may be no mapping between list index and rule id
-    # Not very elegant, but avoid IndexError
-    cat = set()
-    rulesdict = {}
-    for rule in rules:
-        rulesdict[rule['id']] = rule
-        cat.add(rule['category'])
-
+    rulesdict, cat = _get_rules()
     active_scans = _get_active_scans()
     scanning = url in active_scans
 
@@ -101,16 +102,7 @@ def discoveries():
     # Get all the discoveries of this repository
     url = request.args.get('url')
     file = request.args.get('file')
-
-    rules = c.get_rules()
-    # There may be missing ids. Restructure as a dict
-    # There may be no mapping between list index and rule id
-    # Not very elegant, but avoid IndexError
-    cat = set()
-    rulesdict = {}
-    for rule in rules:
-        rulesdict[rule['id']] = rule
-        cat.add(rule['category'])
+    rulesdict, cat = _get_rules()
 
     active_scans = _get_active_scans()
     scanning = url in active_scans
@@ -244,13 +236,7 @@ def get_discoveries():
     else:
         discoveries = c.get_discoveries(url, file)
 
-    # There may be missing ids. Restructure as a dict
-    # There may be no mapping between list index and rule id
-    # Not very elegant, but avoid IndexError
-    rules = c.get_rules()
-    rulesdict = {}
-    for rule in rules:
-        rulesdict[rule['id']] = rule
+    rulesdict, cat = _get_rules()
 
     # Add the category to each discovery
     categories_found = set()
