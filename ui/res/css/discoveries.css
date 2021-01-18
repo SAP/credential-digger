@@ -82,7 +82,7 @@
   bottom: -5px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   min-width: calc(100% + 10px);
   padding: 0 10px;
   border: 1px solid #ccc;

@@ -36,13 +36,23 @@ function initScanRepo() {
    */
   document.querySelector('#scan_repo').addEventListener('submit', function (e) {
     const formValid = validateForm();
-    if(!formValid) {
-      e.preventDefault();
-      return;
-    }
-    // close popup and open ok modal
-    document.querySelector('#addRepoModal').classList.remove('open');
-    document.querySelector("#okModal").classList.add('open');
+    e.preventDefault();
+    if(!formValid) return;
+
+    $.ajax({
+      url: '/scan_repo',
+      method: 'POST',
+      data: $(this).serialize(),
+      success: function() {
+        // close popup and open ok modal
+        document.querySelector('#addRepoModal').classList.remove('open');
+        if($('#repos-table')) $('#repos-table').DataTable().ajax.reload();
+        if(document.querySelector('#newScan')) {
+          getScan();
+          scanInterval = setInterval(getScan, POLLING_INTERVAL);
+        }
+      }
+    });
   }, true);
 
   /** 

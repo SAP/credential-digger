@@ -129,6 +129,10 @@ body {
   margin-left: 20px;
   margin-right: 10px;
 }
+
+.scan-status {
+  font-size: 18px;
+}
 /* #endregion */
 
 /* #region: MODALS */
@@ -300,6 +304,10 @@ button {
   font-family: inherit;
 }
 
+button:disabled, .button:disabled {
+  cursor: default;
+}
+
 .btn-group {
   display: flex;
   align-items: stretch;
@@ -324,9 +332,11 @@ button {
 
 .btn .icon {
   line-height: 1.5;
-  margin-right: 6px;
   font-size: 18px;
   vertical-align: middle;
+}
+.btn .icon + * {
+  margin-left: 6px;
 }
 
 .btn, .btn-group .dropdown-opener {
@@ -356,10 +366,10 @@ a.btn {
   display: flex;
 }
 
-.btn:hover, .btn-group .dropdown-opener:hover {
+.btn:not(:disabled):not(.disabled):hover, .btn-group .dropdown-opener:hover {
   box-shadow: 0px 0px 0px 100px rgba(0, 0, 0, 0.1) inset;
 }
-.btn:active, .btn-group .dropdown-opener:active {
+.btn:not(:disabled):not(.disabled):active, .btn-group .dropdown-opener:active {
   box-shadow: 0px 0px 0px 100px rgba(0, 0, 0, 0.2) inset, 0px 0px 5px 1px rgba(0, 0, 0, 0.15) inset;
 }
 .btn-group > .btn {
@@ -439,6 +449,10 @@ a.btn {
   background-color: white;
   color: #444;
   border-color: #444;
+}
+
+.success-color {
+  color: #2fac4c;
 }
 
 .danger-color {
