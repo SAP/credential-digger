@@ -423,7 +423,7 @@ class Client(Interface):
         ----------
         url: str
             The url of the repository scanned
-        last_scan: str
+        last_scan: int
             The timestamp of the last scan
 
         Returns
@@ -492,7 +492,6 @@ class Client(Interface):
         repo_url: str
             The url of the repo to scan
         category: str, optional
-            self.db.commit()
             If specified, scan the repo using all the rules of this category,
             otherwise use all the rules in the db
         scanner: class, default: `GitScanner`
