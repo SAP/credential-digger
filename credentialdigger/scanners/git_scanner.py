@@ -1,10 +1,10 @@
 import hashlib
-import shutil
 import re
+import shutil
 
 import hyperscan
-from git import Repo as GitRepo
 from git import NULL_TREE
+from git import Repo as GitRepo
 
 from .base_scanner import BaseScanner
 

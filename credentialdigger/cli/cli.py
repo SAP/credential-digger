@@ -3,8 +3,9 @@ import logging
 import os
 import sys
 
-from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
+
+from credentialdigger import PgClient, SqliteClient
 
 logger = logging.getLogger(__name__)
 

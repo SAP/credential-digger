@@ -1,8 +1,8 @@
 import logging
-import yaml
 from abc import ABC, abstractmethod
 from collections import namedtuple
 
+import yaml
 from github import Github
 from tqdm import tqdm
 
