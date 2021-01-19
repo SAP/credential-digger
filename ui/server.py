@@ -1,12 +1,12 @@
 import os
 import sys
+import threading
 from collections import defaultdict
 from itertools import groupby
-import threading
 
 import yaml
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, request, send_file, jsonify
+from flask import Flask, jsonify, redirect, render_template, request, send_file
 from werkzeug.utils import secure_filename
 
 load_dotenv()
@@ -174,31 +174,33 @@ def download_rule():
 @app.route('/scan_repo', methods=['POST'])
 def scan_repo():
     # Get scan properties
-    repolink = request.form['repolink'].strip()
-    rulesToUse = request.form.get('rule_to_use')
-    useSnippetModel = request.form.get('snippetModel')
-    usePathModel = request.form.get('pathModel')
+    repo_link = request.form['repolink'].strip()
+    rules_to_use = request.form.get('rule_to_use')
+    use_snippet_model = request.form.get('snippetModel')
+    use_path_model = request.form.get('pathModel')
     # If the form does not contain the 'Force' checkbox,
     # then 'forceScan' will be set to False; thus, ignored.
-    forceScan = request.form.get('forceScan') == 'force'
+    force_scan = request.form.get('forceScan') == 'force'
+    git_token = request.form.get('gitToken')
 
     # Set up models
     models = []
-    if usePathModel == 'path':
+    if use_path_model == 'path':
         models.append('PathModel')
-    if useSnippetModel == 'snippet':
+    if use_snippet_model == 'snippet':
         models.append('SnippetModel')
 
     # Scan
     args = {
-        "repo_url": repolink,
+        "repo_url": repo_link,
         "models": models,
-        "force": forceScan
+        "force": force_scan,
+        "git_token": git_token
     }
-    if rulesToUse != 'all':
-        args["category"] = rulesToUse
+    if rules_to_use != 'all':
+        args["category"] = rules_to_use
     thread = threading.Thread(
-        name=f"credentialdigger@{repolink}", target=c.scan, kwargs=args)
+        name=f"credentialdigger@{repo_link}", target=c.scan, kwargs=args)
     thread.start()
 
     return 'OK', 200
