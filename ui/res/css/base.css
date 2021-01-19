@@ -20,6 +20,10 @@ body {
 .nowrap {
   white-space: nowrap;
 }
+
+.mt-10 {
+  margin-top: 10px;
+}
 /* #endregion */
 
 /* #region: LAYOUT */
