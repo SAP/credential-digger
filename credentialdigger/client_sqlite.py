@@ -1,4 +1,4 @@
-from sqlite3 import connect, Error
+from sqlite3 import Error, connect
 
 from .client import Client
 
