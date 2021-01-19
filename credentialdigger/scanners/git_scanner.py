@@ -1,11 +1,11 @@
 import hashlib
-import shutil
 import re
+import shutil
 from datetime import datetime, timezone
 
 import hyperscan
-from git import Repo as GitRepo
 from git import NULL_TREE
+from git import Repo as GitRepo
 
 from .base_scanner import BaseScanner
 
@@ -72,9 +72,7 @@ class GitScanner(BaseScanner):
         project_path = self.clone_git_repo(git_url)
         repo = GitRepo(project_path)
 
-        try:
-            repo.rev_parse('HEAD').hexsha
-        except BadName:
+        if len(repo.branches) == 0:
             # The repository is empty
             return None, []
 
