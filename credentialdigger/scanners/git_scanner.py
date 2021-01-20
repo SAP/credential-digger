@@ -1,6 +1,7 @@
 import hashlib
 import re
 import shutil
+from datetime import datetime, timezone
 
 import hyperscan
 from git import NULL_TREE
@@ -48,22 +49,22 @@ class GitScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, git_url, since_commit=None, max_depth=1000000):
+    def scan(self, git_url, since_timestamp=0, max_depth=1000000):
         """ Scan a repository.
 
         Parameters
         ----------
         git_url: string
             The url of a git repository
-        since_commit: string, optional
-            The oldest commit to scan
+        since_timestamp: int, optional
+            The oldest timestamp to scan
         max_depth: int, optional
             The maximum number of commits to scan
 
         Returns
         -------
-        str
-            The latest commit (`None` if the repository is empty)
+        int
+            The latest scan timestamp (now) (`None` if the repository is empty)
         list
             A list of discoveries (dictionaries). If there are no discoveries
             return an empty list
@@ -71,9 +72,7 @@ class GitScanner(BaseScanner):
         project_path = self.clone_git_repo(git_url)
         repo = GitRepo(project_path)
 
-        try:
-            latest_commit = repo.rev_parse('HEAD').hexsha
-        except BadName:
+        if len(repo.branches) == 0:
             # The repository is empty
             return None, []
 
@@ -89,16 +88,15 @@ class GitScanner(BaseScanner):
             # prev_commit is newer than curr_commit
             for curr_commit in repo.iter_commits(branch_name,
                                                  max_count=max_depth):
-                if curr_commit.hexsha == since_commit:
-                    # We have reached the (chosen) oldest commit, so continue
-                    # with another branch
+                if curr_commit.committed_date <= since_timestamp:
+                    # We have reached the (chosen) oldest timestamp, so
+                    # continue with another branch
                     break
 
                 # if not prev_commit, then curr_commit is the newest commit
                 # (and we have nothing to diff with).
                 # But we will diff the first commit with NULL_TREE here to
-                # check the oldest code.
-                # In this way, no commit will be missed.
+                # check the oldest code. In this way, no commit will be missed.
                 # This is useful for git merge: in case of a merge, we have the
                 # same commits (prev and current) in two different branches.
                 # This trick avoids scanning twice the same commits
@@ -128,12 +126,13 @@ class GitScanner(BaseScanner):
                                                               prev_commit)
                 prev_commit = curr_commit
 
-            # Handling the first commit (either since_commit or the oldest)
-            # If `since_commit` is set, then there is no need to scan it
+            # Handling the first commit (either from since_timestamp or the
+            # oldest).
+            # If `since_timestamp` is set, then there is no need to scan it
             # (because we have already scanned this diff at the previous step).
-            # If `since_commit` is None, we have reached the first commit of
+            # If `since_timestamp` is 0, we have reached the first commit of
             # the repo, and the diff here must be calculated with an empty tree
-            if not since_commit:
+            if since_timestamp == 0:
                 diff = curr_commit.diff(NULL_TREE,
                                         create_patch=True,
                                         ignore_submodules='all',
@@ -145,9 +144,10 @@ class GitScanner(BaseScanner):
         # Delete repo folder
         shutil.rmtree(project_path)
 
+        now_timestamp = int(datetime.now(timezone.utc).timestamp())
         # Generate a list of discoveries and return it.
         # N.B.: This may become inefficient when the discoveries are many.
-        return latest_commit, discoveries
+        return now_timestamp, discoveries
 
     def _diff_worker(self, diff, commit):
         """ Compute the diff between two commits.
@@ -210,7 +210,7 @@ class GitScanner(BaseScanner):
         detections = []
         r_hunkheader = re.compile(r"@@\s*\-\d+(\,\d+)?\s\+(\d+)((\,\d+)?).*@@")
         r_hunkaddition = re.compile(r"^\+\s*(\S(.*\S)?)\s*$")
-        rows = printable_diff.split('\n')
+        rows = printable_diff.splitlines()
         line_number = 1
         for row in rows:
             if row.startswith('-') or len(row) > 500:
