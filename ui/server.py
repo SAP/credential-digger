@@ -16,7 +16,7 @@ if os.getenv("LOCAL_REPO") == 'True':
     # Load credentialdigger from local repo instead of pip
     sys.path.insert(0, os.path.join(APP_ROOT, '..'))
 
-from credentialdigger import PgClient, SqliteClient  # noqa
+from backend import PgUiClient, SqliteUiClient  # noqa
 
 app = Flask('__name__', static_folder=os.path.join(APP_ROOT, './res'),
             template_folder=os.path.join(APP_ROOT, './templates'))
@@ -25,14 +25,14 @@ app.config['DEBUG'] = True  # Remove this line in production
 
 if os.getenv('USE_PG') == 'True':
     app.logger.info('Use Postgres Client')
-    c = PgClient(dbname=os.getenv('POSTGRES_DB'),
-                 dbuser=os.getenv('POSTGRES_USER'),
-                 dbpassword=os.getenv('POSTGRES_PASSWORD'),
-                 dbhost=os.getenv('DBHOST'),
-                 dbport=os.getenv('DBPORT'))
+    c = PgUiClient(dbname=os.getenv('POSTGRES_DB'),
+                   dbuser=os.getenv('POSTGRES_USER'),
+                   dbpassword=os.getenv('POSTGRES_PASSWORD'),
+                   dbhost=os.getenv('DBHOST'),
+                   dbport=os.getenv('DBPORT'))
 else:
     app.logger.info('Use Sqlite Client')
-    c = SqliteClient(path=os.path.join(APP_ROOT, './data.db'))
+    c = SqliteUiClient(path=os.path.join(APP_ROOT, './data.db'))
 c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
 
 

@@ -248,6 +248,8 @@ class PgClient(Client):
         ----------
         repo_url: str
             The url of the repository
+        file_name: str, optional
+            The filename to filter discoveries on
 
         Returns
         -------

@@ -15,6 +15,7 @@ class SqliteClient(Client):
         path: str
             Database file (':memory:' is in RAM memory)
         """
+        print('enter sqlite init')
         super().__init__(connect(database=path, check_same_thread=False),
                          Error)
         # Create database if not exist
@@ -263,6 +264,8 @@ class SqliteClient(Client):
         ----------
         repo_url: str
             The url of the repository
+        file_name: str, optional
+            The filename to filter discoveries on
 
         Returns
         -------
