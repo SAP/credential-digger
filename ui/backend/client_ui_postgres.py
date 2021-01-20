@@ -46,3 +46,29 @@ class PgUiClient(UiClient, PgClient):
             params.append(order_by, order_direction)
 
         return super().get_discoveries(query, params)
+
+    def get_files_summary(self, repo_url):
+        """ Get aggregated discoveries info on all files of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+
+        Returns
+        -------
+        list
+            A list of files with aggregated data (dictionaries)
+        """
+        return super().get_files_summary(
+            repo_url=repo_url,
+            query=(
+                "SELECT file_name,"
+                " COUNT(*) AS tot_discoveries,"
+                " COUNT(CASE WHEN state='new' THEN 1 END) AS new,"
+                " COUNT(CASE WHEN state='false_positive' THEN 1 END) AS false_positives,"
+                " COUNT(CASE WHEN state='addressing' THEN 1 END) AS addressing,"
+                " COUNT(CASE WHEN state='not_relevant' THEN 1 END) AS not_relevant"
+                " FROM discoveries WHERE repo_url=%s"
+                " GROUP BY file_name"
+            ))

@@ -1,5 +1,11 @@
+from collections import namedtuple
+
 from credentialdigger import Client
 from credentialdigger.client import Discovery
+
+FilesSummary = namedtuple(
+    'FilesSummary',
+    'file_name tot_discoveries new false_positives addressing not_relevant')
 
 
 class UiClient(Client):
@@ -28,3 +34,30 @@ class UiClient(Client):
             all_discoveries.append(dict(Discovery(*result)._asdict()))
             result = cursor.fetchone()
         return all_discoveries
+
+    def get_files_summary(self, query, repo_url):
+        """ Get aggregated discoveries info on all files of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+
+        Returns
+        -------
+        list
+            A list of files with aggregated data (dictionaries)
+
+        Raises
+        ------
+            TypeError
+                If any of the required arguments is missing
+        """
+        cursor = self.db.cursor()
+        files = []
+        cursor.execute(query, (repo_url,))
+        result = cursor.fetchone()
+        while result:
+            files.append(dict(FilesSummary(*result)._asdict()))
+            result = cursor.fetchone()
+        return files
