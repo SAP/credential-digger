@@ -1,6 +1,6 @@
 fasttext
 GitPython
-hyperscan
+hyperscan==0.1.5
 leven
 nltk
 numpy

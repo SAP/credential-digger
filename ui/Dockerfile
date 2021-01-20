@@ -4,7 +4,7 @@ RUN pip install Flask python-dotenv
 RUN apt-get update && apt-get install -y libhyperscan5 libpq-dev
 
 # Install Credential Digger
-RUN pip install credentialdigger
+RUN pip install credentialdigger==2.2.2
 
 ARG path_model
 ARG snippet_model
