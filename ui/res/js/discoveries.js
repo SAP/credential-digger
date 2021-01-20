@@ -81,6 +81,7 @@ function initDiscoveriesDataTable() {
   const filename = document.querySelector('#file-name').innerText;
   $('#discoveries-table').DataTable({
     ...defaultTableSettings,
+    serverSide: true,
     order: [[3, "desc"]], // Set default column sorting
     columns: [ // Table columns definition
       {
@@ -98,6 +99,7 @@ function initDiscoveriesDataTable() {
         className: "dt-center nowrap",
       }, {
         data: "tot",
+        orderable: false,
         className: "dt-center nowrap",
       }, {
         data: "occurrences",

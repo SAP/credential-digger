@@ -232,11 +232,18 @@ def get_files():
 def get_discoveries():
     # Get all the discoveries of this repository
     url = request.args.get('url')
-    file = request.args.get('file')
-    if file is None:
-        discoveries = c.get_discoveries(url)
-    else:
-        discoveries = c.get_discoveries(url, file)
+    file_name = request.args.get('file')
+    where = request.args['search[value]']
+    where = where if len(where) > 0 else None
+    limit = int(request.args['length'])
+    offset = int(request.args['start'])
+    order_by_index = request.args['order[0][column]']
+    order_by = request.args[f'columns[{order_by_index}][data]']
+    order_direction = request.args['order[0][dir]']
+
+    discoveries = c.get_discoveries(
+        repo_url=url, file_name=file_name, where=where, limit=limit,
+        offset=offset, order_by=order_by, order_direction=order_direction)
 
     rulesdict, cat = _get_rules()
 
