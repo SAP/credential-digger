@@ -2,7 +2,7 @@ CREATE TYPE STATES AS ENUM ('new', 'false_positive', 'addressing', 'not_relevant
 
 CREATE TABLE repos (
   url TEXT NOT NULL UNIQUE,
-  last_commit TEXT,
+  last_scan INTEGER,
   PRIMARY KEY (url)
 );
 
