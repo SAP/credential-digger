@@ -82,13 +82,14 @@ def root():
 def files():
     # Get all the discoveries of this repository
     url = request.args.get('url')
-
     rulesdict, cat = _get_rules()
+    discoveries_count = c.get_discoveries_count(repo_url=url)
     active_scans = _get_active_scans()
     scanning = url in active_scans
 
     return render_template('discoveries/files.html',
                            url=url,
+                           discoveries_count=discoveries_count,
                            scanning=scanning,
                            categories=list(cat))
 
@@ -99,7 +100,7 @@ def discoveries():
     url = request.args.get('url')
     file = request.args.get('file')
     rulesdict, cat = _get_rules()
-
+    discoveries_count = c.get_discoveries_count(repo_url=url, file_name=file)
     active_scans = _get_active_scans()
     scanning = url in active_scans
 
@@ -107,11 +108,13 @@ def discoveries():
         return render_template('discoveries/file.html',
                                url=url,
                                file=file,
+                               discoveries_count=discoveries_count,
                                scanning=scanning,
                                categories=list(cat))
     else:
         return render_template('discoveries/discoveries.html',
                                url=url,
+                               discoveries_count=discoveries_count,
                                scanning=scanning,
                                categories=list(cat))
 

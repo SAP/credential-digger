@@ -64,11 +64,6 @@ function initFilesDataTable() {
           }
         });
       }
-    },
-    initComplete: function (settings, json) {
-      const totalDiscoveries = json.reduce((sum, currItem) =>
-        sum + currItem.tot_discoveries, 0)
-      document.querySelector('#discoveriesCounter').innerText = totalDiscoveries;
     }
   });
 }
@@ -158,10 +153,6 @@ function initDiscoveriesDataTable() {
           }
         })
       }
-    },
-    initComplete: function (settings, json) {
-      const totalDiscoveries = json.recordsTotal;
-      document.querySelector('#discoveriesCounter').innerText = totalDiscoveries;
     }
   });
 }
