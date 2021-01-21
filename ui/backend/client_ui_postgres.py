@@ -1,5 +1,5 @@
-from credentialdigger import Client, PgClient
-from psycopg2 import Error, connect
+from credentialdigger import PgClient
+from credentialdigger.client import Discovery
 
 from .client_ui import UiClient
 
@@ -27,37 +27,89 @@ class PgUiClient(UiClient, PgClient):
             TypeError
                 If any of the required arguments is missing
         """
+        inner_params = [repo_url]
+        inner_query = ('SELECT snippet, COUNT(*) OVER() AS total'
+                       ' FROM discoveries WHERE repo_url=%s')
+
+        if file_name is not None:
+            inner_query += ' AND file_name=%s'
+            inner_params.append(file_name)
+        if where is not None:
+            inner_query += ' AND snippet LIKE %s'
+            inner_params.append(f'%{where}%')
+        inner_query += ' GROUP BY snippet, state, rule_id'
+        if (order_by in ['category', 'snippet', 'state']
+                and order_direction in ['asc', 'desc']):
+            if order_by == 'category':
+                order_by = 'rule_id'
+            inner_query += f' ORDER BY {order_by} {order_direction}'
+        if limit is not None:
+            inner_query += ' LIMIT %s'
+            inner_params.append(limit)
+        if offset is not None:
+            inner_query += ' OFFSET %s'
+            inner_params.append(offset)
+
+        snippets = []
+        cursor = self.db.cursor()
+        cursor.execute(inner_query, tuple(inner_params))
+        result = cursor.fetchone()
+        total_discoveries = result[1] if result else 0
+        while result:
+            snippets.append(result[0])
+            result = cursor.fetchone()
+
         query = 'SELECT * FROM discoveries WHERE repo_url=%s'
         params = [repo_url]
         if file_name is not None:
             query += ' AND file_name=%s'
             params.append(file_name)
-        query += (' AND snippet IN (SELECT snippet FROM ('
-                  'SELECT DISTINCT snippet, state, rule_id FROM discoveries WHERE repo_url=%s')
-        params.append(repo_url)
+        query += ' AND snippet IN %s'
+        params.append(tuple(snippets))
+        cursor.execute(query, tuple(params))
+        result = cursor.fetchone()
+
+        all_discoveries = []
+        while result:
+            all_discoveries.append(dict(Discovery(*result)._asdict()))
+            result = cursor.fetchone()
+
+        return total_discoveries, all_discoveries
+
+    def get_discoveries_count(self, repo_url=None, file_name=None, where=None):
+        """ Get all the discoveries of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+        file_name: str, optional
+            The filename to filter discoveries on
+        TODO: docs
+
+        Returns
+        -------
+        list
+            A list of discoveries (dictionaries)
+
+        Raises
+        ------
+            TypeError
+                If any of the required arguments is missing
+        """
+        query = 'SELECT COUNT(*) FROM discoveries'
+        params = []
+        if repo_url is not None:
+            query += ' WHERE repo_url=%s'
+            params.append(repo_url)
         if file_name is not None:
             query += ' AND file_name=%s'
             params.append(file_name)
         if where is not None:
             query += ' AND snippet LIKE %%%s%%'
             params.append(where)
-        if order_by in ['category', 'snippet', 'state']:
-            if order_by == 'category':
-                order_by = 'rule_id'
-                # FIX: refactor this
-            query += f' ORDER BY {order_by}'
-            # params.append(order_direction)
-            # TODO: order by ENUM does not accept ASC|DESC but needs an integer
-        if limit is not None:
-            query += ' LIMIT %s'
-            params.append(limit)
-        if offset is not None:
-            query += ' OFFSET %s'
-            params.append(offset)
 
-        query += ') as temp)'
-
-        return super().get_discoveries(query, params)
+        return super().get_discoveries_count(query, params)
 
     def get_files_summary(self, repo_url):
         """ Get aggregated discoveries info on all files of a repository.
