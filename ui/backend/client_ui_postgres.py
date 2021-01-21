@@ -27,10 +27,10 @@ class PgUiClient(UiClient, PgClient):
             TypeError
                 If any of the required arguments is missing
         """
+        # Build inner query to get paginated unique snippets
         inner_params = [repo_url]
         inner_query = ('SELECT snippet, COUNT(*) OVER() AS total'
                        ' FROM discoveries WHERE repo_url=%s')
-
         if file_name is not None:
             inner_query += ' AND file_name=%s'
             inner_params.append(file_name)
@@ -50,6 +50,7 @@ class PgUiClient(UiClient, PgClient):
             inner_query += ' OFFSET %s'
             inner_params.append(offset)
 
+        # Execute inner query
         snippets = []
         cursor = self.db.cursor()
         cursor.execute(inner_query, tuple(inner_params))
@@ -59,6 +60,7 @@ class PgUiClient(UiClient, PgClient):
             snippets.append(result[0])
             result = cursor.fetchone()
 
+        # Build outer query to get all occurrences of the paginated snippets
         query = 'SELECT * FROM discoveries WHERE repo_url=%s'
         params = [repo_url]
         if file_name is not None:
@@ -66,10 +68,11 @@ class PgUiClient(UiClient, PgClient):
             params.append(file_name)
         query += ' AND snippet IN %s'
         params.append(tuple(snippets))
+
+        # Execute outer query
+        all_discoveries = []
         cursor.execute(query, tuple(params))
         result = cursor.fetchone()
-
-        all_discoveries = []
         while result:
             all_discoveries.append(dict(Discovery(*result)._asdict()))
             result = cursor.fetchone()
@@ -136,47 +139,3 @@ class PgUiClient(UiClient, PgClient):
                 " FROM discoveries WHERE repo_url=%s"
                 " GROUP BY file_name"
             ))
-
-    # def get_files_summary(self, repo_url, where=None, limit=None, offset=None,
-    #                       order_by=None, order_direction='ASC'):
-    #     """ Get aggregated discoveries info on all files of a repository.
-
-    #     Parameters
-    #     ----------
-    #     repo_url: str
-    #         The url of the repository
-
-    #     Returns
-    #     -------
-    #     list
-    #         A list of files with aggregated data (dictionaries)
-    #     """
-    #     query = (
-    #         "SELECT file_name,"
-    #         " COUNT(*) AS tot_discoveries,"
-    #         " COUNT(CASE WHEN state='new' THEN 1 END) AS new,"
-    #         " COUNT(CASE WHEN state='false_positive' THEN 1 END) AS false_positives,"
-    #         " COUNT(CASE WHEN state='addressing' THEN 1 END) AS addressing,"
-    #         " COUNT(CASE WHEN state='not_relevant' THEN 1 END) AS not_relevant"
-    #         " FROM discoveries WHERE repo_url=%s"
-    #     )
-
-    #     params = [repo_url]
-
-    #     if where is not None:
-    #         query += ' AND file_name LIKE %%%s%%'
-    #         params.append(where)
-    #     if limit is not None:
-    #         query += ' LIMIT %s'
-    #         params.append(limit)
-    #     if offset is not None:
-    #         query += ' OFFSET %s'
-    #         params.append(offset)
-    #     if order_by is not None:
-    #         query += 'ORDER BY %s %s'
-    #         params.append(order_by, order_direction)
-
-    #     query += " GROUP BY file_name"
-    #     return super().get_files_summary(
-    #         repo_url=repo_url,
-    #         query=query)
