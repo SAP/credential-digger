@@ -66,12 +66,8 @@ def _get_rules():
 def root():
     repos = c.get_repos()
 
-    # Discoveries per repo
-    for repo in repos:
-        repo['lendiscoveries'] = len(c.get_discoveries(repo['url']))
-
     # Total num of discoveries
-    tot_discoveries = sum(map(lambda r: r.get('lendiscoveries', 0), repos))
+    tot_discoveries = c.get_discoveries_count()
 
     rulesdict, cat = _get_rules()
 
@@ -212,7 +208,7 @@ def get_repos():
 
     repos = c.get_repos()
     for repo in repos:
-        repo['lendiscoveries'] = len(c.get_discoveries(repo['url']))
+        repo['lendiscoveries'] = c.get_discoveries_count(repo['url'])
         repo['scan_active'] = False
         if repo['url'] in active_scans:
             repo['scan_active'] = True
@@ -241,7 +237,7 @@ def get_discoveries():
     order_by = request.args[f'columns[{order_by_index}][data]']
     order_direction = request.args['order[0][dir]']
 
-    discoveries = c.get_discoveries(
+    discoveries_count, discoveries = c.get_discoveries(
         repo_url=url, file_name=file_name, where=where, limit=limit,
         offset=offset, order_by=order_by, order_direction=order_direction)
 
@@ -255,23 +251,27 @@ def get_discoveries():
 
     discoveries = sorted(discoveries, key=lambda i: (
         i["snippet"], i["category"], i["state"]))
-    response = [
-        {
-            "snippet": keys[0],
-            "category": keys[1],
-            "state": keys[2],
-            "occurrences": [
-                {
-                    "file_name": i["file_name"],
-                    "line_number": i["line_number"],
-                    "commit_id": i["commit_id"],
-                    "id": i["id"]
-                } for i in list(values)
-            ],
-        }
-        for keys, values in groupby(
-            discoveries, lambda i: (i["snippet"], i["category"], i["state"]))
-    ]
+    response = {
+        "recordsTotal": discoveries_count,
+        "recordsFiltered": discoveries_count,
+        "data": [
+            {
+                "snippet": keys[0],
+                "category": keys[1],
+                "state": keys[2],
+                "occurrences": [
+                    {
+                        "file_name": i["file_name"],
+                        "line_number": i["line_number"],
+                        "commit_id": i["commit_id"],
+                        "id": i["id"]
+                    } for i in list(values)
+                ],
+            }
+            for keys, values in groupby(
+                discoveries, lambda i: (i["snippet"], i["category"], i["state"]))
+        ]
+    }
 
     return jsonify(response)
 

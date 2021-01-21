@@ -116,7 +116,7 @@ function initDiscoveriesDataTable() {
         ...filename && { file: filename }
       },
       dataSrc: function (json) {
-        return json.map(item => {
+        return json.data.map(item => {
           // Map json data before sending it to datatable
           const details = `
           <div>
@@ -160,8 +160,7 @@ function initDiscoveriesDataTable() {
       }
     },
     initComplete: function (settings, json) {
-      const totalDiscoveries = json.reduce((sum, currItem) =>
-        sum + currItem.occurrences.length, 0)
+      const totalDiscoveries = json.recordsTotal;
       document.querySelector('#discoveriesCounter').innerText = totalDiscoveries;
     }
   });

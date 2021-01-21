@@ -1,7 +1,6 @@
 from collections import namedtuple
 
 from credentialdigger import Client
-from credentialdigger.client import Discovery
 
 FilesSummary = namedtuple(
     'FilesSummary',
@@ -10,6 +9,9 @@ FilesSummary = namedtuple(
 
 class UiClient(Client):
     def get_discoveries(self, query, params):
+        pass
+
+    def get_discoveries_count(self, query, params):
         """ Get all the discoveries of a repository.
 
         Parameters
@@ -26,14 +28,10 @@ class UiClient(Client):
             TypeError
                 If any of the required arguments is missing
         """
-        all_discoveries = []
         cursor = self.db.cursor()
         cursor.execute(query, tuple(params))
-        result = cursor.fetchone()
-        while result:
-            all_discoveries.append(dict(Discovery(*result)._asdict()))
-            result = cursor.fetchone()
-        return all_discoveries
+        result = cursor.fetchone()[0]
+        return result
 
     def get_files_summary(self, query, repo_url):
         """ Get aggregated discoveries info on all files of a repository.
