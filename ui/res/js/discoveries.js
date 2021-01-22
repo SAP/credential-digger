@@ -64,11 +64,6 @@ function initFilesDataTable() {
           }
         });
       }
-    },
-    initComplete: function (settings, json) {
-      const totalDiscoveries = json.reduce((sum, currItem) =>
-        sum + currItem.tot_discoveries, 0)
-      document.querySelector('#discoveriesCounter').innerText = totalDiscoveries;
     }
   });
 }
@@ -81,7 +76,8 @@ function initDiscoveriesDataTable() {
   const filename = document.querySelector('#file-name').innerText;
   $('#discoveries-table').DataTable({
     ...defaultTableSettings,
-    order: [[3, "desc"]], // Set default column sorting
+    serverSide: true,
+    order: [[3, "asc"]], // Set default column sorting
     columns: [ // Table columns definition
       {
         data: null,
@@ -98,6 +94,7 @@ function initDiscoveriesDataTable() {
         className: "dt-center nowrap",
       }, {
         data: "tot",
+        orderable: false,
         className: "dt-center nowrap",
       }, {
         data: "occurrences",
@@ -114,7 +111,7 @@ function initDiscoveriesDataTable() {
         ...filename && { file: filename }
       },
       dataSrc: function (json) {
-        return json.map(item => {
+        return json.data.map(item => {
           // Map json data before sending it to datatable
           const details = `
           <div>
@@ -156,11 +153,6 @@ function initDiscoveriesDataTable() {
           }
         })
       }
-    },
-    initComplete: function (settings, json) {
-      const totalDiscoveries = json.reduce((sum, currItem) =>
-        sum + currItem.occurrences.length, 0)
-      document.querySelector('#discoveriesCounter').innerText = totalDiscoveries;
     }
   });
 }

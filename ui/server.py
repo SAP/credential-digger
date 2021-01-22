@@ -16,7 +16,7 @@ if os.getenv("LOCAL_REPO") == 'True':
     # Load credentialdigger from local repo instead of pip
     sys.path.insert(0, os.path.join(APP_ROOT, '..'))
 
-from credentialdigger import PgClient, SqliteClient  # noqa
+from backend import PgUiClient, SqliteUiClient  # noqa
 
 app = Flask('__name__', static_folder=os.path.join(APP_ROOT, './res'),
             template_folder=os.path.join(APP_ROOT, './templates'))
@@ -25,14 +25,14 @@ app.config['DEBUG'] = True  # Remove this line in production
 
 if os.getenv('USE_PG') == 'True':
     app.logger.info('Use Postgres Client')
-    c = PgClient(dbname=os.getenv('POSTGRES_DB'),
-                 dbuser=os.getenv('POSTGRES_USER'),
-                 dbpassword=os.getenv('POSTGRES_PASSWORD'),
-                 dbhost=os.getenv('DBHOST'),
-                 dbport=os.getenv('DBPORT'))
+    c = PgUiClient(dbname=os.getenv('POSTGRES_DB'),
+                   dbuser=os.getenv('POSTGRES_USER'),
+                   dbpassword=os.getenv('POSTGRES_PASSWORD'),
+                   dbhost=os.getenv('DBHOST'),
+                   dbport=os.getenv('DBPORT'))
 else:
     app.logger.info('Use Sqlite Client')
-    c = SqliteClient(path=os.path.join(APP_ROOT, './data.db'))
+    c = SqliteUiClient(path=os.path.join(APP_ROOT, './data.db'))
 c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
 
 
@@ -66,12 +66,8 @@ def _get_rules():
 def root():
     repos = c.get_repos()
 
-    # Discoveries per repo
-    for repo in repos:
-        repo['lendiscoveries'] = len(c.get_discoveries(repo['url']))
-
     # Total num of discoveries
-    tot_discoveries = sum(map(lambda r: r.get('lendiscoveries', 0), repos))
+    tot_discoveries = c.get_discoveries_count()
 
     rulesdict, cat = _get_rules()
 
@@ -86,13 +82,14 @@ def root():
 def files():
     # Get all the discoveries of this repository
     url = request.args.get('url')
-
     rulesdict, cat = _get_rules()
+    discoveries_count = c.get_discoveries_count(repo_url=url)
     active_scans = _get_active_scans()
     scanning = url in active_scans
 
     return render_template('discoveries/files.html',
                            url=url,
+                           discoveries_count=discoveries_count,
                            scanning=scanning,
                            categories=list(cat))
 
@@ -103,7 +100,7 @@ def discoveries():
     url = request.args.get('url')
     file = request.args.get('file')
     rulesdict, cat = _get_rules()
-
+    discoveries_count = c.get_discoveries_count(repo_url=url, file_name=file)
     active_scans = _get_active_scans()
     scanning = url in active_scans
 
@@ -111,11 +108,13 @@ def discoveries():
         return render_template('discoveries/file.html',
                                url=url,
                                file=file,
+                               discoveries_count=discoveries_count,
                                scanning=scanning,
                                categories=list(cat))
     else:
         return render_template('discoveries/discoveries.html',
                                url=url,
+                               discoveries_count=discoveries_count,
                                scanning=scanning,
                                categories=list(cat))
 
@@ -212,7 +211,7 @@ def get_repos():
 
     repos = c.get_repos()
     for repo in repos:
-        repo['lendiscoveries'] = len(c.get_discoveries(repo['url']))
+        repo['lendiscoveries'] = c.get_discoveries_count(repo['url'])
         repo['scan_active'] = False
         if repo['url'] in active_scans:
             repo['scan_active'] = True
@@ -232,11 +231,18 @@ def get_files():
 def get_discoveries():
     # Get all the discoveries of this repository
     url = request.args.get('url')
-    file = request.args.get('file')
-    if file is None:
-        discoveries = c.get_discoveries(url)
-    else:
-        discoveries = c.get_discoveries(url, file)
+    file_name = request.args.get('file')
+    where = request.args['search[value]']
+    where = where if len(where) > 0 else None
+    limit = int(request.args['length'])
+    offset = int(request.args['start'])
+    order_by_index = request.args['order[0][column]']
+    order_by = request.args[f'columns[{order_by_index}][data]']
+    order_direction = request.args['order[0][dir]']
+
+    discoveries_count, discoveries = c.get_discoveries(
+        repo_url=url, file_name=file_name, where=where, limit=limit,
+        offset=offset, order_by=order_by, order_direction=order_direction)
 
     rulesdict, cat = _get_rules()
 
@@ -248,23 +254,27 @@ def get_discoveries():
 
     discoveries = sorted(discoveries, key=lambda i: (
         i["snippet"], i["category"], i["state"]))
-    response = [
-        {
-            "snippet": keys[0],
-            "category": keys[1],
-            "state": keys[2],
-            "occurrences": [
-                {
-                    "file_name": i["file_name"],
-                    "line_number": i["line_number"],
-                    "commit_id": i["commit_id"],
-                    "id": i["id"]
-                } for i in list(values)
-            ],
-        }
-        for keys, values in groupby(
-            discoveries, lambda i: (i["snippet"], i["category"], i["state"]))
-    ]
+    response = {
+        "recordsTotal": discoveries_count,
+        "recordsFiltered": discoveries_count,
+        "data": sorted([
+            {
+                "snippet": keys[0],
+                "category": keys[1],
+                "state": keys[2],
+                "occurrences": [
+                    {
+                        "file_name": i["file_name"],
+                        "line_number": i["line_number"],
+                        "commit_id": i["commit_id"],
+                        "id": i["id"]
+                    } for i in list(values)
+                ],
+            }
+            for keys, values in groupby(
+                discoveries, lambda i: (i["snippet"], i["category"], i["state"]))
+        ], key=lambda i: i[order_by], reverse=order_direction == 'asc')
+    }
 
     return jsonify(response)
 
