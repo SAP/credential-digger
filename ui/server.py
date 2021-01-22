@@ -257,7 +257,7 @@ def get_discoveries():
     response = {
         "recordsTotal": discoveries_count,
         "recordsFiltered": discoveries_count,
-        "data": [
+        "data": sorted([
             {
                 "snippet": keys[0],
                 "category": keys[1],
@@ -273,7 +273,7 @@ def get_discoveries():
             }
             for keys, values in groupby(
                 discoveries, lambda i: (i["snippet"], i["category"], i["state"]))
-        ]
+        ], key=lambda i: i[order_by], reverse=order_direction == 'asc')
     }
 
     return jsonify(response)
