@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from collections import namedtuple
 
 from credentialdigger import Client
@@ -8,26 +9,12 @@ FilesSummary = namedtuple(
 
 
 class UiClient(Client):
+    @abstractmethod
     def get_discoveries(self, query, params):
         pass
 
     def get_discoveries_count(self, query, params):
-        """ Get all the discoveries of a repository.
 
-        Parameters
-        ----------
-        TODO: docs
-
-        Returns
-        -------
-        list
-            A list of discoveries (dictionaries)
-
-        Raises
-        ------
-            TypeError
-                If any of the required arguments is missing
-        """
         cursor = self.db.cursor()
         cursor.execute(query, tuple(params))
         result = cursor.fetchone()[0]
