@@ -1,4 +1,5 @@
 from credentialdigger import SqliteClient
+from credentialdigger.client import Discovery
 
 from .client_ui import UiClient
 
@@ -26,25 +27,95 @@ class SqliteUiClient(UiClient, SqliteClient):
             TypeError
                 If any of the required arguments is missing
         """
+        # Build inner query to get paginated unique snippets
+        inner_params = [repo_url]
+        inner_query = ('SELECT snippet, state, COUNT(*) OVER() AS total'
+                       ' FROM discoveries WHERE repo_url=?')
+        if file_name is not None:
+            inner_query += ' AND file_name=?'
+            inner_params.append(file_name)
+        if where is not None:
+            inner_query += ' AND snippet LIKE ?'
+            inner_params.append(f'%{where}%')
+        inner_query += ' GROUP BY snippet, state, rule_id'
+        if (order_by in ['category', 'snippet', 'state']
+                and order_direction in ['asc', 'desc']):
+            if order_by == 'category':
+                order_by = 'rule_id'
+            inner_query += f' ORDER BY {order_by} {order_direction}'
+        if limit is not None:
+            inner_query += ' LIMIT ?'
+            inner_params.append(limit)
+        if offset is not None:
+            inner_query += ' OFFSET ?'
+            inner_params.append(offset)
+
+        # Execute inner query
+        snippets = []
+        n_snippets = 0
+        cursor = self.db.cursor()
+        cursor.execute(inner_query, tuple(inner_params))
+        result = cursor.fetchone()
+        total_discoveries = result[2] if result else 0
+        while result:
+            n_snippets += 1
+            snippets.extend([result[0], result[1]])
+            result = cursor.fetchone()
+
+        # Build outer query to get all occurrences of the paginated snippets
         query = 'SELECT * FROM discoveries WHERE repo_url=?'
         params = [repo_url]
+        if file_name is not None:
+            query += ' AND file_name=?'
+            params.append(file_name)
+        query += f' AND (snippet, state) IN (VALUES {", ".join(["(?,?)"]*n_snippets)})'
+        params.extend(snippets)
+
+        # Execute outer query
+        all_discoveries = []
+        cursor.execute(query, tuple(params))
+        result = cursor.fetchone()
+        while result:
+            all_discoveries.append(dict(Discovery(*result)._asdict()))
+            result = cursor.fetchone()
+
+        # BUG: fix sorting (no enum in sqlite)
+        return total_discoveries, all_discoveries
+
+    def get_discoveries_count(self, repo_url=None, file_name=None, where=None):
+        """ Get all the discoveries of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+        file_name: str, optional
+            The filename to filter discoveries on
+        TODO: docs
+
+        Returns
+        -------
+        list
+            A list of discoveries (dictionaries)
+
+        Raises
+        ------
+            TypeError
+                If any of the required arguments is missing
+        """
+        query = 'SELECT COUNT(*) FROM discoveries'
+        params = []
+        if repo_url is not None:
+            query += ' WHERE repo_url=?'
+            params.append(repo_url)
         if file_name is not None:
             query += ' AND file_name=?'
             params.append(file_name)
         if where is not None:
             query += ' AND snippet LIKE %%?%%'
             params.append(where)
-        if limit is not None:
-            query += ' LIMIT ?'
-            params.append(limit)
-        if offset is not None:
-            query += ' OFFSET ?'
-            params.append(offset)
-        if order_by is not None:
-            query += 'ORDER BY ? ?'
-            params.append(order_by, order_direction)
 
-        return super().get_discoveries(query, params)
+        return super().get_discoveries_count(query, params)
 
     def get_files_summary(self, repo_url):
         """ Get aggregated discoveries info on all files of a repository.

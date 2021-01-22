@@ -77,7 +77,7 @@ function initDiscoveriesDataTable() {
   $('#discoveries-table').DataTable({
     ...defaultTableSettings,
     serverSide: true,
-    order: [[3, "desc"]], // Set default column sorting
+    order: [[3, "asc"]], // Set default column sorting
     columns: [ // Table columns definition
       {
         data: null,

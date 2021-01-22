@@ -29,7 +29,7 @@ class PgUiClient(UiClient, PgClient):
         """
         # Build inner query to get paginated unique snippets
         inner_params = [repo_url]
-        inner_query = ('SELECT snippet, COUNT(*) OVER() AS total'
+        inner_query = ('SELECT snippet, state, COUNT(*) OVER() AS total'
                        ' FROM discoveries WHERE repo_url=%s')
         if file_name is not None:
             inner_query += ' AND file_name=%s'
@@ -55,9 +55,9 @@ class PgUiClient(UiClient, PgClient):
         cursor = self.db.cursor()
         cursor.execute(inner_query, tuple(inner_params))
         result = cursor.fetchone()
-        total_discoveries = result[1] if result else 0
+        total_discoveries = result[2] if result else 0
         while result:
-            snippets.append(result[0])
+            snippets.append((result[0], result[1]))
             result = cursor.fetchone()
 
         # Build outer query to get all occurrences of the paginated snippets
@@ -66,7 +66,7 @@ class PgUiClient(UiClient, PgClient):
         if file_name is not None:
             query += ' AND file_name=%s'
             params.append(file_name)
-        query += ' AND snippet IN %s'
+        query += ' AND (snippet, state) IN %s'
         params.append(tuple(snippets))
 
         # Execute outer query
