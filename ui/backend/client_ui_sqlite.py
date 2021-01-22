@@ -8,24 +8,35 @@ class SqliteUiClient(UiClient, SqliteClient):
     def get_discoveries(self, repo_url, file_name=None, where=None, limit=None,
                         offset=None, order_by=None, order_direction='ASC'):
         """ Get all the discoveries of a repository.
+        Supports full pagination by passing the respective parameters.
 
         Parameters
         ----------
         repo_url: str
             The url of the repository
         file_name: str, optional
-            The filename to filter discoveries on
-        TODO: docs
+            The name of the file to filter discoveries on
+        where: str, optional
+            Part of text contained in the snippet to filter discoveries on
+            (using SQL LIKE clause)
+        limit: int, optional
+            Number of unique discoveries to return. All occurrences of the
+            unique discoveries will be returned. (A unique discovery
+            corresponds to a distinct (snippet, state, rule_id) value)
+        offset: int, optional
+            Number of unique discoveries to start pagination from
+        order_by: str, optional
+            Name of the property on which to order results
+            (properties currently supported: category, snippet, state)
+        order_direction: str, optional
+            Direction of the sorting (either 'asc' or 'desc')
 
         Returns
         -------
+        int
+            The total number of discoveries (non-paginated)
         list
             A list of discoveries (dictionaries)
-
-        Raises
-        ------
-            TypeError
-                If any of the required arguments is missing
         """
         # Build inner query to get paginated unique snippets
         inner_params = [repo_url]
@@ -79,29 +90,26 @@ class SqliteUiClient(UiClient, SqliteClient):
             all_discoveries.append(dict(Discovery(*result)._asdict()))
             result = cursor.fetchone()
 
-        # BUG: fix sorting (no enum in sqlite)
         return total_discoveries, all_discoveries
 
     def get_discoveries_count(self, repo_url=None, file_name=None, where=None):
-        """ Get all the discoveries of a repository.
+        """ Get the toal number of discoveries.
 
         Parameters
         ----------
-        repo_url: str
-            The url of the repository
+        repo_url: str, optional
+            The url of the repository. (returns the total number of discoveries
+            in the database if not provided)
         file_name: str, optional
-            The filename to filter discoveries on
-        TODO: docs
+            The name of the file to filter discoveries on
+        where: str, optional
+            Part of text contained in the snippet to filter discoveries on
+            (using SQL LIKE clause)
 
         Returns
         -------
-        list
-            A list of discoveries (dictionaries)
-
-        Raises
-        ------
-            TypeError
-                If any of the required arguments is missing
+        int
+            The total number of discoveries
         """
         query = 'SELECT COUNT(*) FROM discoveries'
         params = []
