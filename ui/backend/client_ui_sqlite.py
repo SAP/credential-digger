@@ -79,7 +79,8 @@ class SqliteUiClient(UiClient, SqliteClient):
         if file_name is not None:
             query += ' AND file_name=?'
             params.append(file_name)
-        query += f' AND (snippet, state) IN (VALUES {", ".join(["(?,?)"]*n_snippets)})'
+        query += (f' AND(snippet, state) IN('
+                  f'VALUES {", ".join(["(?, ?)"]*n_snippets)})')
         params.extend(snippets)
 
         # Execute outer query
