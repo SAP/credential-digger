@@ -43,6 +43,9 @@ function initScanRepo() {
       url: '/scan_repo',
       method: 'POST',
       data: $(this).serialize(),
+      beforeSend: function() {
+        document.querySelector('#scan_repo')?.reset();
+      },
       success: function() {
         // close popup and open ok modal
         document.querySelector('#addRepoModal').classList.remove('open');

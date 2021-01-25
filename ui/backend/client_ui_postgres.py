@@ -71,6 +71,9 @@ class PgUiClient(UiClient, PgClient):
             snippets.append((result[0], result[1]))
             result = cursor.fetchone()
 
+        if len(snippets) == 0:
+            return 0, []
+
         # Build outer query to get all occurrences of the paginated snippets
         query = 'SELECT * FROM discoveries WHERE repo_url=%s'
         params = [repo_url]
@@ -81,14 +84,14 @@ class PgUiClient(UiClient, PgClient):
         params.append(tuple(snippets))
 
         # Execute outer query
-        all_discoveries = []
+        discoveries = []
         cursor.execute(query, tuple(params))
         result = cursor.fetchone()
         while result:
-            all_discoveries.append(dict(Discovery(*result)._asdict()))
+            discoveries.append(dict(Discovery(*result)._asdict()))
             result = cursor.fetchone()
 
-        return total_discoveries, all_discoveries
+        return total_discoveries, discoveries
 
     def get_discoveries_count(self, repo_url=None, file_name=None, where=None):
         """ Get the toal number of discoveries.
