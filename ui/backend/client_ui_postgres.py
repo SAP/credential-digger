@@ -54,6 +54,8 @@ class PgUiClient(UiClient, PgClient):
             if order_by == 'category':
                 order_by = 'rule_id'
             inner_query += f' ORDER BY {order_by} {order_direction}'
+            if order_by != 'snippet':
+                inner_query += ', snippet ASC'
         if limit is not None:
             inner_query += ' LIMIT %s'
             inner_params.append(limit)
