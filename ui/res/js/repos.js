@@ -19,15 +19,19 @@ function initReposDataTable() {
   $('#repos-table').DataTable({
     ...defaultTableSettings,
     processing: false,
-    order: [[0, "desc"]], // Set default column sorting
+    order: [[0, "desc"], [1, "desc"]], // Set default column sorting
     columns: [ // Table columns definition
       {
         data: "scan_active",
         className: 'dt-center scan-status',
         orderSequence: ["asc", "desc"]
       }, {
+        data: "last_scan",
+        className: 'dt-center last-scan',
+        orderSequence: ["desc", "asc"]
+      }, {
         data: "url",
-        className: "filename",
+        className: "all filename",
         orderSequence: ["asc", "desc"]
       }, {
         data: "lendiscoveries",
@@ -45,6 +49,7 @@ function initReposDataTable() {
         return json.map(item => {
           return {
             ...item,
+            last_scan: item.last_scan ? timestampToDate(item.last_scan) : 'Never',
             url: `
               <div>
                 <span>${item.url}</span>
