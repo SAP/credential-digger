@@ -249,7 +249,10 @@ def get_discoveries():
     # Add the category to each discovery
     categories_found = set()
     for discovery in discoveries:
-        discovery['category'] = rulesdict[discovery['rule_id']]['category']
+        if discovery['rule_id']:
+            discovery['category'] = rulesdict[discovery['rule_id']]['category']
+        else:
+            discovery['category'] = '(rule deleted)'
         categories_found.add(discovery['category'])
 
     discoveries = sorted(discoveries, key=lambda i: (
