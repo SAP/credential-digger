@@ -78,6 +78,11 @@ td .github {
   display: block;
 }
 
+td.last-scan {
+  white-space: nowrap;
+  font-size: 14px;
+}
+
 @media (max-width: 767px) {
   .generalInfoLinkCounter {
     font-size: 30px;
