@@ -54,6 +54,8 @@ class SqliteUiClient(UiClient, SqliteClient):
             if order_by == 'category':
                 order_by = 'rule_id'
             inner_query += f' ORDER BY {order_by} {order_direction}'
+            if order_by != 'snippet':
+                inner_query += ', snippet ASC'
         if limit is not None:
             inner_query += ' LIMIT ?'
             inner_params.append(limit)
@@ -72,6 +74,9 @@ class SqliteUiClient(UiClient, SqliteClient):
             n_snippets += 1
             snippets.extend([result[0], result[1]])
             result = cursor.fetchone()
+
+        if len(snippets) == 0:
+            return 0, []
 
         # Build outer query to get all occurrences of the paginated snippets
         query = 'SELECT * FROM discoveries WHERE repo_url=?'
