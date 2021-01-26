@@ -177,6 +177,28 @@ table#files-table thead th, table#files-table thead td {
   max-width: calc(100% - 40px);
 }
 
+.filter-state {
+  float: right;
+  display: flex;
+  align-items: center;
+  margin-right: 30px;
+}
+
+.filter-state select {
+  height: 27px;
+  font-size: 14px;
+  padding: 0 5px;
+  margin-left: 5px;
+  border: 1px solid #999;
+  background: white;
+  border-radius: 3px;
+}
+
+.filter-state .icon {
+  margin-right: 10px;
+  font-size: 20px;
+}
+
 @media (max-width: 1023px) {
   .dataTable#discoveries-table td.filename {
     max-width: 200px;
