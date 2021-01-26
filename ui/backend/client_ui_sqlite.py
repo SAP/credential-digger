@@ -5,8 +5,9 @@ from .client_ui import UiClient
 
 
 class SqliteUiClient(UiClient, SqliteClient):
-    def get_discoveries(self, repo_url, file_name=None, where=None, limit=None,
-                        offset=None, order_by=None, order_direction='ASC'):
+    def get_discoveries(self, repo_url, file_name=None, state_filter=None,
+                        where=None, limit=None, offset=None, order_by=None,
+                        order_direction='ASC'):
         """ Get all the discoveries of a repository.
         Supports full pagination by passing the respective parameters.
 
@@ -16,6 +17,8 @@ class SqliteUiClient(UiClient, SqliteClient):
             The url of the repository
         file_name: str, optional
             The name of the file to filter discoveries on
+        state_filter: str, optional
+            State on which to filter discoveries on
         where: str, optional
             Part of text contained in the snippet to filter discoveries on
             (using SQL LIKE clause)
@@ -45,6 +48,9 @@ class SqliteUiClient(UiClient, SqliteClient):
         if file_name is not None:
             inner_query += ' AND file_name=?'
             inner_params.append(file_name)
+        if state_filter is not None:
+            inner_query += ' AND state=?'
+            inner_params.append(state_filter)
         if where is not None:
             inner_query += ' AND snippet LIKE ?'
             inner_params.append(f'%{where}%')
@@ -84,6 +90,9 @@ class SqliteUiClient(UiClient, SqliteClient):
         if file_name is not None:
             query += ' AND file_name=?'
             params.append(file_name)
+        if state_filter is not None:
+            query += ' AND state=?'
+            params.append(state_filter)
         query += (f' AND(snippet, state) IN('
                   f'VALUES {", ".join(["(?, ?)"]*n_snippets)})')
         params.extend(snippets)
