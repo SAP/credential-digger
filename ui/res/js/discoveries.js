@@ -187,7 +187,7 @@ function initUpdateDiscoveries() {
         datatable.processing(true);
       },
       success: function () {
-        datatable.ajax.reload();
+        datatable.ajax.reload(null, false);
       }
     })
   });
