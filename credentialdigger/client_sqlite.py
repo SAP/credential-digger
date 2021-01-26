@@ -1,4 +1,4 @@
-from sqlite3 import connect, Error
+from sqlite3 import Error, connect
 
 from .client import Client
 
@@ -46,7 +46,7 @@ class SqliteClient(Client):
                 timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M','now', 'localtime')),
                 PRIMARY KEY (id),
                 FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
-                FOREIGN KEY (rule_id) REFERENCES rules ON DELETE NO ACTION ON UPDATE CASCADE
+                FOREIGN KEY (rule_id) REFERENCES rules ON DELETE SET NULL ON UPDATE CASCADE
             );
 
             PRAGMA foreign_keys=ON;
@@ -256,22 +256,28 @@ class SqliteClient(Client):
         return super().get_rule(rule_id=rule_id,
                                 query='SELECT * FROM rules WHERE id=?')
 
-    def get_discoveries(self, repo_url):
+    def get_discoveries(self, repo_url, file_name=None):
         """ Get all the discoveries of a repository.
 
         Parameters
         ----------
         repo_url: str
             The url of the repository
+        file_name: str, optional
+            The filename to filter discoveries on
 
         Returns
         -------
         list
             A list of discoveries (dictionaries)
         """
+        query = 'SELECT * FROM discoveries WHERE repo_url=?'
+        if file_name:
+            query += ' AND file_name=?'
         return super().get_discoveries(
             repo_url=repo_url,
-            query='SELECT * FROM discoveries WHERE repo_url=?')
+            file_name=file_name,
+            query=query)
 
     def get_discovery(self, discovery_id):
         """ Get a discovery.
@@ -360,7 +366,7 @@ class SqliteClient(Client):
             query='UPDATE discoveries SET state=? WHERE id=?'
         )
 
-    def update_discovery_group(self, repo_url, file_name, snippet, new_state):
+    def update_discovery_group(self, new_state, repo_url, file_name, snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
@@ -368,23 +374,25 @@ class SqliteClient(Client):
 
         Parameters
         ----------
+        new_state: str
+            The new state of these discoveries
         repo_url: str
             The url of the repository
         file_name: str
             The name of the file
-        snippet: str
+        snippet: str, optional
             The snippet
-        new_state: str
-            The new state of this discovery
 
         Returns
         -------
         bool
             `True` if the update is successful, `False` otherwise
         """
+        query = 'UPDATE discoveries SET state=? WHERE repo_url=?'
+        if file_name is not None:
+            query += ' and file_name=?'
+        if snippet is not None:
+            query += ' and snippet=?'
         super().update_discovery_group(
-            repo_url=repo_url, file_name=file_name,
-            snippet=snippet, new_state=new_state,
-            query='UPDATE discoveries SET state=? WHERE repo_url=? \
-                    and file_name=? and snippet=?'
-        )
+            new_state=new_state, repo_url=repo_url, file_name=file_name,
+            snippet=snippet, query=query)

@@ -24,58 +24,31 @@
 <div class="topicHeaderWrapper">
   <h1 class="topicH1" id="topic">All repos</h1>
   <span class="moreButtons moreButtonsRepos">
-    <button id="addRepo">Scan Repo</button>
+    <div class="btn primary-bg modal-opener" data-modal="addRepoModal">
+      <span class="icon icon-track_changes"></span>
+      <span>Scan repo</span>
+    </div>
   </span>
 </div>
-<input id="search" type="text" name="search" placeholder="Search...">
-<table>
-  <colgroup>
-    <col width="660px"/>
-    <col width="110px"/>
-    <col width="110px"/>
-    <col width="120px"/>
-  </colgroup>
-  <tr>
-    <th>Repository url</th>
-    <th>Discoveries</th>
-  </tr>
-  {% for repo in repos %}
-  <tr class="repo tableRowContent">
-    <td><a class="tableRowContentLink" href="/discoveries?url={{repo.url}}">{{repo.url}}</a></td>
-    <td><a class="tableRowContentLink" href="/discoveries?url={{repo.url}}">{{repo.lendiscoveries}}</a></td>
-  </tr>
-  {% endfor %}
+<table id="repos-table" style="width: 100%">
+  <thead>
+    <tr>
+      <th class="scan-status">Status</th>
+      <th>Last scan</th>
+      <th class="filename">Repository url</th>
+      <th>Discoveries</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
 </table>
-<p id="noEntries">No repositories found</p>
 
-<!--add repo popup-->
-<div id="addRepoModal" class="modal">
-  <div class="modal-content">
-    <div class="topicHeaderWrapper">
-      <h1 class="topicH1">Scan new Repo</h1>
-      <span id="cancelAddRepo" class="close">&times;</span>
-    </div>
-    <form name="scan_repo" action="/scan_repo" method="post">
-      <input id="repoLinkInput" type="link" name="repolink" class="textInput" placeholder="GitHub Repo URL" required>
-      <p class="formLabel">Select category :</p>
-      <select id="ruleSelector" name="rule_to_use" class="formSelect" size="4">
-        {% for cat in categories %}
-        <option value="{{cat}}">{{cat}}</option>
-        {% endfor %}
-      </select>
-      <input type="checkbox" id="cbAllRules" name="rule_to_use" value="all">Select all rules<br>
-      <input type="checkbox" id="cbPathModel" name="pathModel" value="path">Use the Path model<br>
-      <input type="checkbox" id="cbSnippetModel" name="snippetModel" value="snippet">Use the Snippet model<br>
-      <div class="formFooter">
-        <span class="moreButtons">
-          <input type="hidden" name="freshtoggle" value="on">
-        </span>
-        <button id="startRepoScan" type="submit">Start Scan</button>
-      </div>
-    </form>
-  </div>
-</div>
+{% include 'shared/_deleteRepoModal.html' %}
+
+{% with rescan=False %}
+  {% include 'shared/_scanRepoModal.html' %}
+{% endwith %}
+
 <script src="/res/js/scanForm.js"></script>
 <script src="/res/js/repos.js"></script>
-<script src="/res/js/scan.js"></script>
 {% endblock %}

@@ -1,76 +1,119 @@
-
 /**
- * @description An enum-like type to represent errors.
- * - URL: The URL is invalid.
- * - CATEGORY: The user must select one category.
+ * Handles repository scan's form and interactions.
  */
-const Errors = Object.freeze({ "URL": 1, "CATEGORY": 2 });
+
+/** 
+ * Register handlers on document ready event 
+ */
+document.addEventListener("DOMContentLoaded", function () {
+  /** Remove error on input's change. */
+  $(document).on('change', '.error', function() {
+    // Use jQuery for easier event delegation
+    this.classList.remove('error');
+
+    const next = this.nextSibling;
+    if(next?.classList?.contains('error-message')) next.remove();
+
+    if(!document.querySelector('.error')) {
+      // if there are no errors left, enable submit button
+      const submitButton = document.querySelector('#startRepoScan');
+      submitButton.disabled = false;
+      submitButton.classList.remove('disabled');
+    }
+  });
+});
+
+/** 
+ * Initialization of the form's event handlers 
+ */
+function initScanRepo() {
+  const rulesSelect = document.querySelector('#ruleSelector');
+  const rulesCheckbox = document.querySelector('#cbAllRules');
+
+  /** 
+   * Add listener to start repo scan: when the form is submitted, if it is 
+   * valid start the scan
+   */
+  document.querySelector('#scan_repo').addEventListener('submit', function (e) {
+    const formValid = validateForm();
+    e.preventDefault();
+    if(!formValid) return;
+
+    $.ajax({
+      url: '/scan_repo',
+      method: 'POST',
+      data: $(this).serialize(),
+      beforeSend: function() {
+        document.querySelector('#scan_repo')?.reset();
+      },
+      success: function() {
+        // close popup and open ok modal
+        document.querySelector('#addRepoModal').classList.remove('open');
+        if($('#repos-table')) $('#repos-table').DataTable().ajax.reload();
+        if(document.querySelector('#newScan')) {
+          getScan();
+          scanInterval = setInterval(getScan, POLLING_INTERVAL);
+        }
+      }
+    });
+  }, true);
+
+  /** 
+   * Add listener to repo category selector: uncheck he 'Use all rules' 
+   * checkbox when a category is being manually selected
+   */
+  rulesSelect.addEventListener('change', function () {
+    if(rulesSelect.selectedIndex != -1) rulesCheckbox.checked = false;
+  });
+
+  /** 
+   * Add listener to checkbox that selects all the rules: remove selection of
+   * the rules select if this checkbox is checked
+   */
+  rulesCheckbox.addEventListener('change', function () {
+    rulesSelect.selectedIndex = -1;
+    rulesSelect.dispatchEvent(new Event('change', { 'bubbles': true }))
+  });
+}
 
 /**
  * Check if form is filled correctly and handle change
  */
-function checkFormFilled() {
-    // get HTML elements
-    let cBox = document.getElementById('cbAllRules');
-    let rulesList = document.getElementById('ruleSelector');
-    let repoLinkContainer = document.getElementById('repoLinkInput');
-    let repoLink = repoLinkContainer.value;
-    // check if repo link is a valid url
-    let urlValid = repoLink.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
-    // check whether the form is correctly filled or not.
-    if (urlValid || cBox.checked || rulesList.selectedIndex != -1) {
-        editForm(true);
-    }
-    if (urlValid == null) {
-        editForm(false, Errors.URL, 'The URL you have provided is invalid.');
-    }
-    if (!cBox.checked && rulesList.selectedIndex == -1) {
-        editForm(false, Errors.CATEGORY, 'Please select a category first.');
-    }
+function validateForm() {
+  // Get HTML elements
+  const cBox = document.querySelector('#cbAllRules');
+  const rulesList = document.querySelector('#ruleSelector');
+  const repoLink = document.querySelector('#repoLinkInput');
+  // Check if repo link is a valid url
+  const urlValid = repoLink.value.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+  // Check whether the form is correctly filled or not
+  let formValid = true;
+  if (urlValid == null) {
+    formValid = false;
+    addError(repoLink, 'The URL you have provided is invalid.');
+  }
+  if (!cBox.checked && rulesList.selectedIndex == -1) {
+    formValid = false;
+    addError(rulesList, 'Please select a category first.');
+  }
+
+  if(!formValid) {
+    const submitButton = document.querySelector('#startRepoScan');
+    submitButton.disabled = true;
+    submitButton.classList.add('disabled');
+  }
+  return formValid;
 }
 
 /**
- * A function to enable/disable the scan button and highlight alarming sections.
- * @param {boolean} enable Takes two possible values
- * - True: Enables the button
- * - False: Disables the button
- * @param {enum} err Represents the type of error
- * - URL: The URL is invalid.
- * - CATEGORY: The user must select one category.
- * @param {string} tooltip
- * (Optional) Shows an error message when the mouse hovers on the disabled button
+ * Add error class and error message to input
+ * @param {HTMLNode} input HTML input node
+ * @param {String} tooltip Error message to show below the input field
  */
-function editForm(enable, err, tooltip = '') {
-    let postAddRepoButton = document.getElementById('startRepoScan');
-    let repoLinkContainer = document.getElementById('repoLinkInput');
-    let rulesList = document.getElementById('ruleSelector');
-    postAddRepoButton.disabled = !enable;
-    postAddRepoButton.title = tooltip;
-    if (enable) {
-        postAddRepoButton.classList.remove('disabledButton');
-        repoLinkContainer.style.border = '1px solid black';
-        rulesList.style.border = '1px solid black';
-    } else {
-        postAddRepoButton.classList.add('disabledButton');
-        switch (err) {
-            case Errors.URL:
-                repoLinkContainer.style.border = '2px solid red';
-                break;
-            case Errors.CATEGORY:
-                rulesList.style.border = '2px solid red';
-                break;
-        }
-    }
-}
+function addError(input, tooltip = '') {
+  input.classList.add('error');
 
-// close add repo pop up
-function closeAddRepo() {
-    // hide popup
-    document.getElementById('addRepoModal').style.display = 'none';
-    // reset input
-    document.getElementById('repoLinkInput').value = '';
-    document.getElementById('ruleSelector').value = '';
-    document.getElementById('cbAllRules').checked = false;
-    document.getElementById('cbSnippetModel').checked = false;
-    document.getElementById('cbAllRules').checked = false;
+  if(!tooltip) return;
+  if(!input.nextSibling?.classList?.contains('error-message'))
+    input.insertAdjacentHTML('afterend', `<div class="error-message">${tooltip}</div>`);
 }

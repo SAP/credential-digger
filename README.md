@@ -10,18 +10,24 @@ Credential Digger is a GitHub scanning tool that identifies hardcoded credential
 
 -  [Why](#why)
 -  [Requirements](#requirements)
--  [Install](#install)
--  [Quick launch with UI](#quick-launch)
--  [Advanced Install](#advanced-install)
-	-  [Install from source](#install-from-source)
-  	-  [Download machine learning models](#download-machine-learning-models)
-	-  [Configure the regular expressions Scanner](#configure-the-regular-expressions-scanner)
--  [Usage](#usage)
-	-  [Scan a repository](#scan-a-repository)
-	-  [Fine-tuning](#fine-tuning)
+-  [How to run](#how-to-run)
+    - [Install dependencies](#install-dependencies)
+    - [Add rules](#add-rules)
+    - [Install machine learning models](#install-machine-learning-models)
+    - [Scan a repository](#scan-a-repository)
+-  [Docker container](#docker-container)
+-  [Advanced install](#advanced-install)
+    - [Build from source](#build-from-source)
+    - [External postgres database](#external-postgres-database)
+-  [Python library usage](#python-library-usage)
+    - [Add rules](#add-rules)
+    - [Scan a repository](#scan-a-repository)
+        - [Fine-tuning](#fine-tuning)
+-  [CLI - Command Line Interface](#cli-command-line-interface)
 -  [Wiki](#wiki)
 -  [Contributing](#contributing)
 -  [News](#news)
+
 
 ## Why
 In data protection, one of the most critical threats is represented by hardcoded (or plaintext) credentials in open-source projects. Several tools are already available to detect leaks in open-source platforms, but the diversity of credentials (depending on multiple factors such as the programming language, code development conventions, or developers' personal habits) is a bottleneck for the effectiveness of these tools. Their lack of precision leads to a very high number of pieces of code incorrectly detected as leaked secrets. Data wrongly detected as a leak is called _false positive_ data, and compose the huge majority of the data detected by currently available tools.
@@ -32,27 +38,78 @@ The goal of Credential Digger is to reduce the amount of false positive data on 
 
 ## Requirements
 
-Credential Digger supports Python >= 3.6 and <= 3.8, and works only with LINUX systems.
+Credential Digger supports Python >= 3.6 and < 3.9, and works only with LINUX systems (currently, it has been tested on Ubuntu).
+In case you don't meet these requirements, you may consider running a [Docker container](#docker) (that also includes a user interface).
 
-[Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/) are needed if you want run an image of Credential Digger as a container, as discussed [here](#quick-launch).
 
-## Install
+## How to run
 
-You can either install the module using `pip` or [build it from source](#install-from-source)
+### Install dependencies
+
+First, you need to install the regular expression matching library [Hyperscan](https://github.com/intel/hyperscan). Be sure to have `build-essential` and `python3-dev` too.
+
+```bash
+sudo apt install -y libhyperscan-dev build-essential python3-dev
+```
+
+Then, you can install Credential Digger module using `pip`.
 
 ```bash
 pip install credentialdigger
 ```
-_Please make sure to add the [scanning rules](https://github.com/SAP/credential-digger/wiki/Rules) to the database before scanning a repo._
 
-#### _Scan your first repo for leaks_
+### Add rules
+
+One of the core components of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/main/ui/backend/rules.yml)). We provide a list of patterns in the `rules.yml` file, that are included in the UI.
+
+**Before the very first scan, you need to add the rules that will be used by the scanner.** This step is only needed once.
+
+```bash
+python -m credentialdigger add_rules --sqlite /path/to/data.db /path/to/rules.yaml
+```
+
+### Install machine learning models
+
+Credential Digger leverages machine learning models to filter false positives, especially in the identification of passwords:
+
+- Path Model: A lot of fake credentials reside in example files such as documentation, examples or test files, since it is very common for developers to provide test code for their projects. The Path Model analyzes the path of each discovery and classifies it as false positive when needed.
+
+- Snippet Model: Identify the portion of code used to authenticate with passwords, and distinguish between real and dummy passwords. This model is composed of a pre-processing step (Extractor) and a classification step (Classifier).
+
+
+To install the models, you first need to export them as environment variables, and them download them:
+
+```bash
+export path_model=https://github.com/SAP/credential-digger/releases/download/PM-v1.0.1/path_model-1.0.1.tar.gz
+export snippet_model=https://github.com/SAP/credential-digger/releases/download/SM-v1.0.0/snippet_model-1.0.0.tar.gz
+
+python -m credentialdigger download path_model
+python -m credentialdigger download snippet_model
+```
+>  **WARNING**: Don't run the download command from the installation folder of _credentialdigger_ in order to avoid errors in linking.
+
+>  **WARNING**: We provide the pre-trained models, but we do not guarantee the efficiency of these models. If you want more accurate machine learning models, you can train your own models (just replace the binaries with your own models) or use the [fine-tuning option](#fine-tuning).
+
+
+### Scan a repository
+
+After adding the rules, you can scan a repository:
+
 ```bash
 python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db
 ```
 
-## Quick Launch
+Machine learning models are not mandatory, but highly recommended in order to reduce the manual effort of reviewing the result of a scan:
 
-To have a ready-to-use instance of Credential Digger, with the UI:
+```bash
+python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --models PathModel SnippetModel
+```
+
+
+## Docker container
+
+To have a ready-to-use instance of Credential Digger, with a user interface, you can build the docker container. 
+This option requires the installation of [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/).
 
 ```bash
 git clone https://github.com/SAP/credential-digger.git
@@ -61,40 +118,18 @@ cp .env.sample .env
 sudo docker-compose up --build
 ```
 
-The UI is available at http://localhost:5000/
+The UI is available at [http://localhost:5000/](http://localhost:5000/)
 
-The docker container for Credential Digger uses a local sqlite database.
-
-### Quick Install with an external database
-
-Another ready-to-use instance of Credential Digger with the UI, but using a dockerized postgres database instead of a local sqlite one:
-
-```bash
-git clone https://github.com/SAP/credential-digger.git
-cd credential-digger
-cp .env.sample .env
-vim .env  # set credentials for postgres
-sudo docker-compose -f docker-compose.postgres.yml up --build
-```
-
-Differently from the sqlite version, here we need to configure the `.env` file with the credentials for postgres (by modifying POSTGRES_USER, POSTGRES_PASSWORD and POSTGRES_DB).
-
-Most advanced users may also wish to use an external postgres database instead of the dockerized one we provide in our `docker-compose.postgres.yml`.
 
 ## Advanced Install
 
-First, you need to install the regular expression matching library [Hyperscan](https://github.com/intel/hyperscan), where you can find the complete installation process for all platforms [here](http://intel.github.io/hyperscan/dev-reference/getting_started.html). Be sure to have `build-essential` and `python3-dev` too.
+Credential Digger is modular, and offers a wide choice of components and adaptations.
 
-```bash
-sudo apt install libhyperscan-dev
-sudo apt install build-essential
-sudo apt install python3-dev
-```
+### Build from source
 
+After installing the [dependencies](#install-dependencies) listed above, you can install Credential Digger as follows.
 
-### Install from source
-
-Configure a virtual environment for Python 3 (optional) and clone the main branch
+Configure a virtual environment for Python 3 (optional) and clone the main branch of the project:
 
 ```bash
 virtualenv --system-site-packages -p python3 ./venv
@@ -111,59 +146,54 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-### Download machine learning models
+Then, you can add the rules, install the machine learning libraries, and scan a repository as described above.
 
-Credential Digger leverages machine learning models to filter false positives, especially in the identification of passwords:
+### External postgres database
 
-- Path Model: A lot of fake credentials reside in example files such as documentation, examples or test files, since it is very common for developers to provide test code for their projects. The Path Model analyzes the path of each discovery and classifies it as false positive when needed.
-
-- Snippet Model: Identify the portion of code used to authenticate with passwords, and distinguish between real and dummy passwords. This model is composed of a pre-processing step (Extractor) and a classification step (Classifier).
-
-
-Download the binaries:
+Another ready-to-use instance of Credential Digger with the UI, but using a dockerized postgres database instead of a local sqlite one:
 
 ```bash
-export path_model=https://github.com/SAP/credential-digger/releases/download/PM-v1.0.1/path_model-1.0.1.tar.gz
-export snippet_model=https://github.com/SAP/credential-digger/releases/download/SM-v1.0.0/snippet_model-1.0.0.tar.gz
-
-python -m credentialdigger download path_model
-python -m credentialdigger download snippet_model
+git clone https://github.com/SAP/credential-digger.git
+cd credential-digger
+cp .env.sample .env
+vim .env  # set credentials for postgres
+sudo docker-compose -f docker-compose.postgres.yml up --build
 ```
->  **WARNING**: If you build the code from scratch (i.e., you don't install the client via
-pip), don't run the download command from the installation folder of
-_credentialdigger_ in order to avoid errors in linking.
 
->  **WARNING**: We provide the pre-trained models, but we do not guarantee the efficiency of these models. If you want more accurate machine learning models, you can train your own models (just replace the binaries with your own models) or use the fine-tuning option.
+> **WARNING**: Differently from the sqlite version, here we need to configure the `.env` file with the credentials for postgres (by modifying `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB`).
+
+Most advanced users may also wish to use an external postgres database instead of the dockerized one we provide in our `docker-compose.postgres.yml`.
 
 
-### Configure the regular expressions Scanner
 
-One of the core components of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/main/ui/backend/rules.yml)). We provide a list of patterns in the `rules.yml` file, that are included in the UI.
 
-When following the advanced user steps, you need to set your own rules. In a Python terminal:
+
+## Python library usage
+
+When installing _credentialdigger_ from pip (or from source), you can instantiate the client and scan a repository.
+
+Instantiate the client proper for the chosen database:
 
 ```python
+# Using a Sqlite database
 from credentialdigger import SqliteClient
-
 c = SqliteClient(path='/path/to/data.db')
 
+# Using a postgres database
+from credentialdigger import PgClient
+c = PgClient(dbname='my_db_name',
+             dbuser='my_user',
+             dbpassword='my_password',
+             dbhost='localhost_or_ip',
+             dbport=5432)
+```
+
+### Add rules
+
+Add rules before launching your first scan.
+
+```python
 c.add_rules_from_file('/path/to/rules.yml')
-```
-
->  **WARNING**: These instructions are valid for the `SqliteClient`.
-
-## Usage
-
-When using docker-compose, use the UI available at http://localhost:5000/
-
-When installing _credentialdigger_ from pip or from source, you can instantiate the client and scan a repository. 
-
-Instantiate a client:
-
-```python
-from credentialdigger import SqliteClient
-
-c = SqliteClient(path='/path/to/data.db')
 ```
 
 ### Scan a repository
@@ -174,35 +204,33 @@ new_discoveries = c.scan(repo_url='https://github.com/user/repo',
                          debug=True)
 ```
 
->  **WARNING**: Make sure you added rules before scanning a repository.
+>  **WARNING**: Make sure you add the rules before your first scan.
 
 >  **WARNING**: Make sure you download the models before using them in a scan.
 
 Please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for further information on the arguments.
 
-### CLI - Command Line Interface
-
-Credential Digger also offers a simple CLI to scan a repository. The CLI supports both sqlite and postgres databases. In case of postgres, the user needs to export the credentials (the same appearing in the `.env` file) as environment variables. In case of sqlite, the path of the db must be passed as argument.
-```bash
-# Scan using SqliteClient
-python -m credentialdigger scan https://github.com/user/repo --sqlite cdigger.db
-
-# Scan using PgClient
-export POSTGRES_USER=...
-export ...
-python -m credentialdigger scan https://github.com/user/repo
-```
-
-Since rules are needed to scan a repository, the CLI also offers the possibility to add rules from a file.
-```bash
-# Add the rules to the database
-python -m credentialdigger add_rules /path/to/rules.yml --sqlite cdigger.db
-```
-
-### Fine-tuning
+#### Fine-tuning
 
 Credential Digger offers the possibility to fine-tune the snippet model, by retraining a model on each repository scanned.
-If you want to activate this option, set `generate_snippet_extractor=True`. You need to donwload the snippet model before using the fine-tuning option.
+If you want to activate this option, set `generate_snippet_extractor=True` and enable the `SnippetModel` when you scan a repository. You need to install the snippet model before using the fine-tuning option.
+
+
+```python
+new_discoveries = c.scan(repo_url='https://github.com/user/repo',
+                         models=['PathModel', 'SnippetModel'],
+                         generate_snippet_extractor=True,
+                         debug=True)
+```
+
+
+
+## CLI - Command Line Interface
+
+Credential Digger also offers a simple CLI to scan a repository. The CLI supports both sqlite and postgres databases. In case of postgres, you need either to export the credentials needed to connect to the database as environment variables or to setup a `.env` file. In case of sqlite, the path of the db must be passed as argument.
+
+Refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for all the supported commands and their usage.
+
 
 
 ## Wiki
