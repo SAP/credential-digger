@@ -1,8 +1,8 @@
-import pkg_resources
 from abc import ABC, abstractmethod
 from pathlib import Path
 
 import fasttext
+import pkg_resources
 import srsly
 
 

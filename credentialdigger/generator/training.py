@@ -1,12 +1,12 @@
 import json
 import logging
-import pkg_resources
 import random
 import shutil
 from pathlib import Path
 
 import fasttext
 import numpy as np
+import pkg_resources
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

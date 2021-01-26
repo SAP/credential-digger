@@ -1,8 +1,98 @@
-.moreButtonsRepos{
-  min-width: 503px;
+/* 
+ * Styles for the repos page.
+ */
+
+.generalInfoWrapper {
+  font-size: 17px;
+  display: flex;
+  justify-content: stretch;
+  margin-bottom: 40px;
+}
+
+.generalInfoLink {
+  flex: 1;
+  height: 80px;
+  text-decoration: none;
+  border: 1px solid rgb(158, 158, 158);
+  border-radius: 7px;
+  margin: 10px;
+  padding: 0px 10px;
+  color: black;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+.generalInfoLink:first-child {
+  margin-left: 0;
+}
+.generalInfoLink:last-child {
+  margin-right: 0;
+}
+
+.generalInfoLink:hover {
+  background: #f5f5f5;
+}
+
+.generalInfoLinkCounter {
+  font-size: 40px;
+}
+
+.moreButtonsRepos {
   justify-content: flex-end;
 }
 
-.dateCell{
-  min-width: 90px;
+.btns-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btns-container .btn:not(:first-child) {
+  margin-left: 10px;
+}
+
+td.dtr-control {
+  max-width: 90vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+td .github {
+  text-decoration: none;
+  margin-left: 10px;
+  vertical-align: middle;
+  font-size: 18px;
+  margin-right: 10px;
+  display: none;
+  transition: color .1s ease-out;
+}
+
+.dataTable td.filename a.github:hover {
+  color: #999;
+}
+
+.dataTable td.filename:hover .github {
+  display: block;
+}
+
+td.last-scan {
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+@media (max-width: 767px) {
+  .generalInfoLinkCounter {
+    font-size: 30px;
+  }
+
+  .topicHeaderWrapper {
+    margin-bottom: 20px;
+  }
+  
+  #repos-table_wrapper {
+    margin-top: 40px;
+  }
 }
