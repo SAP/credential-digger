@@ -1,82 +1,103 @@
-
-let listOfRepos;
-window.onload = function () {
-  listOfRepos = document.getElementsByClassName('repo tableRowContent');
-  checkFormFilled();
-};
-
-// add search action listener
-document.getElementById('search').addEventListener('input', function () {
-  search(this.value);
-});
-
-// add repo pop up
-// add action listener to add repo button
-document.getElementById('addRepo').addEventListener('click', function () {
-  // show popup
-  document.getElementById('addRepoModal').style.display = 'block';
-});
-
-// add action listener for window (clicking anywhere)
-window.addEventListener('click', function (event) {
-  // if user clicked in the modal area (area around the popup) hide popup
-  if (event.target == document.getElementById('addRepoModal')) {
-    closeAddRepo();
-  }
-});
-
-// add action listener to close add repo popup
-document.getElementById('cancelAddRepo').addEventListener('click', closeAddRepo);
-
-// add action listener to start repo scan
-document.getElementById('startRepoScan').addEventListener('click', function () {
-  // close popup
-  document.getElementById('addRepoModal').style.display = 'none';
-  // show loading popup
-});
-
-// add action listener to repo category selector
-document.getElementById('ruleSelector').addEventListener('change', function () {
-  //Disable the 'Use all rules' checkbox when a category is being manually selected.
-  document.getElementById('cbAllRules').checked = false;
-  checkFormFilled();
-});
-
-// add action listener to repo url input
-document.getElementById('repoLinkInput').addEventListener('input', checkFormFilled);
-
-// add action listener to checkbox that selects all the rules
-document.getElementById('cbAllRules').addEventListener('change', function () {
-  //Select no category if this checkbox is 'Active'
-  document.getElementById('ruleSelector').selectedIndex = -1;
-  checkFormFilled();
-});
-
+/**
+ * Handles all interactions in the repos page.
+ */
 
 /**
- * Searches for repos that have an URL that contains the __text__ argument.
- * @param {string} text This argument is used to find all the repos that have an URL that matches its value.
- * @param {boolean} hideNotMatching If set to __false__, the matching repos will not be removed from the UI.
- * @returns Returns an object that has two attributes
- * -  __text__: Equals the textual value that has been used to perform the search
- * -  __indices__: An array that contains the indices of the matching repos. These indices can be used to access
- *                the repo from the __listOfRepos__ array.
+ * Register handlers on document ready event
  */
-function search(text, hideNotMatching = true) {
-  let listOfMatches = {
-    text: text,
-    indices: []
-  };
-  text = text.toLowerCase();
-  for (let i = 0; i < listOfRepos.length; i++) {
-    let element = listOfRepos[i];
-    if (!element.textContent.toLowerCase().includes(text)) {
-      if (hideNotMatching) { element.style.display = 'none'; }
-    }
-    else {
-      element.style.display = '';
-      listOfMatches.indices.push(i);
-    }
-  }
-  return listOfMatches;
-} 
+document.addEventListener("DOMContentLoaded", function () {
+  initReposDataTable();
+  initScanRepo();
+  initDeleteRepo();
+  initModals();
+});
+
+/**
+ * Initialize DataTable plugin on the page's table
+ */
+function initReposDataTable() {
+  $('#repos-table').DataTable({
+    ...defaultTableSettings,
+    processing: false,
+    order: [[0, "desc"], [1, "desc"]], // Set default column sorting
+    columns: [ // Table columns definition
+      {
+        data: "scan_active",
+        className: 'dt-center scan-status',
+        orderSequence: ["asc", "desc"]
+      }, {
+        data: "last_scan",
+        className: 'dt-center last-scan',
+        orderSequence: ["desc", "asc"]
+      }, {
+        data: "url",
+        className: "all filename",
+        orderSequence: ["asc", "desc"]
+      }, {
+        data: "lendiscoveries",
+        className: "dt-center",
+        orderSequence: ["desc", "asc"]
+      }, {
+        data: "actions",
+        orderable: false
+      }
+    ],
+    ajax: { // AJAX source info
+      url: "/get_repos",
+      dataSrc: function (json) {
+        // Map json data before sending it to datatable
+        return json.map(item => {
+          return {
+            ...item,
+            last_scan: item.last_scan ? timestampToDate(item.last_scan) : 'Never',
+            url: `
+              <div>
+                <span>${item.url}</span>
+                <a target="_blank" href="${item.url}" class="icon icon-github github"></a>
+              </div>`,
+            scan_active: item.scan_active ? `
+              <span class="icon icon-timelapse warning-color"></span>
+            ` : `
+              <span class="icon icon-check_circle_outline success-color"></span>`,
+            actions: `
+            <div class="btns-container">
+              <div class="btn-group">
+                <a class="btn outline-bg" href="/files?url=${item.url}">
+                  <span class="icon icon-folder_open"></span><span>Files view</span>
+                </a>
+                <div class="dropdown-container">
+                  <div class="dropdown-opener outline-bg">
+                    <span class="icon icon-keyboard_arrow_down"></span>
+                  </div>
+                  <div class="dropdown">
+                    <a class="btn outline-bg" href="/discoveries?url=${item.url}">
+                      <span class="icon icon-error_outline"></span><span>Discoveries view</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <button class="btn danger-bg modal-opener delete-repo-btn" data-url="${item.url}" data-modal="deleteRepoModal">
+                <span class="icon icon-delete_outline"></span>
+              </button>
+            </div>`
+          }
+        })
+      }
+    },
+  });
+
+  setInterval(function() {
+    $('.dataTable').DataTable().ajax.reload(null, false);
+  }, POLLING_INTERVAL);
+}
+
+/**
+ * Set repository url when deleting a repo
+ */
+function initDeleteRepo() {
+  // Use jQuery for easier event delegation
+  $(document).on('click', '.delete-repo-btn', function() {
+    const url = this.dataset.url;
+    document.querySelector('#deleteRepoModal input[name="repo_url"]').value = url;
+  });
+}

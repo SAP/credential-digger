@@ -1,169 +1,269 @@
-let filterFPs = false;
-// The list of the categories to skip while filtering.
-let categoriesToSkip = [];
-// It is mandatory to wait for the window to load before executing the
-// scripts
-window.onload = function () {
-  filterFPs = sessionStorage.getItem('filterFPs');
-  if (filterFPs == true) {
-    toggleFPs();
-  }
-};
+/**
+ * Handles all interactions in the discoveries pages (files listing, file 
+ * detail and discoveries).
+ */
 
-var tableRows = document.getElementsByClassName('tableRowContent');
-// add action listeners to table rows
-for (var i = 0; i < tableRows.length; i++) {
-  tableRows[i].addEventListener('mouseover', function (event) {
-    // open expand table row
-    openExpandTableRow(event.currentTarget);
+/**
+ * Register handlers on document ready event
+ */
+document.addEventListener("DOMContentLoaded", function () {
+  if (document.querySelector('#files-table')) initFilesDataTable();
+  if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
+  if (document.querySelector('#addRepoModal')) initScanRepo();
+  initUpdateDiscoveries();
+  initUpdateScanning();
+});
+
+/**
+ * Initialize DataTable plugin on the files listing page's table
+ */
+function initFilesDataTable() {
+  const repoUrl = document.querySelector('#repo-url').innerText;
+  $('#files-table').DataTable({
+    ...defaultTableSettings,
+    order: [[1, "desc"]], // Set default column sorting
+    columns: [ // Table columns definition
+      {
+        data: "file_name",
+        className: "filename",
+        orderSequence: ["asc", "desc"]
+      }, {
+        data: "new",
+        className: "dt-center",
+        orderSequence: ["desc", "asc"]
+      }, {
+        data: "false_positives",
+        className: "dt-center",
+        orderSequence: ["desc", "asc"]
+      }, {
+        data: "addressing",
+        className: "dt-center",
+        orderSequence: ["desc", "asc"]
+      }, {
+        data: "not_relevant",
+        className: "dt-center",
+        orderSequence: ["desc", "asc"]
+      }, {
+        data: "actions",
+        orderable: false
+      }
+    ],
+    ajax: { // AJAX source info
+      url: "/get_files",
+      data: { url: repoUrl },
+      dataSrc: function (json) {
+        // Map json data before sending it to datatable
+        return json.map(item => {
+          return {
+            ...item,
+            file_name: `
+            <a href="/discoveries?url=${repoUrl}&file=${encodeURIComponent(item.file_name)}">
+              ${item.file_name}
+            </a>`,
+            actions: discoveriesBtnGroupTemplate("Mark all as")
+          }
+        });
+      }
+    }
   });
 }
 
-function openExpandTableRow(tr) {
-  // get all hidden expand table rows
-  var expandTableRows = document.getElementsByClassName('expandTableRow');
-  // get all table rows
-  var tableRows = document.getElementsByClassName('tableRowContent');
-  // step trough all expand table rows
-  for (var i = 0; i < expandTableRows.length; i++) {
-    // show if mouseover
-    if (tr == tableRows[i]) {
-      expandTableRows[i].style.display = 'table-cell';
-      tableRows[i].style.background = '#f5f5f5';
-    } else {
-      // hide if not mouseover
-      expandTableRows[i].style.display = 'none';
-      tableRows[i].style.background = 'transparent';
-    }
-  }
-}
-
-
-// delete repo popup
-// add action listener to delete repo button
-document.getElementById('deleteRepo').addEventListener('click', function (event) {
-  // show popup
-  document.getElementById('deleteRepoModal').style.display = 'block';
-});
-// add action listener for window (clicking anywhere)
-window.addEventListener('click', function (event) {
-  // if user clicks in the modal area (area around the popup) hide popup
-  if (event.target == document.getElementById('deleteRepoModal')) {
-    document.getElementById('deleteRepoModal').style.display = 'none';
-  }
-  if (event.target == document.getElementById('addRepoModal')) {
-    closeAddRepo();
-  }
-
-});
-
-document.getElementById('cancelDeleteRepo').addEventListener('click', function (event) {
-  // hide popup
-  document.getElementById('deleteRepoModal').style.display = 'none';
-});
-
-document.getElementById('cancelAddRepo').addEventListener('click', closeAddRepo);
-
-// New scan
-// add action listener to scan repo button
-document.getElementById('newScan').addEventListener('click', function (event) {
-  // Show popup
-  document.getElementById('addRepoModal').style.display = 'block';
-  document.getElementById('repoLinkInput').value = window.name;
-  checkFormFilled();
-});
-document.getElementById('startRepoScan').addEventListener('click', function () {
-  // close popup
-  document.getElementById('addRepoModal').style.display = 'none';
-});
-var allDiscoveries = document.getElementsByClassName('discoveryEntry');
-// Show/hide fp flag
-function switchFilter() {
-  // Swap the value of the filtering FLAG
-  filterFPs = filterFPs ^ 1;
-  // Store the flag's value as long as the session is still running
-  sessionStorage.setItem('filterFPs', filterFPs);
-  // Change color
-  document.getElementById('showFPs').style.backgroundColor = '#0000ff';
-  // Filter discoveries
-  toggleFPs();
-}
-
-function toggleFPs() {
-  let countDiscoveries = 0;
-  for (let i = 0; i < allDiscoveries.length; i++) {
-    // If the discovery is not new, hide its row and the expandable one
-    if (allDiscoveries[i].children[2].valueOf().innerText == 'false_positive') {
-      allDiscoveries[i].style.display = filterFPs ? 'none' : '';
-      countDiscoveries++;
-    }
-  }
-  document.getElementById('showFPs').innerHTML = filterFPs ? 'Show FPs' : 'Hide FPs';
-  document.getElementById('discoveriesCounter').innerHTML = filterFPs ?
-    `${allDiscoveries.length} discoveries found (${countDiscoveries} false positives are hidden)` :
-    `${allDiscoveries.length} discoveries found`;
-}
-
-// add action listener to checkbox that selects all the rules
-document.getElementById('cbAllRules').addEventListener('change', function () {
-  //Select no category if this checkbox is 'Active'
-  document.getElementById('ruleSelector').selectedIndex = -1;
-  checkFormFilled();
-});
-
-// add action listener to repo category selector
-document.getElementById('ruleSelector').addEventListener('change', function () {
-  //Disable the 'Use all rules' checkbox when a category is being manually selected.
-  document.getElementById('cbAllRules').checked = false;
-  checkFormFilled();
-});
-
-// A self-invoking function to assign functions to the filtering buttons
-(function catFilteringInit() {
-  let filteringButtons = document.getElementsByClassName('categoryToggle');
-  for (let i = 0; i < filteringButtons.length; i++) {
-    let buttonsContainer = filteringButtons[i];
-    buttonsContainer.onclick = clickedButton => {
-      let button = clickedButton.target;
-      const category = button.innerText;
-      const indexOfCat = categoriesToSkip.indexOf(category);
-      if (indexOfCat > -1) {
-        // Disable the filter
-        categoriesToSkip.splice(indexOfCat, 1);
-        button.style.background = 'white';
+/**
+ * Initialize DataTable plugin on the file detail and discoveries page's table
+ */
+function initDiscoveriesDataTable() {
+  const repoUrl = document.querySelector('#repo-url').innerText;
+  const filename = document.querySelector('#file-name').innerText;
+  $('#discoveries-table').DataTable({
+    ...defaultTableSettings,
+    serverSide: true,
+    order: [[3, "asc"]], // Set default column sorting
+    columns: [ // Table columns definition
+      {
+        data: null,
+        defaultContent: "",
+        orderable: false
+      }, {
+        data: "category",
+        className: "dt-center nowrap",
+      }, {
+        data: "snippet",
+        className: "snippet",
+      }, {
+        data: "state",
+        className: "dt-center nowrap",
+      }, {
+        data: "tot",
+        orderable: false,
+        className: "dt-center nowrap",
+      }, {
+        data: "occurrences",
+        className: "none"
+      }, {
+        data: "actions",
+        orderable: false
       }
-      else {
-        // Enable the filter
-        categoriesToSkip.push(category);
-        button.style.background = 'dodgerblue';
-      }
-      filterCategories();
-    };
-  }
+    ],
+    ajax: { // AJAX source info
+      url: "/get_discoveries",
+      data: {
+        url: repoUrl,
+        ...filename && { file: filename }
+      },
+      dataSrc: function (json) {
+        return json.data.map(item => {
+          // Map json data before sending it to datatable
+          const details = `
+          <div>
+          <table>
+            <thead>
+              <tr>
+                ${filename ? '': '<th>File</th>'}
+                <th class="hash">Commit hash</th><th class="dt-center">Line number</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${item.occurrences.slice(0,10).map(i => `
+                <tr>
+                  ${filename ? "" : `<td class="filename"><span>${i.file_name}</span></td>`}
+                  <td class="hash">${i.commit_id}</td>
+                  <td class="dt-center">${i.line_number}</td>
+                  <td>
+                    <a class="btn btn-light grey-color" target="_blank" href="${repoUrl}/blob/${i.commit_id}/${i.file_name}#L${i.line_number}">
+                      <span class="icon icon-github"></span>
+                      <span class="btn-text">Show on GitHub</span>
+                    </a>
+                  </td>
+                </tr>
+              `).join('\n')}
+              ${item.occurrences.length > 10 ? `
+              <tr><td colspan="${filename ? 3 : 4}">and ${item.occurrences.length - 10} more...<td></tr>
+              ` : ""}
+            </tbody>
+          </table><div>`;
 
-}());
+          return {
+            ...item,
+            state: states[item.state],
+            snippet: encodeHTML(item.snippet),
+            tot: item.occurrences.length,
+            occurrences: details,
+            actions: discoveriesBtnGroupTemplate('Mark as')
+          }
+        })
+      }
+    }
+  });
+}
 
 /**
- * A function to filter the discoveries based on their categories.
+ * Event handler for update discoveries' button
  */
-function filterCategories() {
-  // No categories to filter
-  if (categoriesToSkip.length == 0) {
-    for (let i = 0; i < allDiscoveries.length; i++) {
-      let discovery = allDiscoveries[i];
-      discovery.style.display = '';
-    }
-  }
-  else {
-    for (let i = 0; i < allDiscoveries.length; i++) {
-      let discovery = allDiscoveries[i];
-      /**
-       * Ninja code : skip is a boolean. it is set to true if this discovery will be ignored
-       * false, otherwise.
-       */
-      const skip = (categoriesToSkip.indexOf(discovery.children[0].valueOf().innerText) == -1);
-      discovery.style.display = skip ? 'none' : '';
-    }
-  }
+function initUpdateDiscoveries() {
+  $(document).on('click', '.btn-group .btn', function () {
+    const repoUrl = document.querySelector('#repo-url').innerText;
+    const state = this.dataset.state;
+    let filename, snippet;
+    const datatable = $('.dataTable').DataTable();
 
+    if (document.querySelector("#files-table")) {
+      filename = this.closest('tr').querySelector('.filename').innerText;
+    } else {
+      filename = document.querySelector("#file-name").innerText;
+      snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
+    }
+    
+    $.ajax({
+      url: 'update_discovery_group',
+      method: 'POST',
+      data: {
+        state: state,
+        url: repoUrl,
+        ...filename && { file: filename },
+        ...snippet && { snippet: decodeHTML(snippet) }
+      },
+      beforeSend: function() {
+        datatable.processing(true);
+      },
+      success: function () {
+        datatable.ajax.reload();
+      }
+    })
+  });
 }
+
+/**
+ * Periodically get updates on the scanning status if scanning
+ */
+function initUpdateScanning() {
+  // Get status only if scanning when loading the page
+  if(!document.querySelector('#newScan.disabled')) return;
+  scanInterval = setInterval(getScan, POLLING_INTERVAL);
+}
+
+let scanInterval = null;
+const getScan = function() {
+  const repoUrl = document.querySelector('#repo-url').innerText;
+  $.ajax({
+    url: '/get_scan_status',
+    data: {url: repoUrl},
+    success: function(json) {
+      const btn = document.querySelector('#newScan');
+      if(json.scanning) {
+        btn.disabled = true;
+        btn.classList.add('disabled');
+        btn.classList.add('warning-bg');
+        btn.classList.remove('primary-bg');
+        btn.innerHTML = `
+          <span class="icon icon-timelapse"></span><span>Scanning...</span>`;
+      } else {
+        clearInterval(scanInterval);
+        btn.disabled = false;
+        btn.classList.remove('disabled');
+        btn.classList.remove('warning-bg');
+        btn.classList.add('primary-bg');
+        btn.innerHTML = `
+          <span class="icon icon-refresh"></span><span>Rescan</span>`;
+        if($('#discoveries-table, #files-table')) $('.dataTable').DataTable().ajax.reload();
+      }
+    }
+  })
+}
+
+/**
+ * Mapping of possible states of a discovery in the format "key-description".
+ */
+const states = {
+  new: "leak",
+  false_positive: "false positive",
+  addressing: "addressing",
+  not_relevant: "not relevant"
+}
+
+const discoveriesBtnGroupTemplate = mark => `
+<div class="btn-group">
+  <div class="btn primary-bg" data-state="false_positive">
+    <span class="icon icon-outlined_flag"></span>
+    <span>${mark} FPs</span>
+  </div>
+  <div class="dropdown-container">
+    <div class="dropdown-opener primary-bg">
+      <span class="icon icon-keyboard_arrow_down"></span>
+    </div>
+    <div class="dropdown">
+      <div class="btn light-bg danger-color" data-state="new">
+        <span class="icon icon-error_outline"></span>
+        <span>${mark} leak</span>
+      </div>
+      <div class="btn light-bg warning-color" data-state="addressing">
+        <span class="icon icon-timelapse"></span>
+        <span>${mark} addressing</span>
+      </div>
+      <div class="btn light-bg grey-color" data-state="not_relevant">
+        <span class="icon icon-inbox"></span>
+        <span>${mark} not relevant</span>
+      </div>
+    </div>
+  </div>
+</div>`;
