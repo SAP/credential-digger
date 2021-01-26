@@ -240,6 +240,7 @@ def get_discoveries():
     order_by = request.args[f'columns[{order_by_index}][data]']
     order_direction = request.args['order[0][dir]']
 
+    # Determine the state filter value
     col_index = 0
     state_filter = None
     while f'columns[{col_index}][data]' in request.args:
@@ -255,9 +256,8 @@ def get_discoveries():
         where=where, limit=limit, offset=offset, order_by=order_by,
         order_direction=order_direction)
 
-    rulesdict, cat = _get_rules()
-
     # Add the category to each discovery
+    rulesdict, cat = _get_rules()
     categories_found = set()
     for discovery in discoveries:
         if discovery['rule_id']:
