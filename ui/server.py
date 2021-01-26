@@ -2,6 +2,7 @@ import os
 import sys
 import threading
 from collections import defaultdict
+from enum import Enum
 from itertools import groupby
 
 import yaml
@@ -255,8 +256,15 @@ def get_discoveries():
             discovery['category'] = '(rule deleted)'
         categories_found.add(discovery['category'])
 
+    # Build the response json
+    class States(Enum):
+        new = 0
+        false_positive = 1
+        addressing = 2
+        not_relevant = 3
+
     discoveries = sorted(discoveries, key=lambda i: (
-        i["snippet"], i["category"], i["state"]))
+        i["snippet"], i["category"], States[i["state"]].value))
     response = {
         "recordsTotal": discoveries_count,
         "recordsFiltered": discoveries_count,
@@ -264,7 +272,7 @@ def get_discoveries():
             {
                 "snippet": keys[0],
                 "category": keys[1],
-                "state": keys[2],
+                "state": States(keys[2]).name,
                 "occurrences": [
                     {
                         "file_name": i["file_name"],
@@ -275,8 +283,8 @@ def get_discoveries():
                 ],
             }
             for keys, values in groupby(
-                discoveries, lambda i: (i["snippet"], i["category"], i["state"]))
-        ], key=lambda i: i[order_by], reverse=order_direction == 'asc')
+                discoveries, lambda i: (i["snippet"], i["category"], States[i["state"]].value))
+        ], key=lambda i: States[i[order_by]].value, reverse=order_direction == 'desc')
     }
 
     return jsonify(response)
