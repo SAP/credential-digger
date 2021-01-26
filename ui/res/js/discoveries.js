@@ -104,6 +104,7 @@ function initDiscoveriesDataTable() {
         orderable: false
       }
     ],
+    searchCols: [null, null, null, {search: 'new'}, null, null, null],
     ajax: { // AJAX source info
       url: "/get_discoveries",
       data: {
@@ -153,7 +154,31 @@ function initDiscoveriesDataTable() {
           }
         })
       }
-    }
+    },
+    initComplete: function () {
+      var column = this.api().columns(3);
+      var select = $('<select><option value=""></option></select>')
+        .on( 'change', function () {
+          var val = $.fn.dataTable.util.escapeRegex($(this).val());
+          column.search(val).draw();
+        } );
+
+      select.append(`
+        <option value="all">all</option>
+        <option value="new" selected>leak</option>
+        <option value="false_positive">false positive</option>
+        <option value="addressing">addressing</option>
+        <option value="not_relevant">not relevant</option>
+      `);
+
+      $('#discoveries-table_filter').after(
+        `<div class="filter-state">
+          <span class="icon icon-filter_list"></span>
+          <span>State:</span>
+          <div id="select-filter-container"></div>
+        </div>`);
+      $('#select-filter-container').append(select);
+  }
   });
 }
 

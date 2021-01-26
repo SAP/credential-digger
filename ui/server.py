@@ -241,13 +241,24 @@ def get_discoveries():
     order_by = request.args[f'columns[{order_by_index}][data]']
     order_direction = request.args['order[0][dir]']
 
-    discoveries_count, discoveries = c.get_discoveries(
-        repo_url=url, file_name=file_name, where=where, limit=limit,
-        offset=offset, order_by=order_by, order_direction=order_direction)
+    # Determine the state filter value
+    col_index = 0
+    state_filter = None
+    while f'columns[{col_index}][data]' in request.args:
+        if request.args[f'columns[{col_index}][data]'] == 'state':
+            state_filter = request.args[f'columns[{col_index}][search][value]']
+            if len(state_filter) == 0 or state_filter == 'all':
+                state_filter = None
+            break
+        col_index += 1
 
-    rulesdict, cat = _get_rules()
+    discoveries_count, discoveries = c.get_discoveries(
+        repo_url=url, file_name=file_name, state_filter=state_filter,
+        where=where, limit=limit, offset=offset, order_by=order_by,
+        order_direction=order_direction)
 
     # Add the category to each discovery
+    rulesdict, cat = _get_rules()
     categories_found = set()
     for discovery in discoveries:
         if discovery['rule_id']:
