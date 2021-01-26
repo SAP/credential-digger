@@ -264,7 +264,7 @@ class Client(Interface):
         else:
             return {}
 
-    def get_rules(self, category_query, category=None):
+    def get_rules(self, category_query=None, category=None):
         """ Get the rules.
 
         Differently from other get methods, here we pass the category as
@@ -276,9 +276,12 @@ class Client(Interface):
 
         Parameters
         ----------
+        category_query: str, optional
+            If specified, run this specific query (with `category` as an 
+            argument), otherwise get all the rules
         category: str, optional
-            If specified get all the rules, otherwise get all the rules of this
-            category
+            If specified get all the rules of this category, otherwise get all 
+            the rules
 
         Returns
         -------
@@ -286,7 +289,7 @@ class Client(Interface):
             A list of rules (dictionaries)
         """
         query = 'SELECT * FROM rules'
-        if category is not None:
+        if category_query is not None and category is not None:
             query = category_query
         cursor = self.db.cursor()
         try:
