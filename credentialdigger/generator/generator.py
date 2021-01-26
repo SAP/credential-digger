@@ -1,6 +1,5 @@
 import json
 import logging
-import pkg_resources
 import random
 import re
 import shutil
@@ -8,8 +7,9 @@ import tempfile
 from collections import Counter
 from pathlib import Path
 
-import string_utils
 import pandas as pd
+import pkg_resources
+import string_utils
 from git import Repo as GitRepo
 from tqdm import tqdm
 

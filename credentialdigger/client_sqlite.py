@@ -1,4 +1,4 @@
-from sqlite3 import connect, Error
+from sqlite3 import Error, connect
 
 from .client import Client
 
@@ -22,7 +22,7 @@ class SqliteClient(Client):
         cursor.executescript("""
             CREATE TABLE IF NOT EXISTS repos(
                 url TEXT NOT NULL UNIQUE,
-                last_commit TEXT,
+                last_scan INTEGER,
                 PRIMARY KEY (url)
             );
 
@@ -38,6 +38,7 @@ class SqliteClient(Client):
                 id INTEGER,
                 file_name TEXT NOT NULL,
                 commit_id TEXT NOT NULL,
+                line_number INTEGER DEFAULT -1,
                 snippet TEXT DEFAULT '',
                 repo_url TEXT,
                 rule_id INTEGER,
@@ -45,7 +46,7 @@ class SqliteClient(Client):
                 timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M','now', 'localtime')),
                 PRIMARY KEY (id),
                 FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
-                FOREIGN KEY (rule_id) REFERENCES rules ON DELETE NO ACTION ON UPDATE CASCADE
+                FOREIGN KEY (rule_id) REFERENCES rules ON DELETE SET NULL ON UPDATE CASCADE
             );
 
             PRAGMA foreign_keys=ON;
@@ -84,8 +85,8 @@ class SqliteClient(Client):
             return -1
         cursor.close()
 
-    def add_discovery(self, file_name, commit_id, snippet, repo_url, rule_id,
-                      state='new'):
+    def add_discovery(self, file_name, commit_id, line_number, snippet,
+                      repo_url, rule_id, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -94,6 +95,8 @@ class SqliteClient(Client):
             The name of the file that produced the discovery
         commit_id: str
             The id of the commit introducing the discovery
+        line_number: int
+            The line number of the discovery in the file
         snippet: str
             The line matched during the scan
         repo_url: str
@@ -111,12 +114,13 @@ class SqliteClient(Client):
         return super().add_discovery(
             file_name=file_name,
             commit_id=commit_id,
+            line_number=line_number,
             snippet=snippet,
             repo_url=repo_url,
             rule_id=rule_id,
             state=state,
-            query='INSERT INTO discoveries (file_name, commit_id, snippet, \
-            repo_url, rule_id, state) VALUES (?, ?, ?, ?, ?, ?)'
+            query='INSERT INTO discoveries (file_name, commit_id, line_number, \
+            snippet, repo_url, rule_id, state) VALUES (?, ?, ?, ?, ?, ?, ?)'
         )
 
     def add_repo(self, repo_url):
@@ -252,22 +256,28 @@ class SqliteClient(Client):
         return super().get_rule(rule_id=rule_id,
                                 query='SELECT * FROM rules WHERE id=?')
 
-    def get_discoveries(self, repo_url):
+    def get_discoveries(self, repo_url, file_name=None):
         """ Get all the discoveries of a repository.
 
         Parameters
         ----------
         repo_url: str
             The url of the repository
+        file_name: str, optional
+            The filename to filter discoveries on
 
         Returns
         -------
         list
             A list of discoveries (dictionaries)
         """
+        query = 'SELECT * FROM discoveries WHERE repo_url=?'
+        if file_name:
+            query += ' AND file_name=?'
         return super().get_discoveries(
             repo_url=repo_url,
-            query='SELECT * FROM discoveries WHERE repo_url=?')
+            file_name=file_name,
+            query=query)
 
     def get_discovery(self, discovery_id):
         """ Get a discovery.
@@ -313,18 +323,18 @@ class SqliteClient(Client):
                 WHERE repo_url=? GROUP BY file_name, snippet, state'
                                            )
 
-    def update_repo(self, url, last_commit):
-        """ Update the last commit of a repo.
+    def update_repo(self, url, last_scan):
+        """ Update the last scan timestamp of a repo.
 
-        After a scan, record what is the most recent commit scanned, such that
+        After a scan, record the timestamp of the last scan, such that
         another (future) scan will not process the same commits twice.
 
         Parameters
         ----------
         url: str
             The url of the repository scanned
-        last_commit: str
-            The most recent commit scanned
+        last_scan: int
+            The timestamp of the last scan
 
         Returns
         -------
@@ -332,8 +342,8 @@ class SqliteClient(Client):
             `True` if the update is successful, `False` otherwise
         """
         super().update_repo(
-            url=url, last_commit=last_commit,
-            query='UPDATE repos SET last_commit=? WHERE url=?'
+            url=url, last_scan=last_scan,
+            query='UPDATE repos SET last_scan=? WHERE url=?'
         )
 
     def update_discovery(self, discovery_id, new_state):
@@ -356,7 +366,7 @@ class SqliteClient(Client):
             query='UPDATE discoveries SET state=? WHERE id=?'
         )
 
-    def update_discovery_group(self, repo_url, file_name, snippet, new_state):
+    def update_discovery_group(self, new_state, repo_url, file_name, snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
@@ -364,23 +374,25 @@ class SqliteClient(Client):
 
         Parameters
         ----------
+        new_state: str
+            The new state of these discoveries
         repo_url: str
             The url of the repository
         file_name: str
             The name of the file
-        snippet: str
+        snippet: str, optional
             The snippet
-        new_state: str
-            The new state of this discovery
 
         Returns
         -------
         bool
             `True` if the update is successful, `False` otherwise
         """
+        query = 'UPDATE discoveries SET state=? WHERE repo_url=?'
+        if file_name is not None:
+            query += ' and file_name=?'
+        if snippet is not None:
+            query += ' and snippet=?'
         super().update_discovery_group(
-            repo_url=repo_url, file_name=file_name,
-            snippet=snippet, new_state=new_state,
-            query='UPDATE discoveries SET state=? WHERE repo_url=? \
-                    and file_name=? and snippet=?'
-        )
+            new_state=new_state, repo_url=repo_url, file_name=file_name,
+            snippet=snippet, query=query)

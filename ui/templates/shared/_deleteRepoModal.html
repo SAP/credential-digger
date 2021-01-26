@@ -1,0 +1,15 @@
+<!-- Delete repo popup -->
+<div id="deleteRepoModal" class="modal">
+  <div class="modal-content">
+    <div class="topicHeaderWrapperAccept">
+      <h1 class="topicH1">Delete {{url}} Repo?</h1>
+    </div>
+    <span class="buttonsAccept">
+      <form action="/delete_repo" method="post">
+        <input name="repo_url" type="hidden" value="{{url}}">
+        <button type="submit" class="btn danger-bg">Delete Repo</button>
+      </form>
+      <button id="cancelDeleteRepo" class="btn outline-bg modal-closer">Cancel</button>
+    </span>
+  </div>
+</div>
