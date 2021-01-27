@@ -14,7 +14,15 @@ class UiClient(Client):
         pass
 
     def get_discoveries_count(self, query, params):
+        """ Get the total number of discoveries.
 
+        Parameters
+        ----------
+        query: str
+            The specific query to run (with placeholders for parameters)
+        params: list
+            The parameters to be substituted in the placeholders
+        """
         cursor = self.db.cursor()
         cursor.execute(query, tuple(params))
         result = cursor.fetchone()[0]
