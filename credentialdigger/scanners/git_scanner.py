@@ -72,10 +72,6 @@ class GitScanner(BaseScanner):
         project_path = self.clone_git_repo(git_url)
         repo = GitRepo(project_path)
 
-        if len(repo.branches) == 0:
-            # The repository is empty
-            return None, []
-
         already_searched = set()
         discoveries = []
 
