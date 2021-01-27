@@ -183,6 +183,9 @@ def scan_repo():
     force_scan = request.form.get('forceScan') == 'force'
     git_token = request.form.get('gitToken')
 
+    if not c.check_git_token(repo_link, git_token):
+        return f'Git token not valid for repository {repo_link}', 401
+
     # Set up models
     models = []
     if use_path_model == 'path':

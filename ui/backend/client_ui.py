@@ -1,7 +1,9 @@
 from abc import abstractmethod
 from collections import namedtuple
 
+import git
 from credentialdigger import Client
+from git import GitCommandError
 
 FilesSummary = namedtuple(
     'FilesSummary',
@@ -54,3 +56,27 @@ class UiClient(Client):
             files.append(dict(FilesSummary(*result)._asdict()))
             result = cursor.fetchone()
         return files
+
+    def check_git_token(self, repo_url, git_token):
+        """
+        Check git token validity for the repository
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+        git_token: str
+            Git personal access token to authenticate to the git server
+
+        Returns
+        -------
+        bool
+            True if the git token is valid for the repository, False otherwise
+        """
+        g = git.cmd.Git()
+        try:
+            g.ls_remote(repo_url.replace(
+                'https://', f'https://{git_token}@'))
+        except GitCommandError:
+            return False
+        return True
