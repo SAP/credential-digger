@@ -83,6 +83,16 @@ td.last-scan {
   font-size: 14px;
 }
 
+#startRepoScan .loader {
+  width: 15px;
+  height: 15px;
+  border-width: 2px;
+}
+
+#startRepoScan .loaderWrapper {
+  margin-left: 10px;
+}
+
 @media (max-width: 767px) {
   .generalInfoLinkCounter {
     font-size: 30px;
