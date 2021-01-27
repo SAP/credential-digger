@@ -105,7 +105,7 @@ class PgUiClient(UiClient, PgClient):
         return total_discoveries, discoveries
 
     def get_discoveries_count(self, repo_url=None, file_name=None, where=None):
-        """ Get the toal number of discoveries.
+        """ Get the total number of discoveries.
 
         Parameters
         ----------
