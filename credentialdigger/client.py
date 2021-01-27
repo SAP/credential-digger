@@ -277,10 +277,10 @@ class Client(Interface):
         Parameters
         ----------
         category_query: str, optional
-            If specified, run this specific query (with `category` as an 
+            If specified, run this specific query (with `category` as an
             argument), otherwise get all the rules
         category: str, optional
-            If specified get all the rules of this category, otherwise get all 
+            If specified get all the rules of this category, otherwise get all
             the rules
 
         Returns
@@ -567,7 +567,8 @@ class Client(Interface):
             from_timestamp = 0
         else:
             # Get the latest commit recorded on the db
-            from_timestamp = self.get_repo(repo_url)['last_scan']
+            # `or` clause needed in case the previous scan attempt was broken
+            from_timestamp = self.get_repo(repo_url)['last_scan'] or 0
 
         # Force complete scan
         if force:
