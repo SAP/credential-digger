@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Repo info top bar -->
+<div class="repo-info grey-color">
+  <a href="/">
+    <span class="icon icon-keyboard_arrow_left"></span>
+    <span class="link-text">Go back to all repos</span>
+  </a>
+  <a href="{{url}}" target="_blank" class="repo-link">
+    <span class="icon icon-github"></span>
+    <span class="link-text">{{url}}</span>
+  </a>
+</div>
+
+<!--discoveries list with search bar-->
+<div class="topicHeaderWrapper">
+  <div class="filename-container">
+    <div class="icon icon-folder_open"></div>
+    <div>
+      <h1 class="topicH1"><span>Files</span></h1>
+    </div>
+  </div>
+  <span class="moreButtons moreButtonsDiscoveries">
+    <a href="/discoveries?url={{url}}" class="btn outline-bg">
+      <span class="icon icon-error_outline"></span>
+      <span>Discoveries view</span>
+    </a>
+    <div class="divider"></div>
+    <button id="newScan" class="btn modal-opener {{'warning-bg disabled' if scanning else 'primary-bg'}}" {{'disabled' if scanning}} data-modal="addRepoModal">
+      <span class="icon {{'icon-timelapse' if scanning else 'icon-refresh'}}"></span>
+      <span>{{'Scanning...' if scanning else 'Rescan'}}</span>
+    </button>
+    <button class="btn danger-bg modal-opener" data-modal="deleteRepoModal">
+      <span class="icon icon-delete_outline"></span>
+      <span>Delete Repo</span>
+    </button>
+  </span>
+</div>
+
+<div class="topicHeaderWrapper underTopicHeaderWrapper">
+  <h3 class="scanDescription"><span id="discoveriesCounter">{{discoveries_count}}</span> discoveries found</h3>
+</div>
+<table id="files-table" class="dataTable" style="width: 100%">
+  <!-- Header -->
+  <thead>
+    <tr>
+      <th rowspan="2">Filename</th>
+      <th colspan="4" class="dt-center discoveries">Discoveries</th>
+      <th rowspan="2" class="dt-center">Actions</th>
+    </tr>
+    <tr>
+      <th>Leaks</th>
+      <th>False positives</th>
+      <th>Addressing</th>
+      <th>Not relevant</th>
+    </tr>
+  </thead>
+  <!-- Content (filled with discoveries info) -->
+  <tbody>
+  </tbody>
+</table>
+
+{% include 'shared/_deleteRepoModal.html' %}
+
+{% with rescan=True %}
+  {% include 'shared/_scanRepoModal.html' %}
+{% endwith %}
+
+<div id="repo-url" class="hidden">{{url}}</div>
+
+<script src="/res/js/scanForm.js"></script>
+<script src="/res/js/discoveries.js"></script>
+{% endblock %}

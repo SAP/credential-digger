@@ -1,4 +1,4 @@
-from psycopg2 import connect, Error
+from psycopg2 import Error, connect
 
 from .client import Client
 
@@ -66,8 +66,8 @@ class PgClient(Client):
             self.db.rollback()
             return -1
 
-    def add_discovery(self, file_name, commit_id, snippet, repo_url, rule_id,
-                      state='new'):
+    def add_discovery(self, file_name, commit_id, line_number, snippet,
+                      repo_url, rule_id, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -76,6 +76,8 @@ class PgClient(Client):
             The name of the file that produced the discovery
         commit_id: str
             The id of the commit introducing the discovery
+        line_number: int
+            The line number of the discovery in the file
         snippet: str
             The line matched during the scan
         repo_url: str
@@ -93,13 +95,14 @@ class PgClient(Client):
         return super().add_discovery(
             file_name=file_name,
             commit_id=commit_id,
+            line_number=line_number,
             snippet=snippet,
             repo_url=repo_url,
             rule_id=rule_id,
             state=state,
-            query='INSERT INTO discoveries (file_name, commit_id, snippet, \
-            repo_url, rule_id, state) VALUES (%s, %s, %s, %s, %s, %s) \
-            RETURNING id')
+            query='INSERT INTO discoveries (file_name, commit_id, line_number, \
+            snippet, repo_url, rule_id, state) VALUES \
+            (%s, %s, %s, %s, %s, %s, %s) RETURNING id')
 
     def add_repo(self, repo_url):
         """ Add a new repository.
@@ -238,22 +241,28 @@ class PgClient(Client):
             rule_id=rule_id,
             query='SELECT * FROM rules WHERE id=%s')
 
-    def get_discoveries(self, repo_url):
+    def get_discoveries(self, repo_url, file_name=None):
         """ Get all the discoveries of a repository.
 
         Parameters
         ----------
         repo_url: str
             The url of the repository
+        file_name: str, optional
+            The filename to filter discoveries on
 
         Returns
         -------
         list
             A list of discoveries (dictionaries)
         """
+        query = 'SELECT * FROM discoveries WHERE repo_url=%s'
+        if file_name:
+            query += ' AND file_name=%s'
         return super().get_discoveries(
             repo_url=repo_url,
-            query='SELECT * FROM discoveries WHERE repo_url=%s')
+            file_name=file_name,
+            query=query)
 
     def get_discovery(self, discovery_id):
         """ Get a discovery.
@@ -299,18 +308,18 @@ class PgClient(Client):
             query='SELECT file_name, snippet, count(id), state FROM \
             discoveries WHERE repo_url=%s GROUP BY file_name, snippet, state')
 
-    def update_repo(self, url, last_commit):
-        """ Update the last commit of a repo.
+    def update_repo(self, url, last_scan):
+        """ Update the last scan timestamp of a repo.
 
-        After a scan, record what is the most recent commit scanned, such that
+        After a scan, record the timestamp of the last scan, such that
         another (future) scan will not process the same commits twice.
 
         Parameters
         ----------
         url: str
             The url of the repository scanned
-        last_commit: str
-            The most recent commit scanned
+        last_scan: int
+            The timestamp of the last scan
 
         Returns
         -------
@@ -318,9 +327,8 @@ class PgClient(Client):
             `True` if the update is successful, `False` otherwise
         """
         super().update_repo(
-            url=url,
-            last_commit=last_commit,
-            query='UPDATE repos SET last_commit=%s WHERE url=%s RETURNING true'
+            url=url, last_scan=last_scan,
+            query='UPDATE repos SET last_scan=%s WHERE url=%s RETURNING true'
         )
 
     def update_discovery(self, discovery_id, new_state):
@@ -343,7 +351,7 @@ class PgClient(Client):
             new_state=new_state,
             query='UPDATE discoveries SET state=%s WHERE id=%s RETURNING true')
 
-    def update_discovery_group(self, repo_url, file_name, snippet, new_state):
+    def update_discovery_group(self, new_state, repo_url, file_name, snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
@@ -351,24 +359,26 @@ class PgClient(Client):
 
         Parameters
         ----------
+        new_state: str
+            The new state of these discoveries
         repo_url: str
             The url of the repository
         file_name: str
             The name of the file
-        snippet: str
+        snippet: str, optional
             The snippet
-        new_state: str
-            The new state of this discovery
 
         Returns
         -------
         bool
             `True` if the update is successful, `False` otherwise
         """
+        query = 'UPDATE discoveries SET state=%s WHERE repo_url=%s'
+        if file_name is not None:
+            query += ' and file_name=%s'
+        if snippet is not None:
+            query += ' and snippet=%s'
+        query += ' RETURNING true'
         super().update_discovery_group(
-            repo_url=repo_url,
-            file_name=file_name,
-            snippet=snippet,
-            new_state=new_state,
-            query='UPDATE discoveries SET state=%s WHERE repo_url=%s \
-            and file_name=%s and snippet=%s RETURNING true')
+            new_state=new_state, repo_url=repo_url, file_name=file_name,
+            snippet=snippet, query=query)

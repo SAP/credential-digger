@@ -2,19 +2,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Credential Digger</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/res/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/res/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/res/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/res/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="/res/favicon/favicon.ico">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="msapplication-config" content="/res/favicon/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/res/css/vendor/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="/res/css/fonts.css">
     <link rel="stylesheet" type="text/css" href="/res/css/base.css">
-    <link rel="stylesheet" type="text/css" href="/res/css/dashboard.css">
+    <link rel="stylesheet" type="text/css" href="/res/css/datatables.css">
     <link rel="stylesheet" type="text/css" href="/res/css/repos.css">
     <link rel="stylesheet" type="text/css" href="/res/css/discoveries.css">
     <link rel="stylesheet" type="text/css" href="/res/css/rules.css">
-    <link rel="stylesheet" type="text/css" href="/res/css/discovery.css">
   </head>
   <body>
     <div class="headerToolbar">
       <a class="headerItem headerTitle" href="/">
         <img class="headerTitleIcon" src="/res/img/logo-CD.svg">
-        Credential Digger
+        <span class="headerTitleText">Credential Digger</span>
       </a>
       <div class="headerLinkList">
         <a class="headerItem headerLink" href="/">Repositories</a>
@@ -25,5 +38,9 @@
       {% block content %}
       {% endblock %}
     </div>
+    <script src="/res/js/vendor/jquery-3.5.1.min.js"></script>
+    <script src="/res/js/vendor/jquery.dataTables.min.js"></script>
+    <script src="/res/js/utils.js"></script>
+    <script src="/res/js/global.js"></script>
   </body>
 </html>

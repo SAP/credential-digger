@@ -1,0 +1,86 @@
+@font-face {
+  font-family: 'icomoon';
+  src:
+    url('/res/fonts/icomoon.ttf?td3hlo') format('truetype'),
+    url('/res/fonts/icomoon.woff?td3hlo') format('woff'),
+    url('/res/fonts/icomoon.svg?td3hlo#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+.icon {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-github:before {
+  content: "\e907";
+}
+.icon-error_outline:before {
+  content: "\e900";
+}
+.icon-add:before {
+  content: "\e90f";
+}
+.icon-filter_list:before {
+  content: "\e913";
+}
+.icon-inbox:before {
+  content: "\e903";
+}
+.icon-outlined_flag:before {
+  content: "\e901";
+}
+.icon-insert_drive_file:before {
+  content: "\e90c";
+}
+.icon-file_download:before {
+  content: "\e910";
+}
+.icon-file_upload:before {
+  content: "\e911";
+}
+.icon-folder_open:before {
+  content: "\e90d";
+}
+.icon-keyboard_arrow_down:before {
+  content: "\e908";
+}
+.icon-keyboard_arrow_left:before {
+  content: "\e909";
+}
+.icon-keyboard_arrow_right:before {
+  content: "\e90a";
+}
+.icon-keyboard_arrow_up:before {
+  content: "\e90b";
+}
+.icon-timelapse:before {
+  content: "\e902";
+}
+.icon-refresh:before {
+  content: "\e904";
+}
+.icon-search:before {
+  content: "\e906";
+}
+.icon-track_changes:before {
+  content: "\e90e";
+}
+.icon-check_circle_outline:before {
+  content: "\e912";
+}
+.icon-delete_outline:before {
+  content: "\e905";
+}

@@ -6,9 +6,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
 from .stylometry import compute_vector, word_unigram_tf
-from .transform import build_dummy_dict, choose_applicable_transformation,\
-    generate_data, get_all_applicable_transformations, get_patterns,\
-    get_transformation_id, run_transformation
+from .transform import (build_dummy_dict, choose_applicable_transformation,
+                        generate_data, get_all_applicable_transformations,
+                        get_patterns, get_transformation_id,
+                        run_transformation)
 
 
 def compute_dataset(corpus, actions_n, states_n, alpha, gamma, epochs_basis=50,
