@@ -1,0 +1,60 @@
+<!-- Scan repo popup -->
+<div id="addRepoModal" class="modal">
+  <div class="modal-content">
+    <div class="topicHeaderWrapper">
+      {% if rescan %}
+        <h1 class="topicH1">Rescanning the <a href="{{url}}" title="{{url}}"> repo</a></h1><br>
+      {% else %}
+        <h1 class="topicH1">Scan new Repo</h1>
+      {% endif %}
+      <span id="cancelAddRepo" class="close modal-closer">&times;</span>
+    </div>
+    <form id="scan_repo" name="scan_repo" action="/scan_repo" method="post">
+      {% if rescan %}
+        <input id="repoLinkInput" type="hidden" name="repolink" value="{{url}}">
+      {% else %}
+        <div class="form-item">
+          <input id="repoLinkInput" type="link" name="repolink" class="textInput" placeholder="GitHub Repo URL">
+        </div>
+      {% endif %}
+      <p class="formLabel">Select category :</p>
+      <div class="form-item">
+        <select id="ruleSelector" name="rule_to_use" class="formSelect" size="4" multiple>
+          {% for cat in categories %}
+            <option value="{{cat}}">{{cat}}</option>
+          {% endfor %}
+        </select>
+        <div class="mt-10"><label><input type="checkbox" id="cbAllRules" name="rule_to_use" value="all" checked>Select all rules</label></div>
+      </div>
+      <div class="form-item">
+        <input id="gitTokenInput" type="text" name="gitToken" class="textInput" placeholder="Git token (for private repositories)">
+      </div>
+      <div><label><input type="checkbox" id="cbPathModel" name="pathModel" value="path" checked>Use Path model</label></div>
+      <div><label><input type="checkbox" id="cbSnippetModel" name="snippetModel" value="snippet" checked>Use Snippet model</label></div>
+      {% if rescan %}
+        <div><label><input type="checkbox" id="cbForce" name="forceScan" value="force" title="Scan the repo again completely from scratch">Force scan</label></div>
+      {% endif %}
+      <div class="formFooter">
+        <span class="moreButtons">
+          <input type="hidden" name="freshtoggle" value="on">
+        </span>
+        <button id="startRepoScan" class="btn primary-bg" type="submit">Start Scan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Ok popup -->
+<div class="modal" id="okModal">
+  <div class="modal-content">
+    <div class="topicHeaderWrapperAccept">
+      <h1 class="topicH1">Scan is under way....</h1>
+    </div>
+    <div id="modal-waterfall">
+      <p>I'm scanning the repository. This can take seconds, minutes or even longer based on the quantity of code, commits and branches.</p>
+    </div>
+    <span class="buttonsAccept">
+      <button class="button" id="okButton">Ok</button>
+    </span>
+  </div>
+</div>

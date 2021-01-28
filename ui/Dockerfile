@@ -3,6 +3,9 @@ FROM python:3.7
 RUN pip install Flask python-dotenv
 RUN apt-get update && apt-get install -y libhyperscan5 libpq-dev
 
+# Don't verify ssl for github enterprise
+RUN git config --global http.sslverify false
+
 # Install Credential Digger
 RUN pip install credentialdigger==2.2.2
 

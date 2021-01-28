@@ -5,7 +5,6 @@ leven
 nltk
 numpy
 pandas
-plac
 psycopg2-binary
 PyGithub
 python-string-utils

@@ -2,7 +2,7 @@ CREATE TYPE STATES AS ENUM ('new', 'false_positive', 'addressing', 'not_relevant
 
 CREATE TABLE repos (
   url TEXT NOT NULL UNIQUE,
-  last_commit TEXT,
+  last_scan INTEGER,
   PRIMARY KEY (url)
 );
 
@@ -18,6 +18,7 @@ CREATE TABLE discoveries (
   id SERIAL NOT NULL UNIQUE,
   file_name TEXT NOT NULL,
   commit_id TEXT NOT NULL,
+  line_number INTEGER DEFAULT -1,
   snippet TEXT DEFAULT '',
   repo_url TEXT,
   rule_id INTEGER,
@@ -25,5 +26,5 @@ CREATE TABLE discoveries (
   timestamp TEXT NOT NULL DEFAULT timeofday(),
   PRIMARY KEY (id),
   FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY (rule_id) REFERENCES rules ON DELETE NO ACTION ON UPDATE CASCADE
+  FOREIGN KEY (rule_id) REFERENCES rules ON DELETE SET NULL ON UPDATE CASCADE
 );
