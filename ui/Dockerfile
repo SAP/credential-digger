@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y libhyperscan5 libpq-dev
 RUN git config --global http.sslverify false
 
 # Install Credential Digger
-RUN pip install credentialdigger
+RUN pip install credentialdigger==2.2.2
 
 ARG path_model
 ARG snippet_model
