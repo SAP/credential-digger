@@ -44,15 +44,34 @@ function initScanRepo() {
       method: 'POST',
       data: $(this).serialize(),
       beforeSend: function() {
-        document.querySelector('#scan_repo')?.reset();
+        const scanBtn = document.querySelector('#startRepoScan');
+        scanBtn.classList.add('disabled');
+        scanBtn.disabled = true;
+        scanBtn.insertAdjacentHTML('beforeend', '<div class="loaderWrapper"><div class="loader"></div></div>');
       },
       success: function() {
         // close popup and open ok modal
         document.querySelector('#addRepoModal').classList.remove('open');
+        
+        const scanBtn = document.querySelector('#startRepoScan');
+        scanBtn.classList.remove('disabled');
+        scanBtn.disabled = false;
+        scanBtn.querySelector('.loaderWrapper').remove();
+
+        document.querySelector('#scan_repo')?.reset();
         if($('#repos-table')) $('#repos-table').DataTable().ajax.reload();
         if(document.querySelector('#newScan')) {
           getScan();
           scanInterval = setInterval(getScan, POLLING_INTERVAL);
+        }
+      },
+      statusCode: {
+        401: function() {
+          addError(document.querySelector('#gitTokenInput'), 'Git token not valid');
+          const scanBtn = document.querySelector('#startRepoScan');
+          scanBtn.classList.remove('disabled');
+          scanBtn.disabled = false;
+          scanBtn.querySelector('.loaderWrapper').remove();
         }
       }
     });
