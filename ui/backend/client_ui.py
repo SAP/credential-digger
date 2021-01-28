@@ -75,7 +75,8 @@ class UiClient(Client):
         """
         g = git.cmd.Git()
         if git_token is not None and len(git_token) > 0:
-            repo_url = repo_url.replace('https://', f'https://{git_token}@')
+            repo_url = repo_url.replace('https://',
+                                        f'https://oauth2:{git_token}@')
         try:
             g.ls_remote(repo_url)
         except GitCommandError:
