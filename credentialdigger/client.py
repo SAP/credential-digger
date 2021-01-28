@@ -588,7 +588,7 @@ class Client(Interface):
         if git_token:
             logger.debug('Authenticate user with token')
             repo_url_scan = repo_url.replace('https://',
-                                             f'https://{git_token}@')
+                                             f'https://oauth2:{git_token}@')
         else:
             repo_url_scan = repo_url
         latest_timestamp, these_discoveries = s.scan(repo_url_scan,
