@@ -25,7 +25,7 @@ services:
     env_file:
       - ./.env
     environment:
-        - USE_PG=true
+        - USE_PG=True
     ports:
       - "5000:5000"
 volumes:
