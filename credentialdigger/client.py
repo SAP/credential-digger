@@ -742,7 +742,9 @@ class Client(Interface):
         if git_token:
             logger.debug('Authenticate user with token')
 
-        g = Github(base_url=api_endpoint, login_or_token=git_token)
+        g = Github(base_url=api_endpoint,
+                   login_or_token=git_token,
+                   verify=False)
         missing_ids = {}
         for repo in g.get_user(username).get_repos():
             if not forks and repo.fork:
