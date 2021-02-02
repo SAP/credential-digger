@@ -7,6 +7,7 @@ numpy
 pandas
 psycopg2-binary
 PyGithub
+python-dotenv
 python-string-utils
 pyyaml
 requests
