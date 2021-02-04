@@ -45,6 +45,8 @@ function initReposDataTable() {
     ajax: { // AJAX source info
       url: "/get_repos",
       dataSrc: function (json) {
+        document.querySelector('#lenDiscoveries').innerText = json.length;
+        document.querySelector('#allDiscoveries').innerText = json.reduce((prev, curr) => prev + curr.lendiscoveries, 0);
         // Map json data before sending it to datatable
         return json.map(item => {
           return {
