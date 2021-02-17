@@ -351,6 +351,26 @@ class PgClient(Client):
             new_state=new_state,
             query='UPDATE discoveries SET state=%s WHERE id=%s RETURNING true')
 
+    def update_discoveries(self, discoveries_ids, new_state):
+        """ Change the state of multiple discoveries.
+
+        Parameters
+        ----------
+        discoveries_ids: list
+            The ids of the discoveries to be updated
+        new_state: str
+            The new state of these discoveries
+
+        Returns
+        -------
+        bool
+            `True` if the update is successful, `False` otherwise
+        """
+        super().update_discoveries(
+            discoveries_ids=discoveries_ids,
+            new_state=new_state,
+            query='UPDATE discoveries SET state=%s WHERE id IN %s RETURNING true')
+
     def update_discovery_group(self, new_state, repo_url, file_name, snippet=None):
         """ Change the state of a group of discoveries.
 
