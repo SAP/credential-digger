@@ -1,4 +1,6 @@
 import logging
+import statistics
+import time
 from abc import ABC, abstractmethod
 from collections import namedtuple
 
@@ -518,12 +520,14 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
+        t1_scan = time.perf_counter()
         if debug:
             logger.setLevel(level=logging.DEBUG)
 
         def analyze_discoveries(model_manager, discoveries, debug):
             """ Use a model to analyze a list of discoveries. """
             false_positives = set()
+            t_discoveries = []
 
             # Analyze all the discoveries ids with the current model
             if debug:
@@ -535,8 +539,11 @@ class Client(Interface):
                         false_positives.add(did)
             else:
                 for did in discoveries:
+                    t1_discoveries = time.perf_counter()
                     if model_manager.launch_model(self.get_discovery(did)):
                         false_positives.add(did)
+                    t2_discoveries = time.perf_counter()
+                    t_discoveries.append(t2_discoveries-t1_discoveries)
 
             # For each false positive, update the db
             if debug:
@@ -553,8 +560,12 @@ class Client(Interface):
 
             # Update the discovery ids (remove false positives)
             discoveries = list(set(discoveries) - false_positives)
+
+            time_info = (
+                f"mean: {round(statistics.mean(t_discoveries), 4)} seconds, "
+                f"variance: {round(statistics.variance(t_discoveries), 4)} seconds.")
             # Return discovery ids of non-false positives
-            return discoveries
+            return discoveries, time_info
 
         if models is None:
             models = []
@@ -599,6 +610,7 @@ class Client(Interface):
         # Update latest scan timestamp of the repo
         self.update_repo(repo_url, latest_timestamp)
 
+        t1_insert = time.perf_counter()
         # Insert the discoveries into the db
         discoveries_ids = list()
         if debug:
@@ -623,6 +635,10 @@ class Client(Interface):
                                   these_discoveries)
             discoveries_ids = list(filter(lambda i: i != -1,
                                           discoveries_ids))
+        t2_insert = time.perf_counter()
+
+        print(
+            f"\nInsert discoveries - {round(t2_insert-t1_insert, 4)} seconds.")
 
         if not discoveries_ids:
             return []
@@ -651,8 +667,11 @@ class Client(Interface):
         # For each of the new discovery ids, select it from the db and analyze
         # it. If it is classified as false positive, update the corresponding
         # entry on the db
+        t1_models = time.perf_counter()
+        t_info_models = ""
         for model in models:
             # Try to instantiate the model
+            t1 = time.perf_counter()
             try:
                 mm = ModelManager(model)
             except ModuleNotFoundError:
@@ -662,9 +681,15 @@ class Client(Interface):
 
             # Analyze discoveries with this model, and filter out false
             # positives
-            discoveries_ids = analyze_discoveries(mm,
-                                                  discoveries_ids,
-                                                  debug)
+            discoveries_ids, time_info = analyze_discoveries(mm,
+                                                             discoveries_ids,
+                                                             debug)
+            t2 = time.perf_counter()
+            t_info_models += f"\t{model} - {round(t2-t1,4)} seconds. {time_info}\n"
+        t2_models = time.perf_counter()
+
+        print(
+            f"\nML models - {round(t2_models-t1_models,4)} seconds.\n{t_info_models}")
 
         # Check if we have to run the snippet model, and, in this case, if it
         # will use the pre-trained extractor or the generated one
@@ -692,6 +717,9 @@ class Client(Interface):
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
 
+        t2_scan = time.perf_counter()
+
+        print(f"Total scan time: {round(t2_scan - t1_scan, 4)} seconds.")
         return list(discoveries_ids)
 
     def scan_user(self, username, category=None, models=None, exclude=None,
