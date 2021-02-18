@@ -6,6 +6,7 @@ from collections import namedtuple
 
 import yaml
 from github import Github
+from psycopg2.errors import UniqueViolation
 from tqdm import tqdm
 
 from .generator import ExtractorGenerator
@@ -108,6 +109,10 @@ class Client(Interface):
         return self.query_id(
             query, file_name,
             commit_id, line_number, snippet, repo_url, rule_id, state)
+
+    @abstractmethod
+    def add_discoveries(self, query, discoveries, repo_url):
+        return
 
     def add_repo(self, query, repo_url):
         """ Add a new repository.
@@ -645,17 +650,12 @@ class Client(Interface):
                     discoveries_ids.append(new_id)
         else:
             # IDs of the discoveries added to the db (needed in the ML)
-            discoveries_ids = map(lambda d: self.add_discovery(d['file_name'],
-                                                               d['commit_id'],
-                                                               d['line_number'],
-                                                               d['snippet'],
-                                                               repo_url,
-                                                               d['rule_id']),
-                                  these_discoveries)
+            discoveries_ids = self.add_discoveries(these_discoveries, repo_url)
 
         # Add the newly inserted ids from the database to the
         # `these_discoveries` list to reuse it in the ML analysis
         for index, did in enumerate(discoveries_ids):
+            # FIX: removal of discoveries not working
             if did != -1:
                 these_discoveries[index]['id'] = did
             else:
