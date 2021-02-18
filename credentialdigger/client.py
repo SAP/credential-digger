@@ -654,12 +654,10 @@ class Client(Interface):
 
         # Add the newly inserted ids from the database to the
         # `these_discoveries` list to reuse it in the ML analysis
-        for index, did in enumerate(discoveries_ids):
-            # FIX: removal of discoveries not working
-            if did != -1:
-                these_discoveries[index]['id'] = did
-            else:
-                these_discoveries.pop(index)
+        these_discoveries = [{
+            'id': did,
+            **these_discoveries[i]
+        } for i, did in enumerate(discoveries_ids) if did != -1]
 
         t2_insert = time.perf_counter()
 
