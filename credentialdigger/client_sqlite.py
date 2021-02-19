@@ -123,6 +123,62 @@ class SqliteClient(Client):
             snippet, repo_url, rule_id, state) VALUES (?, ?, ?, ?, ?, ?, ?)'
         )
 
+    def add_discoveries(self, discoveries, repo_url):
+        """ Bulk add new discoveries.
+
+        Parameters
+        ----------
+        discoveries: list
+            The list of scanned discoveries objects to insert into the database
+        repo_url: str
+            The repository url of the discoveries
+
+        Returns
+        -------
+        list
+            List of the ids of the inserted discoveries
+
+        Notes
+        -----
+        This method is not thread-safe: modifying discoveries of the same repo
+        while running this method will result in unpredictable discoveries ids
+        being returned.
+        """
+        # Transform argument in list of tuples
+        discoveries = [
+            (d['file_name'], d['commit_id'], d['line_number'],
+             d['snippet'], repo_url, d['rule_id'], d['state'])
+            for d in discoveries]
+
+        cursor = self.db.cursor()
+        try:
+            # Batch insert all discoveries
+            cursor.executemany(
+                'INSERT INTO discoveries (file_name, commit_id, \
+                line_number, snippet, repo_url, rule_id, state) \
+                VALUES (?, ?, ?, ?, ?, ?, ?)',
+                discoveries
+            )
+            self.db.commit()
+
+            # Get the ids of inserted discoveries
+            discoveries_ids = cursor.execute(
+                'SELECT * FROM discoveries WHERE repo_url = ? \
+                ORDER BY id DESC LIMIT ?', (repo_url, len(discoveries)))
+
+            return [d[0] for d in discoveries_ids]
+        except Error:
+            self.db.rollback()
+            return map(lambda d: self.add_discovery(
+                file_name=d['file_name'],
+                commit_id=d['commit_id'],
+                line_number=d['line_number'],
+                snippet=d['snippet'],
+                repo_url=repo_url,
+                rule_id=d['rule_id'],
+                state=d['state']
+            ), discoveries)
+
     def add_repo(self, repo_url):
         """ Add a new repository.
 
