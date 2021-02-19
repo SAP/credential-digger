@@ -120,6 +120,7 @@ class PgClient(Client):
             List of the ids of the inserted discoveries
         """
         try:
+            # Batch insert all discoveries
             cursor = self.db.cursor()
             discoveries_tuples = extras.execute_values(
                 cursor,
@@ -134,6 +135,7 @@ class PgClient(Client):
                     d['rule_id'],
                     d['state']
                 ) for d in iter(discoveries)), page_size=1000, fetch=True)
+            self.db.commit()
             return [d[0] for d in discoveries_tuples]
         except Error:
             # In case of error in the bulk operation, fall back to adding
