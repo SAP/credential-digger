@@ -168,6 +168,8 @@ class SqliteClient(Client):
 
             return [d[0] for d in discoveries_ids]
         except Error:
+            # In case of error in the bulk operation, fall back to adding
+            # discoveries RBAR
             self.db.rollback()
             return map(lambda d: self.add_discovery(
                 file_name=d['file_name'],
