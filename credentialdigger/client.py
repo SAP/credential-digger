@@ -1,6 +1,4 @@
 import logging
-import statistics
-import time
 from abc import ABC, abstractmethod
 from collections import namedtuple
 
@@ -545,18 +543,18 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        t1_scan = time.perf_counter()
         if debug:
             logger.setLevel(level=logging.DEBUG)
 
         def analyze_discoveries(model_manager, discoveries, debug):
             """ Use a model to analyze a list of discoveries. """
             false_positives = set()
+            # Only analyze discoveries that have not already been classified
+            # as false positives
             analyze_discoveries = filter(
                 lambda d: d['state'] != 'false_positive', discoveries)
 
             # Analyze all the discoveries ids with the current model
-            t_discoveries = []
             if debug:
                 logger.debug(
                     f'Analyzing discoveries with model {model_manager.model}')
@@ -565,23 +563,17 @@ class Client(Interface):
                         discoveries[i]['state'] = 'false_positive'
             else:
                 for i, d in enumerate(analyze_discoveries):
-                    t1_discoveries = time.perf_counter()
                     if model_manager.launch_model(d):
                         discoveries[i]['state'] = 'false_positive'
-                    t_discoveries.append(time.perf_counter()-t1_discoveries)
 
-            # For each false positive, update the db
             if debug:
                 logger.debug(
                     f'Model {model_manager.model.__class__.__name__} '
                     f'classified {len(false_positives)} discoveries.')
                 logger.debug('Change state to these discoveries')
 
-            time_info = (
-                f"mean: {round(statistics.mean(t_discoveries), 4)} seconds, "
-                f"variance: {round(statistics.variance(t_discoveries), 4)} seconds.")
-            # Return discovery ids of non-false positives
-            return discoveries, time_info
+            # Return updated discoveries
+            return discoveries
 
         if models is None:
             models = []
@@ -649,12 +641,9 @@ class Client(Interface):
 
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
-        t1_models = time.perf_counter()
-        t_info_models = ""
         if len(these_discoveries) > 0:
             for model in models:
                 # Try to instantiate the model
-                t1 = time.perf_counter()
                 try:
                     mm = ModelManager(model)
                 except ModuleNotFoundError:
@@ -663,11 +652,8 @@ class Client(Interface):
                     continue
 
                 # Analyze discoveries with this model, and filter out FPs
-                discoveries_ids, time_info = analyze_discoveries(
+                discoveries_ids = analyze_discoveries(
                     mm, these_discoveries, debug)
-                t_info_models += f"\t{model} - {round(time.perf_counter()-t1,4)} seconds. {time_info}\n"
-        print(
-            f"\nML models - {round(time.perf_counter()-t1_models,4)} seconds.\n{t_info_models}")
 
         # Check if we have to run the snippet model, and, in this case, if it
         # will use the pre-trained extractor or the generated one
@@ -695,7 +681,6 @@ class Client(Interface):
                 logger.warning('SnippetModel not found. Skip it.')
 
         # Insert the discoveries into the db
-        t1_insert = time.perf_counter()
         discoveries_ids = list()
         if debug:
             for i in tqdm(range(len(these_discoveries))):
@@ -709,14 +694,10 @@ class Client(Interface):
                 if new_id != -1:
                     discoveries_ids.append(new_id)
         else:
-            # IDs of the discoveries added to the db (needed in the ML)
+            # IDs of the discoveries added to the db
             discoveries_ids = self.add_discoveries(these_discoveries, repo_url)
             discoveries_ids = [d for d in discoveries_ids if d != -1]
-        print(
-            f"\nInsert discoveries - {round(time.perf_counter()-t1_insert, 4)} seconds.")
 
-        print(
-            f"Total scan time: {round(time.perf_counter() - t1_scan, 4)} seconds.")
         return discoveries_ids
 
     def scan_user(self, username, category=None, models=None, exclude=None,
