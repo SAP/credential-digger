@@ -6,7 +6,6 @@ from collections import namedtuple
 
 import yaml
 from github import Github
-from psycopg2.errors import UniqueViolation
 from tqdm import tqdm
 
 from .generator import ExtractorGenerator
@@ -553,24 +552,23 @@ class Client(Interface):
         def analyze_discoveries(model_manager, discoveries, debug):
             """ Use a model to analyze a list of discoveries. """
             false_positives = set()
-
-            t_discoveries = []
+            analyze_discoveries = filter(
+                lambda d: d['state'] != 'false_positive', discoveries)
 
             # Analyze all the discoveries ids with the current model
+            t_discoveries = []
             if debug:
                 logger.debug(
                     f'Analyzing discoveries with model {model_manager.model}')
-                for i in tqdm(range(len(discoveries))):
-                    d = discoveries[i]
-                    if model_manager.launch_model(d):
-                        false_positives.add(d["id"])
+                for i in tqdm(range(len(analyze_discoveries))):
+                    if model_manager.launch_model(analyze_discoveries[i]):
+                        discoveries[i]['state'] = 'false_positive'
             else:
-                for d in discoveries:
+                for i, d in enumerate(analyze_discoveries):
                     t1_discoveries = time.perf_counter()
                     if model_manager.launch_model(d):
-                        false_positives.add(d["id"])
-                    t2_discoveries = time.perf_counter()
-                    t_discoveries.append(t2_discoveries-t1_discoveries)
+                        discoveries[i]['state'] = 'false_positive'
+                    t_discoveries.append(time.perf_counter()-t1_discoveries)
 
             # For each false positive, update the db
             if debug:
@@ -578,12 +576,6 @@ class Client(Interface):
                     f'Model {model_manager.model.__class__.__name__} '
                     f'classified {len(false_positives)} discoveries.')
                 logger.debug('Change state to these discoveries')
-
-            self.update_discoveries(list(false_positives), 'false_positive')
-
-            # Update the returned discoveries (remove false positives)
-            discoveries = [
-                d for d in discoveries if d['id'] not in false_positives]
 
             time_info = (
                 f"mean: {round(statistics.mean(t_discoveries), 4)} seconds, "
@@ -634,39 +626,6 @@ class Client(Interface):
         # Update latest scan timestamp of the repo
         self.update_repo(repo_url, latest_timestamp)
 
-        t1_insert = time.perf_counter()
-        # Insert the discoveries into the db
-        discoveries_ids = list()
-        if debug:
-            for i in tqdm(range(len(these_discoveries))):
-                curr_d = these_discoveries[i]
-                new_id = self.add_discovery(curr_d['file_name'],
-                                            curr_d['commit_id'],
-                                            curr_d['line_number'],
-                                            curr_d['snippet'],
-                                            repo_url,
-                                            curr_d['rule_id'])
-                if new_id != -1:
-                    discoveries_ids.append(new_id)
-        else:
-            # IDs of the discoveries added to the db (needed in the ML)
-            discoveries_ids = self.add_discoveries(these_discoveries, repo_url)
-
-        # Add the newly inserted ids from the database to the
-        # `these_discoveries` list to reuse it in the ML analysis
-        these_discoveries = [{
-            'id': did,
-            **these_discoveries[i]
-        } for i, did in enumerate(discoveries_ids) if did != -1]
-
-        t2_insert = time.perf_counter()
-
-        print(
-            f"\nInsert discoveries - {round(t2_insert-t1_insert, 4)} seconds.")
-
-        if not these_discoveries:
-            return []
-
         # Verify if the SnippetModel is needed, and, in this case, check
         # whether the pre-trained or the generated extractor is wanted
         snippet_with_generator = False
@@ -688,32 +647,27 @@ class Client(Interface):
                     'generate_snippet_extractor=True but SnippetModel '
                     'is not in the chosen models. No extractor to generate.')
 
-        # For each of the new discovery ids, select it from the db and analyze
-        # it. If it is classified as false positive, update the corresponding
-        # entry on the db
+        # Analyze each new discovery. If it is classified as false positive,
+        # update it in the list
         t1_models = time.perf_counter()
         t_info_models = ""
-        for model in models:
-            # Try to instantiate the model
-            t1 = time.perf_counter()
-            try:
-                mm = ModelManager(model)
-            except ModuleNotFoundError:
-                logger.warning(f'Model {model} not found. Skip it.')
-                # Continue with another model (if any)
-                continue
+        if len(these_discoveries) > 0:
+            for model in models:
+                # Try to instantiate the model
+                t1 = time.perf_counter()
+                try:
+                    mm = ModelManager(model)
+                except ModuleNotFoundError:
+                    logger.warning(f'Model {model} not found. Skip it.')
+                    # Continue with another model (if any)
+                    continue
 
-            # Analyze discoveries with this model, and filter out false
-            # positives
-            discoveries_ids, time_info = analyze_discoveries(mm,
-                                                             these_discoveries,
-                                                             debug)
-            t2 = time.perf_counter()
-            t_info_models += f"\t{model} - {round(t2-t1,4)} seconds. {time_info}\n"
-        t2_models = time.perf_counter()
-
+                # Analyze discoveries with this model, and filter out FPs
+                discoveries_ids, time_info = analyze_discoveries(
+                    mm, these_discoveries, debug)
+                t_info_models += f"\t{model} - {round(time.perf_counter()-t1,4)} seconds. {time_info}\n"
         print(
-            f"\nML models - {round(t2_models-t1_models,4)} seconds.\n{t_info_models}")
+            f"\nML models - {round(time.perf_counter()-t1_models,4)} seconds.\n{t_info_models}")
 
         # Check if we have to run the snippet model, and, in this case, if it
         # will use the pre-trained extractor or the generated one
@@ -721,8 +675,7 @@ class Client(Interface):
         # discoveries to check
         if snippet_with_generator and len(these_discoveries) == 0:
             logger.debug('No more discoveries to filter. Skip SnippetModel.')
-            return []
-        if snippet_with_generator:
+        elif snippet_with_generator:
             # Generate extractor and run the model
             logger.info(
                 'Generating snippet model (it may take some time...)')
@@ -741,10 +694,30 @@ class Client(Interface):
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
 
-        t2_scan = time.perf_counter()
+        # Insert the discoveries into the db
+        t1_insert = time.perf_counter()
+        discoveries_ids = list()
+        if debug:
+            for i in tqdm(range(len(these_discoveries))):
+                curr_d = these_discoveries[i]
+                new_id = self.add_discovery(curr_d['file_name'],
+                                            curr_d['commit_id'],
+                                            curr_d['line_number'],
+                                            curr_d['snippet'],
+                                            repo_url,
+                                            curr_d['rule_id'])
+                if new_id != -1:
+                    discoveries_ids.append(new_id)
+        else:
+            # IDs of the discoveries added to the db (needed in the ML)
+            discoveries_ids = self.add_discoveries(these_discoveries, repo_url)
+            discoveries_ids = [d for d in discoveries_ids if d != -1]
+        print(
+            f"\nInsert discoveries - {round(time.perf_counter()-t1_insert, 4)} seconds.")
 
-        print(f"Total scan time: {round(t2_scan - t1_scan, 4)} seconds.")
-        return [i["id"] for i in these_discoveries]
+        print(
+            f"Total scan time: {round(time.perf_counter() - t1_scan, 4)} seconds.")
+        return discoveries_ids
 
     def scan_user(self, username, category=None, models=None, exclude=None,
                   debug=False, generate_snippet_extractor=False, forks=False,
