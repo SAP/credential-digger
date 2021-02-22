@@ -93,7 +93,7 @@ def run(client, args):
     -------
         While this function returns nothing of use to the scanner itself, it
         gives an exit status (integer) that is equal to the number of
-        discoveries. If it exits with a value that is equal to 0, then it means
+        discoveries. If it exits with a value that is equal to 0, then it means 
         that the scan detected no leaks in this repo.
     """
 
