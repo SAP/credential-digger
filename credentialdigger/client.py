@@ -548,28 +548,28 @@ class Client(Interface):
 
         def analyze_discoveries(model_manager, discoveries, debug):
             """ Use a model to analyze a list of discoveries. """
-            false_positives = set()
-            # Only analyze discoveries that have not already been classified
-            # as false positives
-            analyze_discoveries = filter(
-                lambda d: d['state'] != 'false_positive', discoveries)
+            false_positives = 0
 
             # Analyze all the discoveries ids with the current model
             if debug:
                 logger.debug(
                     f'Analyzing discoveries with model {model_manager.model}')
-                for i in tqdm(range(len(analyze_discoveries))):
-                    if model_manager.launch_model(analyze_discoveries[i]):
+                for i in tqdm(range(len(discoveries))):
+                    if (discoveries[i]['state'] != 'false_positive' and
+                            model_manager.launch_model(discoveries[i])):
                         discoveries[i]['state'] = 'false_positive'
+                        false_positives += 1
             else:
-                for i, d in enumerate(analyze_discoveries):
-                    if model_manager.launch_model(d):
-                        discoveries[i]['state'] = 'false_positive'
+                for d in discoveries:
+                    if (d['state'] != 'false_positive' and
+                            model_manager.launch_model(d)):
+                        d['state'] = 'false_positive'
+                        false_positives += 1
 
             if debug:
                 logger.debug(
                     f'Model {model_manager.model.__class__.__name__} '
-                    f'classified {len(false_positives)} discoveries.')
+                    f'classified {false_positives} discoveries.')
                 logger.debug('Change state to these discoveries')
 
             # Return updated discoveries
@@ -651,9 +651,8 @@ class Client(Interface):
                     # Continue with another model (if any)
                     continue
 
-                # Analyze discoveries with this model, and filter out FPs
-                discoveries_ids = analyze_discoveries(
-                    mm, these_discoveries, debug)
+                # Analyze discoveries with this model
+                analyze_discoveries(mm, these_discoveries, debug)
 
         # Check if we have to run the snippet model, and, in this case, if it
         # will use the pre-trained extractor or the generated one
@@ -674,9 +673,7 @@ class Client(Interface):
                                   model_extractor=extractor_folder,
                                   binary_extractor=extractor_name)
 
-                these_discoveries = analyze_discoveries(mm,
-                                                        these_discoveries,
-                                                        debug)
+                analyze_discoveries(mm, these_discoveries, debug)
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
 
@@ -691,12 +688,14 @@ class Client(Interface):
                                             curr_d['snippet'],
                                             repo_url,
                                             curr_d['rule_id'])
-                if new_id != -1:
+                if new_id != -1 and curr_d['state'] != 'false_positive':
                     discoveries_ids.append(new_id)
         else:
             # IDs of the discoveries added to the db
             discoveries_ids = self.add_discoveries(these_discoveries, repo_url)
-            discoveries_ids = [d for d in discoveries_ids if d != -1]
+            discoveries_ids = [
+                d for i, d in enumerate(discoveries_ids) if d != -1
+                and these_discoveries[i]['state'] != 'false_positive']
 
         return discoveries_ids
 
