@@ -58,7 +58,7 @@ class GitScanner(BaseScanner):
 
         Parameters
         ----------
-        repo_url: string
+        repo_url: str
             The location (an url if local is False, a local path otherwise) of
             a git repository
         local_repo: bool
@@ -85,11 +85,13 @@ class GitScanner(BaseScanner):
             try:
                 shutil.copytree(repo_url, project_path, dirs_exist_ok=True)
                 repo = GitRepo(project_path)
-            except (FileNotFoundError, InvalidGitRepositoryError) as e:
-                logger.error(
-                    f"Path \"{repo_url}\" is not a local git repository.")
+            except FileNotFoundError as e:
                 shutil.rmtree(project_path)
                 raise e
+            except InvalidGitRepositoryError as e:
+                shutil.rmtree(project_path)
+                raise InvalidGitRepositoryError(
+                    f"\"{repo_url}\" is not a local git repository.") from e
         else:
             try:
                 GitRepo.clone_from(repo_url, project_path)
@@ -107,7 +109,7 @@ class GitScanner(BaseScanner):
 
         Parameters
         ----------
-        repo_url: string
+        repo_url: str
             The location of a git repository (an url if local_repo is False, a
             local path otherwise)
         since_timestamp: int, optional
@@ -116,7 +118,7 @@ class GitScanner(BaseScanner):
             The maximum number of commits to scan
         git_token: str, optional
             Git personal access token to authenticate to the git server
-        local_repo: bool
+        local_repo: bool, optional
             If True, get the repository from a local directory instead of the
             web
 

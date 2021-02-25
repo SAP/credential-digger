@@ -460,7 +460,7 @@ class Client(Interface):
             The new state of these discoveries
         repo_url: str
             The url of the repository
-        file_name: str
+        file_name: str, optional
             The name of the file
         snippet: str, optional
             The snippet
