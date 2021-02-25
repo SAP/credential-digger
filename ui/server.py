@@ -182,9 +182,12 @@ def scan_repo():
     # then 'forceScan' will be set to False; thus, ignored.
     force_scan = request.form.get('forceScan') == 'force'
     git_token = request.form.get('gitToken')
+    local_repo = not (repo_link.startswith(
+        'http://') or repo_link.startswith('https://'))
 
-    if not c.check_connection(repo_link, git_token):
-        return f'Git token not valid for repository {repo_link}', 401
+    url_is_valid, err_code = c.check_repo(repo_link, git_token, local_repo)
+    if not url_is_valid:
+        return err_code, 401
 
     # Set up models
     models = []
@@ -198,7 +201,8 @@ def scan_repo():
         "repo_url": repo_link,
         "models": models,
         "force": force_scan,
-        "git_token": git_token
+        "git_token": git_token,
+        "local_repo": local_repo
     }
     if rules_to_use != 'all':
         args["category"] = rules_to_use
