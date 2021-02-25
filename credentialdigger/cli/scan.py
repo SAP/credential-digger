@@ -65,14 +65,19 @@ def configure_parser(parser):
     parser.set_defaults(func=run)
     parser.add_argument(
         'repo_url', type=str,
-        help='The URL of the git repository to be scanned.')
+        help='The location of a git repository (an url if local_repo is False, \
+            a local path otherwise)')
+    parser.add_argument(
+        '--local', action='store_true',
+        help='If True, get the repository from a local directory instead of \
+            the web'
+    )
     parser.add_argument(
         '--force', action='store_true',
         help='Force a complete re-scan of the repository, in case it has \
             already been scanned previously')
     parser.add_argument(
-        '--generate_snippet_extractor',
-        action='store_true',
+        '--generate_snippet_extractor', action='store_true',
         help='Generate the extractor model to be used in the SnippetModel. \
             The extractor is generated using the ExtractorGenerator. If \
             `False`, use the pre-trained extractor model')
@@ -105,6 +110,7 @@ def run(client, args):
         force=args.force,
         debug=args.debug,
         generate_snippet_extractor=args.generate_snippet_extractor,
-        git_token=args.git_token)
+        git_token=args.git_token,
+        local_repo=args.local)
 
     sys.exit(len(discoveries))
