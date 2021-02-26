@@ -5,6 +5,8 @@ import fasttext
 import pkg_resources
 import srsly
 
+fasttext.FastText.eprint = lambda x: None
+
 
 class BaseModel(ABC):
 
