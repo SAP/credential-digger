@@ -59,8 +59,8 @@ class GitScanner(BaseScanner):
         Parameters
         ----------
         repo_url: str
-            The location (an url if local is False, a local path otherwise) of
-            a git repository
+            The location of the git repository (an url if local is False, a
+            local path otherwise)
         local_repo: bool
             If True, get the repository from a local directory instead of the
             web
@@ -74,6 +74,8 @@ class GitScanner(BaseScanner):
 
         Raises
         ------
+        FileNotFoundError
+            If repo_url is not an existing directory
         git.InvalidGitRepositoryError
             If the directory in repo_url is not a git repository
         git.GitCommandError
@@ -97,7 +99,6 @@ class GitScanner(BaseScanner):
                 GitRepo.clone_from(repo_url, project_path)
                 repo = GitRepo(project_path)
             except GitCommandError as e:
-                logger.error(f"Authentication failed for url \"{repo_url}\".")
                 shutil.rmtree(project_path)
                 raise e
 

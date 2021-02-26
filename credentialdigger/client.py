@@ -244,7 +244,7 @@ class Client(Interface):
         Parameters
         ----------
         repo_url: str
-            The url of the repo
+            The url of the repository
 
         Returns
         -------
@@ -509,8 +509,8 @@ class Client(Interface):
             use the pre-trained extractor model
         scanner: class, default: `GitScanner`
             The class of the scanner, a subclass of `scanners.BaseScanner`
-        scanner_kwargs: args
-            Keyword arguments to pass to the scanner
+        scanner_kwargs: kwargs
+            Keyword arguments to be passed to the scanner
 
         Returns
         -------
@@ -592,6 +592,8 @@ class Client(Interface):
             latest_timestamp, these_discoveries = s.scan(
                 repo_url, since_timestamp=from_timestamp, **scanner_kwargs)
         except Exception as e:
+            # If the scan raises an exception, remove the newly added repo
+            # before bubbling the exception
             if new_repo:
                 self.delete_repo(repo_url)
             raise e
