@@ -83,6 +83,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         file_name: str
             The name of the file that produced the discovery
         commit_id: str
@@ -119,6 +121,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         repo_url: str
             The url of the repository
 
@@ -134,6 +138,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         regex: str
             The regex to be matched
         category: str
@@ -153,6 +159,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         ruleid: int
             The id of the rule that will be deleted.
 
@@ -183,6 +191,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         repo_id: int
             The id of the repo to delete
 
@@ -247,6 +257,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         repo_url: str
             The url of the repo
 
@@ -323,6 +335,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         rule_id: int
             The id of the rule
 
@@ -338,6 +352,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         repo_url: str
             The url of the repository
         file_name: str, optional
@@ -369,6 +385,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         discovery_id: int
             The id of the discovery
 
@@ -385,6 +403,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         repo_url: str
             The url of the repository
         state: str, optional
@@ -418,6 +438,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         url: str
             The url of the repository scanned
         last_scan: int
@@ -435,6 +457,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         discovery_id: int
             The id of the discovery to be updated
         new_state: str
@@ -456,6 +480,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         discoveries_ids: list
             The ids of the discoveries to be updated
         new_state: str
@@ -481,6 +507,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         new_state: str
             The new state of these discoveries
         repo_url: str
