@@ -123,6 +123,64 @@ class SqliteClient(Client):
             snippet, repo_url, rule_id, state) VALUES (?, ?, ?, ?, ?, ?, ?)'
         )
 
+    def add_discoveries(self, discoveries, repo_url):
+        """ Bulk add new discoveries.
+
+        Parameters
+        ----------
+        discoveries: list
+            The list of scanned discoveries objects to insert into the database
+        repo_url: str
+            The repository url of the discoveries
+
+        Returns
+        -------
+        list
+            List of the ids of the inserted discoveries
+
+        Notes
+        -----
+        This method is not thread-safe: modifying discoveries of the same repo
+        while running this method will result in unpredictable discoveries ids
+        being returned.
+        """
+        # Transform argument in list of tuples
+        discoveries = [
+            (d['file_name'], d['commit_id'], d['line_number'],
+             d['snippet'], repo_url, d['rule_id'], d['state'])
+            for d in discoveries]
+
+        cursor = self.db.cursor()
+        try:
+            # Batch insert all discoveries
+            cursor.executemany(
+                'INSERT INTO discoveries (file_name, commit_id, \
+                line_number, snippet, repo_url, rule_id, state) \
+                VALUES (?, ?, ?, ?, ?, ?, ?)',
+                discoveries
+            )
+            self.db.commit()
+
+            # Get the ids of inserted discoveries
+            discoveries_ids = cursor.execute(
+                'SELECT * FROM discoveries WHERE repo_url = ? \
+                ORDER BY id DESC LIMIT ?', (repo_url, len(discoveries)))
+
+            return [d[0] for d in discoveries_ids]
+        except Error:
+            # In case of error in the bulk operation, fall back to adding
+            # discoveries RBAR
+            self.db.rollback()
+            return map(lambda d: self.add_discovery(
+                file_name=d['file_name'],
+                commit_id=d['commit_id'],
+                line_number=d['line_number'],
+                snippet=d['snippet'],
+                repo_url=repo_url,
+                rule_id=d['rule_id'],
+                state=d['state']
+            ), discoveries)
+
     def add_repo(self, repo_url):
         """ Add a new repository.
 
@@ -365,6 +423,27 @@ class SqliteClient(Client):
             new_state=new_state, discovery_id=discovery_id,
             query='UPDATE discoveries SET state=? WHERE id=?'
         )
+
+    def update_discoveries(self, discoveries_ids, new_state):
+        """ Change the state of multiple discoveries.
+
+        Parameters
+        ----------
+        discoveries_ids: list
+            The ids of the discoveries to be updated
+        new_state: str
+            The new state of these discoveries
+
+        Returns
+        -------
+        bool
+            `True` if the update is successful, `False` otherwise
+        """
+        super().update_discoveries(
+            discoveries_ids=discoveries_ids,
+            new_state=new_state,
+            query='UPDATE discoveries SET state=? WHERE id IN('
+                  f'VALUES {", ".join(["?"]*len(discoveries_ids))})')
 
     def update_discovery_group(self, new_state, repo_url, file_name, snippet=None):
         """ Change the state of a group of discoveries.

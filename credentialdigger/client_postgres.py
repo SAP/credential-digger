@@ -1,4 +1,4 @@
-from psycopg2 import Error, connect
+from psycopg2 import Error, connect, extras
 
 from .client import Client
 
@@ -103,6 +103,53 @@ class PgClient(Client):
             query='INSERT INTO discoveries (file_name, commit_id, line_number, \
             snippet, repo_url, rule_id, state) VALUES \
             (%s, %s, %s, %s, %s, %s, %s) RETURNING id')
+
+    def add_discoveries(self, discoveries, repo_url):
+        """ Bulk add new discoveries.
+
+        Parameters
+        ----------
+        discoveries: list
+            The list of scanned discoveries objects to insert into the database
+        repo_url: str
+            The repository url of the discoveries
+
+        Returns
+        -------
+        list
+            List of the ids of the inserted discoveries
+        """
+        try:
+            # Batch insert all discoveries
+            cursor = self.db.cursor()
+            discoveries_tuples = extras.execute_values(
+                cursor,
+                'INSERT INTO discoveries(file_name, commit_id, line_number, \
+                    snippet, repo_url, rule_id, state) VALUES %s RETURNING id',
+                ((
+                    d['file_name'],
+                    d['commit_id'],
+                    d['line_number'],
+                    d['snippet'],
+                    repo_url,
+                    d['rule_id'],
+                    d['state']
+                ) for d in iter(discoveries)), page_size=1000, fetch=True)
+            self.db.commit()
+            return [d[0] for d in discoveries_tuples]
+        except Error:
+            # In case of error in the bulk operation, fall back to adding
+            # discoveries RBAR
+            self.db.rollback()
+            return map(lambda d: self.add_discovery(
+                file_name=d['file_name'],
+                commit_id=d['commit_id'],
+                line_number=d['line_number'],
+                snippet=d['snippet'],
+                repo_url=repo_url,
+                rule_id=d['rule_id'],
+                state=d['state']
+            ), discoveries)
 
     def add_repo(self, repo_url):
         """ Add a new repository.
@@ -350,6 +397,26 @@ class PgClient(Client):
             discovery_id=discovery_id,
             new_state=new_state,
             query='UPDATE discoveries SET state=%s WHERE id=%s RETURNING true')
+
+    def update_discoveries(self, discoveries_ids, new_state):
+        """ Change the state of multiple discoveries.
+
+        Parameters
+        ----------
+        discoveries_ids: list
+            The ids of the discoveries to be updated
+        new_state: str
+            The new state of these discoveries
+
+        Returns
+        -------
+        bool
+            `True` if the update is successful, `False` otherwise
+        """
+        super().update_discoveries(
+            discoveries_ids=discoveries_ids,
+            new_state=new_state,
+            query='UPDATE discoveries SET state=%s WHERE id IN %s RETURNING true')
 
     def update_discovery_group(self, new_state, repo_url, file_name, snippet=None):
         """ Change the state of a group of discoveries.
