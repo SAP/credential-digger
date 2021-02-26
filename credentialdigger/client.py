@@ -83,6 +83,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         file_name: str
             The name of the file that produced the discovery
         commit_id: str
@@ -107,6 +109,10 @@ class Client(Interface):
             query, file_name,
             commit_id, line_number, snippet, repo_url, rule_id, state)
 
+    @abstractmethod
+    def add_discoveries(self, query, discoveries, repo_url):
+        return
+
     def add_repo(self, query, repo_url):
         """ Add a new repository.
 
@@ -115,6 +121,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         repo_url: str
             The url of the repository
 
@@ -130,6 +138,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         regex: str
             The regex to be matched
         category: str
@@ -149,6 +159,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         ruleid: int
             The id of the rule that will be deleted.
 
@@ -179,6 +191,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         repo_id: int
             The id of the repo to delete
 
@@ -243,6 +257,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         repo_url: str
             The url of the repo
 
@@ -319,6 +335,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         rule_id: int
             The id of the rule
 
@@ -334,6 +352,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         repo_url: str
             The url of the repository
         file_name: str, optional
@@ -365,6 +385,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         discovery_id: int
             The id of the discovery
 
@@ -381,6 +403,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         repo_url: str
             The url of the repository
         state: str, optional
@@ -414,6 +438,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         url: str
             The url of the repository scanned
         last_scan: int
@@ -431,6 +457,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         discovery_id: int
             The id of the discovery to be updated
         new_state: str
@@ -447,6 +475,29 @@ class Client(Interface):
 
         return self.query_check(query, new_state, discovery_id)
 
+    def update_discoveries(self, query, discoveries_ids, new_state):
+        """ Change the state of multiple discoveries.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
+        discoveries_ids: list
+            The ids of the discoveries to be updated
+        new_state: str
+            The new state of these discoveries
+
+        Returns
+        -------
+        bool
+            `True` if the update is successful, `False` otherwise
+        """
+        if new_state not in ('new', 'false_positive', 'addressing',
+                             'not_relevant', 'fixed'):
+            return False
+
+        return self.query_check(query, new_state, tuple(discoveries_ids))
+
     def update_discovery_group(self, query, new_state, repo_url, file_name=None,
                                snippet=None):
         """ Change the state of a group of discoveries.
@@ -456,6 +507,8 @@ class Client(Interface):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         new_state: str
             The new state of these discoveries
         repo_url: str
@@ -523,37 +576,31 @@ class Client(Interface):
 
         def analyze_discoveries(model_manager, discoveries, debug):
             """ Use a model to analyze a list of discoveries. """
-            false_positives = set()
+            false_positives = 0
 
             # Analyze all the discoveries ids with the current model
             if debug:
                 logger.debug(
                     f'Analyzing discoveries with model {model_manager.model}')
                 for i in tqdm(range(len(discoveries))):
-                    did = discoveries[i]
-                    if model_manager.launch_model(self.get_discovery(did)):
-                        false_positives.add(did)
+                    if (discoveries[i]['state'] != 'false_positive' and
+                            model_manager.launch_model(discoveries[i])):
+                        discoveries[i]['state'] = 'false_positive'
+                        false_positives += 1
             else:
-                for did in discoveries:
-                    if model_manager.launch_model(self.get_discovery(did)):
-                        false_positives.add(did)
+                for d in discoveries:
+                    if (d['state'] != 'false_positive' and
+                            model_manager.launch_model(d)):
+                        d['state'] = 'false_positive'
+                        false_positives += 1
 
-            # For each false positive, update the db
             if debug:
                 logger.debug(
                     f'Model {model_manager.model.__class__.__name__} '
-                    f'classified {len(false_positives)} discoveries.')
+                    f'classified {false_positives} discoveries.')
                 logger.debug('Change state to these discoveries')
-                fp_id = iter(false_positives)
-                for i in tqdm(range(len(false_positives))):
-                    self.update_discovery(next(fp_id), 'false_positive')
-            else:
-                for fp_id in false_positives:
-                    self.update_discovery(fp_id, 'false_positive')
 
-            # Update the discovery ids (remove false positives)
-            discoveries = list(set(discoveries) - false_positives)
-            # Return discovery ids of non-false positives
+            # Return updated discoveries
             return discoveries
 
         if models is None:
@@ -599,34 +646,6 @@ class Client(Interface):
         # Update latest scan timestamp of the repo
         self.update_repo(repo_url, latest_timestamp)
 
-        # Insert the discoveries into the db
-        discoveries_ids = list()
-        if debug:
-            for i in tqdm(range(len(these_discoveries))):
-                curr_d = these_discoveries[i]
-                new_id = self.add_discovery(curr_d['file_name'],
-                                            curr_d['commit_id'],
-                                            curr_d['line_number'],
-                                            curr_d['snippet'],
-                                            repo_url,
-                                            curr_d['rule_id'])
-                if new_id != -1:
-                    discoveries_ids.append(new_id)
-        else:
-            # IDs of the discoveries added to the db (needed in the ML)
-            discoveries_ids = map(lambda d: self.add_discovery(d['file_name'],
-                                                               d['commit_id'],
-                                                               d['line_number'],
-                                                               d['snippet'],
-                                                               repo_url,
-                                                               d['rule_id']),
-                                  these_discoveries)
-            discoveries_ids = list(filter(lambda i: i != -1,
-                                          discoveries_ids))
-
-        if not discoveries_ids:
-            return []
-
         # Verify if the SnippetModel is needed, and, in this case, check
         # whether the pre-trained or the generated extractor is wanted
         snippet_with_generator = False
@@ -648,32 +667,28 @@ class Client(Interface):
                     'generate_snippet_extractor=True but SnippetModel '
                     'is not in the chosen models. No extractor to generate.')
 
-        # For each of the new discovery ids, select it from the db and analyze
-        # it. If it is classified as false positive, update the corresponding
-        # entry on the db
-        for model in models:
-            # Try to instantiate the model
-            try:
-                mm = ModelManager(model)
-            except ModuleNotFoundError:
-                logger.warning(f'Model {model} not found. Skip it.')
-                # Continue with another model (if any)
-                continue
+        # Analyze each new discovery. If it is classified as false positive,
+        # update it in the list
+        if len(these_discoveries) > 0:
+            for model in models:
+                # Try to instantiate the model
+                try:
+                    mm = ModelManager(model)
+                except ModuleNotFoundError:
+                    logger.warning(f'Model {model} not found. Skip it.')
+                    # Continue with another model (if any)
+                    continue
 
-            # Analyze discoveries with this model, and filter out false
-            # positives
-            discoveries_ids = analyze_discoveries(mm,
-                                                  discoveries_ids,
-                                                  debug)
+                # Analyze discoveries with this model
+                analyze_discoveries(mm, these_discoveries, debug)
 
         # Check if we have to run the snippet model, and, in this case, if it
         # will use the pre-trained extractor or the generated one
         # Yet, since the SnippetModel may be slow, run it only if we still have
         # discoveries to check
-        if snippet_with_generator and len(discoveries_ids) == 0:
+        if snippet_with_generator and len(these_discoveries) == 0:
             logger.debug('No more discoveries to filter. Skip SnippetModel.')
-            return list(discoveries_ids)
-        if snippet_with_generator:
+        elif snippet_with_generator:
             # Generate extractor and run the model
             logger.info(
                 'Generating snippet model (it may take some time...)')
@@ -686,13 +701,31 @@ class Client(Interface):
                                   model_extractor=extractor_folder,
                                   binary_extractor=extractor_name)
 
-                discoveries_ids = analyze_discoveries(mm,
-                                                      discoveries_ids,
-                                                      debug)
+                analyze_discoveries(mm, these_discoveries, debug)
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
 
-        return list(discoveries_ids)
+        # Insert the discoveries into the db
+        discoveries_ids = list()
+        if debug:
+            for i in tqdm(range(len(these_discoveries))):
+                curr_d = these_discoveries[i]
+                new_id = self.add_discovery(curr_d['file_name'],
+                                            curr_d['commit_id'],
+                                            curr_d['line_number'],
+                                            curr_d['snippet'],
+                                            repo_url,
+                                            curr_d['rule_id'])
+                if new_id != -1 and curr_d['state'] != 'false_positive':
+                    discoveries_ids.append(new_id)
+        else:
+            # IDs of the discoveries added to the db
+            discoveries_ids = self.add_discoveries(these_discoveries, repo_url)
+            discoveries_ids = [
+                d for i, d in enumerate(discoveries_ids) if d != -1
+                and these_discoveries[i]['state'] != 'false_positive']
+
+        return discoveries_ids
 
     def scan_user(self, username, category=None, models=None, exclude=None,
                   debug=False, generate_snippet_extractor=False, forks=False,
