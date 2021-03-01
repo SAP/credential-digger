@@ -82,7 +82,7 @@ class FileScanner(BaseScanner):
                 # IMPROVE: add per-file multiprocessing
                 file_discoveries = self.scan_file(file_path)
 
-                all_discoveries.append(file_discoveries)
+                all_discoveries.extend(file_discoveries)
 
         # Delete temp folder
         shutil.rmtree(project_path)
@@ -111,6 +111,9 @@ class FileScanner(BaseScanner):
         TODO: docs
         NOTE: removing the items is done in-place as it is needed by os.walk()
         """
+        updated_dirs = [d for d in dirs]
+        updated_files = [f for f in files]
+
         for file_name in files:
             file_path = os.path.join(root, file_name)
 
@@ -118,6 +121,12 @@ class FileScanner(BaseScanner):
             # TODO: prune binary/non-text files
 
             # Remove the file if it has not been modified since given timestamp
+            # NOTE: the mtime of a directory does not change if the content of
+            # a file inside of it changes.
             last_edited_time = os.path.getmtime(file_path)
             if last_edited_time < since_timestamp:
-                files.remove(file_name)
+                updated_files.remove(file_name)
+
+        # Removing the items is done in-place as it is needed by os.walk()
+        files[:] = updated_files[:]
+        dirs[:] = updated_dirs[:]
