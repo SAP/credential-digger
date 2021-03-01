@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 import hyperscan
 
-from base_scanner import BaseScanner, ResultHandler
+from .base_scanner import BaseScanner, ResultHandler
 
 logger = logging.getLogger(__name__)
 
@@ -73,10 +73,12 @@ class FileScanner(BaseScanner):
             self._prune(root, dirs, files, ignore_list, since_timestamp)
 
             for file_name in files:
-                file_path = root + file_name
+                file_path = os.path.join(root, file_name)
 
                 # IMPROVE: get hash of file and scan it only if it not in
                 # `already_scanned`
+                # already_scanned = {"file_hash": [list of discoveries]}
+
                 # IMPROVE: add per-file multiprocessing
                 file_discoveries = self.scan_file(file_path)
 
@@ -110,8 +112,7 @@ class FileScanner(BaseScanner):
         NOTE: removing the items is done in-place as it is needed by os.walk()
         """
         for file_name in files:
-            file_path = root + file_name
-            print(file_path)
+            file_path = os.path.join(root, file_name)
 
             # TODO: prune files and subdirectories in `ignore_list`
             # TODO: prune binary/non-text files
