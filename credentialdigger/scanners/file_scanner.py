@@ -50,7 +50,7 @@ class FileScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, dir_path, since_timestamp=0, max_depth=20, ignore_list=[]):
+    def scan(self, dir_path, since_timestamp=None, max_depth=None, ignore_list=None):
         """ Scan a directory.
 
         TODO: docs
@@ -60,7 +60,7 @@ class FileScanner(BaseScanner):
                 f"{dir_path} is not an existing directory.")
 
         # Copy directory/file to temp folder
-        project_path = tempfile.mkdtemp()
+        project_path = tempfile.mkdtemp().rstrip(os.path.sep)
         shutil.copytree(dir_path, project_path, dirs_exist_ok=True)
 
         # IMPROVE: this may become inefficient when the discoveries are many.
@@ -68,9 +68,13 @@ class FileScanner(BaseScanner):
         all_discoveries = []
 
         # TODO: add `max_depth` handling
+        initial_depth = project_path.count(os.path.sep)
         for root, dirs, files in os.walk(project_path):
             # Prune unwanted files and subdirectories
-            self._prune(root, dirs, files, ignore_list, since_timestamp)
+            self._prune(root, dirs, files, initial_depth,
+                        max_depth=max_depth,
+                        ignore_list=ignore_list,
+                        since_timestamp=since_timestamp)
 
             for file_name in files:
                 file_path = os.path.join(root, file_name)
@@ -106,7 +110,8 @@ class FileScanner(BaseScanner):
                 line_number += 1
         return discoveries
 
-    def _prune(self, root, dirs, files, ignore_list, since_timestamp):
+    def _prune(self, root, dirs, files, initial_depth, max_depth=-1,
+               ignore_list=[], since_timestamp=0):
         """
         TODO: docs
         NOTE: removing the items is done in-place as it is needed by os.walk()
@@ -114,6 +119,13 @@ class FileScanner(BaseScanner):
         updated_dirs = [d for d in dirs]
         updated_files = [f for f in files]
 
+        # Prune directories
+        if max_depth > -1:
+            curr_depth = root.count(os.path.sep)
+            if curr_depth >= initial_depth + max_depth:
+                del updated_dirs[:]
+
+        # Prune files
         for file_name in files:
             file_path = os.path.join(root, file_name)
 
@@ -127,6 +139,6 @@ class FileScanner(BaseScanner):
             if last_edited_time < since_timestamp:
                 updated_files.remove(file_name)
 
-        # Removing the items is done in-place as it is needed by os.walk()
+        # Removing the items is done in-place as this is needed by os.walk()
         files[:] = updated_files[:]
         dirs[:] = updated_dirs[:]
