@@ -21,7 +21,7 @@ class UiClient(Client):
         Parameters
         ----------
         query: str
-            The specific query to run (with placeholders for parameters)
+            The query to be run, with placeholders in place of parameters
         params: list
             The parameters to be substituted in the placeholders
         """
@@ -35,6 +35,8 @@ class UiClient(Client):
 
         Parameters
         ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
         repo_url: str
             The url of the repository
 
