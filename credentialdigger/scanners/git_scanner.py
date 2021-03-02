@@ -88,7 +88,6 @@ class GitScanner(BaseScanner):
                     # We have reached the (chosen) oldest timestamp, so
                     # continue with another branch
                     break
-
                 # if not prev_commit, then curr_commit is the newest commit
                 # (and we have nothing to diff with).
                 # But we will diff the first commit with NULL_TREE here to
@@ -106,20 +105,22 @@ class GitScanner(BaseScanner):
                     prev_commit = curr_commit
                     continue
                 else:
-                    # Get the diff between two commits
-                    # Ignore possible submodules (they are independent from
-                    # this repo)
-                    diff = curr_commit.diff(prev_commit,
-                                            create_patch=True,
-                                            ignore_submodules='all',
-                                            ignore_all_space=True,
-                                            unified=0,
-                                            diff_filter='AM')
-                # Avoid searching the same diffs
-                already_searched.add(diff_hash)
+                    # Avoid searching the same diffs
+                    already_searched.add(diff_hash)
+
+                # Get the diff between two commits
+                # Ignore possible submodules (they are independent from
+                # this repo)
+                diff = curr_commit.diff(prev_commit,
+                                        create_patch=True,
+                                        ignore_submodules='all',
+                                        ignore_all_space=True,
+                                        unified=0,
+                                        diff_filter='AM')
+
                 # Diff between the current commit and the previous one
-                discoveries = discoveries + self._diff_worker(diff,
-                                                              prev_commit)
+                discoveries.extend(self._diff_worker(diff, prev_commit))
+
                 prev_commit = curr_commit
 
             # Handling the first commit (either from since_timestamp or the
@@ -136,7 +137,6 @@ class GitScanner(BaseScanner):
 
                 discoveries = discoveries + self._diff_worker(diff,
                                                               prev_commit)
-
         # Delete repo folder
         shutil.rmtree(project_path)
 
