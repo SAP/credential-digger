@@ -8,6 +8,10 @@
 
 Credential Digger is a GitHub scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc), filtering the false positive data through machine learning models.
 
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/1qz8lYPrtMo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
 -  [Why](#why)
 -  [Requirements](#requirements)
 -  [How to run](#how-to-run)
@@ -36,9 +40,23 @@ The goal of Credential Digger is to reduce the amount of false positive data on 
 
 ![Architecture](https://raw.githubusercontent.com/SAP/credential-digger/main/tutorials/img/architecture.png)
 
+
+For the complete description of the approach of Credential Digger, [you can read this publication](https://jam4.sapjam.com/groups/KxkEs5HqefZnmgxTYUSSov/documents/pDwaPu8XwYHnxgWwJZP94L/slide_viewer).
+
+```
+@InProceedings {lrnot-icissp21,
+    author = {S. Lounici and M. Rosa and C. M. Negri and S. Trabelsi and M. Önen},
+    booktitle = {Proc. of the 8th The International Conference on Information Systems Security and Privacy  (ICISSP)},
+    title = {Optimizing Leak Detection in Open-Source Platforms with Machine Learning Techniques},
+    month = {February},
+    day = {11-13},
+    year = {2021}
+}
+```
+
 ## Requirements
 
-Credential Digger supports Python >= 3.6 and < 3.9, and works only with LINUX systems (currently, it has been tested on Ubuntu).
+Credential Digger supports Python >= 3.6 and < 3.9, and works only with LINUX systems (currently, it has been tested on Ubuntu). [With some hacks](https://github.com/SAP/credential-digger/wiki/MacOS-support), it can be installed also on MacOS.
 In case you don't meet these requirements, you may consider running a [Docker container](#docker) (that also includes a user interface).
 
 
@@ -245,3 +263,4 @@ We invite your participation to the project through issues and pull requests. Pl
 
 -  [Credential Digger announcement](https://blogs.sap.com/2020/06/23/credential-digger-using-machine-learning-to-identify-hardcoded-credentials-in-github)
 -  [Credential Digger is now supporting Keras machine learning models](https://github.com/SAP/credential-digger/tree/keras_models)
+-  [Credential Digger approach has been published at ICISSP 2021 conference](https://jam4.sapjam.com/groups/KxkEs5HqefZnmgxTYUSSov/documents/pDwaPu8XwYHnxgWwJZP94L/slide_viewer)
