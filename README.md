@@ -44,7 +44,7 @@ The goal of Credential Digger is to reduce the amount of false positive data on 
 For the complete description of the approach of Credential Digger, [you can read this publication](https://jam4.sapjam.com/groups/KxkEs5HqefZnmgxTYUSSov/documents/pDwaPu8XwYHnxgWwJZP94L/slide_viewer).
 
 ```
-@InProceedings {lrnot-icissp21,
+@InProceedings {lrnto-icissp21,
     author = {S. Lounici and M. Rosa and C. M. Negri and S. Trabelsi and M. Önen},
     booktitle = {Proc. of the 8th The International Conference on Information Systems Security and Privacy  (ICISSP)},
     title = {Optimizing Leak Detection in Open-Source Platforms with Machine Learning Techniques},
