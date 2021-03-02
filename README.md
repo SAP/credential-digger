@@ -9,7 +9,8 @@
 Credential Digger is a GitHub scanning tool that identifies hardcoded credentials (Passwords, API Keys, Secret Keys, Tokens, personal information, etc), filtering the false positive data through machine learning models.
 
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/1qz8lYPrtMo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![Watch the video](https://img.youtube.com/vi/1qz8lYPrtMo/0.jpg)](https://www.youtube.com/watch?v=1qz8lYPrtMo)
+
 
 
 -  [Why](#why)
