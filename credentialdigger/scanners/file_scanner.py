@@ -62,13 +62,12 @@ class FileScanner(BaseScanner):
         # Copy directory/file to temp folder
         project_path = tempfile.mkdtemp().rstrip(os.path.sep)
         shutil.copytree(dir_path, project_path, dirs_exist_ok=True)
+        initial_depth = project_path.count(os.path.sep)
 
         # IMPROVE: this may become inefficient when the discoveries are many.
         # Use generators or iter()
         all_discoveries = []
 
-        # TODO: add `max_depth` handling
-        initial_depth = project_path.count(os.path.sep)
         for root, dirs, files in os.walk(project_path):
             # Prune unwanted files and subdirectories
             self._prune(root, dirs, files, initial_depth,
@@ -78,10 +77,6 @@ class FileScanner(BaseScanner):
 
             for file_name in files:
                 file_path = os.path.join(root, file_name)
-
-                # IMPROVE: get hash of file and scan it only if it not in
-                # `already_scanned`
-                # already_scanned = {"file_hash": [list of discoveries]}
 
                 # IMPROVE: add per-file multiprocessing
                 file_discoveries = self.scan_file(file_path)
@@ -99,22 +94,26 @@ class FileScanner(BaseScanner):
         discoveries = []
         line_number = 1
 
-        with open(file_path, "r") as file_to_scan:
-            for row in file_to_scan:
-                rh = ResultHandler()
-                self.stream.scan(row,
-                                 match_event_handler=rh.handle_results,
-                                 context=[row, file_path, None, line_number])
-                if rh.result:
-                    discoveries.append(rh.result)
-                line_number += 1
+        try:
+            with open(file_path, "r", encoding='utf-8') as file_to_scan:
+                for row in file_to_scan:
+                    rh = ResultHandler()
+                    self.stream.scan(
+                        row,
+                        match_event_handler=rh.handle_results,
+                        context=[row, file_path, None, line_number])
+                    if rh.result:
+                        discoveries.append(rh.result)
+                    line_number += 1
+        except UnicodeDecodeError:
+            # Don't scan binary files
+            pass
         return discoveries
 
     def _prune(self, root, dirs, files, initial_depth, max_depth=-1,
                ignore_list=[], since_timestamp=0):
         """
         TODO: docs
-        NOTE: removing the items is done in-place as it is needed by os.walk()
         """
         updated_dirs = [d for d in dirs]
         updated_files = [f for f in files]
@@ -130,9 +129,8 @@ class FileScanner(BaseScanner):
             file_path = os.path.join(root, file_name)
 
             # TODO: prune files and subdirectories in `ignore_list`
-            # TODO: prune binary/non-text files
 
-            # Remove the file if it has not been modified since given timestamp
+            # Prune the file if it has not been modified since given timestamp
             # NOTE: the mtime of a directory does not change if the content of
             # a file inside of it changes.
             last_edited_time = os.path.getmtime(file_path)
