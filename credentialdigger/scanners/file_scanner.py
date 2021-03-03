@@ -2,7 +2,6 @@ import logging
 import os
 import shutil
 import tempfile
-from datetime import datetime, timezone
 
 import hyperscan
 
@@ -50,7 +49,7 @@ class FileScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, dir_path, since_timestamp=None, max_depth=None, ignore_list=None):
+    def scan(self, dir_path, since_timestamp=0, max_depth=-1, ignore_list=[]):
         """ Scan a directory.
 
         TODO: docs
@@ -87,8 +86,8 @@ class FileScanner(BaseScanner):
         shutil.rmtree(project_path)
 
         # Generate a list of discoveries and return it.
-        now_timestamp = int(datetime.now(timezone.utc).timestamp())
-        return now_timestamp, all_discoveries
+
+        return all_discoveries
 
     def scan_file(self, file_path):
         discoveries = []

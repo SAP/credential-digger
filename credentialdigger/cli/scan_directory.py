@@ -82,9 +82,8 @@ def configure_parser(parser):
         help='Generate the extractor model to be used in the SnippetModel. \
             The extractor is generated using the ExtractorGenerator. If \
             `False`, use the pre-trained extractor model')
-    # TODO: check why this is listed as positional instead of optional
     parser.add_argument(
-        'max_depth', default=-1,
+        '--max_depth', type=int, default="-1",
         help='Maximum depth for subdirectories scanning (If it is set to -1 or\
             not specified, all subdirectories will be scanned)')
 

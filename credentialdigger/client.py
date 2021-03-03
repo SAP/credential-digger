@@ -1,6 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 from collections import namedtuple
+from datetime import datetime, timezone
 
 import yaml
 from github import Github
@@ -636,7 +637,7 @@ class Client(Interface):
         logger.debug('Scanning commits...')
 
         try:
-            latest_timestamp, these_discoveries = s.scan(
+            these_discoveries = s.scan(
                 repo_url, since_timestamp=from_timestamp, **scanner_kwargs)
         except Exception as e:
             # If the scan raises an exception, remove the newly added repo
@@ -648,6 +649,7 @@ class Client(Interface):
         logger.info(f'Detected {len(these_discoveries)} discoveries.')
 
         # Update latest scan timestamp of the repo
+        latest_timestamp = int(datetime.now(timezone.utc).timestamp())
         self.update_repo(repo_url, latest_timestamp)
 
         # Verify if the SnippetModel is needed, and, in this case, check
