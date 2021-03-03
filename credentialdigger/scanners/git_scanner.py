@@ -3,7 +3,6 @@ import logging
 import re
 import shutil
 import tempfile
-from datetime import datetime, timezone
 
 import hyperscan
 from git import NULL_TREE, GitCommandError, InvalidGitRepositoryError
@@ -125,8 +124,6 @@ class GitScanner(BaseScanner):
 
         Returns
         -------
-        int
-            The latest scan timestamp (now) (`None` if the repository is empty)
         list
             A list of discoveries (dictionaries). If there are no discoveries
             return an empty list
@@ -206,10 +203,9 @@ class GitScanner(BaseScanner):
         # Delete repo folder
         shutil.rmtree(project_path)
 
-        now_timestamp = int(datetime.now(timezone.utc).timestamp())
         # Generate a list of discoveries and return it.
         # N.B.: This may become inefficient when the discoveries are many.
-        return now_timestamp, discoveries
+        return discoveries
 
     def _diff_worker(self, diff, commit):
         """ Compute the diff between two commits.

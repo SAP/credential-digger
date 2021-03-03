@@ -7,13 +7,20 @@ from parameterized import param, parameterized
 
 
 class TestFileScanner(unittest.TestCase):
-    root_test_path = './credentialdigger/tests/file_scanner_test_folder'
+    root_test_path = './credentialdigger/tests/file_scanner_tests'
 
     @classmethod
     def setUpClass(cls):
+        """ Add only the password-related rules to the database """
         rules = [{'id': 9, 'regex': 'sshpass|password|pwd|passwd|pass',
                   'category': 'password', 'description': 'password keywords'}]
         cls.file_scanner = FileScanner(rules)
+
+    def test_scan_dir(self):
+        """ Test scan success on the 'scan_tests' folder """
+        test_path = os.path.join(self.root_test_path, 'scan_tests')
+        discoveries = self.file_scanner.scan(test_path)
+        self.assertEqual(len(discoveries), 3)
 
     @parameterized.expand(
         ["", "/nonexistentdirectory/", "https://url", "not_a_path"])
@@ -23,14 +30,19 @@ class TestFileScanner(unittest.TestCase):
             self.file_scanner.scan(dir_path)
 
     @parameterized.expand([
-        param(file_path='file_a.py', expected_discoveries_count=1),
-        param(file_path='file_c.png', expected_discoveries_count=0)
+        param(file_path='file_a.py', expected_discoveries=[2, 4]),
+        param(file_path='file_c.png', expected_discoveries=[])
     ])
-    def test_scan_file(self, file_path, expected_discoveries_count):
-        """ Test scan_file with valid and invalid files """
+    def test_scan_file(self, file_path, expected_discoveries):
+        """ Test scan_file with valid and invalid files
+
+        The `expected_discoveries` parameter is an array containing the line
+        number of the discoveries in the file.
+        """
         discoveries = self.file_scanner.scan_file(
             os.path.join(self.root_test_path, file_path))
-        self.assertEqual(len(discoveries), expected_discoveries_count)
+        d_lines = [d["line_number"] for d in discoveries]
+        self.assertCountEqual(d_lines, expected_discoveries)
 
     @parameterized.expand([
         # Since timestamp is 0, no file should be pruned
