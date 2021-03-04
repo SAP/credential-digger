@@ -54,6 +54,7 @@ class FileScanner(BaseScanner):
 
         TODO: docs
         """
+        dir_path = os.path.abspath(dir_path)
         if not os.path.exists(dir_path):
             raise FileNotFoundError(
                 f"{dir_path} is not an existing directory.")
@@ -61,11 +62,11 @@ class FileScanner(BaseScanner):
         # Copy directory/file to temp folder
         project_path = tempfile.mkdtemp().rstrip(os.path.sep)
         shutil.copytree(dir_path, project_path, dirs_exist_ok=True)
-        initial_depth = project_path.count(os.path.sep)
 
         # IMPROVE: this may become inefficient when the discoveries are many.
         # Use generators or iter()
         all_discoveries = []
+        initial_depth = project_path.count(os.path.sep)
 
         for root, dirs, files in os.walk(project_path):
             # Prune unwanted files and subdirectories
@@ -76,22 +77,19 @@ class FileScanner(BaseScanner):
 
             for file_name in files:
                 file_path = os.path.join(root, file_name)
-
-                # IMPROVE: add per-file multiprocessing
-                file_discoveries = self.scan_file(file_path)
-
+                file_discoveries = self.scan_file(file_path, project_path)
                 all_discoveries.extend(file_discoveries)
 
         # Delete temp folder
         shutil.rmtree(project_path)
 
         # Generate a list of discoveries and return it.
-
         return all_discoveries
 
-    def scan_file(self, file_path):
+    def scan_file(self, file_path, project_root):
         discoveries = []
         line_number = 1
+        relative_path = file_path.lstrip(project_root)
 
         try:
             with open(file_path, "r", encoding='utf-8') as file_to_scan:
@@ -100,7 +98,7 @@ class FileScanner(BaseScanner):
                     self.stream.scan(
                         row,
                         match_event_handler=rh.handle_results,
-                        context=[row, file_path, None, line_number])
+                        context=[row, relative_path, "", line_number])
                     if rh.result:
                         discoveries.append(rh.result)
                     line_number += 1
