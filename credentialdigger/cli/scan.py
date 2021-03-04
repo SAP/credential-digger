@@ -50,6 +50,7 @@ optional arguments:
                         extractor model
 """
 import logging
+import os
 import sys
 
 logger = logging.getLogger(__name__)
@@ -103,9 +104,9 @@ def run(client, args):
         discoveries. If it exits with a value that is equal to 0, then it means
         that the scan detected no leaks in this repo.
     """
-
+    repo_url = os.path.abspath(args.repo_url) if args.local else args.repo_url
     discoveries = client.scan(
-        repo_url=args.repo_url,
+        repo_url=repo_url,
         category=args.category,
         models=args.models,
         exclude=args.exclude,

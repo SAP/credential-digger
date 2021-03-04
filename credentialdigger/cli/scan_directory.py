@@ -53,6 +53,7 @@ optional arguments:
                         extractor model
 """
 import logging
+import os
 import sys
 
 from credentialdigger.scanners.file_scanner import FileScanner
@@ -90,7 +91,7 @@ def configure_parser(parser):
 
 def run(client, args):
     """
-    Scan a git repository.
+    Scan a local directory
 
     Parameters
     ----------
@@ -108,7 +109,7 @@ def run(client, args):
     """
 
     discoveries = client.scan(
-        repo_url=args.dir_path,
+        repo_url=os.path.abspath(args.dir_path),
         category=args.category,
         models=args.models,
         exclude=args.exclude,
