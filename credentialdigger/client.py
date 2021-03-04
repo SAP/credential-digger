@@ -155,6 +155,31 @@ class Client(Interface):
         """
         return self.query_id(query, regex, category, description)
 
+    def add_rules_from_file(self, filename):
+        """ Add rules from a file.
+
+        Parameters
+        ----------
+        filename: str
+            The file containing the rules
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file does not exist
+        ParserError
+            If the file is malformed
+        KeyError
+            If one of the required attributes in the file (i.e., rules, regex,
+            and category) is missing
+        """
+        with open(filename, 'r') as f:
+            data = yaml.safe_load(f)
+        for rule in data['rules']:
+            self.add_rule(rule['regex'],
+                          rule['category'],
+                          rule.get('description', ''))
+
     def delete_rule(self, query, ruleid):
         """Delete a rule from database
 
@@ -194,8 +219,8 @@ class Client(Interface):
         ----------
         query: str
             The query to be run, with placeholders in place of parameters
-        repo_id: int
-            The id of the repo to delete
+        repo_url: str
+            The url of the repository to delete
 
         Returns
         -------
@@ -204,30 +229,23 @@ class Client(Interface):
         """
         return self.query(query, repo_url,)
 
-    def add_rules_from_file(self, filename):
-        """ Add rules from a file.
+    def delete_discoveries(self, query, repo_url):
+        """ Delete all discoveries of a repository.
 
         Parameters
         ----------
-        filename: str
-            The file containing the rules
+        query: str
+            The query to be run, with placeholders in place of parameters
+        repo_url: str
+            The repository url of the discoveries to delete
 
-        Raises
-        ------
-        FileNotFoundError
-            If the file does not exist
-        ParserError
-            If the file is malformed
-        KeyError
-            If one of the required attributes in the file (i.e., rules, regex,
-            and category) is missing
+        Returns
+        -------
+        bool
+            `True` if the discoveries were successfully deleted, `False`
+            otherwise
         """
-        with open(filename, 'r') as f:
-            data = yaml.safe_load(f)
-        for rule in data['rules']:
-            self.add_rule(rule['regex'],
-                          rule['category'],
-                          rule.get('description', ''))
+        return self.query(query, repo_url,)
 
     def get_repos(self):
         """ Get all the repositories.
@@ -610,7 +628,6 @@ class Client(Interface):
             exclude = []
 
         # Try to add the repository to the db
-        new_repo = False
         if self.add_repo(repo_url):
             # The repository is new, scan from the first commit
             from_timestamp = 0
@@ -619,10 +636,13 @@ class Client(Interface):
             # Get the latest commit recorded on the db
             # `or` clause needed in case the previous scan attempt was broken
             from_timestamp = self.get_repo(repo_url)['last_scan'] or 0
+            new_repo = False
 
         # Force complete scan
         if force:
             logger.debug('Force complete scan')
+            if not new_repo:
+                self.delete_discoveries(repo_url)
             from_timestamp = 0
 
         # Prepare rules
