@@ -1,4 +1,5 @@
 import logging
+import os
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from datetime import datetime, timezone
@@ -9,6 +10,7 @@ from tqdm import tqdm
 
 from .generator import ExtractorGenerator
 from .models.model_manager import ModelManager
+from .scanners.file_scanner import FileScanner
 from .scanners.git_scanner import GitScanner
 
 logger = logging.getLogger(__name__)
@@ -555,8 +557,8 @@ class Client(Interface):
 
     def scan(self, repo_url, category=None, models=None, exclude=None,
              force=False, debug=False, generate_snippet_extractor=False,
-             scanner=GitScanner, **scanner_kwargs):
-        """ Launch the scan of a repository.
+             local_repo=False, git_token=None):
+        """ Launch the scan of a git repository.
 
         Parameters
         ----------
@@ -579,8 +581,104 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
-        scanner: class, default: `GitScanner`
+        local_repo: bool, optional
+            If True, get the repository from a local directory instead of the
+            web
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
+
+        Returns
+        -------
+        list
+            The id of the discoveries detected by the scanner (excluded the
+            ones classified as false positives).
+        """
+        if local_repo:
+            repo_url = os.path.abspath(repo_url)
+
+        return self._scan(
+            repo_url=repo_url, category=category,
+            models=models, exclude=exclude, force=force, debug=debug,
+            generate_snippet_extractor=generate_snippet_extractor,
+            scanner=GitScanner, local_repo=local_repo, git_token=git_token)
+
+    def scan_directory(self, dir_path, category=None, models=None,
+                       exclude=None, force=False, debug=False,
+                       generate_snippet_extractor=False, max_depth=-1,
+                       ignore_list=[]):
+        """ Launch the scan of a repository.
+
+        Parameters
+        ----------
+        dir_path: str
+            The path of the directory to scan
+        category: str, optional
+            If specified, scan the repo using all the rules of this category,
+            otherwise use all the rules in the db
+        models: list, optional
+            A list of models for the ML false positives detection
+        exclude: list, optional
+            A list of rules to exclude
+        force: bool, default `False`
+            Force a complete re-scan of the repository, in case it has already
+            been scanned previously
+        debug: bool, default `False`
+            Flag used to decide whether to visualize the progressbars during
+            the scan (e.g., during the insertion of the detections in the db)
+        generate_snippet_extractor: bool, default `False`
+            Generate the extractor model to be used in the SnippetModel. The
+            extractor is generated using the ExtractorGenerator. If `False`,
+            use the pre-trained extractor model
+        TODO: docs
+
+
+        Returns
+        -------
+        list
+            The id of the discoveries detected by the scanner (excluded the
+            ones classified as false positives).
+        """
+        dir_path = os.path.abspath(dir_path)
+
+        if self.get_repo(dir_path) != {} and force is False:
+            raise ValueError(f"The directory \"{dir_path}\" has already been \
+                scanned. Please use \"force\" to rescan it.")
+
+        return self._scan(
+            repo_url=dir_path, category=category, models=models,
+            exclude=exclude, force=force, debug=debug,
+            generate_snippet_extractor=generate_snippet_extractor,
+            scanner=FileScanner, max_depth=max_depth, ignore_list=ignore_list)
+
+    def _scan(self, repo_url, scanner, category=None, models=None, exclude=None,
+              force=False, debug=False, generate_snippet_extractor=False,
+              **scanner_kwargs):
+        """ Launch the scan of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The location of a git repository (either an url or a local path,
+            depending on the scanner)
+        scanner: class
             The class of the scanner, a subclass of `scanners.BaseScanner`
+        category: str, optional
+            If specified, scan the repo using all the rules of this category,
+            otherwise use all the rules in the db
+        models: list, optional
+            A list of models for the ML false positives detection
+        exclude: list, optional
+            A list of rules to exclude
+        force: bool, default `False`
+            Force a complete re-scan of the repository, in case it has already
+            been scanned previously
+        debug: bool, default `False`
+            Flag used to decide whether to visualize the progressbars during
+            the scan (e.g., during the insertion of the detections in the db)
+        generate_snippet_extractor: bool, default `False`
+            Generate the extractor model to be used in the SnippetModel. The
+            extractor is generated using the ExtractorGenerator. If `False`,
+            use the pre-trained extractor model
         scanner_kwargs: kwargs
             Keyword arguments to be passed to the scanner
 
@@ -641,8 +739,7 @@ class Client(Interface):
         # Force complete scan
         if force:
             logger.debug('Force complete scan')
-            if not new_repo:
-                self.delete_discoveries(repo_url)
+            self.delete_discoveries(repo_url)
             from_timestamp = 0
 
         # Prepare rules
