@@ -50,7 +50,6 @@ optional arguments:
                         extractor model
 """
 import logging
-import os
 import sys
 
 logger = logging.getLogger(__name__)
@@ -73,8 +72,7 @@ def configure_parser(parser):
     parser.add_argument(
         '--local', action='store_true',
         help='If True, get the repository from a local directory instead of \
-            the web'
-    )
+            the web')
     parser.add_argument(
         '--force', action='store_true',
         help='Force a complete re-scan of the repository, in case it has \
@@ -84,6 +82,9 @@ def configure_parser(parser):
         help='Generate the extractor model to be used in the SnippetModel. \
             The extractor is generated using the ExtractorGenerator. If \
             `False`, use the pre-trained extractor model')
+    parser.add_argument(
+        '--git_token', default=None, type=str,
+        help='Git personal access token to authenticate to the git server')
 
 
 def run(client, args):
@@ -104,9 +105,8 @@ def run(client, args):
         discoveries. If it exits with a value that is equal to 0, then it means
         that the scan detected no leaks in this repo.
     """
-    repo_url = os.path.abspath(args.repo_url) if args.local else args.repo_url
     discoveries = client.scan(
-        repo_url=repo_url,
+        repo_url=args.repo_url,
         category=args.category,
         models=args.models,
         exclude=args.exclude,

@@ -1,6 +1,6 @@
 """
 TODO: docs
-TODO: add missing arguments
+TODO: regenerate with missing arguments
 
 The 'scan' module can be used to scan a git repository on the fly from the
 terminal. It supports both the Sqlite and Postgres clients.
@@ -53,7 +53,6 @@ optional arguments:
                         extractor model
 """
 import logging
-import os
 import sys
 
 from credentialdigger.scanners.file_scanner import FileScanner
@@ -76,7 +75,7 @@ def configure_parser(parser):
         help='The path of the directory to scan')
     parser.add_argument(
         '--force', action='store_true',
-        help='Force a complete re-scan of the repository, in case it has \
+        help='Force a complete re-scan of the directory, in case it has \
             already been scanned previously')
     parser.add_argument(
         '--generate_snippet_extractor', action='store_true',
@@ -109,7 +108,7 @@ def run(client, args):
     """
 
     discoveries = client.scan(
-        repo_url=os.path.abspath(args.dir_path),
+        repo_url=args.dir_path,
         category=args.category,
         models=args.models,
         exclude=args.exclude,
