@@ -56,9 +56,6 @@ def main():
         help='Flag used to decide whether to visualize the progressbars \
             during the scan (e.g., during the insertion of the detections in \
             the db)')
-    parser_scan_base.add_argument(
-        '--git_token', default=None, type=str,
-        help='Git personal access token to authenticate to the git server')
 
     # download subparser configuration
     parser_download = subparsers.add_parser(
