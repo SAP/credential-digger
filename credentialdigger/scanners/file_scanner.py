@@ -49,7 +49,7 @@ class FileScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, dir_path, since_timestamp=0, max_depth=-1, ignore_list=[]):
+    def scan(self, dir_path, max_depth=-1, ignore_list=[]):
         """ Scan a directory.
 
         TODO: docs
@@ -63,8 +63,6 @@ class FileScanner(BaseScanner):
         project_path = tempfile.mkdtemp().rstrip(os.path.sep)
         shutil.copytree(dir_path, project_path, dirs_exist_ok=True)
 
-        # IMPROVE: this may become inefficient when the discoveries are many.
-        # Use generators or iter()
         all_discoveries = []
         initial_depth = project_path.count(os.path.sep)
 
@@ -72,8 +70,7 @@ class FileScanner(BaseScanner):
             # Prune unwanted files and subdirectories
             self._prune(root, dirs, files, initial_depth,
                         max_depth=max_depth,
-                        ignore_list=ignore_list,
-                        since_timestamp=since_timestamp)
+                        ignore_list=ignore_list)
 
             for file_name in files:
                 file_path = os.path.join(root, file_name)
@@ -84,6 +81,7 @@ class FileScanner(BaseScanner):
         shutil.rmtree(project_path)
 
         # Generate a list of discoveries and return it.
+        # NOTE: this may become inefficient when the discoveries are many.
         return all_discoveries
 
     def scan_file(self, file_path, project_root):
@@ -108,7 +106,7 @@ class FileScanner(BaseScanner):
         return discoveries
 
     def _prune(self, root, dirs, files, initial_depth, max_depth=-1,
-               ignore_list=[], since_timestamp=0):
+               ignore_list=[]):
         """
         TODO: docs
         """
@@ -121,18 +119,11 @@ class FileScanner(BaseScanner):
             if curr_depth >= initial_depth + max_depth:
                 del updated_dirs[:]
 
-        # Prune files
-        for file_name in files:
-            file_path = os.path.join(root, file_name)
+        # # Prune files
+        # for file_name in files:
+        #     file_path = os.path.join(root, file_name)
 
-            # TODO: prune files and subdirectories in `ignore_list`
-
-            # Prune the file if it has not been modified since given timestamp
-            # NOTE: the mtime of a directory does not change if the content of
-            # a file inside of it changes.
-            last_edited_time = os.path.getmtime(file_path)
-            if last_edited_time < since_timestamp:
-                updated_files.remove(file_name)
+        #     # TODO: prune files and subdirectories in `ignore_list`
 
         # Removing the items is done in-place as this is needed by os.walk()
         files[:] = updated_files[:]
