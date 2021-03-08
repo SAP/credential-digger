@@ -65,14 +65,27 @@ function initScanRepo() {
           scanInterval = setInterval(getScan, POLLING_INTERVAL);
         }
       },
-      statusCode: {
-        401: function() {
-          addError(document.querySelector('#gitTokenInput'), 'Git token not valid');
-          const scanBtn = document.querySelector('#startRepoScan');
-          scanBtn.classList.remove('disabled');
-          scanBtn.disabled = false;
-          scanBtn.querySelector('.loaderWrapper').remove();
+      error: function(res) {
+        const errCode = res.responseText;
+        let errMsg
+        switch(errCode) {
+          case 'InvalidGitRepositoryError':
+            errMsg = 'Directory is not a valid git repository.';
+            break;
+          case 'NoSuchPathError':
+            errMsg = 'Directory does not exist.';
+            break;
+          case 'GitCommandError':
+            errMsg = 'Repository does not exist or provided git token is invalid.';
+            break;
+          default:
+            errMsg = 'Something went wrong.';
         }
+        addError(document.querySelector('#repoLinkInput'), errMsg);
+        const scanBtn = document.querySelector('#startRepoScan');
+        scanBtn.classList.remove('disabled');
+        scanBtn.disabled = false;
+        scanBtn.querySelector('.loaderWrapper').remove();
       }
     });
   }, true);
@@ -104,7 +117,9 @@ function validateForm() {
   const rulesList = document.querySelector('#ruleSelector');
   const repoLink = document.querySelector('#repoLinkInput');
   // Check if repo link is a valid url
-  const urlValid = repoLink.value.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+  const rPath = /^(?:[a-z]:)?[\/\\]{0,2}(?:[.\/\\ ](?![.\/\\\n])|[^<>:"|?*.\/\\ \n])+$/g;
+  const rUrl = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g;
+  const urlValid = repoLink.value.match(rPath) || repoLink.value.match(rUrl);
   // Check whether the form is correctly filled or not
   let formValid = true;
   if (urlValid == null) {
@@ -135,4 +150,6 @@ function addError(input, tooltip = '') {
   if(!tooltip) return;
   if(!input.nextSibling?.classList?.contains('error-message'))
     input.insertAdjacentHTML('afterend', `<div class="error-message">${tooltip}</div>`);
+  else
+    input.nextSibling.innerHTML = tooltip;
 }

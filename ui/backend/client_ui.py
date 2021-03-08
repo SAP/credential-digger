@@ -3,7 +3,8 @@ from collections import namedtuple
 
 import git
 from credentialdigger import Client
-from git import GitCommandError
+from git import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
+from git import Repo as GitRepo
 
 FilesSummary = namedtuple(
     'FilesSummary',
@@ -59,28 +60,40 @@ class UiClient(Client):
             result = cursor.fetchone()
         return files
 
-    def check_connection(self, repo_url, git_token=None):
+    def check_repo(self, repo_url, git_token=None, local_repo=False):
         """
         Check git token validity for the repository
 
         Parameters
         ----------
         repo_url: str
-            The url of the repository
+            The location of a git repository (an url if local_repo is False, a
+            local path otherwise)
         git_token: str, optional
             Git personal access token to authenticate to the git server
+        local_repo: bool, optional
+            If True, get the repository from a local directory instead of the
+            web
 
         Returns
         -------
         bool
             True if the git token is valid for the repository, False otherwise
         """
-        g = git.cmd.Git()
-        if git_token is not None and len(git_token) > 0:
-            repo_url = repo_url.replace('https://',
-                                        f'https://oauth2:{git_token}@')
-        try:
-            g.ls_remote(repo_url)
-        except GitCommandError:
-            return False
-        return True
+        if local_repo:
+            try:
+                GitRepo(repo_url)
+            except InvalidGitRepositoryError:
+                return False, 'InvalidGitRepositoryError'
+            except NoSuchPathError:
+                return False, 'NoSuchPathError'
+        else:
+            g = git.cmd.Git()
+            if git_token is not None and len(git_token) > 0:
+                repo_url = repo_url.replace('https://',
+                                            f'https://oauth2:{git_token}@')
+            try:
+                g.ls_remote(repo_url)
+            except GitCommandError:
+                return False, 'GitCommandError'
+        return True, None

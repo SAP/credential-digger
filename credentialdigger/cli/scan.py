@@ -10,12 +10,13 @@ usage: credentialdigger scan [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                              [--category CATEGORY]
                              [--models MODELS [MODELS ...]]
                              [--exclude EXCLUDE [EXCLUDE ...]] [--debug]
-                             [--git_token GIT_TOKEN] [--force]
+                             [--git_token GIT_TOKEN] [--local] [--force]
                              [--generate_snippet_extractor]
                              repo_url
 
 positional arguments:
-  repo_url              The URL of the git repository to be scanned.
+  repo_url              The location of a git repository (an url if --local is
+                        not set, a local path otherwise)
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -38,6 +39,8 @@ optional arguments:
   --git_token GIT_TOKEN
                         Git personal access token to authenticate to the git
                         server
+  --local               If True, get the repository from a local directory
+                        instead of the web
   --force               Force a complete re-scan of the repository, in case it
                         has already been scanned previously
   --generate_snippet_extractor
@@ -45,7 +48,6 @@ optional arguments:
                         SnippetModel. The extractor is generated using the
                         ExtractorGenerator. If `False`, use the pre-trained
                         extractor model
-
 """
 import logging
 import sys
@@ -65,14 +67,19 @@ def configure_parser(parser):
     parser.set_defaults(func=run)
     parser.add_argument(
         'repo_url', type=str,
-        help='The URL of the git repository to be scanned.')
+        help='The location of a git repository (an url if --local is not set, \
+            a local path otherwise)')
+    parser.add_argument(
+        '--local', action='store_true',
+        help='If True, get the repository from a local directory instead of \
+            the web'
+    )
     parser.add_argument(
         '--force', action='store_true',
         help='Force a complete re-scan of the repository, in case it has \
             already been scanned previously')
     parser.add_argument(
-        '--generate_snippet_extractor',
-        action='store_true',
+        '--generate_snippet_extractor', action='store_true',
         help='Generate the extractor model to be used in the SnippetModel. \
             The extractor is generated using the ExtractorGenerator. If \
             `False`, use the pre-trained extractor model')
@@ -105,6 +112,7 @@ def run(client, args):
         force=args.force,
         debug=args.debug,
         generate_snippet_extractor=args.generate_snippet_extractor,
-        git_token=args.git_token)
+        git_token=args.git_token,
+        local_repo=args.local)
 
     sys.exit(len(discoveries))

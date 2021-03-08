@@ -1,13 +1,17 @@
 import hashlib
+import logging
 import re
 import shutil
+import tempfile
 from datetime import datetime, timezone
 
 import hyperscan
-from git import NULL_TREE
+from git import NULL_TREE, GitCommandError, InvalidGitRepositoryError
 from git import Repo as GitRepo
 
 from .base_scanner import BaseScanner
+
+logger = logging.getLogger(__name__)
 
 
 class GitScanner(BaseScanner):
@@ -49,17 +53,75 @@ class GitScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, git_url, since_timestamp=0, max_depth=1000000):
+    def get_git_repo(self, repo_url, local_repo):
+        """ Get a git repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The location of the git repository (an url if local is False, a
+            local path otherwise)
+        local_repo: bool
+            If True, get the repository from a local directory instead of the
+            web
+
+        Returns
+        -------
+        str
+            The temporary path to which the repository has been copied
+        GtiRepo
+            The repository object
+
+        Raises
+        ------
+        FileNotFoundError
+            If repo_url is not an existing directory
+        git.InvalidGitRepositoryError
+            If the directory in repo_url is not a git repository
+        git.GitCommandError
+            If the url in repo_url is not a git repository, or access to the
+            repository is denied
+        """
+        project_path = tempfile.mkdtemp()
+        if local_repo:
+            try:
+                shutil.copytree(repo_url, project_path, dirs_exist_ok=True)
+                repo = GitRepo(project_path)
+            except FileNotFoundError as e:
+                shutil.rmtree(project_path)
+                raise e
+            except InvalidGitRepositoryError as e:
+                shutil.rmtree(project_path)
+                raise InvalidGitRepositoryError(
+                    f"\"{repo_url}\" is not a local git repository.") from e
+        else:
+            try:
+                GitRepo.clone_from(repo_url, project_path)
+                repo = GitRepo(project_path)
+            except GitCommandError as e:
+                shutil.rmtree(project_path)
+                raise e
+
+        return project_path, repo
+
+    def scan(self, repo_url, since_timestamp=0, max_depth=1000000,
+             git_token=None, local_repo=False):
         """ Scan a repository.
 
         Parameters
         ----------
-        git_url: string
-            The url of a git repository
+        repo_url: str
+            The location of a git repository (an url if local_repo is False, a
+            local path otherwise)
         since_timestamp: int, optional
             The oldest timestamp to scan
         max_depth: int, optional
             The maximum number of commits to scan
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
+        local_repo: bool, optional
+            If True, get the repository from a local directory instead of the
+            web
 
         Returns
         -------
@@ -69,8 +131,12 @@ class GitScanner(BaseScanner):
             A list of discoveries (dictionaries). If there are no discoveries
             return an empty list
         """
-        project_path = self.clone_git_repo(git_url)
-        repo = GitRepo(project_path)
+        if git_token:
+            logger.debug('Authenticate user with token')
+            repo_url = repo_url.replace('https://',
+                                        f'https://oauth2:{git_token}@')
+
+        project_path, repo = self.get_git_repo(repo_url, local_repo)
 
         already_searched = set()
         discoveries = []

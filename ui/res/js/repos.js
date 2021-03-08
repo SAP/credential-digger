@@ -49,13 +49,16 @@ function initReposDataTable() {
         document.querySelector('#allDiscoveries').innerText = json.reduce((prev, curr) => prev + curr.lendiscoveries, 0);
         // Map json data before sending it to datatable
         return json.map(item => {
+          local_repo = !(item.url.startsWith('http://') || item.url.startsWith('https://'));
           return {
             ...item,
             last_scan: item.last_scan ? timestampToDate(item.last_scan) : 'Never',
             url: `
               <div>
+                ${local_repo ?
+                `<span class="icon icon-folder_open repo-icon"></span>` :
+                `<a target="_blank" href="${item.url}" class="icon icon-github repo-icon"></a>`}
                 <span>${item.url}</span>
-                <a target="_blank" href="${item.url}" class="icon icon-github github"></a>
               </div>`,
             scan_active: item.scan_active ? `
               <span class="icon icon-timelapse warning-color"></span>
