@@ -266,7 +266,7 @@ class SqliteClient(Client):
         Parameters
         ----------
         repo_url: str
-            The url of the repo
+            The url of the repository
 
         Returns
         -------

@@ -260,7 +260,7 @@ class Client(Interface):
         query: str
             The query to be run, with placeholders in place of parameters
         repo_url: str
-            The url of the repo
+            The url of the repository
 
         Returns
         -------
@@ -513,7 +513,7 @@ class Client(Interface):
             The new state of these discoveries
         repo_url: str
             The url of the repository
-        file_name: str
+        file_name: str, optional
             The name of the file
         snippet: str, optional
             The snippet
@@ -534,9 +534,9 @@ class Client(Interface):
             return self.query_check(
                 query, new_state, repo_url, file_name, snippet)
 
-    def scan(self, repo_url, category=None, scanner=GitScanner,
-             models=None, exclude=None, force=False, debug=False,
-             generate_snippet_extractor=False, git_token=None):
+    def scan(self, repo_url, category=None, models=None, exclude=None,
+             force=False, debug=False, generate_snippet_extractor=False,
+             scanner=GitScanner, **scanner_kwargs):
         """ Launch the scan of a repository.
 
         Parameters
@@ -546,8 +546,6 @@ class Client(Interface):
         category: str, optional
             If specified, scan the repo using all the rules of this category,
             otherwise use all the rules in the db
-        scanner: class, default: `GitScanner`
-            The class of the scanner, a subclass of `scanners.BaseScanner`
         models: list, optional
             A list of models for the ML false positives detection
         exclude: list, optional
@@ -562,8 +560,10 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
-        git_token: str, optional
-            Git personal access token to authenticate to the git server
+        scanner: class, default: `GitScanner`
+            The class of the scanner, a subclass of `scanners.BaseScanner`
+        scanner_kwargs: kwargs
+            Keyword arguments to be passed to the scanner
 
         Returns
         -------
@@ -609,9 +609,11 @@ class Client(Interface):
             exclude = []
 
         # Try to add the repository to the db
+        new_repo = False
         if self.add_repo(repo_url):
             # The repository is new, scan from the first commit
             from_timestamp = 0
+            new_repo = True
         else:
             # Get the latest commit recorded on the db
             # `or` clause needed in case the previous scan attempt was broken
@@ -632,14 +634,16 @@ class Client(Interface):
         # Call scanner
         s = scanner(rules)
         logger.debug('Scanning commits...')
-        if git_token:
-            logger.debug('Authenticate user with token')
-            repo_url_scan = repo_url.replace('https://',
-                                             f'https://oauth2:{git_token}@')
-        else:
-            repo_url_scan = repo_url
-        latest_timestamp, these_discoveries = s.scan(repo_url_scan,
-                                                     since_timestamp=from_timestamp)
+
+        try:
+            latest_timestamp, these_discoveries = s.scan(
+                repo_url, since_timestamp=from_timestamp, **scanner_kwargs)
+        except Exception as e:
+            # If the scan raises an exception, remove the newly added repo
+            # before bubbling the exception
+            if new_repo:
+                self.delete_repo(repo_url)
+            raise e
 
         logger.info(f'Detected {len(these_discoveries)} discoveries.')
 
