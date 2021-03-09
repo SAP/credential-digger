@@ -50,19 +50,45 @@ class FileScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, dir_path, max_depth=-1, ignore_list=[]):
+    def scan(self, scan_path, max_depth=-1, ignore_list=[]):
         """ Scan a directory.
 
-        TODO: docs
+        Parameters
+        ----------
+        scan_path: str
+            The path (either absolute or relative) of a file or directory to
+            scan
+        max_depth: int, optional
+            The maximum depth to which traverse the subdirectories tree.
+            A negative value will not affect the scan.
+        ignore_list: list, optional
+            A list of paths to ignore during the scan. This can include file
+            names, directory names, or whole paths. Wildcards are supported as
+            per the fnmatch package.
+
+        Returns
+        -------
+        list
+            A list of discoveries (dictionaries). If there are no discoveries
+            return an empty list
+
+        Raises
+        ------
+        FileNotFoundError
+            If the given path is not an existing directory
         """
-        dir_path = os.path.abspath(dir_path)
-        if not os.path.exists(dir_path):
+        # Ensure that `dir_path` is treated as an absolute path
+        scan_path = os.path.abspath(scan_path)
+        if not os.path.exists(scan_path):
             raise FileNotFoundError(
-                f"{dir_path} is not an existing directory.")
+                f"{scan_path} is not an existing directory.")
 
         # Copy directory/file to temp folder
         project_root = tempfile.mkdtemp().rstrip(os.path.sep)
-        shutil.copytree(dir_path, project_root, dirs_exist_ok=True)
+        if os.path.isdir(scan_path):
+            shutil.copytree(scan_path, project_root, dirs_exist_ok=True)
+        else:
+            shutil.copy(scan_path, project_root)
 
         all_discoveries = []
 
@@ -90,6 +116,21 @@ class FileScanner(BaseScanner):
         return all_discoveries
 
     def scan_file(self, project_root, relative_path):
+        """ Scan a single file for discoveries.
+
+        Parameters
+        ----------
+        project_root: str
+            Root path of the scanned project
+        relative_path: str
+            Path of the file, relative to `project_root`
+
+        Returns
+        -------
+        list
+            A list of discoveries (dictionaries). If there are no discoveries
+            return an empty list
+        """
         discoveries = []
         line_number = 1
 
@@ -111,8 +152,27 @@ class FileScanner(BaseScanner):
         return discoveries
 
     def _prune(self, rel_dir_root, dirs, files, max_depth=-1, ignore_list=[]):
-        """
-        TODO: docs
+        """ Prune files and directories lists based on different parameters.
+
+        NOTE: files and directories removal is done in-place in the `dirs` and
+        `files` lists, as this is needed by `os.walk()`.
+
+        Parameters
+        ----------
+        rel_dir_root: str
+            Path of the root of subdirectories contained in `dirs`, relative to
+            the project root path
+        dirs: list
+            List of subdirectories in the current directory
+        files: list
+            List of files in the current directory
+        max_depth: int, optional
+            The maximum depth to which traverse the subdirectories tree.
+            A negative value will not affect the scan.
+        ignore_list: list, optional
+            A list of paths to ignore during the scan. This can include file
+            names, directory names, or whole paths. Wildcards are supported as
+            per the fnmatch package.
         """
         # Prune directories with regard to `max_depth` parameter
         if max_depth > -1:

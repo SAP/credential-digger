@@ -597,16 +597,16 @@ class Client(Interface):
             repo_url = os.path.abspath(repo_url)
 
         return self._scan(
-            repo_url=repo_url, category=category,
+            repo_url=repo_url, scanner=GitScanner, category=category,
             models=models, exclude=exclude, force=force, debug=debug,
             generate_snippet_extractor=generate_snippet_extractor,
-            scanner=GitScanner, local_repo=local_repo, git_token=git_token)
+            local_repo=local_repo, git_token=git_token)
 
     def scan_directory(self, dir_path, category=None, models=None,
                        exclude=None, force=False, debug=False,
                        generate_snippet_extractor=False, max_depth=-1,
                        ignore_list=[]):
-        """ Launch the scan of a repository.
+        """ Launch the scan of a local directory.
 
         Parameters
         ----------
@@ -629,8 +629,13 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
-        TODO: docs
-
+        max_depth: int, optional
+            The maximum depth to which traverse the subdirectories tree.
+            A negative value will not affect the scan.
+        ignore_list: list, optional
+            A list of paths to ignore during the scan. This can include file
+            names, directory names, or whole paths. Wildcards are supported as
+            per the fnmatch package.
 
         Returns
         -------
@@ -645,10 +650,10 @@ class Client(Interface):
                              "scanned. Please use \"force\" to rescan it.")
 
         return self._scan(
-            repo_url=dir_path, category=category, models=models,
-            exclude=exclude, force=force, debug=debug,
+            repo_url=dir_path, scanner=FileScanner, category=category,
+            models=models, exclude=exclude, force=force, debug=debug,
             generate_snippet_extractor=generate_snippet_extractor,
-            scanner=FileScanner, max_depth=max_depth, ignore_list=ignore_list)
+            max_depth=max_depth, ignore_list=ignore_list)
 
     def _scan(self, repo_url, scanner, category=None, models=None, exclude=None,
               force=False, debug=False, generate_snippet_extractor=False,
@@ -760,7 +765,7 @@ class Client(Interface):
             these_discoveries = s.scan(repo_url, **scanner_kwargs)
         except Exception as e:
             # If the scan raises an exception, remove the newly added repo
-            # before bubbling the exception
+            # before bubbling the error
             if new_repo:
                 self.delete_repo(repo_url)
             raise e

@@ -68,7 +68,7 @@ class GitScanner(BaseScanner):
         -------
         str
             The temporary path to which the repository has been copied
-        GtiRepo
+        GitRepo
             The repository object
 
         Raises
