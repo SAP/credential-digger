@@ -29,6 +29,7 @@ optional arguments:
 import importlib
 import logging
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -229,11 +230,10 @@ def link(origin, link_name, force=True, model_path=None):
         link_path.unlink()
     elif link_path.exists():  # does it exist otherwise?
         # NB: Check this last because valid symlinks also "exist".
+        # There is a folder at the same location and with the same name
         logger.warning(
-            f'Can not overwrite symlink {link_name}\n'
-            'This can happen if your data directory contains a directory '
-            'or file of the same name.'
-        )
+            f'Folder {link_name} already exists. It will be deleted.')
+        shutil.rmtree(link_path)
 
     details = "%s --> %s" % (str(model_path), str(link_path))
     try:
