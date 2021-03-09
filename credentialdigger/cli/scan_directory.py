@@ -55,8 +55,6 @@ optional arguments:
 import logging
 import sys
 
-from credentialdigger.scanners.file_scanner import FileScanner
-
 logger = logging.getLogger(__name__)
 
 
@@ -107,15 +105,14 @@ def run(client, args):
         that the scan detected no leaks in this repo.
     """
 
-    discoveries = client.scan(
-        repo_url=args.dir_path,
+    discoveries = client.scan_directory(
+        dir_path=args.dir_path,
         category=args.category,
         models=args.models,
         exclude=args.exclude,
         force=args.force,
         debug=args.debug,
         generate_snippet_extractor=args.generate_snippet_extractor,
-        scanner=FileScanner,
         max_depth=args.max_depth)
 
     sys.exit(len(discoveries))

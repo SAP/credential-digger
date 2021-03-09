@@ -113,7 +113,7 @@ def run(client, args):
         force=args.force,
         debug=args.debug,
         generate_snippet_extractor=args.generate_snippet_extractor,
-        git_token=args.git_token,
-        local_repo=args.local)
+        local_repo=args.local,
+        git_token=args.git_token)
 
     sys.exit(len(discoveries))
