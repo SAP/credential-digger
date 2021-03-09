@@ -641,8 +641,8 @@ class Client(Interface):
         dir_path = os.path.abspath(dir_path)
 
         if self.get_repo(dir_path) != {} and force is False:
-            raise ValueError(f"The directory \"{dir_path}\" has already been \
-                scanned. Please use \"force\" to rescan it.")
+            raise ValueError(f"The directory \"{dir_path}\" has already been "
+                             "scanned. Please use \"force\" to rescan it.")
 
         return self._scan(
             repo_url=dir_path, category=category, models=models,
@@ -753,9 +753,11 @@ class Client(Interface):
         s = scanner(rules)
         logger.debug('Scanning commits...')
 
+        if 'since_timestamp' in scanner_kwargs:
+            scanner_kwargs['since_timestamp'] = from_timestamp
+
         try:
-            these_discoveries = s.scan(
-                repo_url, since_timestamp=from_timestamp, **scanner_kwargs)
+            these_discoveries = s.scan(repo_url, **scanner_kwargs)
         except Exception as e:
             # If the scan raises an exception, remove the newly added repo
             # before bubbling the exception

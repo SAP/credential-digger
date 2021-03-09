@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import tempfile
+from fnmatch import fnmatch
 
 import hyperscan
 
@@ -60,37 +61,41 @@ class FileScanner(BaseScanner):
                 f"{dir_path} is not an existing directory.")
 
         # Copy directory/file to temp folder
-        project_path = tempfile.mkdtemp().rstrip(os.path.sep)
-        shutil.copytree(dir_path, project_path, dirs_exist_ok=True)
+        project_root = tempfile.mkdtemp().rstrip(os.path.sep)
+        shutil.copytree(dir_path, project_root, dirs_exist_ok=True)
 
         all_discoveries = []
-        initial_depth = project_path.count(os.path.sep)
 
-        for root, dirs, files in os.walk(project_path):
+        # Walk the directory tree and scan files
+        for abs_dir_root, dirs, files in os.walk(project_root):
+            rel_dir_root = abs_dir_root[len(project_root):].lstrip(os.path.sep)
+
             # Prune unwanted files and subdirectories
-            self._prune(root, dirs, files, initial_depth,
+            self._prune(rel_dir_root, dirs, files,
                         max_depth=max_depth,
                         ignore_list=ignore_list)
 
+            # Scan remaining files
             for file_name in files:
-                file_path = os.path.join(root, file_name)
-                file_discoveries = self.scan_file(file_path, project_path)
+                rel_file_path = os.path.join(rel_dir_root, file_name)
+                file_discoveries = self.scan_file(
+                    project_root=project_root, relative_path=rel_file_path)
                 all_discoveries.extend(file_discoveries)
 
         # Delete temp folder
-        shutil.rmtree(project_path)
+        shutil.rmtree(project_root)
 
         # Generate a list of discoveries and return it.
         # NOTE: this may become inefficient when the discoveries are many.
         return all_discoveries
 
-    def scan_file(self, file_path, project_root):
+    def scan_file(self, project_root, relative_path):
         discoveries = []
         line_number = 1
-        relative_path = file_path.lstrip(project_root)
 
+        full_path = os.path.join(project_root, relative_path)
         try:
-            with open(file_path, "r", encoding='utf-8') as file_to_scan:
+            with open(full_path, "r", encoding='utf-8') as file_to_scan:
                 for row in file_to_scan:
                     rh = ResultHandler()
                     self.stream.scan(
@@ -105,25 +110,30 @@ class FileScanner(BaseScanner):
             pass
         return discoveries
 
-    def _prune(self, root, dirs, files, initial_depth, max_depth=-1,
-               ignore_list=[]):
+    def _prune(self, rel_dir_root, dirs, files, max_depth=-1, ignore_list=[]):
         """
         TODO: docs
         """
+        # Prune directories with regard to `max_depth` parameter
+        if max_depth > -1:
+            curr_depth = rel_dir_root.lstrip(os.path.sep).count(os.path.sep)
+            if curr_depth >= max_depth:
+                del dirs[:]
+
         updated_dirs = [d for d in dirs]
         updated_files = [f for f in files]
 
-        # Prune directories
-        if max_depth > -1:
-            curr_depth = root.count(os.path.sep)
-            if curr_depth >= initial_depth + max_depth:
-                del updated_dirs[:]
+        # Prune directories in `ignore_list`
+        for dir_name in dirs:
+            dir_path = os.path.join(rel_dir_root, dir_name)
+            if any([fnmatch(dir_path, pattern) for pattern in ignore_list]):
+                updated_dirs.remove(dir_name)
 
-        # # Prune files
-        # for file_name in files:
-        #     file_path = os.path.join(root, file_name)
-
-        #     # TODO: prune files and subdirectories in `ignore_list`
+        # Prune files in `ignore_list`
+        for file_name in files:
+            file_path = os.path.join(rel_dir_root, file_name)
+            if any([fnmatch(file_path, pattern) for pattern in ignore_list]):
+                updated_files.remove(file_name)
 
         # Removing the items is done in-place as this is needed by os.walk()
         files[:] = updated_files[:]
