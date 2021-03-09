@@ -15,21 +15,31 @@ class TestFileScanner(unittest.TestCase):
                   'category': 'password', 'description': 'password keywords'}]
         cls.file_scanner = FileScanner(rules)
 
-    def test_scan_dir(self):
-        """ Test scan success on the 'scan_tests' folder """
-        test_path = os.path.join(self.root_test_path, 'scan_tests')
+    @parameterized.expand([
+        param(path="scan_tests", expected_discoveries=3),
+        param(path="scan_tests/scan_a.py", expected_discoveries=2),
+        param(path="./scan_tests/scan_a.py", expected_discoveries=2)
+    ])
+    def test_scan_dir(self, path, expected_discoveries):
+        """ Test the overall scan success on the 'scan_tests' folder """
+        test_path = os.path.join(self.root_test_path, path)
         discoveries = self.file_scanner.scan(test_path)
-        self.assertEqual(len(discoveries), 3)
+        self.assertEqual(len(discoveries), expected_discoveries)
 
     @parameterized.expand(
-        ["/nonexistentdirectory/", "https://url", "not_a_path"])
+        ["/nonexistentdirectory/", "https://url", "not?a,path"])
     def test_scan_dir_not_found(self, dir_path):
         """ Test scan failure with nonexistent directory paths """
         with self.assertRaises(FileNotFoundError):
             self.file_scanner.scan(dir_path)
 
     @parameterized.expand([
+        # Test file with no discoveries
+        param(file_path='subdir_A/subdir_AB/file_ABa.txt',
+              expected_discoveries=[]),
+        # Test file with three discoveries
         param(file_path='file_a.py', expected_discoveries=[2, 4, 5]),
+        # Test binary file
         param(file_path='file_c.png', expected_discoveries=[])
     ])
     def test_scan_file(self, file_path, expected_discoveries):
@@ -44,16 +54,20 @@ class TestFileScanner(unittest.TestCase):
         self.assertCountEqual(d_lines, expected_discoveries)
 
     @parameterized.expand([
+        # Test root-only max depth
         param(max_depth=0,
               expected_dirs=[],
               expected_files=["file_a.py", "file_b.txt"]),
+        # Test max depth = 1 (one subdirectory)
         param(max_depth=1,
               expected_dirs=["subdir_A"],
               expected_files=["file_a.py", "file_b.txt", "file_Aa.yml"]),
+        # Test max depth = 2 (two subdirectories)
         param(max_depth=2,
               expected_dirs=["subdir_A", "subdir_AB"],
               expected_files=["file_a.py", "file_b.txt",
                               "file_Aa.yml", "file_ABa.txt"]),
+        # Test negative values (should not influence depth)
         param(max_depth=-1,
               expected_dirs=["subdir_A", "subdir_AB"],
               expected_files=["file_a.py", "file_b.txt",
@@ -91,6 +105,11 @@ class TestFileScanner(unittest.TestCase):
             ignore_list=["*_a*"],
             expected_ignored_dirs=[],
             expected_ignored_files=["file_a.txt", "scan_a.py"]),
+        # Test nonexistent files and wildcards
+        param(
+            ignore_list=["nonexistent_file.txt", "*z*"],
+            expected_ignored_dirs=[],
+            expected_ignored_files=[]),
     ])
     def test_prune_ignore_list(self, ignore_list, expected_ignored_dirs,
                                expected_ignored_files):

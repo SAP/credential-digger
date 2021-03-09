@@ -1,25 +1,22 @@
 """
-TODO: docs
-TODO: regenerate with missing arguments
-
-The 'scan' module can be used to scan a git repository on the fly from the
-terminal. It supports both the Sqlite and Postgres clients.
+The 'scan_directory' module can be used to scan a local directory or file on 
+the fly from the terminal. It supports both the Sqlite and Postgres clients.
 
 NOTE: Postgres is used by default. Please make sure that the environment
 variables are exported and that the rules have already been added to the
 database.
 
-usage: credentialdigger scan [-h] [--dotenv DOTENV] [--sqlite SQLITE]
-                             [--category CATEGORY]
-                             [--models MODELS [MODELS ...]]
-                             [--exclude EXCLUDE [EXCLUDE ...]] [--debug]
-                             [--git_token GIT_TOKEN] [--local] [--force]
-                             [--generate_snippet_extractor]
-                             repo_url
+usage: credentialdigger scan_directory [-h] [--dotenv DOTENV]
+                                       [--sqlite SQLITE] [--category CATEGORY]
+                                       [--models MODELS [MODELS ...]]
+                                       [--exclude EXCLUDE [EXCLUDE ...]]
+                                       [--debug] [--force]
+                                       [--generate_snippet_extractor]
+                                       [--max_depth MAX_DEPTH]
+                                       dir_path
 
 positional arguments:
-  repo_url              The location of a git repository (an url if --local is
-                        not set, a local path otherwise)
+  dir_path              The path of the directory to scan
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -39,18 +36,18 @@ optional arguments:
   --debug               Flag used to decide whether to visualize the
                         progressbars during the scan (e.g., during the
                         insertion of the detections in the db)
-  --git_token GIT_TOKEN
-                        Git personal access token to authenticate to the git
-                        server
-  --local               If True, get the repository from a local directory
-                        instead of the web
-  --force               Force a complete re-scan of the repository, in case it
+  --force               Force a complete re-scan of the directory, in case it
                         has already been scanned previously
   --generate_snippet_extractor
                         Generate the extractor model to be used in the
                         SnippetModel. The extractor is generated using the
                         ExtractorGenerator. If `False`, use the pre-trained
                         extractor model
+  --max_depth MAX_DEPTH
+                        Maximum depth for subdirectories scanning (If it is
+                        set to -1 or not specified, all subdirectories will be
+                        scanned)
+
 """
 import logging
 import sys
