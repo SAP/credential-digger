@@ -1,22 +1,21 @@
 """
-The 'scan_directory' module can be used to scan a local directory or file on 
+The 'scan_path' module can be used to scan a local directory or file on 
 the fly from the terminal. It supports both the Sqlite and Postgres clients.
 
 NOTE: Postgres is used by default. Please make sure that the environment
 variables are exported and that the rules have already been added to the
 database.
 
-usage: credentialdigger scan_directory [-h] [--dotenv DOTENV]
-                                       [--sqlite SQLITE] [--category CATEGORY]
-                                       [--models MODELS [MODELS ...]]
-                                       [--exclude EXCLUDE [EXCLUDE ...]]
-                                       [--debug] [--force]
-                                       [--generate_snippet_extractor]
-                                       [--max_depth MAX_DEPTH]
-                                       dir_path
+usage: credentialdigger scan_path [-h] [--dotenv DOTENV] [--sqlite SQLITE]
+                                  [--category CATEGORY]
+                                  [--models MODELS [MODELS ...]]
+                                  [--exclude EXCLUDE [EXCLUDE ...]] [--debug]
+                                  [--force] [--generate_snippet_extractor]
+                                  [--max_depth MAX_DEPTH]
+                                  scan_path
 
 positional arguments:
-  dir_path              The path of the directory to scan
+  scan_path             The path of the directory or file to scan
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -47,7 +46,6 @@ optional arguments:
                         Maximum depth for subdirectories scanning (If it is
                         set to -1 or not specified, all subdirectories will be
                         scanned)
-
 """
 import logging
 import sys
@@ -66,8 +64,8 @@ def configure_parser(parser):
     """
     parser.set_defaults(func=run)
     parser.add_argument(
-        'dir_path', type=str,
-        help='The path of the directory to scan')
+        'scan_path', type=str,
+        help='The path of the directory or file to scan')
     parser.add_argument(
         '--force', action='store_true',
         help='Force a complete re-scan of the directory, in case it has \
@@ -102,8 +100,8 @@ def run(client, args):
         that the scan detected no leaks in this repo.
     """
 
-    discoveries = client.scan_directory(
-        dir_path=args.dir_path,
+    discoveries = client.scan_path(
+        scan_path=args.scan_path,
         category=args.category,
         models=args.models,
         exclude=args.exclude,

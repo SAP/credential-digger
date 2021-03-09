@@ -602,16 +602,15 @@ class Client(Interface):
             generate_snippet_extractor=generate_snippet_extractor,
             local_repo=local_repo, git_token=git_token)
 
-    def scan_directory(self, dir_path, category=None, models=None,
-                       exclude=None, force=False, debug=False,
-                       generate_snippet_extractor=False, max_depth=-1,
-                       ignore_list=[]):
-        """ Launch the scan of a local directory.
+    def scan_path(self, scan_path, category=None, models=None, exclude=None,
+                  force=False, debug=False, generate_snippet_extractor=False,
+                  max_depth=-1, ignore_list=[]):
+        """ Launch the scan of a local directory or file.
 
         Parameters
         ----------
-        dir_path: str
-            The path of the directory to scan
+        scan_path: str
+            The path of the directory or file to scan
         category: str, optional
             If specified, scan the repo using all the rules of this category,
             otherwise use all the rules in the db
@@ -643,14 +642,14 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        dir_path = os.path.abspath(dir_path)
+        scan_path = os.path.abspath(scan_path)
 
-        if self.get_repo(dir_path) != {} and force is False:
-            raise ValueError(f"The directory \"{dir_path}\" has already been "
+        if self.get_repo(scan_path) != {} and force is False:
+            raise ValueError(f"The directory \"{scan_path}\" has already been "
                              "scanned. Please use \"force\" to rescan it.")
 
         return self._scan(
-            repo_url=dir_path, scanner=FileScanner, category=category,
+            repo_url=scan_path, scanner=FileScanner, category=category,
             models=models, exclude=exclude, force=force, debug=debug,
             generate_snippet_extractor=generate_snippet_extractor,
             max_depth=max_depth, ignore_list=ignore_list)

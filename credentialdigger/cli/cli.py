@@ -17,8 +17,7 @@ class customParser(argparse.ArgumentParser):
 
 
 def main():
-    from . import (add_rules, download, scan, scan_directory, scan_user,
-                   scan_wiki)
+    from . import add_rules, download, scan, scan_path, scan_user, scan_wiki
 
     # Main parser configuration
     main_parser = customParser('credentialdigger')
@@ -87,11 +86,11 @@ def main():
         parents=[parser_dotenv, parser_sqlite, parser_scan_base])
     scan_wiki.configure_parser(parser_scan_wiki)
 
-    # scan_directory subparser configuration
-    parser_scan_directory = subparsers.add_parser(
-        'scan_directory', help='Scan a local directory',
+    # scan_path subparser configuration
+    parser_scan_path = subparsers.add_parser(
+        'scan_path', help='Scan a local directory',
         parents=[parser_dotenv, parser_sqlite, parser_scan_base])
-    scan_directory.configure_parser(parser_scan_directory)
+    scan_path.configure_parser(parser_scan_path)
 
     # Run the parser
     if len(sys.argv) == 1:
@@ -107,7 +106,7 @@ def main():
         add_rules.run,
         scan_user.run,
         scan_wiki.run,
-        scan_directory.run
+        scan_path.run
     ]:
         # Connect to db only when running commands that need it
         if args.sqlite:
