@@ -844,7 +844,8 @@ class Client(Interface):
                                             curr_d['line_number'],
                                             curr_d['snippet'],
                                             repo_url,
-                                            curr_d['rule_id'])
+                                            curr_d['rule_id'],
+                                            curr_d['state'])
                 if new_id != -1 and curr_d['state'] != 'false_positive':
                     discoveries_ids.append(new_id)
         else:
