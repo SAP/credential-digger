@@ -1,0 +1,3 @@
+Text files should also be taken into account.
+If an api_key is present, it should be detected.
+Also a password for that matter.

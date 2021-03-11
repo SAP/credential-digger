@@ -52,6 +52,8 @@ function initFilesDataTable() {
       url: "/get_files",
       data: { url: repoUrl },
       dataSrc: function (json) {
+        document.querySelector('#discoveriesCounter').innerText = json
+          .reduce((prev, curr) => prev + curr.tot_discoveries, 0);
         // Map json data before sending it to datatable
         return json.map(item => {
           return {

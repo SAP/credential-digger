@@ -78,6 +78,9 @@ def configure_parser(parser):
     parser.add_argument(
         '--api_endpoint', type=str, default='https://api.github.com',
         help='API endpoint of the git server')
+    parser.add_argument(
+        '--git_token', default=None, type=str,
+        help='Git personal access token to authenticate to the git server')
 
 
 def run(client, args):
