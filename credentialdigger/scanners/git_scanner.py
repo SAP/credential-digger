@@ -3,13 +3,12 @@ import logging
 import re
 import shutil
 import tempfile
-from datetime import datetime, timezone
 
 import hyperscan
 from git import NULL_TREE, GitCommandError, InvalidGitRepositoryError
 from git import Repo as GitRepo
 
-from .base_scanner import BaseScanner
+from .base_scanner import BaseScanner, ResultHandler
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +68,7 @@ class GitScanner(BaseScanner):
         -------
         str
             The temporary path to which the repository has been copied
-        GtiRepo
+        GitRepo
             The repository object
 
         Raises
@@ -125,8 +124,6 @@ class GitScanner(BaseScanner):
 
         Returns
         -------
-        int
-            The latest scan timestamp (now) (`None` if the repository is empty)
         list
             A list of discoveries (dictionaries). If there are no discoveries
             return an empty list
@@ -206,10 +203,9 @@ class GitScanner(BaseScanner):
         # Delete repo folder
         shutil.rmtree(project_path)
 
-        now_timestamp = int(datetime.now(timezone.utc).timestamp())
         # Generate a list of discoveries and return it.
         # N.B.: This may become inefficient when the discoveries are many.
-        return now_timestamp, discoveries
+        return discoveries
 
     def _diff_worker(self, diff, commit):
         """ Compute the diff between two commits.
@@ -300,39 +296,3 @@ class GitScanner(BaseScanner):
                 detections.append(rh.result)
             line_number += 1
         return detections
-
-
-class ResultHandler:
-
-    def __init__(self):
-        self.result = None
-
-    def handle_results(self, eid, start, end, flags, context):
-        """ Give a structure to the discovery and store it in a variable.
-
-        This method is needed in order to process the result of a scan (it is
-        used as a callback function).
-
-        Parameters
-        ----------
-        eid: int
-            The id of the regex that produced the discovery
-        start: int
-            The start index of the match
-        end: int
-            The end index of the match
-        flags
-            Not implemented by the library
-        context: list
-            Metadata (composed by snippet, filename, hash, line_number)
-        """
-        snippet, filename, commit_hash, line_number = context
-
-        meta_data = {'file_name': filename,
-                     'commit_id': commit_hash,
-                     'line_number': line_number,
-                     'snippet': snippet,
-                     'rule_id': eid,
-                     'state': 'new'}
-
-        self.result = meta_data

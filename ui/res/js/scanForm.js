@@ -124,7 +124,7 @@ function validateForm() {
   let formValid = true;
   if (urlValid == null) {
     formValid = false;
-    addError(repoLink, 'The URL you have provided is invalid.');
+    addError(repoLink, 'The URL or path you provided is not a git repository.');
   }
   if (!cBox.checked && rulesList.selectedIndex == -1) {
     formValid = false;

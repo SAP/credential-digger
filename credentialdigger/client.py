@@ -1,6 +1,8 @@
 import logging
+import os
 from abc import ABC, abstractmethod
 from collections import namedtuple
+from datetime import datetime, timezone
 
 import yaml
 from github import Github
@@ -8,6 +10,7 @@ from tqdm import tqdm
 
 from .generator import ExtractorGenerator
 from .models.model_manager import ModelManager
+from .scanners.file_scanner import FileScanner
 from .scanners.git_scanner import GitScanner
 
 logger = logging.getLogger(__name__)
@@ -154,6 +157,31 @@ class Client(Interface):
         """
         return self.query_id(query, regex, category, description)
 
+    def add_rules_from_file(self, filename):
+        """ Add rules from a file.
+
+        Parameters
+        ----------
+        filename: str
+            The file containing the rules
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file does not exist
+        ParserError
+            If the file is malformed
+        KeyError
+            If one of the required attributes in the file (i.e., rules, regex,
+            and category) is missing
+        """
+        with open(filename, 'r') as f:
+            data = yaml.safe_load(f)
+        for rule in data['rules']:
+            self.add_rule(rule['regex'],
+                          rule['category'],
+                          rule.get('description', ''))
+
     def delete_rule(self, query, ruleid):
         """Delete a rule from database
 
@@ -193,8 +221,8 @@ class Client(Interface):
         ----------
         query: str
             The query to be run, with placeholders in place of parameters
-        repo_id: int
-            The id of the repo to delete
+        repo_url: str
+            The url of the repository to delete
 
         Returns
         -------
@@ -203,30 +231,23 @@ class Client(Interface):
         """
         return self.query(query, repo_url,)
 
-    def add_rules_from_file(self, filename):
-        """ Add rules from a file.
+    def delete_discoveries(self, query, repo_url):
+        """ Delete all discoveries of a repository.
 
         Parameters
         ----------
-        filename: str
-            The file containing the rules
+        query: str
+            The query to be run, with placeholders in place of parameters
+        repo_url: str
+            The repository url of the discoveries to delete
 
-        Raises
-        ------
-        FileNotFoundError
-            If the file does not exist
-        ParserError
-            If the file is malformed
-        KeyError
-            If one of the required attributes in the file (i.e., rules, regex,
-            and category) is missing
+        Returns
+        -------
+        bool
+            `True` if the discoveries were successfully deleted, `False`
+            otherwise
         """
-        with open(filename, 'r') as f:
-            data = yaml.safe_load(f)
-        for rule in data['rules']:
-            self.add_rule(rule['regex'],
-                          rule['category'],
-                          rule.get('description', ''))
+        return self.query(query, repo_url,)
 
     def get_repos(self):
         """ Get all the repositories.
@@ -536,8 +557,8 @@ class Client(Interface):
 
     def scan(self, repo_url, category=None, models=None, exclude=None,
              force=False, debug=False, generate_snippet_extractor=False,
-             scanner=GitScanner, **scanner_kwargs):
-        """ Launch the scan of a repository.
+             local_repo=False, git_token=None):
+        """ Launch the scan of a git repository.
 
         Parameters
         ----------
@@ -560,8 +581,108 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
-        scanner: class, default: `GitScanner`
+        local_repo: bool, optional
+            If True, get the repository from a local directory instead of the
+            web
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
+
+        Returns
+        -------
+        list
+            The id of the discoveries detected by the scanner (excluded the
+            ones classified as false positives).
+        """
+        if local_repo:
+            repo_url = os.path.abspath(repo_url)
+
+        return self._scan(
+            repo_url=repo_url, scanner=GitScanner, category=category,
+            models=models, exclude=exclude, force=force, debug=debug,
+            generate_snippet_extractor=generate_snippet_extractor,
+            local_repo=local_repo, git_token=git_token)
+
+    def scan_path(self, scan_path, category=None, models=None, exclude=None,
+                  force=False, debug=False, generate_snippet_extractor=False,
+                  max_depth=-1, ignore_list=[]):
+        """ Launch the scan of a local directory or file.
+
+        Parameters
+        ----------
+        scan_path: str
+            The path of the directory or file to scan
+        category: str, optional
+            If specified, scan the repo using all the rules of this category,
+            otherwise use all the rules in the db
+        models: list, optional
+            A list of models for the ML false positives detection
+        exclude: list, optional
+            A list of rules to exclude
+        force: bool, default `False`
+            Force a complete re-scan of the repository, in case it has already
+            been scanned previously
+        debug: bool, default `False`
+            Flag used to decide whether to visualize the progressbars during
+            the scan (e.g., during the insertion of the detections in the db)
+        generate_snippet_extractor: bool, default `False`
+            Generate the extractor model to be used in the SnippetModel. The
+            extractor is generated using the ExtractorGenerator. If `False`,
+            use the pre-trained extractor model
+        max_depth: int, optional
+            The maximum depth to which traverse the subdirectories tree.
+            A negative value will not affect the scan.
+        ignore_list: list, optional
+            A list of paths to ignore during the scan. This can include file
+            names, directory names, or whole paths. Wildcards are supported as
+            per the fnmatch package.
+
+        Returns
+        -------
+        list
+            The id of the discoveries detected by the scanner (excluded the
+            ones classified as false positives).
+        """
+        scan_path = os.path.abspath(scan_path)
+
+        if self.get_repo(scan_path) != {} and force is False:
+            raise ValueError(f"The directory \"{scan_path}\" has already been "
+                             "scanned. Please use \"force\" to rescan it.")
+
+        return self._scan(
+            repo_url=scan_path, scanner=FileScanner, category=category,
+            models=models, exclude=exclude, force=force, debug=debug,
+            generate_snippet_extractor=generate_snippet_extractor,
+            max_depth=max_depth, ignore_list=ignore_list)
+
+    def _scan(self, repo_url, scanner, category=None, models=None, exclude=None,
+              force=False, debug=False, generate_snippet_extractor=False,
+              **scanner_kwargs):
+        """ Launch the scan of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The location of a git repository (either an url or a local path,
+            depending on the scanner)
+        scanner: class
             The class of the scanner, a subclass of `scanners.BaseScanner`
+        category: str, optional
+            If specified, scan the repo using all the rules of this category,
+            otherwise use all the rules in the db
+        models: list, optional
+            A list of models for the ML false positives detection
+        exclude: list, optional
+            A list of rules to exclude
+        force: bool, default `False`
+            Force a complete re-scan of the repository, in case it has already
+            been scanned previously
+        debug: bool, default `False`
+            Flag used to decide whether to visualize the progressbars during
+            the scan (e.g., during the insertion of the detections in the db)
+        generate_snippet_extractor: bool, default `False`
+            Generate the extractor model to be used in the SnippetModel. The
+            extractor is generated using the ExtractorGenerator. If `False`,
+            use the pre-trained extractor model
         scanner_kwargs: kwargs
             Keyword arguments to be passed to the scanner
 
@@ -609,7 +730,6 @@ class Client(Interface):
             exclude = []
 
         # Try to add the repository to the db
-        new_repo = False
         if self.add_repo(repo_url):
             # The repository is new, scan from the first commit
             from_timestamp = 0
@@ -618,10 +738,12 @@ class Client(Interface):
             # Get the latest commit recorded on the db
             # `or` clause needed in case the previous scan attempt was broken
             from_timestamp = self.get_repo(repo_url)['last_scan'] or 0
+            new_repo = False
 
         # Force complete scan
         if force:
             logger.debug('Force complete scan')
+            self.delete_discoveries(repo_url)
             from_timestamp = 0
 
         # Prepare rules
@@ -635,12 +757,14 @@ class Client(Interface):
         s = scanner(rules)
         logger.debug('Scanning commits...')
 
+        if 'since_timestamp' in scanner_kwargs:
+            scanner_kwargs['since_timestamp'] = from_timestamp
+
         try:
-            latest_timestamp, these_discoveries = s.scan(
-                repo_url, since_timestamp=from_timestamp, **scanner_kwargs)
+            these_discoveries = s.scan(repo_url, **scanner_kwargs)
         except Exception as e:
             # If the scan raises an exception, remove the newly added repo
-            # before bubbling the exception
+            # before bubbling the error
             if new_repo:
                 self.delete_repo(repo_url)
             raise e
@@ -648,6 +772,7 @@ class Client(Interface):
         logger.info(f'Detected {len(these_discoveries)} discoveries.')
 
         # Update latest scan timestamp of the repo
+        latest_timestamp = int(datetime.now(timezone.utc).timestamp())
         self.update_repo(repo_url, latest_timestamp)
 
         # Verify if the SnippetModel is needed, and, in this case, check

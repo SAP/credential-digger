@@ -3,9 +3,8 @@ import logging
 import os
 import sys
 
-from dotenv import load_dotenv
-
 from credentialdigger import PgClient, SqliteClient
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +17,7 @@ class customParser(argparse.ArgumentParser):
 
 
 def main():
-    from . import add_rules, download, scan, scan_user, scan_wiki
+    from . import add_rules, download, scan, scan_path, scan_user, scan_wiki
 
     # Main parser configuration
     main_parser = customParser('credentialdigger')
@@ -56,9 +55,6 @@ def main():
         help='Flag used to decide whether to visualize the progressbars \
             during the scan (e.g., during the insertion of the detections in \
             the db)')
-    parser_scan_base.add_argument(
-        '--git_token', default=None, type=str,
-        help='Git personal access token to authenticate to the git server')
 
     # download subparser configuration
     parser_download = subparsers.add_parser(
@@ -84,11 +80,17 @@ def main():
         parents=[parser_dotenv, parser_sqlite, parser_scan_base])
     scan_user.configure_parser(parser_scan_user)
 
-    # scan_user subparser configuration
+    # scan_wiki subparser configuration
     parser_scan_wiki = subparsers.add_parser(
         'scan_wiki', help='Scan the wiki of a repository',
         parents=[parser_dotenv, parser_sqlite, parser_scan_base])
     scan_wiki.configure_parser(parser_scan_wiki)
+
+    # scan_path subparser configuration
+    parser_scan_path = subparsers.add_parser(
+        'scan_path', help='Scan a local directory',
+        parents=[parser_dotenv, parser_sqlite, parser_scan_base])
+    scan_path.configure_parser(parser_scan_path)
 
     # Run the parser
     if len(sys.argv) == 1:
@@ -99,7 +101,13 @@ def main():
     # If specified, load dotenv from the given path. Otherwise load from cwd
     load_dotenv(dotenv_path=args.dotenv, verbose=True)
 
-    if args.func in [scan.run, add_rules.run, scan_user.run, scan_wiki.run]:
+    if args.func in [
+        scan.run,
+        add_rules.run,
+        scan_user.run,
+        scan_wiki.run,
+        scan_path.run
+    ]:
         # Connect to db only when running commands that need it
         if args.sqlite:
             client = SqliteClient(args.sqlite)
