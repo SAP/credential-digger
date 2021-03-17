@@ -80,3 +80,12 @@ class TestGitScanner(unittest.TestCase):
 
         for d in discoveries:
             self.assertNotEqual(d['commit_id'], first_commit_hexsha)
+
+    def test_regex_check_line_number(self):
+        """ Test the line number of a discovery """
+        diff = """@@ -120,1 +109,2 @@
+                  - some_removed_text
+                  + some_added_text
+                  + password"""
+        discovery = self.git_scanner._regex_check(diff, "", "")[0]
+        self.assertEqual(discovery['line_number'], 111)
