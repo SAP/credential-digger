@@ -6,7 +6,7 @@ from parameterized import param, parameterized
 
 
 class TestFileScanner(unittest.TestCase):
-    root_test_path = './credentialdigger/tests/file_scanner_tests'
+    root_test_path = './tests/file_scanner_tests'
 
     @classmethod
     def setUpClass(cls):
@@ -14,6 +14,8 @@ class TestFileScanner(unittest.TestCase):
         rules = [{'id': 9, 'regex': 'sshpass|password|pwd|passwd|pass',
                   'category': 'password', 'description': 'password keywords'}]
         cls.file_scanner = FileScanner(rules)
+
+    # ======= INTEGRATION TESTS ======= #
 
     @parameterized.expand([
         param(path="scan_tests", expected_discoveries=3),
@@ -32,6 +34,8 @@ class TestFileScanner(unittest.TestCase):
         """ Test scan failure with nonexistent directory paths """
         with self.assertRaises(FileNotFoundError):
             self.file_scanner.scan(dir_path)
+
+    # ======= UNIT TESTS ======= #
 
     @parameterized.expand([
         # Test file with no discoveries
