@@ -15,8 +15,6 @@ class TestFileScanner(unittest.TestCase):
                   'category': 'password', 'description': 'password keywords'}]
         cls.file_scanner = FileScanner(rules)
 
-    # ======= INTEGRATION TESTS ======= #
-
     @parameterized.expand([
         param(path="scan_tests", expected_discoveries=3),
         param(path="scan_tests/scan_a.py", expected_discoveries=2),
@@ -34,8 +32,6 @@ class TestFileScanner(unittest.TestCase):
         """ Test scan failure with nonexistent directory paths """
         with self.assertRaises(FileNotFoundError):
             self.file_scanner.scan(dir_path)
-
-    # ======= UNIT TESTS ======= #
 
     @parameterized.expand([
         # Test file with no discoveries
