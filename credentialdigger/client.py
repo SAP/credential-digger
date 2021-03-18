@@ -654,6 +654,106 @@ class Client(Interface):
             generate_snippet_extractor=generate_snippet_extractor,
             max_depth=max_depth, ignore_list=ignore_list)
 
+    def scan_user(self, username, category=None, models=None, exclude=None,
+                  debug=False, generate_snippet_extractor=False, forks=False,
+                  git_token=None, api_endpoint='https://api.github.com'):
+        """ Scan all the repositories of a user.
+
+        Find all the repositories of a user, and scan
+        them. Please note that git limits the list of repositories to maximum
+        100 (due to pagination).
+
+        Parameters
+        ----------
+        username: str
+            The username as on github.com
+        category: str, optional
+            If specified, scan the repo using all the rules of this category,
+            otherwise use all the rules in the db
+        models: list, optional
+            A list of models for the ML false positives detection
+        exclude: list, optional
+            A list of rules to exclude
+        debug: bool, default `False`
+            Flag used to decide whether to visualize the progressbars during
+            the scan (e.g., during the insertion of the detections in the db)
+        generate_snippet_extractor: bool, default `False`
+            Generate the extractor model to be used in the SnippetModel. The
+            extractor is generated using the ExtractorGenerator. If `False`,
+            use the pre-trained extractor model
+        forks: bool, default `False`
+            Scan also repositories forked by this user
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
+        api_endpoint: str, default `https://api.github.com`
+            API endpoint of the git server (default is github.com)
+
+        Returns
+        -------
+        dict
+            The id of the discoveries detected by the scanner (excluded the
+            ones classified as false positives), grouped by repository.
+        """
+        logger.debug(f'Use API endpoint {api_endpoint}')
+
+        g = Github(base_url=api_endpoint,
+                   login_or_token=git_token,
+                   verify=False)
+        missing_ids = {}
+        for repo in g.get_user(username).get_repos():
+            if not forks and repo.fork:
+                # Ignore this repo since it is a fork
+                logger.info(f'Ignore {repo} (it is a fork)')
+                continue
+            # Get repo clone url without .git at the end
+            repo_url = repo.clone_url[:-4]
+            logger.info(f'Scanning {repo.url}')
+            missing_ids[repo_url] = self._scan(repo_url, GitScanner,
+                                               category=category,
+                                               models=models,
+                                               exclude=exclude,
+                                               debug=debug,
+                                               git_token=git_token)
+        return missing_ids
+
+    def scan_wiki(self, repo_url, category=None, scanner=GitScanner,
+                  models=None, exclude=None, debug=False, git_token=None):
+        """ Scan the wiki of a repository.
+
+        This method simply generates the url of a wiki from the url of its repo,
+        and uses the same `scan` method that we use for repositories.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+        category: str, optional
+            If specified, scan the repo using all the rules of this category,
+            otherwise use all the rules in the db
+        scanner: class, default: `GitScanner`
+            The class of the scanner, a subclass of `scanners.BaseScanner`
+        models: list, optional
+            A list of models for the ML false positives detection
+        exclude: list, optional
+            A list of rules to exclude
+        debug: bool, default `False`
+            Flag used to decide whether to visualize the progressbars during
+            the scan (e.g., during the insertion of the detections in the db)
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
+
+        Returns
+        -------
+        list
+            The id of the discoveries detected by the scanner (excluded the
+            ones classified as false positives).
+        """
+        # The url of a wiki is same as the url of its repo, but ending with
+        # `.wiki.git`
+        return self._scan(repo_url + '.wiki.git', scanner,
+                          category=category, models=models, exclude=exclude,
+                          debug=debug, git_token=git_token)
+
     def _scan(self, repo_url, scanner, category=None, models=None, exclude=None,
               force=False, debug=False, generate_snippet_extractor=False,
               **scanner_kwargs):
@@ -694,35 +794,6 @@ class Client(Interface):
         """
         if debug:
             logger.setLevel(level=logging.DEBUG)
-
-        def analyze_discoveries(model_manager, discoveries, debug):
-            """ Use a model to analyze a list of discoveries. """
-            false_positives = 0
-
-            # Analyze all the discoveries ids with the current model
-            if debug:
-                logger.debug(
-                    f'Analyzing discoveries with model {model_manager.model}')
-                for i in tqdm(range(len(discoveries))):
-                    if (discoveries[i]['state'] != 'false_positive' and
-                            model_manager.launch_model(discoveries[i])):
-                        discoveries[i]['state'] = 'false_positive'
-                        false_positives += 1
-            else:
-                for d in discoveries:
-                    if (d['state'] != 'false_positive' and
-                            model_manager.launch_model(d)):
-                        d['state'] = 'false_positive'
-                        false_positives += 1
-
-            if debug:
-                logger.debug(
-                    f'Model {model_manager.model.__class__.__name__} '
-                    f'classified {false_positives} discoveries.')
-                logger.debug('Change state to these discoveries')
-
-            # Return updated discoveries
-            return discoveries
 
         if models is None:
             models = []
@@ -809,7 +880,7 @@ class Client(Interface):
                     continue
 
                 # Analyze discoveries with this model
-                analyze_discoveries(mm, these_discoveries, debug)
+                self._analyze_discoveries(mm, these_discoveries, debug)
 
         # Check if we have to run the snippet model, and, in this case, if it
         # will use the pre-trained extractor or the generated one
@@ -830,7 +901,7 @@ class Client(Interface):
                                   model_extractor=extractor_folder,
                                   binary_extractor=extractor_name)
 
-                analyze_discoveries(mm, these_discoveries, debug)
+                self._analyze_discoveries(mm, these_discoveries, debug)
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
 
@@ -857,115 +928,34 @@ class Client(Interface):
 
         return discoveries_ids
 
-    def scan_user(self, username, category=None, models=None, exclude=None,
-                  debug=False, generate_snippet_extractor=False, forks=False,
-                  git_token=None, api_endpoint='https://api.github.com'):
-        """ Scan all the repositories of a user.
+    def _analyze_discoveries(self, model_manager, discoveries, debug):
+        """ Use a model to analyze a list of discoveries. """
+        false_positives = 0
 
-        Find all the repositories of a user, and scan
-        them. Please note that git limits the list of repositories to maximum
-        100 (due to pagination).
+        # Analyze all the discoveries ids with the current model
+        if debug:
+            logger.debug(
+                f'Analyzing discoveries with model {model_manager.model}')
+            for i in tqdm(range(len(discoveries))):
+                if (discoveries[i]['state'] != 'false_positive' and
+                        model_manager.launch_model(discoveries[i])):
+                    discoveries[i]['state'] = 'false_positive'
+                    false_positives += 1
+        else:
+            for d in discoveries:
+                if (d['state'] != 'false_positive' and
+                        model_manager.launch_model(d)):
+                    d['state'] = 'false_positive'
+                    false_positives += 1
 
-        Parameters
-        ----------
-        username: str
-            The username as on github.com
-        category: str, optional
-            If specified, scan the repo using all the rules of this category,
-            otherwise use all the rules in the db
-        models: list, optional
-            A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
-        debug: bool, default `False`
-            Flag used to decide whether to visualize the progressbars during
-            the scan (e.g., during the insertion of the detections in the db)
-        generate_snippet_extractor: bool, default `False`
-            Generate the extractor model to be used in the SnippetModel. The
-            extractor is generated using the ExtractorGenerator. If `False`,
-            use the pre-trained extractor model
-        forks: bool, default `False`
-            Scan also repositories forked by this user
-        git_token: str, optional
-            Git personal access token to authenticate to the git server
-        api_endpoint: str, default `https://api.github.com`
-            API endpoint of the git server (default is github.com)
+        if debug:
+            logger.debug(
+                f'Model {model_manager.model.__class__.__name__} '
+                f'classified {false_positives} discoveries.')
+            logger.debug('Change state to these discoveries')
 
-        Returns
-        -------
-        dict
-            The id of the discoveries detected by the scanner (excluded the
-            ones classified as false positives), grouped by repository.
-        """
-        if models is None:
-            models = []
-        if exclude is None:
-            exclude = []
-        logger.debug(f'Use API endpoint {api_endpoint}')
-        if git_token:
-            logger.debug('Authenticate user with token')
-
-        g = Github(base_url=api_endpoint,
-                   login_or_token=git_token,
-                   verify=False)
-        missing_ids = {}
-        for repo in g.get_user(username).get_repos():
-            if not forks and repo.fork:
-                # Ignore this repo since it is a fork
-                logger.info(f'Ignore {repo} (it is a fork)')
-                continue
-            # Get repo clone url without .git at the end
-            repo_url = repo.clone_url[:-4]
-            logger.info(f'Scanning {repo.url}')
-            missing_ids[repo_url] = self.scan(repo_url, category=category,
-                                              models=models, exclude=exclude,
-                                              scanner=GitScanner,
-                                              git_token=git_token,
-                                              debug=debug)
-        return missing_ids
-
-    def scan_wiki(self, repo_url, category=None, scanner=GitScanner,
-                  models=None, exclude=None, debug=False, git_token=None):
-        """ Scan the wiki of a repository.
-
-        This method simply generates the url of a wiki from the url of its repo,
-        and uses the same `scan` method that we use for repositories.
-
-        Parameters
-        ----------
-        repo_url: str
-            The url of the repository
-        category: str, optional
-            If specified, scan the repo using all the rules of this category,
-            otherwise use all the rules in the db
-        scanner: class, default: `GitScanner`
-            The class of the scanner, a subclass of `scanners.BaseScanner`
-        models: list, optional
-            A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
-        debug: bool, default `False`
-            Flag used to decide whether to visualize the progressbars during
-            the scan (e.g., during the insertion of the detections in the db)
-        git_token: str, optional
-            Git personal access token to authenticate to the git server
-
-        Returns
-        -------
-        list
-            The id of the discoveries detected by the scanner (excluded the
-            ones classified as false positives).
-        """
-        # The url of a wiki is same as the url of its repo, but ending with
-        # `.wiki.git`
-        if models is None:
-            models = []
-        if exclude is None:
-            exclude = []
-        if git_token:
-            logger.debug('Authenticate user with token')
-        return self.scan(repo_url + '.wiki.git', category, scanner, models,
-                         exclude, debug=debug, git_token=git_token)
+        # Return updated discoveries
+        return discoveries
 
     def _generate_snippet_extractor(self, repo_url):
         """ Generate the snippet extractor model adapted to the stylometry of
