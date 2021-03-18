@@ -61,13 +61,19 @@ class TestGitScanner(unittest.TestCase):
         self.assertEqual(len(discoveries), 0)
 
     def test_scan_since_timestamp_zero(self):
-        """ Test discoveries count since beginning """
+        """ Test discoveries count since beginning
+
+        We know that they are at least 8, made on the first commit
+        """
         discoveries = self.git_scanner._scan(
             self.repo, max_depth=1000000, since_timestamp=0)
         self.assertGreaterEqual(len(discoveries), 8)
 
     def test_scan_since_after_first_commit(self):
-        """ Test only discoveries inserted after first commit """
+        """ Test only discoveries inserted after first commit
+
+        We know that at least one discovery was inserted after first commit
+        """
         first_commit_hexsha = "ee06dc139ab360080734b3ee595e6f2627094968"
         first_commit_timestamp = 1615976544
         discoveries = self.git_scanner._scan(
@@ -75,7 +81,6 @@ class TestGitScanner(unittest.TestCase):
             max_depth=1000000,
             since_timestamp=first_commit_timestamp + 1)
 
-        # We know that at least one discovery was inserted after first commit
         self.assertGreaterEqual(len(discoveries), 1)
 
         for d in discoveries:
@@ -83,9 +88,14 @@ class TestGitScanner(unittest.TestCase):
 
     def test_regex_check_line_number(self):
         """ Test the line number of a discovery """
-        diff = """@@ -120,1 +109,2 @@
-                  - some_removed_text
-                  + some_added_text
-                  + password"""
-        discovery = self.git_scanner._regex_check(diff, "", "")[0]
-        self.assertEqual(discovery['line_number'], 111)
+        diff = "\n".join(["@@ -120 +109,2 @@",
+                          "- some_removed_text",
+                          "+ some_added_text",
+                          "+ password",
+                          "@@ -130 +130 @@",
+                          "+ another password"])
+        discoveries = self.git_scanner._regex_check(diff, "", "")
+        first_discovery = discoveries[0]
+        second_discovery = discoveries[1]
+        self.assertEqual(first_discovery['line_number'], 110)
+        self.assertEqual(second_discovery['line_number'], 130)
