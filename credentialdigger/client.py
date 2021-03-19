@@ -826,21 +826,17 @@ class Client(Interface):
 
         # Call scanner
         s = scanner(rules)
-        logger.debug('Scanning commits...')
-
         if 'since_timestamp' in scanner_kwargs:
             scanner_kwargs['since_timestamp'] = from_timestamp
-
         try:
-            these_discoveries = s.scan(repo_url, **scanner_kwargs)
+            logger.debug('Scanning commits...')
+            new_discoveries = s.scan(repo_url, **scanner_kwargs)
+            logger.info(f'Detected {len(new_discoveries)} discoveries.')
         except Exception as e:
-            # If the scan raises an exception, remove the newly added repo
-            # before bubbling the error
+            # Remove the newly added repo before bubbling the error
             if new_repo:
                 self.delete_repo(repo_url)
             raise e
-
-        logger.info(f'Detected {len(these_discoveries)} discoveries.')
 
         # Update latest scan timestamp of the repo
         latest_timestamp = int(datetime.now(timezone.utc).timestamp())
@@ -849,8 +845,8 @@ class Client(Interface):
         # Verify if the SnippetModel is needed, and, in this case, check
         # whether the pre-trained or the generated extractor is wanted
         snippet_with_generator = False
-        if 'SnippetModel' in models:
-            if generate_snippet_extractor:
+        if generate_snippet_extractor:
+            if 'SnippetModel' in models:
                 # Here, the scan is being run with the SnippetModel and its
                 # generator.
                 # Remove the snippet model from the list of models to be run:
@@ -859,39 +855,34 @@ class Client(Interface):
                 # need to generate its extractor this delay will be even higher
                 snippet_with_generator = True
                 models.remove('SnippetModel')
-        else:
-            # If the SnippetModel is not chosen, but the generator flag is set
-            # to True, do not generate the model (to save time and resources)
-            if generate_snippet_extractor:
+            else:
+                # If the SnippetModel is not chosen, but the generator flag is set
+                # to True, do not generate the model (to save time and resources)
                 logger.debug(
                     'generate_snippet_extractor=True but SnippetModel '
                     'is not in the chosen models. No extractor to generate.')
 
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
-        if len(these_discoveries) > 0:
+        if len(new_discoveries) > 0:
             for model in models:
-                # Try to instantiate the model
                 try:
                     mm = ModelManager(model)
                 except ModuleNotFoundError:
                     logger.warning(f'Model {model} not found. Skip it.')
-                    # Continue with another model (if any)
                     continue
-
                 # Analyze discoveries with this model
-                self._analyze_discoveries(mm, these_discoveries, debug)
+                self._analyze_discoveries(mm, new_discoveries, debug)
 
         # Check if we have to run the snippet model, and, in this case, if it
         # will use the pre-trained extractor or the generated one
         # Yet, since the SnippetModel may be slow, run it only if we still have
         # discoveries to check
-        if snippet_with_generator and len(these_discoveries) == 0:
+        if snippet_with_generator and len(new_discoveries) == 0:
             logger.debug('No more discoveries to filter. Skip SnippetModel.')
         elif snippet_with_generator:
             # Generate extractor and run the model
-            logger.info(
-                'Generating snippet model (it may take some time...)')
+            logger.info('Generating snippet model (it may take some time...)')
             extractor_folder, extractor_name = \
                 self._generate_snippet_extractor(repo_url)
             try:
@@ -901,30 +892,27 @@ class Client(Interface):
                                   model_extractor=extractor_folder,
                                   binary_extractor=extractor_name)
 
-                self._analyze_discoveries(mm, these_discoveries, debug)
+                self._analyze_discoveries(mm, new_discoveries, debug)
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
 
         # Insert the discoveries into the db
         discoveries_ids = list()
         if debug:
-            for i in tqdm(range(len(these_discoveries))):
-                curr_d = these_discoveries[i]
-                new_id = self.add_discovery(curr_d['file_name'],
-                                            curr_d['commit_id'],
-                                            curr_d['line_number'],
-                                            curr_d['snippet'],
-                                            repo_url,
-                                            curr_d['rule_id'],
-                                            curr_d['state'])
+            for i in tqdm(range(len(new_discoveries))):
+                curr_d = new_discoveries[i]
+                new_id = self.add_discovery(
+                    curr_d['file_name'], curr_d['commit_id'],
+                    curr_d['line_number'], curr_d['snippet'], repo_url,
+                    curr_d['rule_id'], curr_d['state'])
                 if new_id != -1 and curr_d['state'] != 'false_positive':
                     discoveries_ids.append(new_id)
         else:
             # IDs of the discoveries added to the db
-            discoveries_ids = self.add_discoveries(these_discoveries, repo_url)
+            discoveries_ids = self.add_discoveries(new_discoveries, repo_url)
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
-                and these_discoveries[i]['state'] != 'false_positive']
+                and new_discoveries[i]['state'] != 'false_positive']
 
         return discoveries_ids
 
