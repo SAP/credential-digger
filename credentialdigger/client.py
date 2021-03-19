@@ -930,29 +930,25 @@ class Client(Interface):
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):
         """ Use a model to analyze a list of discoveries. """
-        false_positives = 0
+        def _analyze_discovery(d):
+            if (d['state'] != 'false_positive' and model_manager.launch_model(d)):
+                d['state'] = 'false_positive'
+                return 1
+            return 0
 
-        # Analyze all the discoveries ids with the current model
         if debug:
-            logger.debug(
-                f'Analyzing discoveries with model {model_manager.model}')
+            model_name = model_manager.model.__class__.__name__
+            logger.debug(f'Analyzing discoveries with model {model_name}')
+
+            false_positives = 0
             for i in tqdm(range(len(discoveries))):
-                if (discoveries[i]['state'] != 'false_positive' and
-                        model_manager.launch_model(discoveries[i])):
-                    discoveries[i]['state'] = 'false_positive'
-                    false_positives += 1
+                false_positives += _analyze_discovery(discoveries[i])
+
+            logger.debug(f'Model {model_name} classified {false_positives}'
+                         'discoveries.\nChange state to these discoveries')
         else:
             for d in discoveries:
-                if (d['state'] != 'false_positive' and
-                        model_manager.launch_model(d)):
-                    d['state'] = 'false_positive'
-                    false_positives += 1
-
-        if debug:
-            logger.debug(
-                f'Model {model_manager.model.__class__.__name__} '
-                f'classified {false_positives} discoveries.')
-            logger.debug('Change state to these discoveries')
+                _analyze_discovery(d)
 
         # Return updated discoveries
         return discoveries
