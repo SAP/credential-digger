@@ -842,56 +842,43 @@ class Client(Interface):
         latest_timestamp = int(datetime.now(timezone.utc).timestamp())
         self.update_repo(repo_url, latest_timestamp)
 
-        # Verify if the SnippetModel is needed, and, in this case, check
-        # whether the pre-trained or the generated extractor is wanted
-        snippet_with_generator = False
-        if generate_snippet_extractor:
-            if 'SnippetModel' in models:
-                # Here, the scan is being run with the SnippetModel and its
-                # generator.
-                # Remove the snippet model from the list of models to be run:
-                # we will launch it manually at the end, as last model.
-                # In fact, the SnippetModel may take some time, and in case we
-                # need to generate its extractor this delay will be even higher
-                snippet_with_generator = True
-                models.remove('SnippetModel')
-            else:
-                # If the SnippetModel is not chosen, but the generator flag is set
-                # to True, do not generate the model (to save time and resources)
-                logger.debug(
-                    'generate_snippet_extractor=True but SnippetModel '
-                    'is not in the chosen models. No extractor to generate.')
+        # Check if we need to gerenerate the extractor
+        snippet_with_generator = self._check_snippet_with_generator(
+            generate_snippet_extractor, models)
 
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
         if len(new_discoveries) > 0:
             for model in models:
+                if model == "SnippetModel" and snippet_with_generator is True:
+                    # We will launch this model manually at the end
+                    continue
                 try:
                     mm = ModelManager(model)
+                    self._analyze_discoveries(mm, new_discoveries, debug)
                 except ModuleNotFoundError:
                     logger.warning(f'Model {model} not found. Skip it.')
                     continue
-                # Analyze discoveries with this model
-                self._analyze_discoveries(mm, new_discoveries, debug)
 
         # Check if we have to run the snippet model, and, in this case, if it
         # will use the pre-trained extractor or the generated one
         # Yet, since the SnippetModel may be slow, run it only if we still have
         # discoveries to check
-        if snippet_with_generator and len(new_discoveries) == 0:
+        fp_discoveries = list(
+            filter(lambda d: d['state'] != 'false_positive', new_discoveries))
+        if snippet_with_generator and len(fp_discoveries) == 0:
             logger.debug('No more discoveries to filter. Skip SnippetModel.')
         elif snippet_with_generator:
             # Generate extractor and run the model
             logger.info('Generating snippet model (it may take some time...)')
-            extractor_folder, extractor_name = \
-                self._generate_snippet_extractor(repo_url)
+            extractor_folder, extractor_name = self._generate_snippet_extractor(
+                repo_url)
             try:
                 # Load SnippetModel with the generated extractor, instead
                 # of the default one (i.e., the pre-trained one)
                 mm = ModelManager('SnippetModel',
                                   model_extractor=extractor_folder,
                                   binary_extractor=extractor_name)
-
                 self._analyze_discoveries(mm, new_discoveries, debug)
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
@@ -962,3 +949,24 @@ class Client(Interface):
         """
         eg = ExtractorGenerator()
         return eg.generate_leak_snippets(repo_url)
+
+    def _check_snippet_with_generator(self, generate_snippet_extractor, models):
+        """ Verify if the SnippetModel is needed, and, in this case, check
+        whether the pre-trained or the generated extractor is wanted
+        """
+        if generate_snippet_extractor:
+            if 'SnippetModel' in models:
+                # Here, the scan is being run with the SnippetModel and its
+                # generator. We will launch it manually at the end, as last
+                # model. In fact, the SnippetModel may take some time, and in
+                # case we need to generate its extractor this delay will be
+                # even higher
+                return True
+            else:
+                # If the SnippetModel is not chosen, but the generator flag is
+                # set to True, do not generate the model (to save time and
+                # resources)
+                logger.debug(
+                    'generate_snippet_extractor=True but SnippetModel '
+                    'is not in the chosen models. No extractor to generate.')
+        return False
