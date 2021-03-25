@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from credentialdigger.client_sqlite import SqliteClient
+from credentialdigger.scanners.git_scanner import GitScanner
 from parameterized import param, parameterized
 
 
@@ -9,10 +10,14 @@ class TestScans(unittest.TestCase):
 
     @classmethod
     @patch("credentialdigger.client_sqlite.connect")
-    def setUpClass(cls, mock_connect):
+    def setUp(self, mock_connect):
         """ Instatiate a mock client (we don't need any db for these tests) """
         mock_connect.return_value = Mock()
-        cls.client = SqliteClient(Mock())
+        self.client = SqliteClient(Mock())
+        self.client.get_rules = Mock(return_value=[{}])
+        self.client.add_discoveries = Mock(return_value=[])
+        self.client.delete_discoveries = Mock()
+        self.client.delete_repo = Mock()
 
     def test_analyze_discoveries(self):
         """
@@ -62,3 +67,34 @@ class TestScans(unittest.TestCase):
 
         self.assertTrue(len(new_discoveries) == 0)
 
+    @patch('credentialdigger.scanners.git_scanner.GitScanner')
+    def test_scan_valid(self, mock_scanner):
+        """ No errors should be thrown without optional parameters """
+        mock_scanner.scan = lambda _: []
+        self.client._scan("", mock_scanner)
+
+    @patch('credentialdigger.scanners.git_scanner.GitScanner')
+    def test_scan_force(self, mock_scanner):
+        """ Using `force` should remove all discoveries of the repo """
+        mock_scanner.scan = lambda _: []
+        self.client._scan("", mock_scanner, force=True)
+        self.client.delete_discoveries.assert_called()
+
+    @patch('credentialdigger.scanners.git_scanner.GitScanner')
+    def test_scan_invalid_new_repo(self, mock_scanner):
+        """ A newly inserted repo should be removed on scan fail """
+        mock_scanner.scan.side_effect = Exception()
+
+        with self.assertRaises(Exception):
+            self.client._scan("", mock_scanner)
+        self.client.delete_repo.assert_called()
+
+    @patch('credentialdigger.scanners.git_scanner.GitScanner')
+    def test_scan_invalid_old_repo(self, mock_scanner):
+        """ An existing repo should not be removed on scan fail """
+        mock_scanner.scan.side_effect = Exception()
+        self.client.add_repo = Mock(return_value=False)
+
+        with self.assertRaises(Exception):
+            self.client._scan("", mock_scanner)
+        self.client.delete_repo.assert_not_called()

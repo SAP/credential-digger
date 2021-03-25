@@ -596,10 +596,12 @@ class Client(Interface):
         if local_repo:
             repo_url = os.path.abspath(repo_url)
 
+        rules = self._get_scan_rules(category, exclude)
+        scanner = GitScanner(rules)
+
         return self._scan(
-            repo_url=repo_url, scanner=GitScanner, category=category,
-            models=models, exclude=exclude, force=force, debug=debug,
-            generate_snippet_extractor=generate_snippet_extractor,
+            repo_url=repo_url, scanner=scanner, models=models, force=force,
+            debug=debug, generate_snippet_extractor=generate_snippet_extractor,
             local_repo=local_repo, git_token=git_token)
 
     def scan_path(self, scan_path, category=None, models=None, exclude=None,
@@ -648,10 +650,12 @@ class Client(Interface):
             raise ValueError(f"The directory \"{scan_path}\" has already been "
                              "scanned. Please use \"force\" to rescan it.")
 
+        rules = self._get_scan_rules(category, exclude)
+        scanner = FileScanner(rules)
+
         return self._scan(
-            repo_url=scan_path, scanner=FileScanner, category=category,
-            models=models, exclude=exclude, force=force, debug=debug,
-            generate_snippet_extractor=generate_snippet_extractor,
+            repo_url=scan_path, scanner=scanner, models=models, force=force,
+            debug=debug, generate_snippet_extractor=generate_snippet_extractor,
             max_depth=max_depth, ignore_list=ignore_list)
 
     def scan_user(self, username, category=None, models=None, exclude=None,
@@ -696,6 +700,9 @@ class Client(Interface):
         """
         logger.debug(f'Use API endpoint {api_endpoint}')
 
+        rules = self._get_scan_rules(category, exclude)
+        scanner = GitScanner(rules)
+
         g = Github(base_url=api_endpoint,
                    login_or_token=git_token,
                    verify=False)
@@ -708,16 +715,14 @@ class Client(Interface):
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
             logger.info(f'Scanning {repo.url}')
-            missing_ids[repo_url] = self._scan(repo_url, GitScanner,
-                                               category=category,
+            missing_ids[repo_url] = self._scan(repo_url, scanner,
                                                models=models,
-                                               exclude=exclude,
                                                debug=debug,
                                                git_token=git_token)
         return missing_ids
 
-    def scan_wiki(self, repo_url, category=None, scanner=GitScanner,
-                  models=None, exclude=None, debug=False, git_token=None):
+    def scan_wiki(self, repo_url, category=None, models=None, exclude=None,
+                  debug=False, git_token=None):
         """ Scan the wiki of a repository.
 
         This method simply generates the url of a wiki from the url of its repo,
@@ -730,8 +735,6 @@ class Client(Interface):
         category: str, optional
             If specified, scan the repo using all the rules of this category,
             otherwise use all the rules in the db
-        scanner: class, default: `GitScanner`
-            The class of the scanner, a subclass of `scanners.BaseScanner`
         models: list, optional
             A list of models for the ML false positives detection
         exclude: list, optional
@@ -748,15 +751,16 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
+        rules = self._get_scan_rules(category, exclude)
+        scanner = GitScanner(rules)
+
         # The url of a wiki is same as the url of its repo, but ending with
         # `.wiki.git`
-        return self._scan(repo_url + '.wiki.git', scanner,
-                          category=category, models=models, exclude=exclude,
+        return self._scan(repo_url + '.wiki.git', scanner, models=models,
                           debug=debug, git_token=git_token)
 
-    def _scan(self, repo_url, scanner, category=None, models=None, exclude=None,
-              force=False, debug=False, generate_snippet_extractor=False,
-              **scanner_kwargs):
+    def _scan(self, repo_url, scanner, models=None, force=False, debug=False,
+              generate_snippet_extractor=False, **scanner_kwargs):
         """ Launch the scan of a repository.
 
         Parameters
@@ -764,15 +768,10 @@ class Client(Interface):
         repo_url: str
             The location of a git repository (either an url or a local path,
             depending on the scanner)
-        scanner: class
-            The class of the scanner, a subclass of `scanners.BaseScanner`
-        category: str, optional
-            If specified, scan the repo using all the rules of this category,
-            otherwise use all the rules in the db
+        scanner: `scanners.BaseScanner`
+            The instance of the scanner, a subclass of `scanners.BaseScanner`
         models: list, optional
             A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
         force: bool, default `False`
             Force a complete re-scan of the repository, in case it has already
             been scanned previously
@@ -797,8 +796,6 @@ class Client(Interface):
 
         if models is None:
             models = []
-        if exclude is None:
-            exclude = []
 
         # Try to add the repository to the db
         if self.add_repo(repo_url):
@@ -817,20 +814,12 @@ class Client(Interface):
             self.delete_discoveries(repo_url)
             from_timestamp = 0
 
-        # Prepare rules
-        rules = self.get_rules(category)
-        if exclude:
-            rules = list(filter(lambda x: x['id'] not in exclude, rules))
-        if not rules:
-            raise ValueError('No rules found')
-
         # Call scanner
-        s = scanner(rules)
         if 'since_timestamp' in scanner_kwargs:
             scanner_kwargs['since_timestamp'] = from_timestamp
         try:
             logger.debug('Scanning commits...')
-            new_discoveries = s.scan(repo_url, **scanner_kwargs)
+            new_discoveries = scanner.scan(repo_url, **scanner_kwargs)
             logger.info(f'Detected {len(new_discoveries)} discoveries.')
         except Exception as e:
             # Remove the newly added repo before bubbling the error
@@ -970,3 +959,16 @@ class Client(Interface):
                     'generate_snippet_extractor=True but SnippetModel '
                     'is not in the chosen models. No extractor to generate.')
         return False
+
+    def _get_scan_rules(self, category, exclude=None):
+        """ Get the rules of the `category`, filtered by `exclude` """
+        if exclude is None:
+            exclude = []
+
+        rules = self.get_rules(category)
+        if exclude:
+            rules = list(filter(lambda x: x['id'] not in exclude, rules))
+        if not rules:
+            raise ValueError('No rules found')
+
+        return rules
