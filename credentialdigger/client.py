@@ -842,7 +842,7 @@ class Client(Interface):
         latest_timestamp = int(datetime.now(timezone.utc).timestamp())
         self.update_repo(repo_url, latest_timestamp)
 
-        # Check if we need to gerenerate the extractor
+        # Check if we need to generate the extractor
         snippet_with_generator = self._check_snippet_with_generator(
             generate_snippet_extractor, models)
 
@@ -864,8 +864,8 @@ class Client(Interface):
         # will use the pre-trained extractor or the generated one
         # Yet, since the SnippetModel may be slow, run it only if we still have
         # discoveries to check
-        fp_discoveries = list(
-            filter(lambda d: d['state'] != 'false_positive', new_discoveries))
+        fp_discoveries = [
+            d for d in new_discoveries if d['state'] != 'false_positive']
         if snippet_with_generator and len(fp_discoveries) == 0:
             logger.debug('No more discoveries to filter. Skip SnippetModel.')
         elif snippet_with_generator:

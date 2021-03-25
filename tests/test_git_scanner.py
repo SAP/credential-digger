@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from credentialdigger.scanners.git_scanner import GitScanner
 from git import GitCommandError, InvalidGitRepositoryError
 from git import Repo as GitRepo
-from parameterized import param, parameterized
+from parameterized import parameterized
 
 
 class TestGitScanner(unittest.TestCase):
