@@ -48,3 +48,17 @@ class TestScans(unittest.TestCase):
             self.assertTrue(new_discoveries[i]["state"] == "false_positive")
         for i in range(6, 10):
             self.assertTrue(new_discoveries[i]["state"] == "new")
+
+    def test_analyze_discoveries_empty(self):
+        """ `_analyze_discoveries` should return an empty list if input is
+        an empty list """
+        model_manager = Mock()
+        old_discoveries = []
+
+        new_discoveries = self.client._analyze_discoveries(
+            model_manager=model_manager,
+            discoveries=old_discoveries,
+            debug=False)
+
+        self.assertTrue(len(new_discoveries) == 0)
+
