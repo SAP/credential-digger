@@ -960,7 +960,7 @@ class Client(Interface):
                     'is not in the chosen models. No extractor to generate.')
         return False
 
-    def _get_scan_rules(self, category, exclude=None):
+    def _get_scan_rules(self, category=None, exclude=None):
         """ Get the rules of the `category`, filtered by `exclude` """
         if exclude is None:
             exclude = []

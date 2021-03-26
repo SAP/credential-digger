@@ -2,8 +2,6 @@ import unittest
 from unittest.mock import Mock, patch
 
 from credentialdigger.client_sqlite import SqliteClient
-from credentialdigger.scanners.git_scanner import GitScanner
-from parameterized import param, parameterized
 
 
 class TestScans(unittest.TestCase):
@@ -67,16 +65,39 @@ class TestScans(unittest.TestCase):
 
         self.assertTrue(len(new_discoveries) == 0)
 
+    def test_get_scan_rules_no_exclude(self):
+        """ All rules shoould be returned if no `exclude` argument is specified
+        """
+        self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
+        rules = self.client._get_scan_rules()
+        self.assertTrue(len(rules) == 2)
+
+    def test_get_scan_rules_exclude(self):
+        """ `exclude` parameter should correctly filter out rules """
+        self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
+        rules = self.client._get_scan_rules(exclude=[2])
+        self.assertTrue(len(rules) == 1 and rules[0]["id"] == 1)
+
+    def test_get_scan_rules_exclude_all(self):
+        """ A resulting empty ruleset should raise an error """
+        self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
+        with self.assertRaises(ValueError):
+            self.client._get_scan_rules(exclude=[1, 2])
+
     @patch('credentialdigger.scanners.git_scanner.GitScanner')
     def test_scan_valid(self, mock_scanner):
-        """ No errors should be thrown without optional parameters """
-        mock_scanner.scan = lambda _: []
+        """ No errors should be thrown without optional parameters
+
+        These are unit tests, and are therefore not constructed to test actual
+        behavior of the scan funciton. Instead, they are intended to test
+        its parameters. """
+        mock_scanner.scan = Mock(return_value=[])
         self.client._scan("", mock_scanner)
 
     @patch('credentialdigger.scanners.git_scanner.GitScanner')
     def test_scan_force(self, mock_scanner):
         """ Using `force` should remove all discoveries of the repo """
-        mock_scanner.scan = lambda _: []
+        mock_scanner.scan = Mock(return_value=[])
         self.client._scan("", mock_scanner, force=True)
         self.client.delete_discoveries.assert_called()
 
