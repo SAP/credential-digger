@@ -757,7 +757,7 @@ class Client(Interface):
         # The url of a wiki is same as the url of its repo, but ending with
         # `.wiki.git`
         return self._scan(repo_url + '.wiki.git', scanner, models=models,
-                          debug=debug, git_token=git_token)
+                          debug=debug, force=True, git_token=git_token)
 
     def _scan(self, repo_url, scanner, models=None, force=False, debug=False,
               generate_snippet_extractor=False, **scanner_kwargs):
