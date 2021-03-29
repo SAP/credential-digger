@@ -6,7 +6,7 @@ from parameterized import param, parameterized
 
 
 class TestFileScanner(unittest.TestCase):
-    root_test_path = './tests/file_scanner_tests'
+    root_test_path = './tests/file_scanner_tests_folder'
 
     @classmethod
     def setUpClass(cls):
