@@ -9,15 +9,17 @@ from git import Repo as GitRepo
 
 class TestScansSqlite(unittest.TestCase):
 
-    def setUp(self):
-        self.tmp_path = tempfile.mkdtemp()
-        self.db_path = os.path.join(self.tmp_path, "test_db.sqlite")
-        SqliteClient(self.db_path)
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp_path = tempfile.mkdtemp()
+        cls.db_path = os.path.join(cls.tmp_path, "test_db.sqlite")
+        SqliteClient(cls.db_path)
         cli.main(["", "add_rules", "tests/functional_tests/test_rules.yml",
-                  "--sqlite", self.db_path])
+                  "--sqlite", cls.db_path])
 
-    def tearDown(self):
-        os.remove(self.db_path)
+    @classmethod
+    def tearDownClass(cls):
+        os.remove(cls.db_path)
 
     def test_scan_github(self):
         repo_url = 'https://github.com/fabiosangregorio/credential-digger-tests'
@@ -38,3 +40,11 @@ class TestScansSqlite(unittest.TestCase):
                       "--category", "password",
                       "--force", "--local", repo_path])
         self.assertEqual(cm.exception.code, 4)
+
+    def test_scan_wiki(self):
+        repo_url = 'https://github.com/fabiosangregorio/credential-digger-tests'
+
+        with self.assertRaises(SystemExit) as cm:
+            cli.main(["", "scan_wiki", "--sqlite", self.db_path,
+                      "--category", "password", repo_url])
+        self.assertEqual(cm.exception.code, 5)
