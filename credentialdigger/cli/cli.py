@@ -1,7 +1,6 @@
 import argparse
 import logging
 import os
-import sys
 
 from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
@@ -16,7 +15,7 @@ class customParser(argparse.ArgumentParser):
         exit()
 
 
-def main():
+def main(sys_argv):
     from . import add_rules, download, scan, scan_path, scan_user, scan_wiki
 
     # Main parser configuration
@@ -93,11 +92,11 @@ def main():
     scan_path.configure_parser(parser_scan_path)
 
     # Run the parser
-    if len(sys.argv) == 1:
+    if len(sys_argv) == 1:
         main_parser.print_help()
         exit()
 
-    args = main_parser.parse_args(sys.argv[1:])
+    args = main_parser.parse_args(sys_argv[1:])
     # If specified, load dotenv from the given path. Otherwise load from cwd
     load_dotenv(dotenv_path=args.dotenv, verbose=True)
 
