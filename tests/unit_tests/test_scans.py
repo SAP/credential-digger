@@ -90,9 +90,62 @@ class TestScans(unittest.TestCase):
 
         These are unit tests, and are therefore not constructed to test actual
         behavior of the scan funciton. Instead, they are intended to test
-        its parameters. """
+        its parameters.
+        """
         mock_scanner.scan = Mock(return_value=[])
         self.client._scan("", mock_scanner)
+
+    @patch('credentialdigger.scanners.git_scanner.GitScanner')
+    def test_scan_generate_extractor_valid(self, mock_scanner):
+        """ Extractor should get generated if Snippet model is present and
+        there are still non-fp discoveries.
+
+        The generator is mocked as it takes a long time to run.
+        """
+        mock_scanner.scan = Mock(return_value=[{"state": "new"}])
+        self.client._generate_snippet_extractor = Mock(return_value=["", ""])
+        self.client._analyze_discoveries = Mock(
+            return_value=[{"state": "new"}])
+
+        self.client._scan(
+            "", mock_scanner,
+            generate_snippet_extractor=True, models=["SnippetModel"])
+
+        self.client._generate_snippet_extractor.assert_called()
+
+    @patch('credentialdigger.scanners.git_scanner.GitScanner')
+    def test_scan_generate_extractor_no_snippet_model(self, mock_scanner):
+        """ Extractor should not get generated if Snippet model is not present
+
+        The generator is mocked as it takes a long time to run.
+        """
+        mock_scanner.scan = Mock(return_value=[{"state": "new"}])
+        self.client._generate_snippet_extractor = Mock(return_value=["", ""])
+        self.client._analyze_discoveries = Mock(
+            return_value=[{"state": "new"}])
+
+        self.client._scan(
+            "", mock_scanner,
+            generate_snippet_extractor=True, models=["PathModel"])
+
+        self.client._generate_snippet_extractor.assert_not_called()
+
+    @patch('credentialdigger.scanners.git_scanner.GitScanner')
+    def test_scan_generate_extractor_only_fp(self, mock_scanner):
+        """ Extractor should not get generated if Snippet model is not present
+
+        The generator is mocked as it takes a long time to run.
+        """
+        mock_scanner.scan = Mock(return_value=[{"state": "false_positive"}])
+        self.client._generate_snippet_extractor = Mock(return_value=["", ""])
+        self.client._analyze_discoveries = Mock(
+            return_value=[{"state": "new"}])
+
+        self.client._scan(
+            "", mock_scanner,
+            generate_snippet_extractor=True, models=["SnippetModel"])
+
+        self.client._generate_snippet_extractor.assert_not_called()
 
     @patch('credentialdigger.scanners.git_scanner.GitScanner')
     def test_scan_force(self, mock_scanner):

@@ -8,6 +8,7 @@ from git import Repo as GitRepo
 
 
 class TestScansSqlite(unittest.TestCase):
+    repo_url = 'https://github.com/fabiosangregorio/credential-digger-tests'
 
     @classmethod
     def setUpClass(cls):
@@ -22,17 +23,15 @@ class TestScansSqlite(unittest.TestCase):
         os.remove(cls.db_path)
 
     def test_scan_github(self):
-        repo_url = 'https://github.com/fabiosangregorio/credential-digger-tests'
         with self.assertRaises(SystemExit) as cm:
             cli.main(["", "scan", "--sqlite", self.db_path,
                       "--category", "password",
-                      "--force", repo_url])
+                      "--force", self.repo_url])
         self.assertEqual(cm.exception.code, 9)
 
     def test_scan_local(self):
-        repo_url = 'https://github.com/fabiosangregorio/credential-digger-tests'
         repo_path = os.path.join(self.tmp_path, "tmp_repo")
-        GitRepo.clone_from(repo_url, repo_path)
+        GitRepo.clone_from(self.repo_url, repo_path)
 
         with self.assertRaises(SystemExit) as cm:
             cli.main(["", "scan", "--sqlite", self.db_path,
@@ -42,9 +41,7 @@ class TestScansSqlite(unittest.TestCase):
         self.assertEqual(cm.exception.code, 4)
 
     def test_scan_wiki(self):
-        repo_url = 'https://github.com/fabiosangregorio/credential-digger-tests'
-
         with self.assertRaises(SystemExit) as cm:
             cli.main(["", "scan_wiki", "--sqlite", self.db_path,
-                      "--category", "password", repo_url])
+                      "--category", "password", self.repo_url])
         self.assertEqual(cm.exception.code, 5)
