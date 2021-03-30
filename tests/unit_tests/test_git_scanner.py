@@ -25,3 +25,10 @@ class TestGitScanner(unittest.TestCase):
         second_discovery = discoveries[1]
         self.assertEqual(first_discovery['line_number'], 110)
         self.assertEqual(second_discovery['line_number'], 130)
+
+    def test_regex_check_deletion(self):
+        """ Test that a deletion should not generate a discovery """
+        diff = "\n".join(["@@ -120,1 +120 @@",
+                          "- some_removed_text"])
+        discoveries = self.git_scanner._regex_check(diff, "", "")
+        self.assertEqual(len(discoveries), 0)
