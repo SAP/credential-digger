@@ -2,6 +2,7 @@ import shutil
 import tempfile
 import unittest
 from datetime import datetime, timezone
+from unittest.mock import patch
 
 from credentialdigger.scanners.git_scanner import GitScanner
 from git import GitCommandError, InvalidGitRepositoryError
@@ -32,13 +33,15 @@ class TestGitScanner(unittest.TestCase):
         "https://:@github.com/SAP/inexistent-repo",
         "not_a_url",
         "https://nonexistent.url"])
-    def test_get_git_repo_invalid_url(self, url):
+    @patch("credentialdigger.scanners.git_scanner.GitRepo.clone_from")
+    def test_get_git_repo_invalid_url(self, url, mock_clone_from):
         """ Test raised exception on repo clone with invalid urls
 
         Any Github urls must be prefixed with `:@` (empty username and password)
         in order to prevent GitPython from asking credentials in an interactive
         shell when running the test
         """
+        mock_clone_from.side_effect = GitCommandError([""], "")
         with self.assertRaises(GitCommandError):
             self.git_scanner.get_git_repo(url, local_repo=False)
 

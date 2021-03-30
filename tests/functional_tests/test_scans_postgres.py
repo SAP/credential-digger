@@ -1,4 +1,5 @@
 import os
+import shutil
 import tempfile
 import unittest
 
@@ -37,8 +38,7 @@ class TestScansPostgres(unittest.TestCase):
         self.assertEqual(cm.exception.code, 9)
 
     def test_scan_local(self):
-        tmp_path = tempfile.mkdtemp()
-        repo_path = os.path.join(tmp_path, "tmp_repo")
+        repo_path = tempfile.mkdtemp()
         GitRepo.clone_from(self.repo_url, repo_path)
 
         with self.assertRaises(SystemExit) as cm:
@@ -47,6 +47,8 @@ class TestScansPostgres(unittest.TestCase):
                       "--category", "password",
                       "--force", "--local", repo_path])
         self.assertEqual(cm.exception.code, 4)
+
+        shutil.rmtree(repo_path)
 
     def test_scan_wiki(self):
         with self.assertRaises(SystemExit) as cm:
