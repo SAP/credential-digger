@@ -1,16 +1,20 @@
 FROM python:3.7
 
 RUN pip install Flask python-dotenv
-RUN apt-get update && apt-get install -y libhyperscan5 libpq-dev
+RUN apt-get update && apt-get install -y libhyperscan5 libpq-dev gunicorn3
 
 # Don't verify ssl for github enterprise
 RUN git config --global http.sslverify false
 
 # Install Credential Digger
 RUN pip install credentialdigger
+# Install Gunicorn WSGI HTTP Server
+RUN pip install gunicorn
 
 ARG path_model
 ARG snippet_model
+ARG SSL_certificate
+ARG SSL_private_key
 
 COPY . /credential-digger-ui
 WORKDIR /credential-digger-ui/
