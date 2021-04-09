@@ -33,7 +33,7 @@ fi
 echo "Starting server..."
 if [ "$HTTPS" = true ]; then
     echo "🔐 HTTPS will be used..."
-    gunicorn -b 0.0.0.0:5000 wsgi:app --certfile /credential-digger-ui$SSL_certificate --keyfile /credential-digger-ui$SSL_private_key
+    gunicorn -b 0.0.0.0:5000 wsgi:app --certfile $SSL_certificate --keyfile $SSL_private_key
 else
     echo "🔓 HTTPS will not be used... (HTTP only)"
     gunicorn -b 0.0.0.0:5000 wsgi:app
