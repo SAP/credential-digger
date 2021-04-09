@@ -22,7 +22,6 @@ HTTPS=true
 if [[ -z "${SSL_certificate}" ]]; then
     # No certificate
     HTTPS=false
-
 fi
 
 if [[ -z "${SSL_private_key}" ]]; then
