@@ -134,7 +134,33 @@ class GitScanner(BaseScanner):
                                         f'https://oauth2:{git_token}@')
 
         project_path, repo = self.get_git_repo(repo_url, local_repo)
+        discoveries = self._scan(repo, since_timestamp, max_depth)
 
+        # Delete repo folder
+        shutil.rmtree(project_path)
+
+        # Generate a list of discoveries and return it.
+        # N.B.: This may become inefficient when the discoveries are many.
+        return discoveries
+
+    def _scan(self, repo, since_timestamp, max_depth):
+        """ Perform the actual scan of the repository.
+
+        Parameters
+        ----------
+        repo: `git.GitRepo`
+            The repository object
+        since_timestamp: int
+            The oldest timestamp to scan
+        max_depth: int
+            The maximum number of commits to scan
+
+        Returns
+        -------
+        list
+            A list of discoveries (dictionaries). If there are no discoveries
+            return an empty list
+        """
         already_searched = set()
         discoveries = []
 
@@ -147,24 +173,26 @@ class GitScanner(BaseScanner):
             # prev_commit is newer than curr_commit
             for curr_commit in repo.iter_commits(branch_name,
                                                  max_count=max_depth):
-                if curr_commit.committed_date <= since_timestamp:
-                    # We have reached the (chosen) oldest timestamp, so
-                    # continue with another branch
-                    break
                 # if not prev_commit, then curr_commit is the newest commit
                 # (and we have nothing to diff with).
                 # But we will diff the first commit with NULL_TREE here to
                 # check the oldest code. In this way, no commit will be missed.
+                if not prev_commit:
+                    # The current commit is the latest one
+                    prev_commit = curr_commit
+                    continue
+
+                if prev_commit.committed_date <= since_timestamp:
+                    # We have reached the (chosen) oldest timestamp, so
+                    # continue with another branch
+                    break
+
                 # This is useful for git merge: in case of a merge, we have the
                 # same commits (prev and current) in two different branches.
                 # This trick avoids scanning twice the same commits
                 diff_hash = hashlib.md5((str(prev_commit) + str(curr_commit))
                                         .encode('utf-8')).digest()
-                if not prev_commit:
-                    # The current commit is the latest one
-                    prev_commit = curr_commit
-                    continue
-                elif diff_hash in already_searched:
+                if diff_hash in already_searched:
                     prev_commit = curr_commit
                     continue
                 else:
@@ -198,13 +226,8 @@ class GitScanner(BaseScanner):
                                         ignore_submodules='all',
                                         ignore_all_space=True)
 
-                discoveries = discoveries + self._diff_worker(diff,
-                                                              prev_commit)
-        # Delete repo folder
-        shutil.rmtree(project_path)
-
-        # Generate a list of discoveries and return it.
-        # N.B.: This may become inefficient when the discoveries are many.
+                discoveries = discoveries + \
+                    self._diff_worker(diff, prev_commit)
         return discoveries
 
     def _diff_worker(self, diff, commit):

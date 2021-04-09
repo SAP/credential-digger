@@ -596,10 +596,12 @@ class Client(Interface):
         if local_repo:
             repo_url = os.path.abspath(repo_url)
 
+        rules = self._get_scan_rules(category, exclude)
+        scanner = GitScanner(rules)
+
         return self._scan(
-            repo_url=repo_url, scanner=GitScanner, category=category,
-            models=models, exclude=exclude, force=force, debug=debug,
-            generate_snippet_extractor=generate_snippet_extractor,
+            repo_url=repo_url, scanner=scanner, models=models, force=force,
+            debug=debug, generate_snippet_extractor=generate_snippet_extractor,
             local_repo=local_repo, git_token=git_token)
 
     def scan_path(self, scan_path, category=None, models=None, exclude=None,
@@ -648,214 +650,13 @@ class Client(Interface):
             raise ValueError(f"The directory \"{scan_path}\" has already been "
                              "scanned. Please use \"force\" to rescan it.")
 
+        rules = self._get_scan_rules(category, exclude)
+        scanner = FileScanner(rules)
+
         return self._scan(
-            repo_url=scan_path, scanner=FileScanner, category=category,
-            models=models, exclude=exclude, force=force, debug=debug,
-            generate_snippet_extractor=generate_snippet_extractor,
+            repo_url=scan_path, scanner=scanner, models=models, force=force,
+            debug=debug, generate_snippet_extractor=generate_snippet_extractor,
             max_depth=max_depth, ignore_list=ignore_list)
-
-    def _scan(self, repo_url, scanner, category=None, models=None, exclude=None,
-              force=False, debug=False, generate_snippet_extractor=False,
-              **scanner_kwargs):
-        """ Launch the scan of a repository.
-
-        Parameters
-        ----------
-        repo_url: str
-            The location of a git repository (either an url or a local path,
-            depending on the scanner)
-        scanner: class
-            The class of the scanner, a subclass of `scanners.BaseScanner`
-        category: str, optional
-            If specified, scan the repo using all the rules of this category,
-            otherwise use all the rules in the db
-        models: list, optional
-            A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
-        force: bool, default `False`
-            Force a complete re-scan of the repository, in case it has already
-            been scanned previously
-        debug: bool, default `False`
-            Flag used to decide whether to visualize the progressbars during
-            the scan (e.g., during the insertion of the detections in the db)
-        generate_snippet_extractor: bool, default `False`
-            Generate the extractor model to be used in the SnippetModel. The
-            extractor is generated using the ExtractorGenerator. If `False`,
-            use the pre-trained extractor model
-        scanner_kwargs: kwargs
-            Keyword arguments to be passed to the scanner
-
-        Returns
-        -------
-        list
-            The id of the discoveries detected by the scanner (excluded the
-            ones classified as false positives).
-        """
-        if debug:
-            logger.setLevel(level=logging.DEBUG)
-
-        def analyze_discoveries(model_manager, discoveries, debug):
-            """ Use a model to analyze a list of discoveries. """
-            false_positives = 0
-
-            # Analyze all the discoveries ids with the current model
-            if debug:
-                logger.debug(
-                    f'Analyzing discoveries with model {model_manager.model}')
-                for i in tqdm(range(len(discoveries))):
-                    if (discoveries[i]['state'] != 'false_positive' and
-                            model_manager.launch_model(discoveries[i])):
-                        discoveries[i]['state'] = 'false_positive'
-                        false_positives += 1
-            else:
-                for d in discoveries:
-                    if (d['state'] != 'false_positive' and
-                            model_manager.launch_model(d)):
-                        d['state'] = 'false_positive'
-                        false_positives += 1
-
-            if debug:
-                logger.debug(
-                    f'Model {model_manager.model.__class__.__name__} '
-                    f'classified {false_positives} discoveries.')
-                logger.debug('Change state to these discoveries')
-
-            # Return updated discoveries
-            return discoveries
-
-        if models is None:
-            models = []
-        if exclude is None:
-            exclude = []
-
-        # Try to add the repository to the db
-        if self.add_repo(repo_url):
-            # The repository is new, scan from the first commit
-            from_timestamp = 0
-            new_repo = True
-        else:
-            # Get the latest commit recorded on the db
-            # `or` clause needed in case the previous scan attempt was broken
-            from_timestamp = self.get_repo(repo_url)['last_scan'] or 0
-            new_repo = False
-
-        # Force complete scan
-        if force:
-            logger.debug('Force complete scan')
-            self.delete_discoveries(repo_url)
-            from_timestamp = 0
-
-        # Prepare rules
-        rules = self.get_rules(category)
-        if exclude:
-            rules = list(filter(lambda x: x['id'] not in exclude, rules))
-        if not rules:
-            raise ValueError('No rules found')
-
-        # Call scanner
-        s = scanner(rules)
-        logger.debug('Scanning commits...')
-
-        if 'since_timestamp' in scanner_kwargs:
-            scanner_kwargs['since_timestamp'] = from_timestamp
-
-        try:
-            these_discoveries = s.scan(repo_url, **scanner_kwargs)
-        except Exception as e:
-            # If the scan raises an exception, remove the newly added repo
-            # before bubbling the error
-            if new_repo:
-                self.delete_repo(repo_url)
-            raise e
-
-        logger.info(f'Detected {len(these_discoveries)} discoveries.')
-
-        # Update latest scan timestamp of the repo
-        latest_timestamp = int(datetime.now(timezone.utc).timestamp())
-        self.update_repo(repo_url, latest_timestamp)
-
-        # Verify if the SnippetModel is needed, and, in this case, check
-        # whether the pre-trained or the generated extractor is wanted
-        snippet_with_generator = False
-        if 'SnippetModel' in models:
-            if generate_snippet_extractor:
-                # Here, the scan is being run with the SnippetModel and its
-                # generator.
-                # Remove the snippet model from the list of models to be run:
-                # we will launch it manually at the end, as last model.
-                # In fact, the SnippetModel may take some time, and in case we
-                # need to generate its extractor this delay will be even higher
-                snippet_with_generator = True
-                models.remove('SnippetModel')
-        else:
-            # If the SnippetModel is not chosen, but the generator flag is set
-            # to True, do not generate the model (to save time and resources)
-            if generate_snippet_extractor:
-                logger.debug(
-                    'generate_snippet_extractor=True but SnippetModel '
-                    'is not in the chosen models. No extractor to generate.')
-
-        # Analyze each new discovery. If it is classified as false positive,
-        # update it in the list
-        if len(these_discoveries) > 0:
-            for model in models:
-                # Try to instantiate the model
-                try:
-                    mm = ModelManager(model)
-                except ModuleNotFoundError:
-                    logger.warning(f'Model {model} not found. Skip it.')
-                    # Continue with another model (if any)
-                    continue
-
-                # Analyze discoveries with this model
-                analyze_discoveries(mm, these_discoveries, debug)
-
-        # Check if we have to run the snippet model, and, in this case, if it
-        # will use the pre-trained extractor or the generated one
-        # Yet, since the SnippetModel may be slow, run it only if we still have
-        # discoveries to check
-        if snippet_with_generator and len(these_discoveries) == 0:
-            logger.debug('No more discoveries to filter. Skip SnippetModel.')
-        elif snippet_with_generator:
-            # Generate extractor and run the model
-            logger.info(
-                'Generating snippet model (it may take some time...)')
-            extractor_folder, extractor_name = \
-                self._generate_snippet_extractor(repo_url)
-            try:
-                # Load SnippetModel with the generated extractor, instead
-                # of the default one (i.e., the pre-trained one)
-                mm = ModelManager('SnippetModel',
-                                  model_extractor=extractor_folder,
-                                  binary_extractor=extractor_name)
-
-                analyze_discoveries(mm, these_discoveries, debug)
-            except ModuleNotFoundError:
-                logger.warning('SnippetModel not found. Skip it.')
-
-        # Insert the discoveries into the db
-        discoveries_ids = list()
-        if debug:
-            for i in tqdm(range(len(these_discoveries))):
-                curr_d = these_discoveries[i]
-                new_id = self.add_discovery(curr_d['file_name'],
-                                            curr_d['commit_id'],
-                                            curr_d['line_number'],
-                                            curr_d['snippet'],
-                                            repo_url,
-                                            curr_d['rule_id'],
-                                            curr_d['state'])
-                if new_id != -1 and curr_d['state'] != 'false_positive':
-                    discoveries_ids.append(new_id)
-        else:
-            # IDs of the discoveries added to the db
-            discoveries_ids = self.add_discoveries(these_discoveries, repo_url)
-            discoveries_ids = [
-                d for i, d in enumerate(discoveries_ids) if d != -1
-                and these_discoveries[i]['state'] != 'false_positive']
-
-        return discoveries_ids
 
     def scan_user(self, username, category=None, models=None, exclude=None,
                   debug=False, generate_snippet_extractor=False, forks=False,
@@ -897,13 +698,10 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives), grouped by repository.
         """
-        if models is None:
-            models = []
-        if exclude is None:
-            exclude = []
         logger.debug(f'Use API endpoint {api_endpoint}')
-        if git_token:
-            logger.debug('Authenticate user with token')
+
+        rules = self._get_scan_rules(category, exclude)
+        scanner = GitScanner(rules)
 
         g = Github(base_url=api_endpoint,
                    login_or_token=git_token,
@@ -917,15 +715,14 @@ class Client(Interface):
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
             logger.info(f'Scanning {repo.url}')
-            missing_ids[repo_url] = self.scan(repo_url, category=category,
-                                              models=models, exclude=exclude,
-                                              scanner=GitScanner,
-                                              git_token=git_token,
-                                              debug=debug)
+            missing_ids[repo_url] = self._scan(repo_url, scanner,
+                                               models=models,
+                                               debug=debug,
+                                               git_token=git_token)
         return missing_ids
 
-    def scan_wiki(self, repo_url, category=None, scanner=GitScanner,
-                  models=None, exclude=None, debug=False, git_token=None):
+    def scan_wiki(self, repo_url, category=None, models=None, exclude=None,
+                  debug=False, git_token=None):
         """ Scan the wiki of a repository.
 
         This method simply generates the url of a wiki from the url of its repo,
@@ -938,8 +735,6 @@ class Client(Interface):
         category: str, optional
             If specified, scan the repo using all the rules of this category,
             otherwise use all the rules in the db
-        scanner: class, default: `GitScanner`
-            The class of the scanner, a subclass of `scanners.BaseScanner`
         models: list, optional
             A list of models for the ML false positives detection
         exclude: list, optional
@@ -956,16 +751,171 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
+        rules = self._get_scan_rules(category, exclude)
+        scanner = GitScanner(rules)
+
         # The url of a wiki is same as the url of its repo, but ending with
         # `.wiki.git`
+        return self._scan(repo_url + '.wiki.git', scanner, models=models,
+                          debug=debug, force=True, git_token=git_token)
+
+    def _scan(self, repo_url, scanner, models=None, force=False, debug=False,
+              generate_snippet_extractor=False, **scanner_kwargs):
+        """ Launch the scan of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The location of a git repository (either an url or a local path,
+            depending on the scanner)
+        scanner: `scanners.BaseScanner`
+            The instance of the scanner, a subclass of `scanners.BaseScanner`
+        models: list, optional
+            A list of models for the ML false positives detection
+        force: bool, default `False`
+            Force a complete re-scan of the repository, in case it has already
+            been scanned previously
+        debug: bool, default `False`
+            Flag used to decide whether to visualize the progressbars during
+            the scan (e.g., during the insertion of the detections in the db)
+        generate_snippet_extractor: bool, default `False`
+            Generate the extractor model to be used in the SnippetModel. The
+            extractor is generated using the ExtractorGenerator. If `False`,
+            use the pre-trained extractor model
+        scanner_kwargs: kwargs
+            Keyword arguments to be passed to the scanner
+
+        Returns
+        -------
+        list
+            The id of the discoveries detected by the scanner (excluded the
+            ones classified as false positives).
+        """
+        if debug:
+            logger.setLevel(level=logging.DEBUG)
+
         if models is None:
             models = []
-        if exclude is None:
-            exclude = []
-        if git_token:
-            logger.debug('Authenticate user with token')
-        return self.scan(repo_url + '.wiki.git', category, scanner, models,
-                         exclude, debug=debug, git_token=git_token)
+
+        # Try to add the repository to the db
+        if self.add_repo(repo_url):
+            # The repository is new, scan from the first commit
+            from_timestamp = 0
+            new_repo = True
+        else:
+            # Get the latest commit recorded on the db
+            # `or` clause needed in case the previous scan attempt was broken
+            from_timestamp = self.get_repo(repo_url)['last_scan'] or 0
+            new_repo = False
+
+        # Force complete scan
+        if force:
+            logger.debug('Force complete scan')
+            self.delete_discoveries(repo_url)
+            from_timestamp = 0
+
+        # Call scanner
+        if 'since_timestamp' in scanner_kwargs:
+            scanner_kwargs['since_timestamp'] = from_timestamp
+        try:
+            logger.debug('Scanning commits...')
+            new_discoveries = scanner.scan(repo_url, **scanner_kwargs)
+            logger.info(f'Detected {len(new_discoveries)} discoveries.')
+        except Exception as e:
+            # Remove the newly added repo before bubbling the error
+            if new_repo:
+                self.delete_repo(repo_url)
+            raise e
+
+        # Update latest scan timestamp of the repo
+        latest_timestamp = int(datetime.now(timezone.utc).timestamp())
+        self.update_repo(repo_url, latest_timestamp)
+
+        # Check if we need to generate the extractor
+        snippet_with_generator = self._check_snippet_with_generator(
+            generate_snippet_extractor, models)
+
+        # Analyze each new discovery. If it is classified as false positive,
+        # update it in the list
+        if len(new_discoveries) > 0:
+            for model in models:
+                if model == "SnippetModel" and snippet_with_generator is True:
+                    # We will launch this model manually at the end
+                    continue
+                try:
+                    mm = ModelManager(model)
+                    self._analyze_discoveries(mm, new_discoveries, debug)
+                except ModuleNotFoundError:
+                    logger.warning(f'Model {model} not found. Skip it.')
+                    continue
+
+        # Check if we have to run the snippet model, and, in this case, if it
+        # will use the pre-trained extractor or the generated one
+        # Yet, since the SnippetModel may be slow, run it only if we still have
+        # discoveries to check
+        fp_discoveries = [
+            d for d in new_discoveries if d['state'] != 'false_positive']
+        if snippet_with_generator and len(fp_discoveries) == 0:
+            logger.debug('No more discoveries to filter. Skip SnippetModel.')
+        elif snippet_with_generator:
+            # Generate extractor and run the model
+            logger.info('Generating snippet model (it may take some time...)')
+            extractor_folder, extractor_name = self._generate_snippet_extractor(
+                repo_url)
+            try:
+                # Load SnippetModel with the generated extractor, instead
+                # of the default one (i.e., the pre-trained one)
+                mm = ModelManager('SnippetModel',
+                                  model_extractor=extractor_folder,
+                                  binary_extractor=extractor_name)
+                self._analyze_discoveries(mm, new_discoveries, debug)
+            except ModuleNotFoundError:
+                logger.warning('SnippetModel not found. Skip it.')
+
+        # Insert the discoveries into the db
+        discoveries_ids = list()
+        if debug:
+            for i in tqdm(range(len(new_discoveries))):
+                curr_d = new_discoveries[i]
+                new_id = self.add_discovery(
+                    curr_d['file_name'], curr_d['commit_id'],
+                    curr_d['line_number'], curr_d['snippet'], repo_url,
+                    curr_d['rule_id'], curr_d['state'])
+                if new_id != -1 and curr_d['state'] != 'false_positive':
+                    discoveries_ids.append(new_id)
+        else:
+            # IDs of the discoveries added to the db
+            discoveries_ids = self.add_discoveries(new_discoveries, repo_url)
+            discoveries_ids = [
+                d for i, d in enumerate(discoveries_ids) if d != -1
+                and new_discoveries[i]['state'] != 'false_positive']
+
+        return discoveries_ids
+
+    def _analyze_discoveries(self, model_manager, discoveries, debug):
+        """ Use a model to analyze a list of discoveries. """
+        def _analyze_discovery(d):
+            if (d['state'] != 'false_positive' and model_manager.launch_model(d)):
+                d['state'] = 'false_positive'
+                return 1
+            return 0
+
+        if debug:
+            model_name = model_manager.model.__class__.__name__
+            logger.debug(f'Analyzing discoveries with model {model_name}')
+
+            false_positives = 0
+            for i in tqdm(range(len(discoveries))):
+                false_positives += _analyze_discovery(discoveries[i])
+
+            logger.debug(f'Model {model_name} classified {false_positives}'
+                         'discoveries.\nChange state to these discoveries')
+        else:
+            for d in discoveries:
+                _analyze_discovery(d)
+
+        # Return updated discoveries
+        return discoveries
 
     def _generate_snippet_extractor(self, repo_url):
         """ Generate the snippet extractor model adapted to the stylometry of
@@ -988,3 +938,71 @@ class Client(Interface):
         """
         eg = ExtractorGenerator()
         return eg.generate_leak_snippets(repo_url)
+
+    def _check_snippet_with_generator(self, generate_snippet_extractor, models):
+        """ Verify if the SnippetModel is needed, and, in this case, check
+        whether the pre-trained or the generated extractor is wanted
+
+        Parameters
+        ----------
+        generate_snippet_extractor: bool
+            Generate the extractor model to be used in the SnippetModel. The
+            extractor is generated using the ExtractorGenerator. If `False`,
+            use the pre-trained extractor model
+        models: list
+            A list of models for the ML false positives detection
+
+        Returns
+        -------
+        bool
+            True if `generate_snippet_extractor` is True and the Snippet model
+            is in `models`, False otherwise
+        """
+        if generate_snippet_extractor:
+            if 'SnippetModel' in models:
+                # Here, the scan is being run with the SnippetModel and its
+                # generator. We will launch it manually at the end, as last
+                # model. In fact, the SnippetModel may take some time, and in
+                # case we need to generate its extractor this delay will be
+                # even higher
+                return True
+            else:
+                # If the SnippetModel is not chosen, but the generator flag is
+                # set to True, do not generate the model (to save time and
+                # resources)
+                logger.debug(
+                    'generate_snippet_extractor=True but SnippetModel '
+                    'is not in the chosen models. No extractor to generate.')
+        return False
+
+    def _get_scan_rules(self, category=None, exclude=None):
+        """ Get the rules of the `category`, filtered by `exclude` 
+
+        Parameters
+        ----------
+        category: str, optional
+            If specified, scan the repo using all the rules of this category,
+            otherwise use all the rules in the db
+        exclude: list, optional
+            A list of rules to exclude
+
+        Returns
+        -------
+        list
+            A list of rules
+
+        Raises
+        ------
+            ValueError
+                If no rules are found or all rules have been filtered out
+        """
+        if exclude is None:
+            exclude = []
+
+        rules = self.get_rules(category)
+        if exclude:
+            rules = list(filter(lambda x: x['id'] not in exclude, rules))
+        if not rules:
+            raise ValueError('No rules found')
+
+        return rules
