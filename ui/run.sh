@@ -12,7 +12,7 @@ fi
 if [[ -z "${snippet_model}" ]]; then
     echo "Snippet model not provided"
 else
-    echo "Running with snipper_model=$snippet_model"
+    echo "Running with snippet_model=$snippet_model"
     python -m credentialdigger download snippet_model
 fi
 
