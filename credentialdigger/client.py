@@ -942,6 +942,21 @@ class Client(Interface):
     def _check_snippet_with_generator(self, generate_snippet_extractor, models):
         """ Verify if the SnippetModel is needed, and, in this case, check
         whether the pre-trained or the generated extractor is wanted
+
+        Parameters
+        ----------
+        generate_snippet_extractor: bool
+            Generate the extractor model to be used in the SnippetModel. The
+            extractor is generated using the ExtractorGenerator. If `False`,
+            use the pre-trained extractor model
+        models: list
+            A list of models for the ML false positives detection
+
+        Returns
+        -------
+        bool
+            True if `generate_snippet_extractor` is True and the Snippet model
+            is in `models`, False otherwise
         """
         if generate_snippet_extractor:
             if 'SnippetModel' in models:
@@ -961,7 +976,26 @@ class Client(Interface):
         return False
 
     def _get_scan_rules(self, category=None, exclude=None):
-        """ Get the rules of the `category`, filtered by `exclude` """
+        """ Get the rules of the `category`, filtered by `exclude` 
+
+        Parameters
+        ----------
+        category: str, optional
+            If specified, scan the repo using all the rules of this category,
+            otherwise use all the rules in the db
+        exclude: list, optional
+            A list of rules to exclude
+
+        Returns
+        -------
+        list
+            A list of rules
+
+        Raises
+        ------
+            ValueError
+                If no rules are found or all rules have been filtered out
+        """
         if exclude is None:
             exclude = []
 
