@@ -1,11 +1,8 @@
 name: test
 
-on: push
-  # push:
-  #   branches:
-  #   - master
-  # pull_request:
-  #   types: [opened, synchronize, repoened, edited]
+on:
+  pull_request:
+    types: [opened, synchronize, repoened, edited]
 
 jobs:
   tests:
