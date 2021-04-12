@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import os
 import re
 import shutil
 import tempfile
@@ -14,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 class GitScanner(BaseScanner):
-
     def __init__(self, rules):
         """ Create the scanner for a git repository.
 
@@ -83,8 +83,9 @@ class GitScanner(BaseScanner):
         """
         project_path = tempfile.mkdtemp()
         if local_repo:
+            project_path = os.path.join(tempfile.mkdtemp(), 'repo')
             try:
-                shutil.copytree(repo_url, project_path, dirs_exist_ok=True)
+                shutil.copytree(repo_url, project_path)
                 repo = GitRepo(project_path)
             except FileNotFoundError as e:
                 shutil.rmtree(project_path)

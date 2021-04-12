@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 class FileScanner(BaseScanner):
-
     def __init__(self, rules):
         """ Create the scanner for a local directory or file.
 
@@ -86,7 +85,8 @@ class FileScanner(BaseScanner):
         # Copy directory/file to temp folder
         project_root = tempfile.mkdtemp().rstrip(os.path.sep)
         if os.path.isdir(scan_path):
-            shutil.copytree(scan_path, project_root, dirs_exist_ok=True)
+            project_root = os.path.join(project_root, 'repo')
+            shutil.copytree(scan_path, project_root)
         else:
             shutil.copy(scan_path, project_root)
 
