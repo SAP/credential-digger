@@ -8,7 +8,7 @@ from git import Repo as GitRepo
 
 
 class TestScansSqlite(unittest.TestCase):
-    repo_url = 'https://github.com/fabiosangregorio/credential-digger-tests'
+    repo_url = 'https://github.com/SAP/credential-digger-tests'
 
     @classmethod
     def setUpClass(cls):
