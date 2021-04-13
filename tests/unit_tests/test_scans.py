@@ -5,7 +5,6 @@ from credentialdigger.client_sqlite import SqliteClient
 
 
 class TestScans(unittest.TestCase):
-
     @classmethod
     @patch("credentialdigger.client_sqlite.connect")
     def setUp(self, mock_connect):
@@ -114,11 +113,14 @@ class TestScans(unittest.TestCase):
         self.client._generate_snippet_extractor.assert_called()
 
     @patch('credentialdigger.scanners.git_scanner.GitScanner')
-    def test_scan_generate_extractor_no_snippet_model(self, mock_scanner):
+    @patch('credentialdigger.models.model_manager.ModelManager.__init__')
+    def test_scan_generate_extractor_no_snippet_model(self, mock_mm,
+                                                      mock_scanner):
         """ Extractor should not get generated if Snippet model is not present
 
         The generator is mocked as it takes a long time to run.
         """
+        mock_mm.return_value = None
         mock_scanner.scan = Mock(return_value=[{"state": "new"}])
         self.client._generate_snippet_extractor = Mock(return_value=["", ""])
         self.client._analyze_discoveries = Mock(
