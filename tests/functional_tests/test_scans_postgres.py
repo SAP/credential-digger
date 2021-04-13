@@ -10,7 +10,7 @@ from psycopg2 import connect
 
 class TestScansPostgres(unittest.TestCase):
     dotenv = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
-    repo_url = 'https://github.com/fabiosangregorio/credential-digger-tests'
+    repo_url = 'https://github.com/SAP/credential-digger-tests'
 
     @classmethod
     def setUpClass(cls):
