@@ -7,10 +7,17 @@
     <span class="icon icon-keyboard_arrow_left"></span>
     <span class="link-text">Go back to all repos</span>
   </a>
+  {% if url.startswith('http://') or url.startswith('https://') %}
   <a href="{{url}}" class="repo-link" target="_blank" title="{{url}}">
     <span class="icon icon-github"></span>
     <span class="link-text">{{url}}</span>
   </a>
+  {% else %}
+  <span class="repo-link" title="{{url}}">
+    <span class="icon icon-folder_open"></span>
+    <span class="link-text">{{url}}</span>
+  </a>
+  {% endif %}
 </div>
 
 <!--discoveries list with search bar-->

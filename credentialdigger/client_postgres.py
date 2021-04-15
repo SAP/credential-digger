@@ -219,8 +219,8 @@ class PgClient(Client):
 
         Parameters
         ----------
-        repo_id: int
-            The id of the repo to delete
+        repo_url: str
+            The url of the repository to delete
 
         Returns
         -------
@@ -231,13 +231,31 @@ class PgClient(Client):
             repo_url=repo_url,
             query='DELETE FROM repos WHERE url=%s RETURNING true')
 
+    def delete_discoveries(self, repo_url):
+        """ Delete all discoveries of a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The repository url of the discoveries to delete
+
+        Returns
+        -------
+        bool
+            `True` if the discoveries were successfully deleted, `False`
+            otherwise
+        """
+        return super().delete_discoveries(
+            repo_url=repo_url,
+            query='DELETE FROM discoveries WHERE repo_url=%s RETURNING true')
+
     def get_repo(self, repo_url):
         """ Get a repository.
 
         Parameters
         ----------
         repo_url: str
-            The url of the repo
+            The url of the repository
 
         Returns
         -------

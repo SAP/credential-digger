@@ -14,7 +14,7 @@
         <input id="repoLinkInput" type="hidden" name="repolink" value="{{url}}">
       {% else %}
         <div class="form-item">
-          <input id="repoLinkInput" type="link" name="repolink" class="textInput" placeholder="GitHub Repo URL">
+          <input id="repoLinkInput" type="text" name="repolink" class="textInput" placeholder="GitHub repo URL or local repo path">
         </div>
       {% endif %}
       <p class="formLabel">Select category :</p>
@@ -32,7 +32,7 @@
       <div><label><input type="checkbox" id="cbPathModel" name="pathModel" value="path" checked>Use Path model</label></div>
       <div><label><input type="checkbox" id="cbSnippetModel" name="snippetModel" value="snippet" checked>Use Snippet model</label></div>
       {% if rescan %}
-        <div><label><input type="checkbox" id="cbForce" name="forceScan" value="force" title="Scan the repo again completely from scratch">Force scan</label></div>
+        <div><label><input type="checkbox" id="cbForce" name="forceScan" value="force" title="Scan the repo again completely from scratch">Force rescan</label></div>
       {% endif %}
       <div class="formFooter">
         <span class="moreButtons">
