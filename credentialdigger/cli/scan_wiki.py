@@ -58,6 +58,9 @@ def configure_parser(parser):
     parser.add_argument(
         'repo_url', type=str,
         help='The url of the repository')
+    parser.add_argument(
+        '--git_token', default=None, type=str,
+        help='Git personal access token to authenticate to the git server')
 
 
 def run(client, args):

@@ -60,23 +60,23 @@ td.dtr-control {
   text-overflow: ellipsis;
 }
 
-td .github {
+td .repo-icon {
   text-decoration: none;
-  margin-left: 10px;
+  margin-left: 1px;
   vertical-align: middle;
   font-size: 18px;
-  margin-right: 10px;
-  display: none;
-  transition: color .1s ease-out;
+  margin-right: 8px;
+  transition: all .15s ease-out;
 }
 
-.dataTable td.filename a.github:hover {
+td .repo-icon.icon-folder_open {
+  font-size: 20px;
+}
+
+.dataTable td.filename a.repo-icon:hover {
   color: #999;
 }
 
-.dataTable td.filename:hover .github {
-  display: block;
-}
 
 td.last-scan {
   white-space: nowrap;

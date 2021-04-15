@@ -1,7 +1,4 @@
-import tempfile
 from abc import ABC, abstractmethod
-
-from git import Repo as GitRepo
 
 
 class BaseScanner(ABC):
@@ -13,8 +10,38 @@ class BaseScanner(ABC):
     def scan(self, repo_url, **kwargs):
         pass
 
-    def clone_git_repo(self, git_url):
-        """ Clone git repository. """
-        project_path = tempfile.mkdtemp()
-        GitRepo.clone_from(git_url, project_path)
-        return project_path
+
+class ResultHandler:
+
+    def __init__(self):
+        self.result = None
+
+    def handle_results(self, eid, start, end, flags, context):
+        """ Give a structure to the discovery and store it in a variable.
+
+        This method is needed in order to process the result of a scan (it is
+        used as a callback function).
+
+        Parameters
+        ----------
+        eid: int
+            The id of the regex that produced the discovery
+        start: int
+            The start index of the match
+        end: int
+            The end index of the match
+        flags
+            Not implemented by the library
+        context: list
+            Metadata (composed by snippet, filename, hash, line_number)
+        """
+        snippet, filename, commit_hash, line_number = context
+
+        meta_data = {'file_name': filename,
+                     'commit_id': commit_hash,
+                     'line_number': line_number,
+                     'snippet': snippet,
+                     'rule_id': eid,
+                     'state': 'new'}
+
+        self.result = meta_data

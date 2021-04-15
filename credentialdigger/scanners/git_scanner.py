@@ -1,17 +1,20 @@
 import hashlib
+import logging
+import os
 import re
 import shutil
-from datetime import datetime, timezone
+import tempfile
 
 import hyperscan
-from git import NULL_TREE
+from git import NULL_TREE, GitCommandError, InvalidGitRepositoryError
 from git import Repo as GitRepo
 
-from .base_scanner import BaseScanner
+from .base_scanner import BaseScanner, ResultHandler
+
+logger = logging.getLogger(__name__)
 
 
 class GitScanner(BaseScanner):
-
     def __init__(self, rules):
         """ Create the scanner for a git repository.
 
@@ -49,29 +52,116 @@ class GitScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, git_url, since_timestamp=0, max_depth=1000000):
+    def get_git_repo(self, repo_url, local_repo):
+        """ Get a git repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The location of the git repository (an url if local is False, a
+            local path otherwise)
+        local_repo: bool
+            If True, get the repository from a local directory instead of the
+            web
+
+        Returns
+        -------
+        str
+            The temporary path to which the repository has been copied
+        GitRepo
+            The repository object
+
+        Raises
+        ------
+        FileNotFoundError
+            If repo_url is not an existing directory
+        git.InvalidGitRepositoryError
+            If the directory in repo_url is not a git repository
+        git.GitCommandError
+            If the url in repo_url is not a git repository, or access to the
+            repository is denied
+        """
+        project_path = tempfile.mkdtemp()
+        if local_repo:
+            project_path = os.path.join(tempfile.mkdtemp(), 'repo')
+            try:
+                shutil.copytree(repo_url, project_path)
+                repo = GitRepo(project_path)
+            except FileNotFoundError as e:
+                shutil.rmtree(project_path)
+                raise e
+            except InvalidGitRepositoryError as e:
+                shutil.rmtree(project_path)
+                raise InvalidGitRepositoryError(
+                    f"\"{repo_url}\" is not a local git repository.") from e
+        else:
+            try:
+                GitRepo.clone_from(repo_url, project_path)
+                repo = GitRepo(project_path)
+            except GitCommandError as e:
+                shutil.rmtree(project_path)
+                raise e
+
+        return project_path, repo
+
+    def scan(self, repo_url, since_timestamp=0, max_depth=1000000,
+             git_token=None, local_repo=False):
         """ Scan a repository.
 
         Parameters
         ----------
-        git_url: string
-            The url of a git repository
+        repo_url: str
+            The location of a git repository (an url if local_repo is False, a
+            local path otherwise)
         since_timestamp: int, optional
             The oldest timestamp to scan
         max_depth: int, optional
             The maximum number of commits to scan
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
+        local_repo: bool, optional
+            If True, get the repository from a local directory instead of the
+            web
 
         Returns
         -------
-        int
-            The latest scan timestamp (now) (`None` if the repository is empty)
         list
             A list of discoveries (dictionaries). If there are no discoveries
             return an empty list
         """
-        project_path = self.clone_git_repo(git_url)
-        repo = GitRepo(project_path)
+        if git_token:
+            logger.debug('Authenticate user with token')
+            repo_url = repo_url.replace('https://',
+                                        f'https://oauth2:{git_token}@')
 
+        project_path, repo = self.get_git_repo(repo_url, local_repo)
+        discoveries = self._scan(repo, since_timestamp, max_depth)
+
+        # Delete repo folder
+        shutil.rmtree(project_path)
+
+        # Generate a list of discoveries and return it.
+        # N.B.: This may become inefficient when the discoveries are many.
+        return discoveries
+
+    def _scan(self, repo, since_timestamp, max_depth):
+        """ Perform the actual scan of the repository.
+
+        Parameters
+        ----------
+        repo: `git.GitRepo`
+            The repository object
+        since_timestamp: int
+            The oldest timestamp to scan
+        max_depth: int
+            The maximum number of commits to scan
+
+        Returns
+        -------
+        list
+            A list of discoveries (dictionaries). If there are no discoveries
+            return an empty list
+        """
         already_searched = set()
         discoveries = []
 
@@ -84,24 +174,26 @@ class GitScanner(BaseScanner):
             # prev_commit is newer than curr_commit
             for curr_commit in repo.iter_commits(branch_name,
                                                  max_count=max_depth):
-                if curr_commit.committed_date <= since_timestamp:
-                    # We have reached the (chosen) oldest timestamp, so
-                    # continue with another branch
-                    break
                 # if not prev_commit, then curr_commit is the newest commit
                 # (and we have nothing to diff with).
                 # But we will diff the first commit with NULL_TREE here to
                 # check the oldest code. In this way, no commit will be missed.
+                if not prev_commit:
+                    # The current commit is the latest one
+                    prev_commit = curr_commit
+                    continue
+
+                if prev_commit.committed_date <= since_timestamp:
+                    # We have reached the (chosen) oldest timestamp, so
+                    # continue with another branch
+                    break
+
                 # This is useful for git merge: in case of a merge, we have the
                 # same commits (prev and current) in two different branches.
                 # This trick avoids scanning twice the same commits
                 diff_hash = hashlib.md5((str(prev_commit) + str(curr_commit))
                                         .encode('utf-8')).digest()
-                if not prev_commit:
-                    # The current commit is the latest one
-                    prev_commit = curr_commit
-                    continue
-                elif diff_hash in already_searched:
+                if diff_hash in already_searched:
                     prev_commit = curr_commit
                     continue
                 else:
@@ -135,15 +227,9 @@ class GitScanner(BaseScanner):
                                         ignore_submodules='all',
                                         ignore_all_space=True)
 
-                discoveries = discoveries + self._diff_worker(diff,
-                                                              prev_commit)
-        # Delete repo folder
-        shutil.rmtree(project_path)
-
-        now_timestamp = int(datetime.now(timezone.utc).timestamp())
-        # Generate a list of discoveries and return it.
-        # N.B.: This may become inefficient when the discoveries are many.
-        return now_timestamp, discoveries
+                discoveries = discoveries + \
+                    self._diff_worker(diff, prev_commit)
+        return discoveries
 
     def _diff_worker(self, diff, commit):
         """ Compute the diff between two commits.
@@ -234,39 +320,3 @@ class GitScanner(BaseScanner):
                 detections.append(rh.result)
             line_number += 1
         return detections
-
-
-class ResultHandler:
-
-    def __init__(self):
-        self.result = None
-
-    def handle_results(self, eid, start, end, flags, context):
-        """ Give a structure to the discovery and store it in a variable.
-
-        This method is needed in order to process the result of a scan (it is
-        used as a callback function).
-
-        Parameters
-        ----------
-        eid: int
-            The id of the regex that produced the discovery
-        start: int
-            The start index of the match
-        end: int
-            The end index of the match
-        flags
-            Not implemented by the library
-        context: list
-            Metadata (composed by snippet, filename, hash, line_number)
-        """
-        snippet, filename, commit_hash, line_number = context
-
-        meta_data = {'file_name': filename,
-                     'commit_id': commit_hash,
-                     'line_number': line_number,
-                     'snippet': snippet,
-                     'rule_id': eid,
-                     'state': 'new'}
-
-        self.result = meta_data
