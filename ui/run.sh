@@ -2,7 +2,7 @@
 
 echo "Download models..."
 
-if [ -z "${path_model}" ]; then
+if [[ -z "${path_model}" ]]; then
     echo "Path model not provided"
 else
     echo "Running with path_model=$path_model"
