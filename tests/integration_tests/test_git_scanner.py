@@ -19,7 +19,7 @@ class TestGitScanner(unittest.TestCase):
         cls.git_scanner = GitScanner(rules)
 
         # Clone the test repository from Github
-        repo_url = 'https://github.com/fabiosangregorio/credential-digger-tests'
+        repo_url = 'https://github.com/SAP/credential-digger-tests'
         cls.tmp_path = tempfile.mkdtemp()
         GitRepo.clone_from(repo_url, cls.tmp_path)
         cls.repo = GitRepo(cls.tmp_path)
