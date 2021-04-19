@@ -30,7 +30,7 @@ if [[ -z "${SSL_private_key}" ]]; then
 fi
 
 echo "Starting server..."
-if [ "$HTTPS" = true ]; then
+if [[ "$HTTPS" = true ]]; then
     echo "🔐 HTTPS will be used..."
     gunicorn -b 0.0.0.0:5000 wsgi:app --certfile $SSL_certificate --keyfile $SSL_private_key
 else
