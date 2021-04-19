@@ -908,7 +908,7 @@ class Client(Interface):
             for i in tqdm(range(len(discoveries))):
                 false_positives += _analyze_discovery(discoveries[i])
 
-            logger.debug(f'Model {model_name} classified {false_positives}'
+            logger.debug(f'Model {model_name} classified {false_positives} '
                          'discoveries.\nChange state to these discoveries')
         else:
             for d in discoveries:
