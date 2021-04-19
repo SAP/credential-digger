@@ -19,7 +19,7 @@ class TestGitScanner(unittest.TestCase):
         cls.git_scanner = GitScanner(rules)
 
         # Clone the test repository from Github
-        repo_url = 'https://github.com/fabiosangregorio/credential-digger-tests'
+        repo_url = 'https://github.com/SAP/credential-digger-tests'
         cls.tmp_path = tempfile.mkdtemp()
         GitRepo.clone_from(repo_url, cls.tmp_path)
         cls.repo = GitRepo(cls.tmp_path)
@@ -30,10 +30,10 @@ class TestGitScanner(unittest.TestCase):
         shutil.rmtree(cls.tmp_path)
 
     @parameterized.expand([
-        "https://:@github.com/SAP/inexistent-repo",
-        "not_a_url",
-        "https://nonexistent.url"])
-    @patch("credentialdigger.scanners.git_scanner.GitRepo.clone_from")
+        'https://:@github.com/SAP/inexistent-repo',
+        'not_a_url',
+        'https://nonexistent.url'])
+    @patch('credentialdigger.scanners.git_scanner.GitRepo.clone_from')
     def test_get_git_repo_invalid_url(self, url, mock_clone_from):
         """ Test raised exception on repo clone with invalid urls
 
@@ -76,7 +76,7 @@ class TestGitScanner(unittest.TestCase):
 
         We know that at least one discovery was inserted after first commit
         """
-        first_commit_hexsha = "ee06dc139ab360080734b3ee595e6f2627094968"
+        first_commit_hexsha = 'ee06dc139ab360080734b3ee595e6f2627094968'
         first_commit_timestamp = 1615976544
         discoveries = self.git_scanner._scan(
             self.repo,
