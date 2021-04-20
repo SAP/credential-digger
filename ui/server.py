@@ -67,6 +67,20 @@ def _get_rules():
 
     return rulesdict, cat
 
+registered_tokens = []
+
+@app.before_request
+def before_request():
+    """
+        Treat all incoming requests before-hand. 
+        If the user is not yet logged in, he/she will redirected towards the login page.
+    """
+    if(HTTPS):
+        token = request.cookies.get('AUTH')
+        if(token not in registered_tokens):
+            if(request.endpoint != 'login' and '/res/' not in request.path):
+                return render_template('login.html',
+                                       msg='🔒 Enter your secret key to access the scanner:')
 
 # ################### ROUTES ####################
 
