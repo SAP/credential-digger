@@ -25,6 +25,11 @@ app = Flask('__name__', static_folder=os.path.join(APP_ROOT, './res'),
             template_folder=os.path.join(APP_ROOT, './templates'))
 app.config['UPLOAD_FOLDER'] = os.path.join(APP_ROOT, './backend')
 app.config['DEBUG'] = True  # Remove this line in production
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+
+# HTTPS = True if both a certificate and private key exist, False otherwise.
+HTTPS = (os.getenv("SSL_certificate") !=
+         '' and os.getenv("SSL_private_key") != '')
 
 if os.getenv('USE_PG') == 'True':
     app.logger.info('Use Postgres Client')
