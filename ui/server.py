@@ -106,7 +106,7 @@ def login():
             # cannot be accessed by javascript for security purposes
             resp.set_cookie('AUTH', value=str(access_token), httponly=True,
                             secure=True, max_age=datetime.timedelta(minutes=1))
-                            
+
             # Store the new JWT value in the registered_tokens list
             registered_tokens.append(str(access_token))
             return resp
@@ -114,6 +114,17 @@ def login():
             redirect(url_for('login'))
             return render_template('login.html',
                                    msg='🔒 Enter your secret key to access the scanner:')
+
+@app.route('/logout')
+def logout():
+    """
+    The user loses his access to the tool when his JWT no longer exists in the local
+    registered_tokens list.
+    """
+    token = request.cookies.get('AUTH')
+    registered_tokens.remove(token)
+    resp = make_response(redirect(url_for('root')))
+    return resp
 
 @app.route('/')
 def root():
@@ -379,6 +390,6 @@ def update_discovery_group():
     else:
         return 'OK', 200
 
-
+jwt = JWTManager(app)
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
