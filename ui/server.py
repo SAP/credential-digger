@@ -85,6 +85,36 @@ def before_request():
 
 # ################### ROUTES ####################
 
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    # If the HTTPS protocol is not in use, then the login feature will be disabled.
+    if(not HTTPS):
+        redirect(url_for('root'))
+    else:
+        if(request.method == 'POST'):
+            auth_key = request.form['auth_key']
+            if(auth_key != os.getenv('AUTH_KEY')):
+                redirect(url_for('login'))
+                return render_template('login.html',
+                                       msg='❌ Wrong key, please try again:')
+            # We generate a UUID to be saved as a JWT
+            import uuid
+            access_token = create_access_token(identity=str(uuid.uuid1()))
+            resp = make_response(redirect(url_for('root')))
+
+            # We store the HttpOnly token on the browser. A HttpOnly token
+            # cannot be accessed by javascript for security purposes
+            resp.set_cookie('AUTH', value=str(access_token), httponly=True,
+                            secure=True, max_age=datetime.timedelta(minutes=1))
+                            
+            # Store the new JWT value in the registered_tokens list
+            registered_tokens.append(str(access_token))
+            return resp
+        else:
+            redirect(url_for('login'))
+            return render_template('login.html',
+                                   msg='🔒 Enter your secret key to access the scanner:')
+
 @app.route('/')
 def root():
     repos = c.get_repos()
