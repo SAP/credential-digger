@@ -67,6 +67,7 @@ def _get_rules():
 
     return rulesdict, cat
 
+# Store JWT value for every connected user
 registered_tokens = []
 
 @app.before_request
