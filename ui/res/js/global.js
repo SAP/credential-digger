@@ -95,3 +95,24 @@ jQuery.fn.dataTable.Api.register( 'processing()', function ( show ) {
       ctx.oApi._fnProcessingDisplay( ctx, show );
   } );
 } );
+
+/**
+ * Handle the logout button
+ */
+ if (location.protocol !== 'http:') {
+  sessionStorage.setItem("logged_in", "True");
+  $(window).ready(function () {
+    logged_in = sessionStorage.getItem("logged_in");
+    if (logged_in == "True") {
+      logout_button = document.createElement('a');
+      logout_button.className = "headerItem headerLink"
+      logout_button.href = "/logout"
+      logout_button.innerHTML = "Logout"
+      document.getElementById('topRightButtons').appendChild(logout_button);
+      $('#topRightButtons').show();
+    }
+    else{
+      $('#topRightButtons').hide();
+    }
+  });
+}
