@@ -67,7 +67,7 @@ def _get_rules():
     return rulesdict, cat
 
 
-# Store JWT value for every connected user
+# Store JWT's value for every connected user
 registered_tokens = []
 
 
@@ -99,7 +99,7 @@ def login():
                 redirect(url_for('login'))
                 return render_template('login.html',
                                        msg='❌ Wrong key, please try again:')
-            # We generate a UUID to be saved as a JWT
+            # We generate a UUID to be saved as a JWT's value
             import uuid
             access_token = create_access_token(identity=str(uuid.uuid1()))
             resp = make_response(redirect(url_for('root')))
@@ -109,7 +109,7 @@ def login():
             resp.set_cookie('AUTH', value=str(access_token), httponly=True,
                             secure=True)
 
-            # Store the new JWT value in the registered_tokens list
+            # Store the new JWT's value in the registered_tokens list
             registered_tokens.append(str(access_token))
             return resp
         else:
@@ -121,7 +121,7 @@ def login():
 @app.route('/logout')
 def logout():
     """
-    The user loses his access to the tool when his JWT no longer exists in the local
+    The user loses his access to the tool when his JWT's value no longer exists in the local
     registered_tokens list.
     """
     token = request.cookies.get('AUTH')
