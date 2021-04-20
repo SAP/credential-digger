@@ -1,4 +1,3 @@
-import datetime
 import os
 import sys
 import threading
@@ -67,14 +66,16 @@ def _get_rules():
 
     return rulesdict, cat
 
+
 # Store JWT value for every connected user
 registered_tokens = []
+
 
 @app.before_request
 def before_request():
     """
         Treat all incoming requests before-hand. 
-        If the user is not yet logged in, he/she will redirected towards the login page.
+        If the user is not yet logged in, he/she will be redirected towards the login page.
     """
     if(HTTPS):
         token = request.cookies.get('AUTH')
@@ -84,6 +85,7 @@ def before_request():
                                        msg='🔒 Enter your secret key to access the scanner:')
 
 # ################### ROUTES ####################
+
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -105,7 +107,7 @@ def login():
             # We store the HttpOnly token on the browser. A HttpOnly token
             # cannot be accessed by javascript for security purposes
             resp.set_cookie('AUTH', value=str(access_token), httponly=True,
-                            secure=True, max_age=datetime.timedelta(minutes=1))
+                            secure=True)
 
             # Store the new JWT value in the registered_tokens list
             registered_tokens.append(str(access_token))
@@ -114,6 +116,7 @@ def login():
             redirect(url_for('login'))
             return render_template('login.html',
                                    msg='🔒 Enter your secret key to access the scanner:')
+
 
 @app.route('/logout')
 def logout():
@@ -125,6 +128,7 @@ def logout():
     registered_tokens.remove(token)
     resp = make_response(redirect(url_for('root')))
     return resp
+
 
 @app.route('/')
 def root():
@@ -389,6 +393,7 @@ def update_discovery_group():
         return 'Error in updatating the discovery group', 500
     else:
         return 'OK', 200
+
 
 jwt = JWTManager(app)
 if __name__ == '__main__':
