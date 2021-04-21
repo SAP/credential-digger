@@ -1,6 +1,7 @@
 import os
 import sys
 import threading
+import uuid
 from collections import defaultdict
 from enum import Enum
 from itertools import groupby
@@ -14,7 +15,7 @@ from werkzeug.utils import secure_filename
 load_dotenv()
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-if os.getenv("LOCAL_REPO") == 'True':
+if os.getenv('LOCAL_REPO') == 'True':
     # Load credentialdigger from local repo instead of pip
     sys.path.insert(0, os.path.join(APP_ROOT, '..'))
 
@@ -24,11 +25,11 @@ app = Flask('__name__', static_folder=os.path.join(APP_ROOT, './res'),
             template_folder=os.path.join(APP_ROOT, './templates'))
 app.config['UPLOAD_FOLDER'] = os.path.join(APP_ROOT, './backend')
 app.config['DEBUG'] = True  # Remove this line in production
-app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 # HTTPS = True if both a certificate and private key exist, False otherwise.
-HTTPS = (os.getenv("SSL_certificate") !=
-         '' and os.getenv("SSL_private_key") != '')
+HTTPS = (os.getenv('SSL_certificate') !=
+         '' and os.getenv('SSL_private_key') != '')
 
 if os.getenv('USE_PG') == 'True':
     app.logger.info('Use Postgres Client')
@@ -74,8 +75,8 @@ registered_tokens = []
 @app.before_request
 def before_request():
     """
-        Treat all incoming requests before-hand. 
-        If the user is not yet logged in, he/she will be redirected towards the login page.
+    Treat all incoming requests before-hand. 
+    If the user is not yet logged in, he/she will be redirected towards the login page.
     """
     if(HTTPS):
         token = request.cookies.get('AUTH')
@@ -100,7 +101,6 @@ def login():
                 return render_template('login.html',
                                        msg='❌ Wrong key, please try again:')
             # We generate a UUID to be saved as a JWT's value
-            import uuid
             access_token = create_access_token(identity=str(uuid.uuid1()))
             resp = make_response(redirect(url_for('root')))
 
