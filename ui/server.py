@@ -28,8 +28,8 @@ app.config['DEBUG'] = True  # Remove this line in production
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 # HTTPS = True if both a certificate and private key exist, False otherwise.
-HTTPS = (os.getenv('SSL_certificate') !=
-         '' and os.getenv('SSL_private_key') != '')
+HTTPS = os.getenv('SSL_certificate') != '' and os.getenv(
+    'SSL_private_key') != ''
 
 if os.getenv('USE_PG') == 'True':
     app.logger.info('Use Postgres Client')
@@ -78,10 +78,10 @@ def before_request():
     Treat all incoming requests before-hand. 
     If the user is not yet logged in, he/she will be redirected towards the login page.
     """
-    if(HTTPS):
+    if HTTPS:
         token = request.cookies.get('AUTH')
-        if(token not in registered_tokens):
-            if(request.endpoint != 'login' and '/res/' not in request.path):
+        if token not in registered_tokens:
+            if request.endpoint != 'login' and '/res/' not in request.path:
                 return render_template('login.html',
                                        msg='🔒 Enter your secret key to access the scanner:')
 
@@ -91,12 +91,12 @@ def before_request():
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     # If the HTTPS protocol is not in use, then the login feature will be disabled.
-    if(not HTTPS):
+    if not HTTPS:
         redirect(url_for('root'))
     else:
-        if(request.method == 'POST'):
+        if request.method == 'POST':
             auth_key = request.form['auth_key']
-            if(auth_key != os.getenv('AUTH_KEY')):
+            if auth_key != os.getenv('AUTH_KEY'):
                 redirect(url_for('login'))
                 return render_template('login.html',
                                        msg='❌ Wrong key, please try again:')
