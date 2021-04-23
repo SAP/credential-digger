@@ -1,19 +1,21 @@
 import os
 import sys
 import threading
+import uuid
 from collections import defaultdict
 from enum import Enum
 from itertools import groupby
 
 import yaml
 from dotenv import load_dotenv
-from flask import Flask, jsonify, redirect, render_template, request, send_file
+from flask import Flask, jsonify, make_response, redirect, render_template, request, send_file, url_for
+from flask_jwt_extended import create_access_token, JWTManager
 from werkzeug.utils import secure_filename
 
 load_dotenv()
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-if os.getenv("LOCAL_REPO") == 'True':
+if os.getenv('LOCAL_REPO') == 'True':
     # Load credentialdigger from local repo instead of pip
     sys.path.insert(0, os.path.join(APP_ROOT, '..'))
 
@@ -23,6 +25,10 @@ app = Flask('__name__', static_folder=os.path.join(APP_ROOT, './res'),
             template_folder=os.path.join(APP_ROOT, './templates'))
 app.config['UPLOAD_FOLDER'] = os.path.join(APP_ROOT, './backend')
 app.config['DEBUG'] = True  # Remove this line in production
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+# HTTPS = True if both a certificate and private key exist, False otherwise.
+HTTPS = os.getenv('SSL_certificate') and os.getenv('SSL_private_key')
 
 if os.getenv('USE_PG') == 'True':
     app.logger.info('Use Postgres Client')
@@ -61,7 +67,67 @@ def _get_rules():
     return rulesdict, cat
 
 
+# Store JWT's value for every connected user
+registered_tokens = []
+
+
+@app.before_request
+def before_request():
+    """
+    Treat all incoming requests before-hand. 
+    If the user is not yet logged in, he/she will be redirected towards the login page.
+    """
+    if HTTPS:
+        token = request.cookies.get('AUTH')
+        if token not in registered_tokens:
+            if request.endpoint != 'login' and '/res/' not in request.path:
+                return render_template('login.html',
+                                       msg='🔒 Enter your secret key to access the scanner:')
+
 # ################### ROUTES ####################
+
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    # If the HTTPS protocol is not in use, then the login feature will be disabled.
+    if not HTTPS:
+        redirect(url_for('root'))
+    else:
+        if request.method == 'POST':
+            auth_key = request.form['auth_key']
+            if auth_key != os.getenv('AUTH_KEY'):
+                redirect(url_for('login'))
+                return render_template('login.html',
+                                       msg='❌ Wrong key, please try again:')
+            # We generate a UUID to be saved as a JWT's value
+            access_token = create_access_token(identity=str(uuid.uuid1()))
+            resp = make_response(redirect(url_for('root')))
+
+            # We store the HttpOnly token on the browser. A HttpOnly token
+            # cannot be accessed by javascript for security purposes
+            resp.set_cookie('AUTH', value=str(access_token), httponly=True,
+                            secure=True)
+
+            # Store the new JWT's value in the registered_tokens list
+            registered_tokens.append(str(access_token))
+            return resp
+        else:
+            redirect(url_for('login'))
+            return render_template('login.html',
+                                   msg='🔒 Enter your secret key to access the scanner:')
+
+
+@app.route('/logout')
+def logout():
+    """
+    The user loses his access to the tool when his JWT's value no longer exists in the local
+    registered_tokens list.
+    """
+    token = request.cookies.get('AUTH')
+    registered_tokens.remove(token)
+    resp = make_response(redirect(url_for('root')))
+    return resp
+
 
 @app.route('/')
 def root():
@@ -328,5 +394,6 @@ def update_discovery_group():
         return 'OK', 200
 
 
+jwt = JWTManager(app)
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

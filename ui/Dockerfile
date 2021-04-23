@@ -1,6 +1,6 @@
 FROM python:3.7
 
-RUN pip install Flask python-dotenv
+RUN pip install flask_jwt_extended Flask python-dotenv
 RUN apt-get update && apt-get install -y libhyperscan5 libpq-dev gunicorn3
 
 # Don't verify ssl for github enterprise
