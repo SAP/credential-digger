@@ -14,6 +14,16 @@ Licensor: Facebook, Inc.
 Website: https://github.com/facebookresearch/fastText
 License: MIT License
 
+Component: flask
+Licensor: Pallets
+Website: https://github.com/pallets/flask
+License: BSD-3-Clause License
+
+Component: https://github.com/vimalloc/flask-jwt-extended
+Licensor: Landon Gilbert-Bland
+Website: https://github.com/vimalloc/flask-jwt-extended
+License: MIT License
+
 Component: GitPython
 Licensor: Michael Trier and contributors
 Website: https://github.com/gitpython-developers/GitPython
@@ -63,6 +73,11 @@ Component: PyGithub
 Licensor: undefined
 Website: https://github.com/PyGithub/PyGithub
 License: LGPL
+
+Component: python-dotenv
+Licensor: Saurabh Kumar
+Website: https://github.com/theskumar/python-dotenv
+License: BSD License
 
 Component: python-string-utils
 Licensor: Davide Zanotti
