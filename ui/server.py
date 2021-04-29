@@ -27,9 +27,6 @@ app.config['UPLOAD_FOLDER'] = os.path.join(APP_ROOT, './backend')
 app.config['DEBUG'] = True  # Remove this line in production
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-# HTTPS = True if both a certificate and private key exist, False otherwise.
-HTTPS = os.getenv('SSL_certificate') and os.getenv('SSL_private_key')
-
 if os.getenv('USE_PG') == 'True':
     app.logger.info('Use Postgres Client')
     c = PgUiClient(dbname=os.getenv('POSTGRES_DB'),
@@ -77,7 +74,7 @@ def before_request():
     Treat all incoming requests before-hand. 
     If the user is not yet logged in, he/she will be redirected towards the login page.
     """
-    if HTTPS:
+    if os.getenv('UI_PASSWORD'):
         token = request.cookies.get('AUTH')
         if token not in registered_tokens:
             if request.endpoint != 'login' and '/res/' not in request.path:
@@ -89,13 +86,10 @@ def before_request():
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    # If the HTTPS protocol is not in use, then the login feature will be disabled.
-    if not HTTPS:
-        redirect(url_for('root'))
-    else:
+    if os.getenv('UI_PASSWORD'):
         if request.method == 'POST':
             auth_key = request.form['auth_key']
-            if auth_key != os.getenv('AUTH_KEY'):
+            if auth_key != os.getenv('UI_PASSWORD'):
                 redirect(url_for('login'))
                 return render_template('login.html',
                                        msg='❌ Wrong key, please try again:')
@@ -103,11 +97,11 @@ def login():
             access_token = create_access_token(identity=str(uuid.uuid1()))
             resp = make_response(redirect(url_for('root')))
 
-            # We store the HttpOnly token on the browser. A HttpOnly token
+            # We store the encoded uuid token on the browser. A HttpOnly token
             # cannot be accessed by javascript for security purposes
-            resp.set_cookie('AUTH', value=str(access_token), httponly=True,
-                            secure=True)
-
+            resp.set_cookie('AUTH', value=str(access_token),
+                            httponly=True, secure=request.is_secure)
+            resp.set_cookie('logged_in', 'True')
             # Store the new JWT's value in the registered_tokens list
             registered_tokens.append(str(access_token))
             return resp
@@ -115,6 +109,8 @@ def login():
             redirect(url_for('login'))
             return render_template('login.html',
                                    msg='🔒 Enter your secret key to access the scanner:')
+    else:
+        return redirect(url_for('root'))
 
 
 @app.route('/logout')
@@ -123,10 +119,14 @@ def logout():
     The user loses his access to the tool when his JWT's value no longer exists in the local
     registered_tokens list.
     """
-    token = request.cookies.get('AUTH')
-    registered_tokens.remove(token)
-    resp = make_response(redirect(url_for('root')))
-    return resp
+    if os.getenv('UI_PASSWORD'):
+        token = request.cookies.get('AUTH')
+        registered_tokens.remove(token)
+        resp = make_response(redirect(url_for('root')))
+        resp.delete_cookie('AUTH')
+        return resp
+    else:
+        return make_response(redirect(url_for('root')))
 
 
 @app.route('/')
