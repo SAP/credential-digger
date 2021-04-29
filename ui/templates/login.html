@@ -18,13 +18,11 @@
         }
     </style>
     <script>
-        window.onload = function () {
-            sessionStorage.setItem("logged_in", "False");
-        }
+        document.cookie = 'logged_in=; Max-Age=0'
     </script>
 </head>
 
-<div class="center-div">
+<div class="center-div" id="login_div">
     <form class='put-center' action="/login" method="post">
         <label>{{msg}}</label><br /><br />
         <input type="password" id="auth_key" name="auth_key" />
