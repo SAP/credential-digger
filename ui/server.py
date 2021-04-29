@@ -126,7 +126,7 @@ def logout():
         resp.delete_cookie('AUTH')
         return resp
     else:
-        return make_response(redirect(url_for('root')))
+        return redirect(url_for('root'))
 
 
 @app.route('/')
