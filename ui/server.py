@@ -78,8 +78,9 @@ def before_request():
         token = request.cookies.get('AUTH')
         if token not in registered_tokens:
             if request.endpoint != 'login' and '/res/' not in request.path:
-                return render_template('login.html',
-                                       msg='🔒 Enter your secret key to access the scanner:')
+                return render_template(
+                    'login.html',
+                    msg='🔒 Enter your secret key to access the scanner:')
 
 # ################### ROUTES ####################
 
@@ -107,8 +108,9 @@ def login():
             return resp
         else:
             redirect(url_for('login'))
-            return render_template('login.html',
-                                   msg='🔒 Enter your secret key to access the scanner:')
+            return render_template(
+                'login.html',
+                msg='🔒 Enter your secret key to access the scanner:')
     else:
         return redirect(url_for('root'))
 
@@ -232,7 +234,9 @@ def download_rule():
 
     with open(os.path.join(APP_ROOT, './backend/Downloadrules.yml'), 'w') as file:
         yaml.dump(dict(dictrules), file)
-    return send_file(os.path.join(APP_ROOT, './backend/Downloadrules.yml'), as_attachment=True)
+    return send_file(
+        os.path.join(APP_ROOT, './backend/Downloadrules.yml'),
+        as_attachment=True)
 
 
 # ################### JSON APIs ####################
