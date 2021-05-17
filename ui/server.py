@@ -8,7 +8,7 @@ from itertools import groupby
 
 import yaml
 from dotenv import load_dotenv
-from flask import Flask, jsonify, make_response, redirect, 
+from flask import Flask, jsonify, make_response, redirect,
 from flask import render_template, request, send_file, url_for
 from flask_jwt_extended import create_access_token, JWTManager
 from werkzeug.utils import secure_filename
@@ -73,7 +73,8 @@ registered_tokens = []
 def before_request():
     """
     Treat all incoming requests before-hand. 
-    If the user is not yet logged in, he/she will be redirected towards the login page.
+    If the user is not yet logged in, he/she will be redirected towards 
+    the login page.
     """
     if os.getenv('UI_PASSWORD'):
         token = request.cookies.get('AUTH')
