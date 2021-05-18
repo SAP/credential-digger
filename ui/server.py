@@ -8,7 +8,7 @@ from itertools import groupby
 
 import yaml
 from dotenv import load_dotenv
-from flask import Flask, jsonify, make_response, redirect,
+from flask import Flask, jsonify, make_response, redirect
 from flask import render_template, request, send_file, url_for
 from flask_jwt_extended import create_access_token, JWTManager
 from werkzeug.utils import secure_filename
