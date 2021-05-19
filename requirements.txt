@@ -14,3 +14,6 @@ requests
 scikit-learn
 srsly
 tqdm
+tensorflow
+tensorflow_text
+tf-models-official
