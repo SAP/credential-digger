@@ -492,3 +492,17 @@ class SqliteClient(Client):
         super().update_discovery_group(
             new_state=new_state, repo_url=repo_url, file_name=file_name,
             snippet=snippet, query=query)
+
+   def update_similar_snippets(target_snippet,state,repo_url,file_name=None,threshold=0.95):
+	discoveries = self.get_discoveries(repo_url,file_name)
+	model = snippet_similarity.build_embedding_model()
+	target_snippet_embedding = compute_snippet_embedding(target_snippet,model)
+	n_updated_snippets = 0
+	for d in discoveries:
+	   if d['state'] == 'new':
+		snippet_embedding = snippet_similarity.compute_snippet_embedding([d['snippet']],model)
+		similarity = snippet_similarity.compute_similarity(target_snippet_embedding,snippet_embedding)
+		if similarity > threshold:
+			n_updated_snippets += 1
+			self.update_discovery(d['id'],state)
+	return n_updated_snippets
