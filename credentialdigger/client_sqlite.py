@@ -2,8 +2,8 @@ from sqlite3 import Error, connect
 
 from .client import Client
 from .snippet_similarity import build_embedding_model, \
-                         compute_similarity, \
-                         compute_snippet_embedding
+                        compute_similarity, \
+                        compute_snippet_embedding
 
 class SqliteClient(Client):
     def __init__(self, path):
@@ -509,8 +509,9 @@ class SqliteClient(Client):
         for d in discoveries:
             if d['state'] == 'new':
                 snippet_embedding = compute_snippet_embedding(
-                                                              [d['snippet']],
-                                                              model)
+                                                             [d['snippet']],
+                                                             model
+                                                             )
                 similarity = compute_similarity(target_snippet_embedding,
                                                 snippet_embedding)
                 if similarity > threshold:
