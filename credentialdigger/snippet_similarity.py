@@ -11,9 +11,11 @@ logging.getLogger('tensorflow').setLevel(logging.ERROR)
 def build_embedding_model():
     bert_model_name = 'small_bert/bert_en_uncased_L-2_H-128_A-2'
     map_name_to_handle = {'small_bert/bert_en_uncased_L-2_H-128_A-2':
-                          'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-2_H-128_A-2/1'}
+                          'https://tfhub.dev/tensorflow/small_bert/'
+                          'bert_en_uncased_L-2_H-128_A-2/1'}
     map_model_to_preprocess = {'small_bert/bert_en_uncased_L-2_H-128_A-2':
-                               'https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3'}
+                               'https://tfhub.dev/tensorflow/'
+                               'bert_en_uncased_preprocess/3'}
     tfhub_handle_encoder = map_name_to_handle[bert_model_name]
     tfhub_handle_preprocess = map_model_to_preprocess[bert_model_name]
 
@@ -35,7 +37,8 @@ def compute_snippet_embedding(snippet, model):
     return snippet_embedding
 
 
-def compute_similarity(snippet_embedd_1, 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snippet_embedd_2):
+def compute_similarity(snippet_embedd_1, snippet_embedd_2):
     cos_sim = np.dot(snippet_embedd_1, snippet_embedd_2) / \
-              (np.linalg.norm(snippet_embedd_1) * np.linalg.norm(snippet_embedd_2))
+             (np.linalg.norm(snippet_embedd_1) * \
+              np.linalg.norm(snippet_embedd_2))
     return cos_sim
