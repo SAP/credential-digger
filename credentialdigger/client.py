@@ -12,7 +12,6 @@ from .generator import ExtractorGenerator
 from .models.model_manager import ModelManager
 from .scanners.file_scanner import FileScanner
 from .scanners.git_scanner import GitScanner
-import .snippet_similarity.py
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
