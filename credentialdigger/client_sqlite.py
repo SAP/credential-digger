@@ -508,7 +508,7 @@ class SqliteClient(Client):
         n_updated_snippets = 0
         for d in discoveries:
             if d['state'] == 'new':
-                snippet_embedding = compute_snippet_embedding(d['snippet']],
+                snippet_embedding = compute_snippet_embedding([d['snippet']],
                                                               model)
                 similarity = compute_similarity(target_snippet_embedding,
                                                 snippet_embedding)
