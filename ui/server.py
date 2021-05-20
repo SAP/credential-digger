@@ -1,28 +1,33 @@
 import os
 import sys
 import threading
+import uuid
 from collections import defaultdict
 from enum import Enum
 from itertools import groupby
 
 import yaml
 from dotenv import load_dotenv
-from flask import Flask, jsonify, redirect, render_template, request, send_file
+from flask import Flask, jsonify, make_response, redirect, render_template,\
+    request, send_file, url_for
+from flask_jwt_extended import JWTManager, create_access_token
 from werkzeug.utils import secure_filename
 
 load_dotenv()
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-if os.getenv("LOCAL_REPO") == 'True':
+if os.getenv('LOCAL_REPO') == 'True':
     # Load credentialdigger from local repo instead of pip
     sys.path.insert(0, os.path.join(APP_ROOT, '..'))
 
 from backend import PgUiClient, SqliteUiClient  # noqa
 
-app = Flask('__name__', static_folder=os.path.join(APP_ROOT, './res'),
+app = Flask('__name__',
+            static_folder=os.path.join(APP_ROOT, './res'),
             template_folder=os.path.join(APP_ROOT, './templates'))
 app.config['UPLOAD_FOLDER'] = os.path.join(APP_ROOT, './backend')
 app.config['DEBUG'] = True  # Remove this line in production
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 if os.getenv('USE_PG') == 'True':
     app.logger.info('Use Postgres Client')
@@ -36,8 +41,8 @@ else:
     c = SqliteUiClient(path=os.path.join(APP_ROOT, './data.db'))
 c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
 
-
 # ################### UTILS ####################
+
 
 def _get_active_scans():
     active_scans = []
@@ -61,7 +66,74 @@ def _get_rules():
     return rulesdict, cat
 
 
+# Store JWT's value for every connected user
+registered_tokens = []
+
+
+@app.before_request
+def before_request():
+    """ Treat all incoming requests before-hand.
+    If the user is not yet logged in, she will be redirected towards the login
+    page.
+    """
+    if os.getenv('UI_PASSWORD'):
+        token = request.cookies.get('AUTH')
+        if token not in registered_tokens:
+            if request.endpoint != 'login' and '/res/' not in request.path:
+                return render_template(
+                    'login.html',
+                    msg='🔒 Enter your secret key to access the scanner:')
+
+
 # ################### ROUTES ####################
+
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if os.getenv('UI_PASSWORD'):
+        if request.method == 'POST':
+            auth_key = request.form['auth_key']
+            if auth_key != os.getenv('UI_PASSWORD'):
+                redirect(url_for('login'))
+                return render_template('login.html',
+                                       msg='❌ Wrong key, please try again:')
+            # We generate a UUID to be saved as a JWT's value
+            access_token = create_access_token(identity=str(uuid.uuid1()))
+            resp = make_response(redirect(url_for('root')))
+
+            # We store the encoded uuid token on the browser. A HttpOnly token
+            # cannot be accessed by javascript for security purposes
+            resp.set_cookie('AUTH',
+                            value=str(access_token),
+                            httponly=True,
+                            secure=request.is_secure)
+            resp.set_cookie('logged_in', 'True')
+            # Store the new JWT's value in the registered_tokens list
+            registered_tokens.append(str(access_token))
+            return resp
+        else:
+            redirect(url_for('login'))
+            return render_template(
+                'login.html',
+                msg='🔒 Enter your secret key to access the scanner:')
+    else:
+        return redirect(url_for('root'))
+
+
+@app.route('/logout')
+def logout():
+    """ The user loses her access to the tool when her JWT's value no longer
+    exists in the local registered_tokens list.
+    """
+    if os.getenv('UI_PASSWORD'):
+        token = request.cookies.get('AUTH')
+        registered_tokens.remove(token)
+        resp = make_response(redirect(url_for('root')))
+        resp.delete_cookie('AUTH')
+        return resp
+    else:
+        return redirect(url_for('root'))
+
 
 @app.route('/')
 def root():
@@ -164,12 +236,15 @@ def download_rule():
             'description': rule['description']
         })
 
-    with open(os.path.join(APP_ROOT, './backend/Downloadrules.yml'), 'w') as file:
+    with open(os.path.join(APP_ROOT, './backend/Downloadrules.yml'),
+              'w') as file:
         yaml.dump(dict(dictrules), file)
-    return send_file(os.path.join(APP_ROOT, './backend/Downloadrules.yml'), as_attachment=True)
+    return send_file(os.path.join(APP_ROOT, './backend/Downloadrules.yml'),
+                     as_attachment=True)
 
 
 # ################### JSON APIs ####################
+
 
 @app.route('/scan_repo', methods=['POST'])
 def scan_repo():
@@ -182,8 +257,8 @@ def scan_repo():
     # then 'forceScan' will be set to False; thus, ignored.
     force_scan = request.form.get('forceScan') == 'force'
     git_token = request.form.get('gitToken')
-    local_repo = not (repo_link.startswith(
-        'http://') or repo_link.startswith('https://'))
+    local_repo = not (repo_link.startswith('http://')
+                      or repo_link.startswith('https://'))
 
     url_is_valid, err_code = c.check_repo(repo_link, git_token, local_repo)
     if not url_is_valid:
@@ -198,16 +273,17 @@ def scan_repo():
 
     # Scan
     args = {
-        "repo_url": repo_link,
-        "models": models,
-        "force": force_scan,
-        "git_token": git_token,
-        "local_repo": local_repo
+        'repo_url': repo_link,
+        'models': models,
+        'force': force_scan,
+        'git_token': git_token,
+        'local_repo': local_repo
     }
     if rules_to_use != 'all':
-        args["category"] = rules_to_use
-    thread = threading.Thread(
-        name=f"credentialdigger@{repo_link}", target=c.scan, kwargs=args)
+        args['category'] = rules_to_use
+    thread = threading.Thread(name=f'credentialdigger@{repo_link}',
+                              target=c.scan,
+                              kwargs=args)
     thread.start()
 
     return 'OK', 200
@@ -260,8 +336,13 @@ def get_discoveries():
         col_index += 1
 
     discoveries_count, discoveries = c.get_discoveries(
-        repo_url=url, file_name=file_name, state_filter=state_filter,
-        where=where, limit=limit, offset=offset, order_by=order_by,
+        repo_url=url,
+        file_name=file_name,
+        state_filter=state_filter,
+        where=where,
+        limit=limit,
+        offset=offset,
+        order_by=order_by,
         order_direction=order_direction)
 
     # Add the category to each discovery
@@ -281,28 +362,26 @@ def get_discoveries():
         addressing = 2
         not_relevant = 3
 
-    discoveries = sorted(discoveries, key=lambda i: (
-        i["snippet"], i["category"], States[i["state"]].value))
+    discoveries = sorted(
+        discoveries,
+        key=lambda i: (i['snippet'], i['category'], States[i['state']].value))
     response = {
-        "recordsTotal": discoveries_count,
-        "recordsFiltered": discoveries_count,
-        "data": sorted([
-            {
-                "snippet": keys[0],
-                "category": keys[1],
-                "state": States(keys[2]).name,
-                "occurrences": [
-                    {
-                        "file_name": i["file_name"],
-                        "line_number": i["line_number"],
-                        "commit_id": i["commit_id"],
-                        "id": i["id"]
-                    } for i in list(values)
-                ],
-            }
-            for keys, values in groupby(
-                discoveries, lambda i: (i["snippet"], i["category"], States[i["state"]].value))
-        ], key=lambda i: States[i[order_by]].value, reverse=order_direction == 'desc')
+        'recordsTotal': discoveries_count,
+        'recordsFiltered': discoveries_count,
+        'data': sorted([{'snippet': keys[0],
+                         'category': keys[1],
+                         'state': States(keys[2]).name,
+                         'occurrences': [{'file_name': i['file_name'],
+                                          'line_number': i['line_number'],
+                                          'commit_id': i['commit_id'],
+                                          'id': i['id']
+                                          } for i in list(values)],
+                         } for keys, values in groupby(
+                             discoveries, lambda i:
+                             (i['snippet'], i['category'],
+                              States[i['state']].value))],
+                       key=lambda i: States[i[order_by]].value,
+                       reverse=order_direction == 'desc')
     }
 
     return jsonify(response)
@@ -312,7 +391,7 @@ def get_discoveries():
 def get_scan_status():
     url = request.args.get('url')
     active_scans = _get_active_scans()
-    return jsonify({"scanning": url in active_scans})
+    return jsonify({'scanning': url in active_scans})
 
 
 @app.route('/update_discovery_group', methods=['POST'])
@@ -328,4 +407,6 @@ def update_discovery_group():
         return 'OK', 200
 
 
-app.run(host='0.0.0.0', port=5000)
+jwt = JWTManager(app)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

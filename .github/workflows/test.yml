@@ -19,7 +19,7 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: credential_digger_tests
-          DBHOST: localhost 
+          DBHOST: localhost
           DBPORT: 5432
         ports:
           - 5432:5432
@@ -30,8 +30,8 @@ jobs:
           --health-retries 5
 
     steps:
-    - uses: actions/checkout@master 
-        
+    - uses: actions/checkout@master
+
     - name: Create PostgreSQL database
       run: |
         PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -U ${{ secrets.POSTGRES_USER }} -h 127.0.0.1 -p 5432 -d credential_digger_tests -f sql/create_table.sql
@@ -44,7 +44,7 @@ jobs:
     - name: Install OS dependencies
       run: |
         sudo apt install -y build-essential python3-dev libhyperscan-dev
-      
+
     - name: Cache python dependencies
       uses: actions/cache@v1
       with:
@@ -57,7 +57,7 @@ jobs:
       run: |
         pip install -r ./requirements.txt
         pip install -r ./tests/tests-requirements.txt
-    
+
     - name: Install credentialdigger
       run: |
         python setup.py install --user
@@ -79,11 +79,11 @@ jobs:
         pytest tests/integration_tests
 
     - name: Run functional tests
-      env: 
+      env:
         POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         POSTGRES_DB: credential_digger_tests
-        DBHOST: localhost 
+        DBHOST: localhost
         DBPORT: 5432
         path_model: https://github.com/SAP/credential-digger/releases/download/PM-v1.0.1/path_model-1.0.1.tar.gz
         snippet_model: https://github.com/SAP/credential-digger/releases/download/SM-v1.0.0/snippet_model-1.0.0.tar.gz
