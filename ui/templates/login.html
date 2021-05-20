@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<head>
+    <style>
+        .center-div {
+            display: block;
+            text-align: center;
+            margin: 0 auto;
+            text-align: center;
+            border: 1px solid rgb(59, 155, 219);
+            width: max-content;
+            padding: 20px 20px;
+        }
+
+        .put-center {
+            margin: 0 auto;
+        }
+    </style>
+    <script>
+        document.cookie = 'logged_in=; Max-Age=0'
+    </script>
+</head>
+
+<div class="center-div" id="login_div">
+    <form class='put-center' action="/login" method="post">
+        <label>{{msg}}</label><br /><br />
+        <input type="password" id="auth_key" name="auth_key" />
+        <input style="margin-left: 10px;" class="btn primary-bg" id="submit_btn" type="submit" value="Connect" />
+    </form>
+</div>
+
+{% endblock %}

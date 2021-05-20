@@ -90,8 +90,28 @@ $.fn.dataTable.ext.errMode = 'throw';
  * 
  * See: https://datatables.net/plug-ins/api/processing()
  */
-jQuery.fn.dataTable.Api.register( 'processing()', function ( show ) {
-  return this.iterator( 'table', function ( ctx ) {
-      ctx.oApi._fnProcessingDisplay( ctx, show );
-  } );
-} );
+jQuery.fn.dataTable.Api.register('processing()', function (show) {
+  return this.iterator('table', function (ctx) {
+    ctx.oApi._fnProcessingDisplay(ctx, show);
+  });
+});
+
+/**
+ * Handle the logout button
+ */
+
+$(window).ready(function () {
+  if (document.cookie.indexOf('logged_in') != -1) {
+    logout_button = document.createElement('a');
+    logout_button.className = "headerItem headerLink"
+    logout_button.href = "/logout"
+    logout_button.innerHTML = "Logout"
+    document.getElementById('topRightButtons').appendChild(logout_button);
+    $('#topRightButtons').show();
+  }
+  else {
+    if ($('#login_div').length) {
+      $('#topRightButtons').hide();
+    }
+  }
+});
