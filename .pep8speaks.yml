@@ -6,6 +6,7 @@ scanner:
 
 flake8:  # Same as scanner.linter value
     ignore:  # Errors and warnings to ignore
+        - W292  # no newline at the end of file (introduces W391)
         - W503  # line break before binary operator
         - W504  # line break after binary operator
 
