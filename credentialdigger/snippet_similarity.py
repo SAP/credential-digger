@@ -38,6 +38,6 @@ def compute_snippet_embedding(snippet, model):
 
 
 def compute_similarity(emb_1, emb_2):
-    cos_sim = np.dot(emb_1, emb_2) / (np.linalg.norm(emb_1) * \
+    cos_sim = np.dot(emb_1, emb_2) / (np.linalg.norm(emb_1) *
                                       np.linalg.norm(emb_2))
     return cos_sim
