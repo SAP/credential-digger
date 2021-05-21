@@ -1019,19 +1019,16 @@ class Client(Interface):
                                 threshold=0.95):
         discoveries = self.get_discoveries(repo_url, file_name)
         model = build_embedding_model()
-        target_snippet_embedding = compute_snippet_embedding(
-                                target_snippet,
-                                model)
+        target_snippet_embedding = compute_snippet_embedding(target_snippet,
+                                                             model)
         n_updated_snippets = 0
         similar_ids = []
         for d in discoveries:
             if d['state'] == 'new':
-                snippet_embedding = compute_snippet_embedding(
-                                 [d['snippet']],
-                                 model)
-                similarity = compute_similarity(
-                          target_snippet_embedding,
-                          snippet_embedding)
+                snippet_embedding = compute_snippet_embedding([d['snippet']],
+                                                              model)
+                similarity = compute_similarity(target_snippet_embedding,
+                                                snippet_embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1
                     similar_ids.append(d['id'])
