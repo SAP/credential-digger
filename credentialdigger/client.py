@@ -13,9 +13,9 @@ from .models.model_manager import ModelManager
 from .scanners.file_scanner import FileScanner
 from .scanners.git_scanner import GitScanner
 from .snippet_similarity import (
-                  build_embedding_model,
-                  compute_similarity,
-                  compute_snippet_embedding)
+    build_embedding_model,
+    compute_similarity,
+    compute_snippet_embedding)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -1020,20 +1020,20 @@ class Client(Interface):
         discoveries = self.get_discoveries(repo_url, file_name)
         model = build_embedding_model()
         target_snippet_embedding = compute_snippet_embedding(
-                                 target_snippet,
-                                 model)
+                                target_snippet,
+                                model)
         n_updated_snippets = 0
         similar_ids = []
         for d in discoveries:
             if d['state'] == 'new':
                 snippet_embedding = compute_snippet_embedding(
-                                  [d['snippet']],
-                                  model)
+                                 [d['snippet']],
+                                 model)
                 similarity = compute_similarity(
-                           target_snippet_embedding,
-                           snippet_embedding)
+                          target_snippet_embedding,
+                          snippet_embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1
                     similar_ids.append(d['id'])
-        self.update_discoveries(similar_ids,state)
+        self.update_discoveries(similar_ids, state)
         return n_updated_snippets
