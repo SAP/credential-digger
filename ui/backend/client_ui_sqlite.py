@@ -192,6 +192,6 @@ class SqliteUiClient(UiClient, SqliteClient):
                                                 snippet_embedding)
             if similarity > threshold:
                 n_updated_snippets += 1
-                self.update_discovery(d['id'],state)
+                self.update_discovery(d['id'], state)
          return n_updated_snippets
      
