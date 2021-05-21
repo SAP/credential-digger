@@ -15,7 +15,7 @@ from .scanners.git_scanner import GitScanner
 from .snippet_similarity import (
                   build_embedding_model,
                   compute_similarity,
-                  compute_snippet_embedding
+                  compute_snippet_embedding)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
