@@ -179,7 +179,7 @@ class SqliteUiClient(UiClient, SqliteClient):
                                 threshold=0.95):
         discoveries = self.get_discoveries(repo_url,
                                            file_name,
-                                           state_filter=state)[0]
+                                           state_filter='new')[0]
         model = build_embedding_model()
         target_snippet_embedding = compute_snippet_embedding(
                                  target_snippet,
