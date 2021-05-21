@@ -1,9 +1,9 @@
 from credentialdigger import SqliteClient
 from credentialdigger.client import Discovery
 from credentialdigger.snippet_similarity import (
-                 build_embedding_model,
-                 compute_similarity,
-                 compute_snippet_embedding)                                
+    build_embedding_model,
+    compute_similarity,
+    compute_snippet_embedding)                                
 
 from .client_ui import UiClient
 
@@ -181,18 +181,15 @@ class SqliteUiClient(UiClient, SqliteClient):
                                            file_name,
                                            state_filter='new')[0]
         model = build_embedding_model()
-        target_snippet_embedding = compute_snippet_embedding(
-                                 target_snippet,
-                                 model)
+        target_snippet_embedding = compute_snippet_embedding(target_snippet,
+                                                             model)
         n_updated_snippets = 0
         for d in discoveries:
             if d['state'] == 'new':
-                snippet_embedding = compute_snippet_embedding(
-                                  [d['snippet']],
-                                  model)
-                similarity = compute_similarity(
-                           target_snippet_embedding,
-                           snippet_embedding)
+                snippet_embedding = compute_snippet_embedding([d['snippet']],
+                                                              model)
+                similarity = compute_similarity(target_snippet_embedding,
+                                                snippet_embedding)
             if similarity > threshold:
                 n_updated_snippets += 1
                 self.update_discovery(d['id'],state)
