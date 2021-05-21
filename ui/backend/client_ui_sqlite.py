@@ -185,11 +185,10 @@ class SqliteUiClient(UiClient, SqliteClient):
                                                              model)
         n_updated_snippets = 0
         for d in discoveries:
-            if d['state'] == 'new':
-                snippet_embedding = compute_snippet_embedding([d['snippet']],
-                                                              model)
-                similarity = compute_similarity(target_snippet_embedding,
-                                                snippet_embedding)
+            snippet_embedding = compute_snippet_embedding([d['snippet']],
+                                                          model)
+            similarity = compute_similarity(target_snippet_embedding,
+                                            snippet_embedding)
             if similarity > threshold:
                 n_updated_snippets += 1
                 self.update_discovery(d['id'], state)
