@@ -3,7 +3,7 @@ from credentialdigger.client import Discovery
 from credentialdigger.snippet_similarity import (
     build_embedding_model,
     compute_similarity,
-    compute_snippet_embedding) 
+    compute_snippet_embedding)
 
 from .client_ui import UiClient
 
