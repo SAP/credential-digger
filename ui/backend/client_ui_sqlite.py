@@ -3,7 +3,7 @@ from credentialdigger.client import Discovery
 from credentialdigger.snippet_similarity import (
     build_embedding_model,
     compute_similarity,
-    compute_snippet_embedding)                                
+    compute_snippet_embedding) 
 
 from .client_ui import UiClient
 
@@ -170,7 +170,6 @@ class SqliteUiClient(UiClient, SqliteClient):
                 " GROUP BY file_name"
             ))
 
-
     def update_similar_snippets(self,
                                 target_snippet,
                                 state,
@@ -193,4 +192,3 @@ class SqliteUiClient(UiClient, SqliteClient):
                 n_updated_snippets += 1
                 self.update_discovery(d['id'], state)
         return n_updated_snippets
-     
