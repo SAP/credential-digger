@@ -16,4 +16,4 @@ srsly
 tqdm
 tensorflow==2.4.1
 tensorflow-text==2.4.1
-tf-models-official==2.4.1
+tf-models-official==2.4.0
