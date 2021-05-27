@@ -5,7 +5,6 @@ from credentialdigger.snippet_similarity import (
     compute_similarity,
     compute_snippet_embedding)
 
-
 from .client_ui import UiClient
 
 
@@ -91,6 +90,9 @@ class SqliteUiClient(UiClient, SqliteClient):
 
         # Build outer query to get all occurrences of the paginated snippets
         query = 'SELECT * FROM discoveries WHERE repo_url=?'
+        params = [repo_url]
+        params = [repo_url]
+        params = [repo_url]
         params = [repo_url]
         if file_name is not None:
             query += ' AND file_name=?'
@@ -179,7 +181,7 @@ class SqliteUiClient(UiClient, SqliteClient):
                                 threshold=0.95):
         discoveries = self.get_discoveries(repo_url,
                                            file_name,
-                                           state_filter='new')[0]
+                                           state_filter='new')[1]
         model = build_embedding_model()
         target_snippet_embedding = compute_snippet_embedding(target_snippet,
                                                              model)
@@ -193,3 +195,4 @@ class SqliteUiClient(UiClient, SqliteClient):
                 n_updated_snippets += 1
                 self.update_discovery(d['id'], state)
         return n_updated_snippets
+
