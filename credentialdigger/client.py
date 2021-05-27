@@ -182,6 +182,7 @@ class Client(Interface):
         with open(filename, 'r') as f:
             data = yaml.safe_load(f)
         for rule in data['rules']:
+            print(rule['regex'],rule['category'])
             self.add_rule(rule['regex'],
                           rule['category'],
                           rule.get('description', ''))
@@ -1016,7 +1017,7 @@ class Client(Interface):
                                 state,
                                 repo_url,
                                 file_name=None,
-                                threshold=0.95):
+                                threshold=0.96):
         discoveries = self.get_discoveries(repo_url, file_name)
         model = build_embedding_model()
         target_snippet_embedding = compute_snippet_embedding(target_snippet,
@@ -1031,6 +1032,5 @@ class Client(Interface):
                                                 snippet_embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1
-                    similar_ids.append(d['id'])
-        self.update_discoveries(similar_ids, state)
+                    self.update_discovery(d['id'], state)
         return n_updated_snippets
