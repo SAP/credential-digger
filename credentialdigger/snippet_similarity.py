@@ -9,8 +9,10 @@ logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
 
 def build_embedding_model():
-    tfhub_handle_preprocess = 'https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3'
-    tfhub_handle_encoder = 'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-2_H-128_A-2/1'
+    tfhub_handle_preprocess = 'https://tfhub.dev/tensorflow/' \
+                              'bert_en_uncased_preprocess/3'
+    tfhub_handle_encoder = 'https://tfhub.dev/tensorflow/small_bert/' \
+                           'bert_en_uncased_L-2_H-128_A-2/1'
 
     text_input = tf.keras.layers.Input(shape=(), dtype=tf.string, name='text')
     preprocessing_layer = hub.KerasLayer(tfhub_handle_preprocess,
