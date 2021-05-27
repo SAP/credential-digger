@@ -182,7 +182,6 @@ class Client(Interface):
         with open(filename, 'r') as f:
             data = yaml.safe_load(f)
         for rule in data['rules']:
-            print(rule['regex'],rule['category'])
             self.add_rule(rule['regex'],
                           rule['category'],
                           rule.get('description', ''))
@@ -1023,7 +1022,6 @@ class Client(Interface):
         target_snippet_embedding = compute_snippet_embedding(target_snippet,
                                                              model)
         n_updated_snippets = 0
-        similar_ids = []
         for d in discoveries:
             if d['state'] == 'new':
                 snippet_embedding = compute_snippet_embedding([d['snippet']],
