@@ -3,6 +3,10 @@ from collections import namedtuple
 
 import git
 from credentialdigger import Client
+from credentialdigger.snippet_similarity import (
+    build_embedding_model,
+    compute_similarity,
+    compute_snippet_embedding)
 from git import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 from git import Repo as GitRepo
 
@@ -97,3 +101,26 @@ class UiClient(Client):
             except GitCommandError:
                 return False, 'GitCommandError'
         return True, None
+
+    def update_similar_snippets(self,
+                                target_snippet,
+                                state,
+                                repo_url,
+                                file_name=None,
+                                threshold=0.96):
+        discoveries = self.get_discoveries(repo_url,
+                                           file_name,
+                                           state_filter='new')[1]
+        model = build_embedding_model()
+        target_snippet_embedding = compute_snippet_embedding(target_snippet,
+                                                             model)
+        n_updated_snippets = 0
+        for d in discoveries:
+            snippet_embedding = compute_snippet_embedding([d['snippet']],
+                                                          model)
+            similarity = compute_similarity(target_snippet_embedding,
+                                            snippet_embedding)
+            if similarity > threshold:
+                n_updated_snippets += 1
+                self.update_discovery(d['id'], state)
+        return n_updated_snippets
