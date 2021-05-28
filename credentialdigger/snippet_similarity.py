@@ -9,7 +9,7 @@ logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
 
 def build_embedding_model():
-    """ Build model by stacking up a preprocessing layer 
+    """ Build model by stacking up a preprocessing layer
     and an encoding layer.
 
     Returns
@@ -22,9 +22,9 @@ def build_embedding_model():
     """ Links for the pre-trained TensorFlow Hub preprocessing
     and encoding layers """
     tfhub_preprocessing = 'https://tfhub.dev/tensorflow/' \
-                              'bert_en_uncased_preprocess/3'
+                          'bert_en_uncased_preprocess/3'
     tfhub_encoder = 'https://tfhub.dev/tensorflow/small_bert/' \
-                           'bert_en_uncased_L-2_H-128_A-2/1'
+                    'bert_en_uncased_L-2_H-128_A-2/1'
     """ Define model input type and name """
     inputs = tf.keras.layers.Input(shape=(), dtype=tf.string, name='snippet')
     """ Define preprocessing layer """
@@ -43,7 +43,7 @@ def build_embedding_model():
 
 def compute_snippet_embedding(snippet, model):
     """ Compute snippet embedding.
-    
+
     Parameters
     ----------
     snippet: str
@@ -56,7 +56,7 @@ def compute_snippet_embedding(snippet, model):
     np.array
         The 128 element embedding for the input snippet
     """
-    
+
     """ Compute snippet's token embeddings """
     small_bert_result = tf.squeeze(model(tf.constant([snippet])))
     small_bert_embeddings = small_bert_result.numpy()
