@@ -1015,9 +1015,9 @@ class Client(Interface):
                                 repo_url,
                                 file_name=None,
                                 threshold=0.96):
-        """ Find snippets that are similar to the target 
+        """ Find snippets that are similar to the target
         snippet and update their state.
-        
+
         Parameters
         ----------
         target_snippet: str
@@ -1027,17 +1027,17 @@ class Client(Interface):
         file_name: str
             restrict to a given file the search for similar snippets
         threshold: double
-            update snippets with similarity score above threshold. 
+            update snippets with similarity score above threshold.
             Values lesser than 0.94 do not generally imply any relevant
-            amount of similarity between snippets, and should 
+            amount of similarity between snippets, and should
             therefore not be used.
-        
+
         Returns
         -------
         int
             The number of similar snippets found and updated
         """
-         
+
         discoveries = self.get_discoveries(repo_url, file_name)
         model = build_embedding_model()
         """ Compute target snippet embedding """
