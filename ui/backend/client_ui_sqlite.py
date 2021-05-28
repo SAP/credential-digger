@@ -91,9 +91,6 @@ class SqliteUiClient(UiClient, SqliteClient):
         # Build outer query to get all occurrences of the paginated snippets
         query = 'SELECT * FROM discoveries WHERE repo_url=?'
         params = [repo_url]
-        params = [repo_url]
-        params = [repo_url]
-        params = [repo_url]
         if file_name is not None:
             query += ' AND file_name=?'
             params.append(file_name)
