@@ -110,7 +110,7 @@ class UiClient(Client):
                                 threshold=0.96):
         """ Find snippets that are similar to the target
         snippet and update their state.
-        
+
         Parameters
         ----------
         target_snippet: str
@@ -124,13 +124,13 @@ class UiClient(Client):
             Values lesser than 0.94 do not generally imply any relevant
             amount of similarity between snippets, and should
             therefore not be used.
-        
+
         Returns
         -------
         int
             The number of similar snippets found and updated
         """
-        
+
         discoveries = self.get_discoveries(repo_url,
                                            file_name,
                                            state_filter='new')[1]
