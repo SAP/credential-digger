@@ -12,10 +12,8 @@ from .generator import ExtractorGenerator
 from .models.model_manager import ModelManager
 from .scanners.file_scanner import FileScanner
 from .scanners.git_scanner import GitScanner
-from .snippet_similarity import (
-    build_embedding_model,
-    compute_similarity,
-    compute_snippet_embedding)
+from .snippet_similarity import (build_embedding_model, compute_similarity,
+                                 compute_snippet_embedding)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -1017,15 +1015,41 @@ class Client(Interface):
                                 repo_url,
                                 file_name=None,
                                 threshold=0.96):
+        """ Find snippets that are similar to the target 
+        snippet and update their state.
+        
+        Parameters
+        ----------
+        target_snippet: str
+        state: str
+            state to update similar snippets to
+        repo_url: str
+        file_name: str
+            restrict to a given file the search for similar snippets
+        threshold: double
+            update snippets with similarity score above threshold. 
+            Values lesser than 0.94 do not generally imply any relevant
+            amount of similarity between snippets, and should 
+            therefore not be used.
+        
+        Returns
+        -------
+        int
+            The number of similar snippets found and updated
+        """
+         
         discoveries = self.get_discoveries(repo_url, file_name)
         model = build_embedding_model()
+        """ Compute target snippet embedding """
         target_snippet_embedding = compute_snippet_embedding(target_snippet,
                                                              model)
         n_updated_snippets = 0
         for d in discoveries:
             if d['state'] == 'new':
-                snippet_embedding = compute_snippet_embedding([d['snippet']],
+                """ Compute snippet embedding """
+                snippet_embedding = compute_snippet_embedding(d['snippet'],
                                                               model)
+                """ Compute similarity of target snippet and snippet """
                 similarity = compute_similarity(target_snippet_embedding,
                                                 snippet_embedding)
                 if similarity > threshold:
