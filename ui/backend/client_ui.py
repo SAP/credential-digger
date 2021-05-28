@@ -108,6 +108,29 @@ class UiClient(Client):
                                 repo_url,
                                 file_name=None,
                                 threshold=0.96):
+        """ Find snippets that are similar to the target
+        snippet and update their state.
+        
+        Parameters
+        ----------
+        target_snippet: str
+        state: str
+            state to update similar snippets to
+        repo_url: str
+        file_name: str
+            restrict to a given file the search for similar snippets
+        threshold: double
+            update snippets with similarity score above threshold.
+            Values lesser than 0.94 do not generally imply any relevant
+            amount of similarity between snippets, and should
+            therefore not be used.
+        
+        Returns
+        -------
+        int
+            The number of similar snippets found and updated
+        """
+        
         discoveries = self.get_discoveries(repo_url,
                                            file_name,
                                            state_filter='new')[1]
@@ -116,7 +139,7 @@ class UiClient(Client):
                                                              model)
         n_updated_snippets = 0
         for d in discoveries:
-            snippet_embedding = compute_snippet_embedding([d['snippet']],
+            snippet_embedding = compute_snippet_embedding(d['snippet'],
                                                           model)
             similarity = compute_similarity(target_snippet_embedding,
                                             snippet_embedding)
