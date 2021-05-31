@@ -169,26 +169,3 @@ class SqliteUiClient(UiClient, SqliteClient):
                 " FROM discoveries WHERE repo_url=?"
                 " GROUP BY file_name"
             ))
-
-    def update_similar_snippets(self,
-                                target_snippet,
-                                state,
-                                repo_url,
-                                file_name=None,
-                                threshold=0.95):
-        discoveries = self.get_discoveries(repo_url,
-                                           file_name,
-                                           state_filter='new')[1]
-        model = build_embedding_model()
-        target_snippet_embedding = compute_snippet_embedding(target_snippet,
-                                                             model)
-        n_updated_snippets = 0
-        for d in discoveries:
-            snippet_embedding = compute_snippet_embedding([d['snippet']],
-                                                          model)
-            similarity = compute_similarity(target_snippet_embedding,
-                                            snippet_embedding)
-            if similarity > threshold:
-                n_updated_snippets += 1
-                self.update_discovery(d['id'], state)
-        return n_updated_snippets
