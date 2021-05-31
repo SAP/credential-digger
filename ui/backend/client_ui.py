@@ -119,7 +119,7 @@ class UiClient(Client):
         repo_url: str
         file_name: str
             restrict to a given file the search for similar snippets
-        threshold: double
+        threshold: float
             update snippets with similarity score above threshold.
             Values lesser than 0.94 do not generally imply any relevant
             amount of similarity between snippets, and should
