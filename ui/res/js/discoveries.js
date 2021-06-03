@@ -238,6 +238,7 @@ function initDiscoveriesDataTable() {
   });
 }*/
 
+/*
 function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
     const repoUrl = document.querySelector('#repo-url').innerText;
@@ -310,8 +311,8 @@ function initUpdateDiscoveries() {
     }
   }
 }
+*/
 
-/*
 function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
     const repoUrl = document.querySelector('#repo-url').innerText;
@@ -325,6 +326,11 @@ function initUpdateDiscoveries() {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
+    var element = document.getElementById("cbSimilar");
+    if(typeof(element) != 'undefined' && element != null){
+        alert('Element exists!');
+    } else{
+        alert('Element does not exist!');
     
     $.ajax({
       url: 'update_discovery_group',
