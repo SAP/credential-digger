@@ -407,6 +407,18 @@ def update_discovery_group():
         return 'OK', 200
 
 
+@app.route('/update_similar_discoveries', methods=['POST'])
+def update_similar_discoveries():
+    snippet = request.form.get('snippet')
+    state = request.form.get('state')
+    url = request.form.get('url')
+    file = request.form.get('file')
+    response = c.update_similar_snippets(snippet, state, url, file)
+    if response is False:
+        return 'Error in updating similar snippets', 500
+    else:
+        return 'OK', 200
+
 jwt = JWTManager(app)
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

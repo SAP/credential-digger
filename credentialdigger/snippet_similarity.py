@@ -78,7 +78,7 @@ def compute_similarity(emb_1, emb_2):
 
     Returns
     -------
-    double
+    float
         The cosine similariy: value between 0 and 1.
         The greater the value, the more similar the snippets
     """

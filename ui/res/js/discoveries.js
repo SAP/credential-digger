@@ -200,7 +200,43 @@ function initUpdateDiscoveries() {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
-    
+
+    if (document.querySelector('#cbSimilar').checked) && snippet {
+      if (document.querySelector('#cbRestrictToFile').checked) {
+        $.ajax({
+          url: 'update_similar_discoveries',
+	  method: 'POST'
+	  data: {
+            snippet: snippet
+            state: state
+	    url: repoUrl
+            file: filename
+	  },
+	  beforeSend: function() {
+            datatable.processing(true)
+          },
+	  success: function() {
+            datatable.ajax.reload(null, false);
+	  }
+        })
+      } else {
+	$.ajax({
+           url: 'update_similar_discoveries',
+           method: 'POST'
+	   data: {
+             snippet: snippet
+             state: state
+             url: repoUrl
+           }
+           beforeSend: function() {
+             datatable.processing(true)
+           },
+           success: function() {
+             datatable.ajax.reload(null, false);
+           }
+      })
+    }
+
     $.ajax({
       url: 'update_discovery_group',
       method: 'POST',
@@ -292,5 +328,13 @@ const discoveriesBtnGroupTemplate = mark => `
         <span>${mark} not relevant</span>
       </div>
     </div>
+  </div>
+  <div class="btn primary-bg cb-similar">
+    <input type="checkbox" id="cbSimilar" value="yes" checked>
+    <label for="cbSimilar"> Update similar discoveries</label>
+  </div>
+  <div class="btn primary-bg cb-similar">
+    <input type="checkbox" id="cbRestrictToFile" value="yes">
+    <label for="cbRestrictToFile"> Restrict updates to current file</label>
   </div>
 </div>`;
