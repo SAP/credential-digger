@@ -201,7 +201,7 @@ function initDiscoveriesDataTable() {
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
 
-    if (document.querySelector('#cbSimilar').checked) {
+    if (this.querySelector('#cbSimilar').checked) {
         console.log('in')
 	$.ajax({
              url: 'update_similar_discoveries',
@@ -237,7 +237,7 @@ function initDiscoveriesDataTable() {
     })
   });
 }*/
-/*
+
 function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
     const repoUrl = document.querySelector('#repo-url').innerText;
@@ -252,8 +252,8 @@ function initUpdateDiscoveries() {
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }  
     
-    /*if (document.querySelector('#cbSimilar')?.checked) {
-      if (document.querySelector('#cbRestrictToFile')?.checked) {
+    if (this.querySelector('#cbSimilar').checked) {
+      if (this.querySelector('#cbRestrictToFile').checked) {
           $.ajax({
           url: 'update_similar_discoveries',
       	  method: 'POST'
@@ -273,7 +273,7 @@ function initUpdateDiscoveries() {
 	     alert{'in')
       } else {
 	      alert('in2')
-  	/* $.ajax({
+  	  $.ajax({
              url: 'update_similar_discoveries',
              method: 'POST'
   	     data: {
@@ -307,11 +307,11 @@ function initUpdateDiscoveries() {
           datatable.ajax.reload(null, false);
         }
       });
-    //}
-  //}
+    }
+  }
 }
-*/
 
+/*
 function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
     const repoUrl = document.querySelector('#repo-url').innerText;
@@ -344,7 +344,7 @@ function initUpdateDiscoveries() {
     })
   });
 }
-
+*/
 /**
  * Periodically get updates on the scanning status if scanning
  */
