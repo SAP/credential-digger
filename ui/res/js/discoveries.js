@@ -326,6 +326,7 @@ function initUpdateDiscoveries() {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
+    if (document.querySelector('#cbSimilarity').checked) {
     $.ajax({
       url: '/update_similar_discoveries',
       method: 'POST',
@@ -343,6 +344,26 @@ function initUpdateDiscoveries() {
       }
     })
   });
+  }else{
+    $.ajax({
+      url: '/update_discovery_group',
+      method: 'POST',
+      data: {
+        state: state,
+        url: repoUrl,
+        ...filename && { file: filename },
+        ...snippet && { snippet: decodeHTML(snippet) }
+      },
+      beforeSend: function() {
+        datatable.processing(true);
+      },
+      success: function () {
+        datatable.ajax.reload(null, false);
+      }
+    })
+  });
+  }
+  }
 }
 /**
  * Periodically get updates on the scanning status if scanning
