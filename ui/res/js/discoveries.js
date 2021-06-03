@@ -326,15 +326,8 @@ function initUpdateDiscoveries() {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
-    /* var element = document.getElementById("cbSimilar");
-    if(typeof(element) != 'undefined' && element != null){
-        alert('Element exists!');
-    } else{
-        alert('Element does not exist!');
-    */
-
     $.ajax({
-      url: 'update_discovery_group',
+      url: '/update_discovery_group',
       method: 'POST',
       data: {
         state: state,
@@ -351,7 +344,6 @@ function initUpdateDiscoveries() {
     })
   });
 }
-*/
 /**
  * Periodically get updates on the scanning status if scanning
  */
