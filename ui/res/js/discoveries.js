@@ -187,7 +187,7 @@ function initDiscoveriesDataTable() {
 /**
  * Event handler for update discoveries' button
  */
-function initUpdateDiscoveries() {
+/*function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
     const repoUrl = document.querySelector('#repo-url').innerText;
     const state = this.dataset.state;
@@ -216,7 +216,7 @@ function initUpdateDiscoveries() {
              },
              success: function() {
                datatable.ajax.reload(null, false);
-             }*/
+             }
       });
     }
     $.ajax({
@@ -236,8 +236,8 @@ function initUpdateDiscoveries() {
       }
     })
   });
-}
-/*
+}*/
+
 function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
     const repoUrl = document.querySelector('#repo-url').innerText;
@@ -251,17 +251,17 @@ function initUpdateDiscoveries() {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }  
-    /*
+    
     if (document.querySelector('#cbSimilar').checked) && snippet {
       if (document.querySelector('#cbRestrictToFile').checked) {
         $.ajax({
           url: 'update_similar_discoveries',
       	  method: 'POST'
       	  data: {
-                  snippet: snippet
                   state: state
-      	    url: repoUrl
-                  file: filename
+      	          url: repoUrl
+                  ...filename && { file: filename }
+		  ...snippet && { snippet: decodeHTML(snippet) }
       	  },
       	  beforeSend: function() {
                   datatable.processing(true)
@@ -271,14 +271,15 @@ function initUpdateDiscoveries() {
       	  }
         });
       } else {
-  	    $.ajax({
+  	 $.ajax({
              url: 'update_similar_discoveries',
              method: 'POST'
-  	         data: {
-               snippet: snippet
+  	     data: {
                state: state
                url: repoUrl
-             }
+               ...filename && { file: filename },
+	       ...snippet && { snippet: decodeHTML(snippet) } 
+	     }
              beforeSend: function() {
                datatable.processing(true)
              },
