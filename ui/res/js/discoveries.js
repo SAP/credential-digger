@@ -334,7 +334,7 @@ function initUpdateDiscoveries() {
     */
 
     $.ajax({
-      url: 'update_similar_discoveries',
+      url: 'update_discovery_group',
       method: 'POST',
       data: {
         state: state,
