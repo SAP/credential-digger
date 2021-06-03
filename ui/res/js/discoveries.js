@@ -327,7 +327,7 @@ function initUpdateDiscoveries() {
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
     $.ajax({
-      url: '/update_discovery_group',
+      url: '/update_similar_discoveries',
       method: 'POST',
       data: {
         state: state,
