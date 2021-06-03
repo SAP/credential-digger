@@ -199,8 +199,8 @@ function initUpdateDiscoveries() {
     } else {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
-    }
-
+    }  
+    /*
     if (document.querySelector('#cbSimilar').checked) && snippet {
       if (document.querySelector('#cbRestrictToFile').checked) {
         $.ajax({
@@ -236,7 +236,7 @@ function initUpdateDiscoveries() {
              }
         });
       }
-    } else {
+    } else {*/
       $.ajax({
         url: 'update_discovery_group',
         method: 'POST',
@@ -254,7 +254,7 @@ function initUpdateDiscoveries() {
         }
       });
     }
-  }
+  //}
 }
 
 /**
@@ -330,6 +330,7 @@ const discoveriesBtnGroupTemplate = mark => `
       </div>
     </div>
   </div>
+  <!--
   <div class="btn primary-bg cb-similar">
     <input type="checkbox" id="cbSimilar" value="yes" checked>
     <label for="cbSimilar"> Update similar discoveries</label>
@@ -338,4 +339,5 @@ const discoveriesBtnGroupTemplate = mark => `
     <input type="checkbox" id="cbRestrictToFile" value="yes">
     <label for="cbRestrictToFile"> Restrict updates to current file</label>
   </div>
+  -->
 </div>`;
