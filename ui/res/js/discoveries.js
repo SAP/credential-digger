@@ -252,9 +252,9 @@ function initUpdateDiscoveries() {
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }  
     
-    if (document.querySelector('#cbSimilar').checked) && snippet {
+    if (document.querySelector('#cbSimilar').checked) {
       if (document.querySelector('#cbRestrictToFile').checked) {
-        $.ajax({
+       /* $.ajax({
           url: 'update_similar_discoveries',
       	  method: 'POST'
       	  data: {
@@ -269,9 +269,11 @@ function initUpdateDiscoveries() {
       	  success: function() {
                   datatable.ajax.reload(null, false);
       	  }
-        });
+        });*/
+	     alert{'in')
       } else {
-  	 $.ajax({
+	      alert('in2')
+  	/* $.ajax({
              url: 'update_similar_discoveries',
              method: 'POST'
   	     data: {
@@ -286,7 +288,7 @@ function initUpdateDiscoveries() {
              success: function() {
                datatable.ajax.reload(null, false);
              }
-        });
+        });*/
       }
     } else {
       $.ajax({
