@@ -363,4 +363,12 @@ const discoveriesBtnGroupTemplate = mark => `
       </div>
     </div>
   </div>
+  <div class="btn primary-bg cb-similar">
+    <input type="checkbox" id="cbSimilar" value="yes" checked>
+    <label for="cbSimilar"> Update similar discoveries</label>
+  </div>
+  <div class="btn primary-bg cb-similar">
+    <input type="checkbox" id="cbRestrictToFile" value="yes">
+    <label for="cbRestrictToFile"> Restrict updates to current file</label>
+  </div>
 </div>`;
