@@ -202,20 +202,21 @@ function initUpdateDiscoveries() {
     }
 
     if (document.querySelector('#cbSimilar').checked) {
-      $.ajax({
+        console.log('in')
+	$.ajax({
              url: 'update_similar_discoveries',
              method: 'POST'
                  data: {
                snippet: snippet
                state: state
                url: repoUrl
-             }
+             }/*
              beforeSend: function() {
                datatable.processing(true)
              },
              success: function() {
                datatable.ajax.reload(null, false);
-             }
+             }*/
       });
     }
     $.ajax({
@@ -380,11 +381,11 @@ const discoveriesBtnGroupTemplate = mark => `
       </div>
     </div>
   </div>
-  <div class="btn primary-bg cb-similar">
+  <div class="light-bg cb-similar">
     <input type="checkbox" id="cbSimilar" value="yes" checked>
     <label for="cbSimilar"> Update similar discoveries</label>
   </div>
-  <div class="btn primary-bg cb-similar">
+  <div class="light-bg cb-similar">
     <input type="checkbox" id="cbRestrictToFile" value="yes">
     <label for="cbRestrictToFile"> Restrict updates to current file</label>
   </div>
