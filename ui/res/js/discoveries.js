@@ -199,6 +199,39 @@ function initUpdateDiscoveries() {
     } else {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
+    }
+
+    $.ajax({
+      url: 'update_discovery_group',
+      method: 'POST',
+      data: {
+        state: state,
+        url: repoUrl,
+        ...filename && { file: filename },
+        ...snippet && { snippet: decodeHTML(snippet) }
+      },
+      beforeSend: function() {
+        datatable.processing(true);
+      },
+      success: function () {
+        datatable.ajax.reload(null, false);
+      }
+    })
+  });
+}
+/*
+function initUpdateDiscoveries() {
+  $(document).on('click', '.btn-group .btn', function () {
+    const repoUrl = document.querySelector('#repo-url').innerText;
+    const state = this.dataset.state;
+    let filename, snippet;
+    const datatable = $('.dataTable').DataTable();
+
+    if (document.querySelector("#files-table")) {
+      filename = this.closest('tr').querySelector('.filename').innerText;
+    } else {
+      filename = document.querySelector("#file-name").innerText;
+      snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }  
     /*
     if (document.querySelector('#cbSimilar').checked) && snippet {
@@ -236,7 +269,7 @@ function initUpdateDiscoveries() {
              }
         });
       }
-    } else {*/
+    } else {
       $.ajax({
         url: 'update_discovery_group',
         method: 'POST',
@@ -256,7 +289,7 @@ function initUpdateDiscoveries() {
     }
   //}
 }
-
+*/
 /**
  * Periodically get updates on the scanning status if scanning
  */
@@ -330,14 +363,4 @@ const discoveriesBtnGroupTemplate = mark => `
       </div>
     </div>
   </div>
-  <!--
-  <div class="btn primary-bg cb-similar">
-    <input type="checkbox" id="cbSimilar" value="yes" checked>
-    <label for="cbSimilar"> Update similar discoveries</label>
-  </div>
-  <div class="btn primary-bg cb-similar">
-    <input type="checkbox" id="cbRestrictToFile" value="yes">
-    <label for="cbRestrictToFile"> Restrict updates to current file</label>
-  </div>
-  -->
 </div>`;
