@@ -201,6 +201,23 @@ function initUpdateDiscoveries() {
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
 
+    if (document.querySelector('#cbSimilar').checked) {
+      $.ajax({
+             url: 'update_similar_discoveries',
+             method: 'POST'
+                 data: {
+               snippet: snippet
+               state: state
+               url: repoUrl
+             }
+             beforeSend: function() {
+               datatable.processing(true)
+             },
+             success: function() {
+               datatable.ajax.reload(null, false);
+             }
+      });
+    }
     $.ajax({
       url: 'update_discovery_group',
       method: 'POST',
