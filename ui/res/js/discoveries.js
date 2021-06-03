@@ -205,55 +205,56 @@ function initUpdateDiscoveries() {
       if (document.querySelector('#cbRestrictToFile').checked) {
         $.ajax({
           url: 'update_similar_discoveries',
-	  method: 'POST'
-	  data: {
-            snippet: snippet
-            state: state
-	    url: repoUrl
-            file: filename
-	  },
-	  beforeSend: function() {
-            datatable.processing(true)
-          },
-	  success: function() {
-            datatable.ajax.reload(null, false);
-	  }
-        })
+      	  method: 'POST'
+      	  data: {
+                  snippet: snippet
+                  state: state
+      	    url: repoUrl
+                  file: filename
+      	  },
+      	  beforeSend: function() {
+                  datatable.processing(true)
+                },
+      	  success: function() {
+                  datatable.ajax.reload(null, false);
+      	  }
+        });
       } else {
-	$.ajax({
-           url: 'update_similar_discoveries',
-           method: 'POST'
-	   data: {
-             snippet: snippet
-             state: state
-             url: repoUrl
-           }
-           beforeSend: function() {
-             datatable.processing(true)
-           },
-           success: function() {
-             datatable.ajax.reload(null, false);
-           }
-      })
-    }
-
-    $.ajax({
-      url: 'update_discovery_group',
-      method: 'POST',
-      data: {
-        state: state,
-        url: repoUrl,
-        ...filename && { file: filename },
-        ...snippet && { snippet: decodeHTML(snippet) }
-      },
-      beforeSend: function() {
-        datatable.processing(true);
-      },
-      success: function () {
-        datatable.ajax.reload(null, false);
+  	    $.ajax({
+             url: 'update_similar_discoveries',
+             method: 'POST'
+  	         data: {
+               snippet: snippet
+               state: state
+               url: repoUrl
+             }
+             beforeSend: function() {
+               datatable.processing(true)
+             },
+             success: function() {
+               datatable.ajax.reload(null, false);
+             }
+        });
       }
-    })
-  });
+    } else {
+      $.ajax({
+        url: 'update_discovery_group',
+        method: 'POST',
+        data: {
+          state: state,
+          url: repoUrl,
+          ...filename && { file: filename },
+          ...snippet && { snippet: decodeHTML(snippet) }
+        },
+        beforeSend: function() {
+          datatable.processing(true);
+        },
+        success: function () {
+          datatable.ajax.reload(null, false);
+        }
+      });
+    }
+  }
 }
 
 /**
