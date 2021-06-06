@@ -159,7 +159,9 @@ function initDiscoveriesDataTable() {
             snippet: encodeHTML(item.snippet),
             tot: item.occurrences.length,
             occurrences: details,
-            actions: discoveriesBtnGroupTemplate('Mark as')//,
+            actions: discoveriesBtnGroupTemplate('Mark as')+`<input type="checkbox" id="cbSim" value="yes" checked>
+            <label>Update similar</label>`;
+//,
            // cb-sim: checkbox
           }
         })
@@ -241,7 +243,7 @@ function initUpdateDiscoveries() {
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
     
-    if (this.closets('tr').querySelector('#cbSim').checked) {
+    if (this.closest('tr').querySelector('#cbSim').checked) {
       $.ajax({
         url: 'update_similar_discoveries',
         method: 'POST',
@@ -353,7 +355,7 @@ const discoveriesBtnGroupTemplate = mark => `
       </div>
     </div>
   </div>
-</div>
+</div>`;/*
 <input type="checkbox" id="cbSim" value="yes" checked>
 <label>Update similar</label>`;
 /*<div class="btn-group">
