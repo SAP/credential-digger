@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
   if (document.querySelector('#addRepoModal')) initScanRepo();
   initUpdateDiscoveries();
-  //initUpdateSimilarDiscoveries();
+  initUpdateSimilarDiscoveries();
   initUpdateScanning();
 });
 
@@ -185,7 +185,7 @@ function initDiscoveriesDataTable() {
   });
 }
 
-/*
+
 function initUpdateSimilarDiscoveries() {
   $(document).on('click', 'btn-group .btn-sim', function () {
     const repoUrl = document.querySelector('#repo-url').innerText;
@@ -217,7 +217,7 @@ function initUpdateSimilarDiscoveries() {
     });
   }
 }	
-*/
+
 
 function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
