@@ -232,8 +232,9 @@ function initUpdateDiscoveries() {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
+
     $.ajax({
-      url: '/update_discovery_group',
+      url: 'update_discovery_group',
       method: 'POST',
       data: {
         state: state,
@@ -248,8 +249,9 @@ function initUpdateDiscoveries() {
         datatable.ajax.reload(null, false);
       }
     })
-  }
+  });
 }
+
 
 /**
  * Periodically get updates on the scanning status if scanning
