@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
   if (document.querySelector('#addRepoModal')) initScanRepo();
   initUpdateDiscoveries();
-  initUpdateSimilarDiscoveries();
+  //initUpdateSimilarDiscoveries();
   initUpdateScanning();
 });
 
