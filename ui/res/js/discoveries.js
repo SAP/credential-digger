@@ -240,6 +240,10 @@ function initUpdateDiscoveries() {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
+    
+    if (this.closets('tr').querySelector('#cbSim').checked) {
+	    alert('checked')
+    }
 
     $.ajax({
       url: 'update_discovery_group',
