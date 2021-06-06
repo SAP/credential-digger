@@ -242,25 +242,40 @@ function initUpdateDiscoveries() {
     }
     
     if (this.closets('tr').querySelector('#cbSim').checked) {
-	    alert('checked')
+      $.ajax({
+        url: 'update_similar_discoveries',
+        method: 'POST',
+        data: {
+          state: state,
+          url: repoUrl,
+          ...filename && { file: filename },
+          ...snippet && { snippet: decodeHTML(snippet) }
+        },
+        beforeSend: function() {
+          datatable.processing(true);
+        },
+        success: function () {
+          datatable.ajax.reload(null, false);
+        }
+      })
+    } else {
+      $.ajax({
+        url: 'update_discovery_group',
+        method: 'POST',
+        data: {
+          state: state,
+          url: repoUrl,
+          ...filename && { file: filename },
+          ...snippet && { snippet: decodeHTML(snippet) }
+        },
+        beforeSend: function() {
+          datatable.processing(true);
+        },
+        success: function () {
+          datatable.ajax.reload(null, false);
+        }
+      })
     }
-
-    $.ajax({
-      url: 'update_discovery_group',
-      method: 'POST',
-      data: {
-        state: state,
-        url: repoUrl,
-        ...filename && { file: filename },
-        ...snippet && { snippet: decodeHTML(snippet) }
-      },
-      beforeSend: function() {
-        datatable.processing(true);
-      },
-      success: function () {
-        datatable.ajax.reload(null, false);
-      }
-    })
   });
 }
 
@@ -339,7 +354,8 @@ const discoveriesBtnGroupTemplate = mark => `
     </div>
   </div>
 </div>
-<input type="checkbox" id="cbSim" value="yes" checked>`;
+<input type="checkbox" id="cbSim" value="yes" checked>
+<label>Update similar</label>`;
 /*<div class="btn-group">
   <div class="btn-sim primary-bg" data-state="false_positive">
     <span>Mark similar as FPs</span>
