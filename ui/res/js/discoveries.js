@@ -105,10 +105,7 @@ function initDiscoveriesDataTable() {
       }, {
         data: "actions",
         orderable: false
-      }/*, {
-	data: "cb-sim",
-	orderable: false
-      }*/
+      }
     ],
     searchCols: [null, null, null, {search: 'new'}, null, null, null, null],
     ajax: { // AJAX source info
@@ -150,12 +147,10 @@ function initDiscoveriesDataTable() {
             </tbody>
           </table><div>`;
           
-         // const checkbox = `
-         //<input type="checkbox" id="cbSim" value="yes">`
           const actions = discoveriesBtnGroupTemplate('Mark as')+`
 	  <input type="checkbox" id="cbSim" value="yes" checked>
-          <label>Update similar</label>
-          <input type="checkbox" id="cbRestrictToFile" value="yes" checked>
+          <label>Update similar</label><br>
+          <input type="checkbox" id="cbRestrictToFile" value="yes">
           <label>Restrict to current file</label>`;
 
           return {
@@ -165,9 +160,6 @@ function initDiscoveriesDataTable() {
             tot: item.occurrences.length,
             occurrences: details,
             actions: actions
-	    //actions: discoveriesBtnGroupTemplate('Mark as')//+`<input type="checkbox" id="cbSim" value="yes" checked>
-           // <label>Update similar</label>`;
-           // cb-sim: checkbox
           }
         })
       }
@@ -199,40 +191,6 @@ function initDiscoveriesDataTable() {
   });
 }
 
-/*
-function initUpdateSimilarDiscoveries() {
-  $(document).on('click', '.btn-group .btn-sim', function () {
-    const repoUrl = document.querySelector('#repo-url').innerText;
-    const state = this.dataset.state;
-    let filename, snippet;
-    const datatable = $('.dataTable').DataTable();
-
-    if (document.querySelector("#files-table")) {
-      filename = this.closest('tr').querySelector('.filename').innerText;
-    } else {
-      filename = document.querySelector("#file-name").innerText;
-      snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
-    }
-
-    $.ajax({
-      url: 'update_similar_discoveries',
-      method: 'POST',
-      data: {
-        state: state,
-        url: repoUrl,
-        ...filename && { file: filename },
-        ...snippet && { snippet: decodeHTML(snippet) }
-      },
-      beforeSend: function() {
-        datatable.processing(true);
-      },
-      success: function () {
-        datatable.ajax.reload(null, false);
-      }
-    })
-  });
-}
-*/
 
 function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
@@ -275,7 +233,7 @@ function initUpdateDiscoveries() {
             url: repoUrl,
             ...filename && { file: filename },
             ...snippet && { snippet: decodeHTML(snippet) },
-            restrictToFile
+            restrictToFile: restrictToFile
 	  },
           beforeSend: function() {
             datatable.processing(true);
