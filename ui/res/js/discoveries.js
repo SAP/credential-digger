@@ -149,9 +149,9 @@ function initDiscoveriesDataTable() {
           
           const actions = discoveriesBtnGroupTemplate('Mark as')+`
 	  <input type="checkbox" id="cbSim" value="yes" checked>
-          <label>Update similar</label><br>
+          <label class="cb-label">Update similar</label><br>
           <input type="checkbox" id="cbRestrictToFile" value="yes">
-          <label>Restrict to current file</label>`;
+          <label class="cb-label">Restrict to current file</label>`;
 
           return {
             ...item,
