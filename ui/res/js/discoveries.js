@@ -351,4 +351,4 @@ const discoveriesBtnGroupTemplate = mark => `
       </div>
     </div>
   </div>
-</div>;
+</div>`;
