@@ -152,6 +152,9 @@ function initDiscoveriesDataTable() {
           
          // const checkbox = `
          //<input type="checkbox" id="cbSim" value="yes">`
+          const actions = discoveriesBtnGroupTemplate('Mark as')+`
+	  <input type="checkbox" id="cbSim" value="yes" checked>
+          <label>Update similar</label>`;
 
           return {
             ...item,
@@ -159,7 +162,8 @@ function initDiscoveriesDataTable() {
             snippet: encodeHTML(item.snippet),
             tot: item.occurrences.length,
             occurrences: details,
-            actions: discoveriesBtnGroupTemplate('Mark as')//+`<input type="checkbox" id="cbSim" value="yes" checked>
+            actions: actions
+	    //actions: discoveriesBtnGroupTemplate('Mark as')//+`<input type="checkbox" id="cbSim" value="yes" checked>
            // <label>Update similar</label>`;
            // cb-sim: checkbox
           }
@@ -354,9 +358,9 @@ const discoveriesBtnGroupTemplate = mark => `
       </div>
     </div>
   </div>
-</div>
-<input type="checkbox" id="cbSim" value="yes" checked>
-<label>Update similar</label>`;
+</div>`;
+//<input type="checkbox" id="cbSim" value="yes" checked>
+//<label>Update similar</label>`;
 /*<div class="btn-group">
   <div class="btn-sim primary-bg" data-state="false_positive">
     <span>Mark similar as FPs</span>
