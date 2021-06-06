@@ -151,7 +151,7 @@ function initDiscoveriesDataTable() {
           </table><div>`;
           
           const checkbox = `
-          <div><input type="checkbox" id="cbSim" value="yes">Update similar</div>`
+          <input type="checkbox" id="cbSim" value="yes">`
 
           return {
             ...item,
