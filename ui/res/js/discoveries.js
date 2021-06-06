@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
   if (document.querySelector('#addRepoModal')) initScanRepo();
   initUpdateDiscoveries();
+  initUpdateSimilarDiscoveries();
   initUpdateScanning();
 });
 
@@ -184,149 +185,20 @@ function initDiscoveriesDataTable() {
   });
 }
 
-/**
- * Event handler for update discoveries' button
- */
-/*function initUpdateDiscoveries() {
-  $(document).on('click', '.btn-group .btn', function () {
+
+function initUpdateSimilarDiscoveries() {
+  $(document).on('click', 'btn-group .btn-sim', function () {
     const repoUrl = document.querySelector('#repo-url').innerText;
     const state = this.dataset.state;
     let filename, snippet;
     const datatable = $('.dataTable').DataTable();
 
-    if (document.querySelector("#files-table")) {
-      filename = this.closest('tr').querySelector('.filename').innerText;
+    if (document.querySelector('#files-tables')) {
+      filename = this.closets('tr').querySelector('.filename').innerText;
     } else {
-      filename = document.querySelector("#file-name").innerText;
+      filename = document.querySelector('#file-name').innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
-
-    if (this.querySelector('#cbSimilar').checked) {
-        console.log('in')
-	$.ajax({
-             url: 'update_similar_discoveries',
-             method: 'POST'
-                 data: {
-               snippet: snippet
-               state: state
-               url: repoUrl
-             }/*
-             beforeSend: function() {
-               datatable.processing(true)
-             },
-             success: function() {
-               datatable.ajax.reload(null, false);
-             }
-      });
-    }
-    $.ajax({
-      url: 'update_discovery_group',
-      method: 'POST',
-      data: {
-        state: state,
-        url: repoUrl,
-        ...filename && { file: filename },
-        ...snippet && { snippet: decodeHTML(snippet) }
-      },
-      beforeSend: function() {
-        datatable.processing(true);
-      },
-      success: function () {
-        datatable.ajax.reload(null, false);
-      }
-    })
-  });
-}*/
-
-/*
-function initUpdateDiscoveries() {
-  $(document).on('click', '.btn-group .btn', function () {
-    const repoUrl = document.querySelector('#repo-url').innerText;
-    const state = this.dataset.state;
-    let filename, snippet;
-    const datatable = $('.dataTable').DataTable();
-
-    if (document.querySelector("#files-table")) {
-      filename = this.closest('tr').querySelector('.filename').innerText;
-    } else {
-      filename = document.querySelector("#file-name").innerText;
-      snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
-    }  
-    
-    if (this.querySelector('#cbSimilar').checked) {
-      if (this.querySelector('#cbRestrictToFile').checked) {
-          $.ajax({
-          url: 'update_similar_discoveries',
-      	  method: 'POST'
-      	  data: {
-                  state: state
-      	          url: repoUrl
-                  ...filename && { file: filename }
-		  ...snippet && { snippet: decodeHTML(snippet) }
-      	  },
-      	  beforeSend: function() {
-                  datatable.processing(true)
-                },
-      	  success: function() {
-                  datatable.ajax.reload(null, false);
-      	  }
-        });
-	     alert{'in')
-      } else {
-	      alert('in2')
-  	  $.ajax({
-             url: 'update_similar_discoveries',
-             method: 'POST'
-  	     data: {
-               state: state
-               url: repoUrl
-               ...filename && { file: filename },
-	       ...snippet && { snippet: decodeHTML(snippet) } 
-	     }
-             beforeSend: function() {
-               datatable.processing(true)
-             },
-             success: function() {
-               datatable.ajax.reload(null, false);
-             }
-        });
-      }
-    } else {
-      $.ajax({
-        url: 'update_discovery_group',
-        method: 'POST',
-        data: {
-          state: state,
-          url: repoUrl,
-          ...filename && { file: filename },
-          ...snippet && { snippet: decodeHTML(snippet) }
-        },
-        beforeSend: function() {
-          datatable.processing(true);
-        },
-        success: function () {
-          datatable.ajax.reload(null, false);
-        }
-      });
-    }
-  }
-}
-*/
-
-function initUpdateDiscoveries() {
-  $(document).on('click', '.btn-group .btn', function () {
-    const repoUrl = document.querySelector('#repo-url').innerText;
-    const state = this.dataset.state;
-    let filename, snippet;
-    const datatable = $('.dataTable').DataTable();
-
-    if (document.querySelector("#files-table")) {
-      filename = this.closest('tr').querySelector('.filename').innerText;
-    } else {
-      filename = document.querySelector("#file-name").innerText;
-      snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
-    }
-    if (document.querySelector('#cbSimilarity').checked) {
     $.ajax({
       url: '/update_similar_discoveries',
       method: 'POST',
@@ -342,9 +214,24 @@ function initUpdateDiscoveries() {
       success: function () {
         datatable.ajax.reload(null, false);
       }
-    })
-  });
-  }else{
+    });
+  }
+}	
+
+
+function initUpdateDiscoveries() {
+  $(document).on('click', '.btn-group .btn', function () {
+    const repoUrl = document.querySelector('#repo-url').innerText;
+    const state = this.dataset.state;
+    let filename, snippet;
+    const datatable = $('.dataTable').DataTable();
+
+    if (document.querySelector("#files-table")) {
+      filename = this.closest('tr').querySelector('.filename').innerText;
+    } else {
+      filename = document.querySelector("#file-name").innerText;
+      snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
+    }
     $.ajax({
       url: '/update_discovery_group',
       method: 'POST',
@@ -361,10 +248,9 @@ function initUpdateDiscoveries() {
         datatable.ajax.reload(null, false);
       }
     })
-  });
-  }
   }
 }
+
 /**
  * Periodically get updates on the scanning status if scanning
  */
@@ -438,12 +324,29 @@ const discoveriesBtnGroupTemplate = mark => `
       </div>
     </div>
   </div>
-  <div class="light-bg cb-similar">
-    <input type="checkbox" id="cbSimilar" value="yes" checked>
-    <label for="cbSimilar"> Update similar discoveries</label>
+</div>
+<div class="btn-group">
+  <div class="btn-sim primary-bg" data-state="false_positive">
+    <span class="icon icon-outlined_flag"></span>
+    <span>Update similar as FPs</span>
   </div>
-  <div class="light-bg cb-similar">
-    <input type="checkbox" id="cbRestrictToFile" value="yes">
-    <label for="cbRestrictToFile"> Restrict updates to current file</label>
+  <div class="dropdown-container">
+    <div class="dropdown-opener primary-bg">
+      <span class="icon icon-keyboard_arrow_down"></span>
+    </div>
+    <div class="dropdown">
+      <div class="btn-sim light-bg danger-color" data-state="new">
+        <span class="icon icon-error_outline"></span>
+        <span>Update similar as leak</span>
+      </div>
+      <div class="btn-sim light-bg warning-color" data-state="addressing">
+        <span class="icon icon-timelapse"></span>
+        <span>Update similar as  addressing</span>
+      </div>
+      <div class="btn-sim light-bg grey-color" data-state="not_relevant">
+        <span class="icon icon-inbox"></span>
+        <span>Update similar as not relevant</span>
+      </div>
+    </div>
   </div>
-</div>`;
+</div>;
