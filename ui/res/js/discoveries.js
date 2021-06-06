@@ -154,7 +154,9 @@ function initDiscoveriesDataTable() {
          //<input type="checkbox" id="cbSim" value="yes">`
           const actions = discoveriesBtnGroupTemplate('Mark as')+`
 	  <input type="checkbox" id="cbSim" value="yes" checked>
-          <label>Update similar</label>`;
+          <label>Update similar</label>
+          <input type="checkbox" id="cbRestrictToFile" value="yes" checked>
+          <label>Restrict to current file</label>`;
 
           return {
             ...item,
@@ -260,17 +262,21 @@ function initUpdateDiscoveries() {
     } else {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
-
+      let restrictToFile = 0;
       if (this.closest('tr').querySelector('#cbSim').checked) {
-        $.ajax({
+	if (this.closest('tr').querySelector('#cbRestrictToFile').checked) {
+          restrictToFile = 1;
+        }
+	$.ajax({
           url: 'update_similar_discoveries',
           method: 'POST',
           data: {
             state: state,
             url: repoUrl,
             ...filename && { file: filename },
-            ...snippet && { snippet: decodeHTML(snippet) }
-          },
+            ...snippet && { snippet: decodeHTML(snippet) },
+            restrictToFile
+	  },
           beforeSend: function() {
             datatable.processing(true);
           },
