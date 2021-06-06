@@ -330,8 +330,7 @@ const discoveriesBtnGroupTemplate = mark => `
 </div>
 <div class="btn-group">
   <div class="btn-sim primary-bg" data-state="false_positive">
-    <span class="icon icon-outlined_flag"></span>
-    <span>Update similar as FPs</span>
+    <span>Mark similar as FPs</span>
   </div>
   <div class="dropdown-container">
     <div class="dropdown-opener primary-bg">
@@ -339,16 +338,13 @@ const discoveriesBtnGroupTemplate = mark => `
     </div>
     <div class="dropdown">
       <div class="btn-sim light-bg danger-color" data-state="new">
-        <span class="icon icon-error_outline"></span>
-        <span>Update similar as leak</span>
+        <span>Mark similar as leak</span>
       </div>
       <div class="btn-sim light-bg warning-color" data-state="addressing">
-        <span class="icon icon-timelapse"></span>
-        <span>Update similar as  addressing</span>
+        <span>Mark similar as  addressing</span>
       </div>
       <div class="btn-sim light-bg grey-color" data-state="not_relevant">
-        <span class="icon icon-inbox"></span>
-        <span>Update similar as not relevant</span>
+        <span>Mark similar as not relevant</span>
       </div>
     </div>
   </div>

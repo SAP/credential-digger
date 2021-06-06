@@ -413,8 +413,9 @@ def update_similar_discoveries():
     state = request.form.get('state')
     url = request.form.get('url')
     file = request.form.get('file')
-    response = c.update_similar_snippets(snippet, state, url, file)
-    if response is False:
+    response1 = c.update_discovery_group(state, url, file, snippet)
+    response2 = c.update_similar_snippets(snippet, state, url, file)
+    if (response1 is False or response2 is False):
         return 'Error in updating similar snippets', 500
     else:
         return 'OK', 200
