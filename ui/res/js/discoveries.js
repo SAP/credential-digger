@@ -105,9 +105,12 @@ function initDiscoveriesDataTable() {
       }, {
         data: "actions",
         orderable: false
+      }, {
+	data: "cb-sim",
+	orderable: false
       }
     ],
-    searchCols: [null, null, null, {search: 'new'}, null, null, null],
+    searchCols: [null, null, null, {search: 'new'}, null, null, null, null],
     ajax: { // AJAX source info
       url: "/get_discoveries",
       data: {
@@ -146,6 +149,9 @@ function initDiscoveriesDataTable() {
               ` : ""}
             </tbody>
           </table><div>`;
+          
+          const checkbox = `
+          <div><input type="checkbox" id="cbSim" value="yes">Update similar</div>`
 
           return {
             ...item,
@@ -153,7 +159,8 @@ function initDiscoveriesDataTable() {
             snippet: encodeHTML(item.snippet),
             tot: item.occurrences.length,
             occurrences: details,
-            actions: discoveriesBtnGroupTemplate('Mark as')
+            actions: discoveriesBtnGroupTemplate('Mark as'),
+            cb-sim: checkbox
           }
         })
       }
@@ -185,7 +192,7 @@ function initDiscoveriesDataTable() {
   });
 }
 
-
+/*
 function initUpdateSimilarDiscoveries() {
   $(document).on('click', '.btn-group .btn-sim', function () {
     const repoUrl = document.querySelector('#repo-url').innerText;
@@ -218,7 +225,7 @@ function initUpdateSimilarDiscoveries() {
     })
   });
 }
-
+*/
 
 function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
@@ -327,8 +334,8 @@ const discoveriesBtnGroupTemplate = mark => `
       </div>
     </div>
   </div>
-</div>
-<div class="btn-group">
+</div>`;
+/*<div class="btn-group">
   <div class="btn-sim primary-bg" data-state="false_positive">
     <span>Mark similar as FPs</span>
   </div>
@@ -348,4 +355,4 @@ const discoveriesBtnGroupTemplate = mark => `
       </div>
     </div>
   </div>
-</div>`;
+</div>`;*/
