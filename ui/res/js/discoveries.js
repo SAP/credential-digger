@@ -105,10 +105,10 @@ function initDiscoveriesDataTable() {
       }, {
         data: "actions",
         orderable: false
-      }, {
+      }/*, {
 	data: "cb-sim",
 	orderable: false
-      }
+      }*/
     ],
     searchCols: [null, null, null, {search: 'new'}, null, null, null, null],
     ajax: { // AJAX source info
@@ -150,8 +150,8 @@ function initDiscoveriesDataTable() {
             </tbody>
           </table><div>`;
           
-          const checkbox = `
-          <input type="checkbox" id="cbSim" value="yes">`
+         // const checkbox = `
+         //<input type="checkbox" id="cbSim" value="yes">`
 
           return {
             ...item,
@@ -159,8 +159,8 @@ function initDiscoveriesDataTable() {
             snippet: encodeHTML(item.snippet),
             tot: item.occurrences.length,
             occurrences: details,
-            actions: discoveriesBtnGroupTemplate('Mark as'),
-            cb-sim: checkbox
+            actions: discoveriesBtnGroupTemplate('Mark as')//,
+           // cb-sim: checkbox
           }
         })
       }
@@ -334,7 +334,8 @@ const discoveriesBtnGroupTemplate = mark => `
       </div>
     </div>
   </div>
-</div>`;
+</div>
+<input type="checkbox" id="cbSim" value="yes" checked>`;
 /*<div class="btn-group">
   <div class="btn-sim primary-bg" data-state="false_positive">
     <span>Mark similar as FPs</span>
