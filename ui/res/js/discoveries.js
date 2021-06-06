@@ -187,20 +187,21 @@ function initDiscoveriesDataTable() {
 
 
 function initUpdateSimilarDiscoveries() {
-  $(document).on('click', 'btn-group .btn-sim', function () {
+  $(document).on('click', '.btn-group .btn-sim', function () {
     const repoUrl = document.querySelector('#repo-url').innerText;
     const state = this.dataset.state;
     let filename, snippet;
     const datatable = $('.dataTable').DataTable();
 
-    if (document.querySelector('#files-tables')) {
-      filename = this.closets('tr').querySelector('.filename').innerText;
+    if (document.querySelector("#files-table")) {
+      filename = this.closest('tr').querySelector('.filename').innerText;
     } else {
-      filename = document.querySelector('#file-name').innerText;
+      filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
+
     $.ajax({
-      url: '/update_similar_discoveries',
+      url: 'update_similar_discoveries',
       method: 'POST',
       data: {
         state: state,
@@ -214,9 +215,9 @@ function initUpdateSimilarDiscoveries() {
       success: function () {
         datatable.ajax.reload(null, false);
       }
-    });
-  }
-}	
+    })
+  });
+}
 
 
 function initUpdateDiscoveries() {
