@@ -197,7 +197,7 @@ function initUpdateDiscoveries() {
     const state = this.dataset.state;
     let filename, snippet;
     const datatable = $('.dataTable').DataTable();
-	  
+
     if (document.querySelector("#files-table")) {
       filename = this.closest('tr').querySelector('.filename').innerText;
       $.ajax({
@@ -258,7 +258,6 @@ function initUpdateDiscoveries() {
     }
   });
 }
-
 
 /**
  * Periodically get updates on the scanning status if scanning
