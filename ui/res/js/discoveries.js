@@ -147,8 +147,8 @@ function initDiscoveriesDataTable() {
           </table><div>`;
           
           const actions = discoveriesBtnGroupTemplate('Mark as')+`
-	  <input type="checkbox" class="cbSim" id="cbSim${item.id}" value="yes" checked>
-          <label class="cb-label" for="cbSim${item.id}">Update similar discoveries</label>`;
+	  <input type="checkbox" class="cbSim" value="yes" checked>
+          <label class="cb-label">Update similar discoveries</label>`;
 
           return {
             ...item,
