@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
   if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
   if (document.querySelector('#addRepoModal')) initScanRepo();
   initUpdateDiscoveries();
-  //initUpdateSimilarDiscoveries();
   initUpdateScanning();
 });
 
@@ -149,9 +148,7 @@ function initDiscoveriesDataTable() {
           
           const actions = discoveriesBtnGroupTemplate('Mark as')+`
 	  <input type="checkbox" id="cbSim" value="yes" checked>
-          <label class="cb-label">Update similar discoveries</label><br>
-          <input type="checkbox" id="cbRestrictToFile" value="yes">
-          <label class="cb-label">Restrict to current file</label>`;
+          <label class="cb-label" for="cbSim">Update similar discoveries</label>`;
 
           return {
             ...item,
@@ -198,7 +195,6 @@ function initUpdateDiscoveries() {
     const state = this.dataset.state;
     let filename, snippet;
     const datatable = $('.dataTable').DataTable();
-    let restrictToFile = 0;
     if (document.querySelector("#files-table")) {
       filename = this.closest('tr').querySelector('.filename').innerText;
       $.ajax({
@@ -221,9 +217,6 @@ function initUpdateDiscoveries() {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
       if (this.closest('tr').querySelector('#cbSim').checked) {
-	if (this.closest('tr').querySelector('#cbRestrictToFile').checked) {
-          restrictToFile = 1;
-        }
 	$.ajax({
           url: 'update_similar_discoveries',
           method: 'POST',
@@ -233,7 +226,6 @@ function initUpdateDiscoveries() {
             url: repoUrl,
             ...filename && { file: filename },
             ...snippet && { snippet: decodeHTML(snippet) },
-            restrictToFile: restrictToFile
 	  },
           beforeSend: function() {
             datatable.processing(true);
