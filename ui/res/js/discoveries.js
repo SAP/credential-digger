@@ -198,7 +198,7 @@ function initUpdateDiscoveries() {
     const state = this.dataset.state;
     let filename, snippet;
     const datatable = $('.dataTable').DataTable();
-
+    let restrictToFile = 0;
     if (document.querySelector("#files-table")) {
       filename = this.closest('tr').querySelector('.filename').innerText;
       $.ajax({
@@ -220,7 +220,6 @@ function initUpdateDiscoveries() {
     } else {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
-      let restrictToFile = 0;
       if (this.closest('tr').querySelector('#cbSim').checked) {
 	if (this.closest('tr').querySelector('#cbRestrictToFile').checked) {
           restrictToFile = 1;

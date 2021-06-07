@@ -424,10 +424,11 @@ a.btn {
   background-color: grey;
 }  
 #cbSim:checked, #cbRestrictToFile:checked {
-  background-color: blue;
+  background-color: #5568d3;
 }
 .cb-label {
   font-size: 11px;
+  cursor: default;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen    -Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 /* #endregion */
