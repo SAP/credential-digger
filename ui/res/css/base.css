@@ -418,6 +418,7 @@ a.btn {
 }
 
 input[type="checkbox"]#cbSim {
+  vertical-align: middle;
   cursor: pointer;
 }	
 input[type="checkbox"]#cbSim:hover {
