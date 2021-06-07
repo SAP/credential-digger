@@ -147,7 +147,7 @@ function initDiscoveriesDataTable() {
           </table><div>`;
           
           const actions = discoveriesBtnGroupTemplate('Mark as')+`
-	  <input type="checkbox" class="cbSim" value="yes" checked>
+	  <input type="checkbox" class="cbSim" id="cbSim" value="yes" checked>
           <label class="cb-label">Update similar discoveries</label>`;
 
           return {
@@ -219,7 +219,7 @@ function initUpdateDiscoveries() {
     } else {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
-      if (this.closest('tr').querySelector('.cbSim').checked) {
+      if (this.closest('tr').querySelector('#cbSim').checked) {
 	$.ajax({
           url: 'update_similar_discoveries',
           method: 'POST',
