@@ -106,7 +106,7 @@ function initDiscoveriesDataTable() {
         orderable: false
       }
     ],
-    searchCols: [null, null, null, {search: 'new'}, null, null, null, null],
+    searchCols: [null, null, null, {search: 'new'}, null, null, null],
     ajax: { // AJAX source info
       url: "/get_discoveries",
       data: {
@@ -188,13 +188,16 @@ function initDiscoveriesDataTable() {
   });
 }
 
-
+/**
+ * Event handler for update discoveries' button
+ */
 function initUpdateDiscoveries() {
   $(document).on('click', '.btn-group .btn', function () {
     const repoUrl = document.querySelector('#repo-url').innerText;
     const state = this.dataset.state;
     let filename, snippet;
     const datatable = $('.dataTable').DataTable();
+	  
     if (document.querySelector("#files-table")) {
       filename = this.closest('tr').querySelector('.filename').innerText;
       $.ajax({
