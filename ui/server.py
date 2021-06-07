@@ -416,9 +416,10 @@ def update_similar_discoveries():
     restrictToFile = request.form.get('restrictToFile')
     response1 = c.update_discovery_group(state, url, file, snippet)
     if restrictToFile == 1:
-        response2 = c.update_similar_snippets(snippet, state, url, file)
+        print("restrict to file")
+        response2 = c.update_similar_snippets(snippet, state, url, file, 0.95)
     else:
-        response2 = c.update_similar_snippets(snippet,state,url)
+        response2 = c.update_similar_snippets(snippet, state, url, threshold=0.95)
     if (response1 is False or response2 is False):
         return 'Error in updating similar snippets', 500
     else:

@@ -416,6 +416,20 @@ a.btn {
 .btn.disabled {
   opacity: 0.6;
 }
+
+#cbSim, #cbRestrictToFile {
+  cursor: pointer;
+}	
+#cbSim:hover, #cbRestrictToFile:hover {
+  background-color: grey;
+}  
+#cbSim:checked, #cbRestrictToFile:checked {
+  background-color: blue;
+}
+.cb-label {
+  font-size: 11px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen    -Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
 /* #endregion */
 
 /* #region: COLORS */
@@ -469,11 +483,6 @@ a.btn {
 
 .grey-color {
   color: #555;
-}
-
-.cb-label {
-  font-size: 11px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen    -Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 /* #endregion */
 

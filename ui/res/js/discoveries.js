@@ -228,7 +228,8 @@ function initUpdateDiscoveries() {
 	$.ajax({
           url: 'update_similar_discoveries',
           method: 'POST',
-          data: {
+          timeout:10000,
+	  data: {
             state: state,
             url: repoUrl,
             ...filename && { file: filename },
@@ -339,26 +340,3 @@ const discoveriesBtnGroupTemplate = mark => `
     </div>
   </div>
 </div>`;
-//<input type="checkbox" id="cbSim" value="yes" checked>
-//<label>Update similar</label>`;
-/*<div class="btn-group">
-  <div class="btn-sim primary-bg" data-state="false_positive">
-    <span>Mark similar as FPs</span>
-  </div>
-  <div class="dropdown-container">
-    <div class="dropdown-opener primary-bg">
-      <span class="icon icon-keyboard_arrow_down"></span>
-    </div>
-    <div class="dropdown">
-      <div class="btn-sim light-bg danger-color" data-state="new">
-        <span>Mark similar as leak</span>
-      </div>
-      <div class="btn-sim light-bg warning-color" data-state="addressing">
-        <span>Mark similar as  addressing</span>
-      </div>
-      <div class="btn-sim light-bg grey-color" data-state="not_relevant">
-        <span>Mark similar as not relevant</span>
-      </div>
-    </div>
-  </div>
-</div>`;*/
