@@ -83,7 +83,7 @@ class Client(Interface):
         super().__init__(db, error)
 
     def add_discovery(self, query, file_name, commit_id, line_number, snippet,
-                      repo_url, rule_id, state='new'):
+            repo_url, rule_id, state='new'):#, embedding=[]):
         """ Add a new discovery.
 
         Parameters
@@ -112,7 +112,7 @@ class Client(Interface):
         """
         return self.query_id(
             query, file_name,
-            commit_id, line_number, snippet, repo_url, rule_id, state)
+            commit_id, line_number, snippet, repo_url, rule_id, state)#, embedding)
 
     @abstractmethod
     def add_discoveries(self, query, discoveries, repo_url):
@@ -558,7 +558,7 @@ class Client(Interface):
                 query, new_state, repo_url, file_name, snippet)
 
     def scan(self, repo_url, category=None, models=None, exclude=None,
-             force=False, debug=False, generate_snippet_extractor=False,
+             force=False, debug=False, generate_snippet_extractor=False, similarity=False,
              local_repo=False, git_token=None):
         """ Launch the scan of a git repository.
 
@@ -603,7 +603,7 @@ class Client(Interface):
 
         return self._scan(
             repo_url=repo_url, scanner=scanner, models=models, force=force,
-            debug=debug, generate_snippet_extractor=generate_snippet_extractor,
+            debug=debug, generate_snippet_extractor=generate_snippet_extractor, similarity=similarity,
             local_repo=local_repo, git_token=git_token)
 
     def scan_path(self, scan_path, category=None, models=None, exclude=None,
@@ -762,7 +762,7 @@ class Client(Interface):
                           debug=debug, force=True, git_token=git_token)
 
     def _scan(self, repo_url, scanner, models=None, force=False, debug=False,
-              generate_snippet_extractor=False, **scanner_kwargs):
+              generate_snippet_extractor=False, similarity=False, **scanner_kwargs):
         """ Launch the scan of a repository.
 
         Parameters
@@ -873,7 +873,13 @@ class Client(Interface):
                 self._analyze_discoveries(mm, new_discoveries, debug)
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
-
+        """
+        if similarity and len(new_discoveries) > 0:
+            model = build_embedding_model()
+            for d in new_discoveries:
+              embedding = compute_snippet_embedding(d['snippet'], model)
+              d['embedding'] = embedding
+        """
         # Insert the discoveries into the db
         discoveries_ids = list()
         if debug:
@@ -882,7 +888,7 @@ class Client(Interface):
                 new_id = self.add_discovery(
                     curr_d['file_name'], curr_d['commit_id'],
                     curr_d['line_number'], curr_d['snippet'], repo_url,
-                    curr_d['rule_id'], curr_d['state'])
+                    curr_d['rule_id'], curr_d['state'])#, curr_d['embedding'])
                 if new_id != -1 and curr_d['state'] != 'false_positive':
                     discoveries_ids.append(new_id)
         else:
@@ -1046,12 +1052,10 @@ class Client(Interface):
         n_updated_snippets = 0
         for d in discoveries:
             if d['state'] == 'new':
-                """ Compute snippet embedding """
-                snippet_embedding = compute_snippet_embedding(d['snippet'],
-                                                              model)
+                embedding = compute_snippet_embedding(d['snippet'], model)
                 """ Compute similarity of target snippet and snippet """
-                similarity = compute_similarity(target_snippet_embedding,
-                                                snippet_embedding)
+                similarity = compute_similarity(target_snippet_embedding, embedding)
+                                                #d['embedding'])
                 if similarity > threshold:
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)
