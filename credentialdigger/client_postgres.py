@@ -103,7 +103,7 @@ class PgClient(Client):
             embedding=embedding,
             query='INSERT INTO discoveries (file_name, commit_id, line_number, \
             snippet, repo_url, rule_id, state, embedding) VALUES \
-            (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id')
+            (%s, %s, %s, %s, %s, %s, %s, ARRAY %s) RETURNING id')
 
     def add_discoveries(self, discoveries, repo_url):
         """ Bulk add new discoveries.
