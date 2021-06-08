@@ -43,6 +43,7 @@ class SqliteClient(Client):
                 repo_url TEXT,
                 rule_id INTEGER,
                 state TEXT NOT NULL DEFAULT 'new',
+                embedding DEFAULT [],
                 timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M','now', 'localtime')),
                 PRIMARY KEY (id),
                 FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
@@ -86,7 +87,7 @@ class SqliteClient(Client):
         cursor.close()
 
     def add_discovery(self, file_name, commit_id, line_number, snippet,
-                      repo_url, rule_id, state='new'):
+            repo_url, rule_id, state='new'):#, embedding=[]):
         """ Add a new discovery.
 
         Parameters
@@ -120,7 +121,7 @@ class SqliteClient(Client):
             rule_id=rule_id,
             state=state,
             query='INSERT INTO discoveries (file_name, commit_id, line_number, \
-            snippet, repo_url, rule_id, state) VALUES (?, ?, ?, ?, ?, ?, ?)'
+            snippet, repo_url, rule_id, state, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         )
 
     def add_discoveries(self, discoveries, repo_url):
@@ -147,9 +148,9 @@ class SqliteClient(Client):
         # Transform argument in list of tuples
         discoveries = [
             (d['file_name'], d['commit_id'], d['line_number'],
-             d['snippet'], repo_url, d['rule_id'], d['state'])
+             d['snippet'], repo_url, d['rule_id'], d['state'])#, d['embedding'])
             for d in discoveries]
-
+        print(discoveries[1])
         cursor = self.db.cursor()
         try:
             # Batch insert all discoveries
