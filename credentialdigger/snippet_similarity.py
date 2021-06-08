@@ -65,6 +65,7 @@ def compute_snippet_embedding(snippet, model):
     """ Compute snippet's embedding as the mean of
     the token embeddings """
     snippet_embedding = np.mean(small_bert_embeddings, axis=0)
+    print("embedding = ", snippet_embedding[:5])
     return snippet_embedding
 
 

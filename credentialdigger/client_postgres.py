@@ -67,7 +67,7 @@ class PgClient(Client):
             return -1
 
     def add_discovery(self, file_name, commit_id, line_number, snippet,
-                      repo_url, rule_id, state='new'):
+                      repo_url, rule_id, state='new', embedding=None):
         """ Add a new discovery.
 
         Parameters
@@ -100,9 +100,10 @@ class PgClient(Client):
             repo_url=repo_url,
             rule_id=rule_id,
             state=state,
+            embedding=embedding,
             query='INSERT INTO discoveries (file_name, commit_id, line_number, \
-            snippet, repo_url, rule_id, state) VALUES \
-            (%s, %s, %s, %s, %s, %s, %s) RETURNING id')
+            snippet, repo_url, rule_id, state, embedding) VALUES \
+            (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id')
 
     def add_discoveries(self, discoveries, repo_url):
         """ Bulk add new discoveries.
@@ -125,7 +126,7 @@ class PgClient(Client):
             discoveries_tuples = extras.execute_values(
                 cursor,
                 'INSERT INTO discoveries(file_name, commit_id, line_number, \
-                    snippet, repo_url, rule_id, state) VALUES %s RETURNING id',
+                    snippet, repo_url, rule_id, state, embedding) VALUES %s RETURNING id',
                 ((
                     d['file_name'],
                     d['commit_id'],
@@ -133,7 +134,8 @@ class PgClient(Client):
                     d['snippet'],
                     repo_url,
                     d['rule_id'],
-                    d['state']
+                    d['state'],
+                    d['embedding'],
                 ) for d in iter(discoveries)), page_size=1000, fetch=True)
             self.db.commit()
             return [d[0] for d in discoveries_tuples]
@@ -148,7 +150,8 @@ class PgClient(Client):
                 snippet=d['snippet'],
                 repo_url=repo_url,
                 rule_id=d['rule_id'],
-                state=d['state']
+                state=d['state'],
+                embedding=d['embedding'],
             ), discoveries)
 
     def add_repo(self, repo_url):

@@ -22,7 +22,7 @@ Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_scan')
 Discovery = namedtuple(
     'Discovery',
-    'id file_name commit_id line_number snippet repo_url rule_id state timestamp')
+    'id file_name commit_id line_number snippet repo_url rule_id state timestamp embedding')
 
 
 class Interface(ABC):
@@ -83,7 +83,7 @@ class Client(Interface):
         super().__init__(db, error)
 
     def add_discovery(self, query, file_name, commit_id, line_number, snippet,
-            repo_url, rule_id, state='new'):#, embedding=[]):
+            repo_url, rule_id, state='new', embedding=None):
         """ Add a new discovery.
 
         Parameters
@@ -112,7 +112,7 @@ class Client(Interface):
         """
         return self.query_id(
             query, file_name,
-            commit_id, line_number, snippet, repo_url, rule_id, state)#, embedding)
+            commit_id, line_number, snippet, repo_url, rule_id, state, embedding)
 
     @abstractmethod
     def add_discoveries(self, query, discoveries, repo_url):
@@ -873,13 +873,12 @@ class Client(Interface):
                 self._analyze_discoveries(mm, new_discoveries, debug)
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
-        """
-        if similarity and len(new_discoveries) > 0:
+        
+        if similarity > 0:
             model = build_embedding_model()
             for d in new_discoveries:
               embedding = compute_snippet_embedding(d['snippet'], model)
               d['embedding'] = embedding
-        """
         # Insert the discoveries into the db
         discoveries_ids = list()
         if debug:
@@ -888,7 +887,7 @@ class Client(Interface):
                 new_id = self.add_discovery(
                     curr_d['file_name'], curr_d['commit_id'],
                     curr_d['line_number'], curr_d['snippet'], repo_url,
-                    curr_d['rule_id'], curr_d['state'])#, curr_d['embedding'])
+                    curr_d['rule_id'], curr_d['state'], curr_d['embedding'])
                 if new_id != -1 and curr_d['state'] != 'false_positive':
                     discoveries_ids.append(new_id)
         else:
@@ -897,7 +896,7 @@ class Client(Interface):
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
-
+            #print(new_discoveries[9])
         return discoveries_ids
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):
@@ -1050,12 +1049,17 @@ class Client(Interface):
         target_snippet_embedding = compute_snippet_embedding(target_snippet,
                                                              model)
         n_updated_snippets = 0
-        for d in discoveries:
+        for d in discoveries[:100]:
             if d['state'] == 'new':
-                embedding = compute_snippet_embedding(d['snippet'], model)
+                #embedding = compute_snippet_embedding(d['snippet'], model)
+                #print(type(target_snippet_embedding),type(d['embedding']))
                 """ Compute similarity of target snippet and snippet """
-                similarity = compute_similarity(target_snippet_embedding, embedding)
-                                                #d['embedding'])
+                #print(target_snippet_embedding)
+                print(d['embedding'][:5])
+                print(d['id'])
+                #print(d['snippet'])
+                similarity = compute_similarity(target_snippet_embedding, d['embedding'])
+                #similarity = 0.5
                 if similarity > threshold:
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)

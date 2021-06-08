@@ -2,6 +2,7 @@ from sqlite3 import Error, connect
 
 from .client import Client
 
+import traceback
 
 class SqliteClient(Client):
     def __init__(self, path):
@@ -43,8 +44,8 @@ class SqliteClient(Client):
                 repo_url TEXT,
                 rule_id INTEGER,
                 state TEXT NOT NULL DEFAULT 'new',
-                embedding DEFAULT [],
                 timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M','now', 'localtime')),
+                embedding FLOAT [] NOT NULL DEFAULT None,
                 PRIMARY KEY (id),
                 FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
                 FOREIGN KEY (rule_id) REFERENCES rules ON DELETE SET NULL ON UPDATE CASCADE
@@ -87,7 +88,7 @@ class SqliteClient(Client):
         cursor.close()
 
     def add_discovery(self, file_name, commit_id, line_number, snippet,
-            repo_url, rule_id, state='new'):#, embedding=[]):
+            repo_url, rule_id, state='new', embedding=None):
         """ Add a new discovery.
 
         Parameters
@@ -120,6 +121,7 @@ class SqliteClient(Client):
             repo_url=repo_url,
             rule_id=rule_id,
             state=state,
+            embedding=embedding,
             query='INSERT INTO discoveries (file_name, commit_id, line_number, \
             snippet, repo_url, rule_id, state, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         )
@@ -148,7 +150,7 @@ class SqliteClient(Client):
         # Transform argument in list of tuples
         discoveries = [
             (d['file_name'], d['commit_id'], d['line_number'],
-             d['snippet'], repo_url, d['rule_id'], d['state'])#, d['embedding'])
+             d['snippet'], repo_url, d['rule_id'], d['state'], d['embedding'])
             for d in discoveries]
         print(discoveries[1])
         cursor = self.db.cursor()
@@ -156,8 +158,8 @@ class SqliteClient(Client):
             # Batch insert all discoveries
             cursor.executemany(
                 'INSERT INTO discoveries (file_name, commit_id, \
-                line_number, snippet, repo_url, rule_id, state) \
-                VALUES (?, ?, ?, ?, ?, ?, ?)',
+                line_number, snippet, repo_url, rule_id, state, embedding) \
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                 discoveries
             )
             self.db.commit()
@@ -169,6 +171,7 @@ class SqliteClient(Client):
 
             return [d[0] for d in discoveries_ids]
         except Error:
+            traceback.print_exc()
             # In case of error in the bulk operation, fall back to adding
             # discoveries RBAR
             self.db.rollback()
@@ -179,7 +182,8 @@ class SqliteClient(Client):
                 snippet=d['snippet'],
                 repo_url=repo_url,
                 rule_id=d['rule_id'],
-                state=d['state']
+                state=d['state'],
+                embedding=d['embedding']
             ), discoveries)
 
     def add_repo(self, repo_url):
