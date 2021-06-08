@@ -57,8 +57,10 @@ def compute_snippet_embedding(snippet, model):
         The 128 element embedding for the input snippet
     """
 
+    """ Preprocess snippet """
+    preprocessed_snippet = snippet.replace("\'", "\"")
     """ Compute snippet's token embeddings """
-    small_bert_result = tf.squeeze(model(tf.constant([snippet])))
+    small_bert_result = tf.squeeze(model(tf.constant([preprocessed_snippet])))
     small_bert_embeddings = small_bert_result.numpy()
     """ Compute snippet's embedding as the mean of
     the token embeddings """
