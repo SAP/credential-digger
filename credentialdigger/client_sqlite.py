@@ -1,7 +1,10 @@
 from sqlite3 import Error, connect
 
 from .client import Client
+from .snippet_similarity import (build_embedding_model, compute_similarity,
+                                 compute_snippet_embedding)
 
+import re
 import traceback
 
 class SqliteClient(Client):
@@ -45,7 +48,7 @@ class SqliteClient(Client):
                 rule_id INTEGER,
                 state TEXT NOT NULL DEFAULT 'new',
                 timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M','now', 'localtime')),
-                embedding FLOAT [] NOT NULL DEFAULT None,
+                embedding TEXT,
                 PRIMARY KEY (id),
                 FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
                 FOREIGN KEY (rule_id) REFERENCES rules ON DELETE SET NULL ON UPDATE CASCADE
@@ -148,13 +151,24 @@ class SqliteClient(Client):
         being returned.
         """
         # Transform argument in list of tuples
+        embedding_strings = []
+        for d in discoveries:
+            embedding_string = ""
+            for fl in d['embedding']:
+               embedding_string += str(fl) + ","
+            embedding_strings.append(embedding_string)
+            print("embedd string =",embedding_string)
+        for i, d in enumerate(discoveries):
+            d['embedding'] = embedding_strings[i]
+        
         discoveries = [
             (d['file_name'], d['commit_id'], d['line_number'],
              d['snippet'], repo_url, d['rule_id'], d['state'], d['embedding'])
             for d in discoveries]
-        print(discoveries[1])
+
         cursor = self.db.cursor()
         try:
+            print("try")
             # Batch insert all discoveries
             cursor.executemany(
                 'INSERT INTO discoveries (file_name, commit_id, \
@@ -171,6 +185,7 @@ class SqliteClient(Client):
 
             return [d[0] for d in discoveries_ids]
         except Error:
+            print("except")
             traceback.print_exc()
             # In case of error in the bulk operation, fall back to adding
             # discoveries RBAR
@@ -497,3 +512,40 @@ class SqliteClient(Client):
         super().update_discovery_group(
             new_state=new_state, repo_url=repo_url, file_name=file_name,
             snippet=snippet, query=query)
+
+    def update_similar_snippets(self,
+                                target_snippet,
+                                state,
+                                repo_url,
+                                file_name=None,
+                                threshold=0.96):
+        discoveries = self.get_discoveries(repo_url, file_name)
+        model = build_embedding_model()
+        """ Compute target snippet embedding """
+        target_snippet_embedding = compute_snippet_embedding(target_snippet,
+                                                             model)
+        n_updated_snippets = 0
+        print("disc len = ", len(discoveries))
+        for d in discoveries[:100]:
+            if d['state'] == 'new':
+                #embedding = compute_snippet_embedding(d['snippet'], model)
+                #print(type(target_snippet_embedding),type(d['embedding']))
+                """ Compute similarity of target snippet and snippet """
+                #print(target_snippet_embedding)
+                #print("id=", d['id'])
+                #print(d['embedding'])
+                #print(d['embedding'].replace(",","!!"))
+                print("len = ",len(d['embedding']))
+                print(type(d['embedding']))
+                embedd = "".join(d['embedding'])
+                print("len after join =",len(embedd))
+                print(str(embedd[:50]))
+                str_embedding = re.split(",",embedd)
+                print("str embedd =",str(str_embedding[:50]))
+                embedding = [float(emb) for emb in str_embedding]
+                similarity = compute_similarity(target_snippet_embedding, embedding)
+                if similarity > threshold:
+                    print("sim id =",d['id'])
+                    n_updated_snippets += 1
+                    self.update_discovery(d['id'], state)
+        return n_updated_snippets

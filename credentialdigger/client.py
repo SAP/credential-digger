@@ -874,7 +874,7 @@ class Client(Interface):
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
         
-        if similarity > 0:
+        if similarity:
             model = build_embedding_model()
             for d in new_discoveries:
               embedding = compute_snippet_embedding(d['snippet'], model)
@@ -1049,18 +1049,21 @@ class Client(Interface):
         target_snippet_embedding = compute_snippet_embedding(target_snippet,
                                                              model)
         n_updated_snippets = 0
+        print("disc len = ", len(discoveries))
         for d in discoveries[:100]:
             if d['state'] == 'new':
+                print("disc")
                 #embedding = compute_snippet_embedding(d['snippet'], model)
                 #print(type(target_snippet_embedding),type(d['embedding']))
                 """ Compute similarity of target snippet and snippet """
                 #print(target_snippet_embedding)
-                print(d['embedding'][:5])
-                print(d['id'])
+                print("current embedd =", d['embedding'][:5])
+                print("id=", d['id'])
                 #print(d['snippet'])
                 similarity = compute_similarity(target_snippet_embedding, d['embedding'])
                 #similarity = 0.5
                 if similarity > threshold:
+                    print("sin id =",d['id'])
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)
         return n_updated_snippets

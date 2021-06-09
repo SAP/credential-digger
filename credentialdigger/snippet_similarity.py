@@ -65,11 +65,11 @@ def compute_snippet_embedding(snippet, model):
     """ Compute snippet's embedding as the mean of
     the token embeddings """
     snippet_embedding = np.mean(small_bert_embeddings, axis=0)
-    print("embedding = ", snippet_embedding[:5])
-    return snippet_embedding
+    print("embedding = ", snippet_embedding)
+    return snippet_embedding.tolist()
 
 
-def compute_similarity(emb_1, emb_2):
+def compute_similarity(arr1, arr2):
     """ Compute the cosine similarity of two snippets' embeddings.
 
     Parameters
@@ -88,6 +88,9 @@ def compute_similarity(emb_1, emb_2):
 
     """ The cosine similarity is computed using the dot product
     of the two embedding vectors over the product of their norms """
+    emb_1 = np.array(arr1)
+    emb_2 = np.array(arr2)
     cos_sim = np.dot(emb_1, emb_2) / (np.linalg.norm(emb_1) *
                                       np.linalg.norm(emb_2))
+    print("cos cim =",cos_sim)
     return cos_sim
