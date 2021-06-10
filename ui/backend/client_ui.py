@@ -162,7 +162,7 @@ class UiClient(Client):
         target_snippet_embedding = compute_snippet_embedding(target_snippet,
                                                              model)
         n_updated_snippets = 0
-        for d in discoveries[:100]:
+        for d in discoveries:
             if d['state'] == 'new':
                 """ Compute similarity of target snippet and snippet """
                 similarity = compute_similarity(target_snippet_embedding, d['embedding'])
