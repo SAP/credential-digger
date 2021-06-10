@@ -165,9 +165,9 @@ class UiClient(Client):
         for d in discoveries:
             if d['state'] == 'new':
                 """ Compute similarity of target snippet and snippet """
-                similarity = compute_similarity(target_snippet_embedding, d['embedding'])
+                similarity = compute_similarity(target_snippet_embedding,
+                                                d['embedding'])
                 if similarity > threshold:
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)
         return n_updated_snippets
-

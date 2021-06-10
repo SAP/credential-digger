@@ -127,7 +127,8 @@ class PgClient(Client):
             discoveries_tuples = extras.execute_values(
                 cursor,
                 'INSERT INTO discoveries(file_name, commit_id, line_number, \
-                    snippet, repo_url, rule_id, state, embedding) VALUES %s RETURNING id',
+                    snippet, repo_url, rule_id, state, embedding) \
+                    VALUES %s RETURNING id',
                 ((
                     d['file_name'],
                     d['commit_id'],

@@ -5,7 +5,6 @@ from .snippet_similarity import (build_embedding_model, compute_similarity,
                                  compute_snippet_embedding)
 
 import re
-import traceback
 
 class SqliteClient(Client):
     def __init__(self, path):
@@ -93,7 +92,7 @@ class SqliteClient(Client):
     def add_discovery(self, file_name, commit_id, line_number, snippet,
                       repo_url, rule_id, state='new', embedding=None):
         """ Add a new discovery.
-        
+
         Parameters
         ----------
         file_name: str
@@ -110,7 +109,7 @@ class SqliteClient(Client):
             The id of the rule used during the scan
         state: str, default `new`
             The state of the discovery
-        
+
         Returns
         -------
         int
@@ -126,24 +125,25 @@ class SqliteClient(Client):
             state=state,
             embedding=embedding,
             query='INSERT INTO discoveries (file_name, commit_id, line_number, \
-            snippet, repo_url, rule_id, state, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+            snippet, repo_url, rule_id, state, embedding) VALUES \
+            (?, ?, ?, ?, ?, ?, ?, ?)'
         )
 
     def add_discoveries(self, discoveries, repo_url):
         """ Bulk add new discoveries.
-        
+ 
         Parameters
         ----------
         discoveries: list
             The list of scanned discoveries objects to insert into the database
         repo_url: str
             The repository url of the discoveries
-        
+
         Returns
         -------
         list
             List of the ids of the inserted discoveries
-        
+
         Notes
         -----
         This method is not thread-safe: modifying discoveries of the same repo
@@ -199,15 +199,15 @@ class SqliteClient(Client):
 
     def add_repo(self, repo_url):
         """ Add a new repository.
-        
+
         Do not set the latest commit (it will be set when the repository is
         scanned).
-        
+
         Parameters
         ----------
         repo_url: str
             The url of the repository
-        
+
         Returns
         -------
         bool
@@ -218,7 +218,7 @@ class SqliteClient(Client):
 
     def add_rule(self, regex, category, description=''):
         """ Add a new rule.
-        
+
         Parameters
         ----------
         regex: str
@@ -227,7 +227,7 @@ class SqliteClient(Client):
             The category of the rule
         description: str, optional
             The description of the rule
-        
+
         Returns
         -------
         int
@@ -242,12 +242,12 @@ class SqliteClient(Client):
 
     def delete_rule(self, ruleid):
         """Delete a rule from database
-        
+
         Parameters
         ----------
         ruleid: int
             The id of the rule that will be deleted.
-        
+
         Returns
         ------
         False
@@ -260,12 +260,12 @@ class SqliteClient(Client):
 
     def delete_repo(self, repo_url):
         """ Delete a repository.
-        
+
         Parameters
         ----------
         repo_url: str
             The url of the repository to delete
-        
+
         Returns
         -------
         bool
@@ -277,12 +277,12 @@ class SqliteClient(Client):
 
     def delete_discoveries(self, repo_url):
         """ Delete all discoveries of a repository.
-        
+
         Parameters
         ----------
         repo_url: str
             The repository url of the discoveries to delete
-        
+
         Returns
         -------
         bool
@@ -295,52 +295,50 @@ class SqliteClient(Client):
 
     def get_repo(self, repo_url):
         """ Get a repository.
-        
+
         Parameters
         ----------
         repo_url: str
             The url of the repository
-        
+
         Returns
         -------
         dict
             A repository (an empty dictionary if the url does not exist)
         """
-        
         return super().get_repo(repo_url=repo_url, query='SELECT * FROM repos WHERE url=?')
 
     def get_rules(self, category=None):
         """ Get the rules.
-        
+ 
         Differently from other get methods, here we pass the category as
         argument. This is due to the fact that categories may have a slash
         (e.g., `auth/password`). Encoding such categories in the url would
         cause an error on the server side.
-        
+
         Parameters
         ----------
         category: str, optional
             If specified get all the rules, otherwise get all the rules of this
             category
-        
+
         Returns
         -------
         list
             A list of rules (dictionaries)
         """
-        
         return super().get_rules(
             category=category,
             category_query='SELECT * FROM rules WHERE category=?')
 
     def get_rule(self, rule_id):
         """ Get a rule.
-        
+
         Parameters
         ----------
         rule_id: int
             The id of the rule
-        
+
         Returns
         -------
         dict
@@ -526,9 +524,10 @@ class SqliteClient(Client):
         n_updated_snippets = 0
         for d in discoveries:
             if d['state'] == 'new':
-                str_embedding = re.split(",",d['embedding'])
+                str_embedding = re.split(",", d['embedding'])
                 embedding = [float(emb) for emb in str_embedding[:-1]]
-                similarity = compute_similarity(target_snippet_embedding, embedding)
+                similarity = compute_similarity(target_snippet_embedding,
+                                                embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)
