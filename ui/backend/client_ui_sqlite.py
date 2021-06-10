@@ -1,13 +1,14 @@
-from credentialdigger import SqliteClient
-from credentialdigger.client import Discovery
-
-from .client_ui import UiClient
 import re
 
+from credentialdigger import SqliteClient
+from credentialdigger.client import Discovery
 from credentialdigger.snippet_similarity import (
     build_embedding_model,
     compute_similarity,
     compute_snippet_embedding)
+
+from .client_ui import UiClient
+
 
 class SqliteUiClient(UiClient, SqliteClient):
     def get_discoveries(self, repo_url, file_name=None, state_filter=None,

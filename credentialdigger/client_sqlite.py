@@ -1,10 +1,10 @@
+import re
 from sqlite3 import Error, connect
 
 from .client import Client
 from .snippet_similarity import (build_embedding_model, compute_similarity,
                                  compute_snippet_embedding)
 
-import re
 
 class SqliteClient(Client):
     def __init__(self, path):
@@ -131,7 +131,7 @@ class SqliteClient(Client):
 
     def add_discoveries(self, discoveries, repo_url):
         """ Bulk add new discoveries.
- 
+
         Parameters
         ----------
         discoveries: list
@@ -310,7 +310,7 @@ class SqliteClient(Client):
 
     def get_rules(self, category=None):
         """ Get the rules.
- 
+
         Differently from other get methods, here we pass the category as
         argument. This is due to the fact that categories may have a slash
         (e.g., `auth/password`). Encoding such categories in the url would

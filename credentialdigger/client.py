@@ -878,7 +878,7 @@ class Client(Interface):
                 self._analyze_discoveries(mm, new_discoveries, debug)
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
- 
+
         if similarity:
             model = build_embedding_model()
             for d in new_discoveries:
