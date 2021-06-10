@@ -74,6 +74,257 @@ class SqliteClient(Client):
             self.db.rollback()
         cursor.close()
 
+    def query_id(self, query, *args):
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(query, args)
+            self.db.commit()
+            return cursor.lastrowid
+        except (TypeError, IndexError):
+            """ A TypeError is raised if any of the required arguments is
+            missing. """
+            self.db.rollback()
+            return -1
+        except Error:
+            self.db.rollback()
+            return -1
+        cursor.close()
+
+    def add_discovery(self, file_name, commit_id, line_number, snippet,
+                      repo_url, rule_id, state='new', embedding=None):
+        """ Add a new discovery.
+        Parameters
+        ----------
+        file_name: str
+            The name of the file that produced the discovery
+        commit_id: str
+            The id of the commit introducing the discovery
+        line_number: int
+            The line number of the discovery in the file
+        snippet: str
+            The line matched during the scan
+        repo_url: str
+            The url of the repository
+        rule_id: str
+            The id of the rule used during the scan
+        state: str, default `new`
+            The state of the discovery
+        Returns
+        -------
+        int
+            The id of the new discovery (-1 in case of error)
+        """
+        return super().add_discovery(
+            file_name=file_name,
+            commit_id=commit_id,
+            line_number=line_number,
+            snippet=snippet,
+            repo_url=repo_url,
+            rule_id=rule_id,
+            state=state,
+            embedding=embedding,
+            query='INSERT INTO discoveries (file_name, commit_id, line_number, \
+            snippet, repo_url, rule_id, state, embedding) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        )
+
+    def add_discoveries(self, discoveries, repo_url):
+        """ Bulk add new discoveries.
+        Parameters
+        ----------
+        discoveries: list
+            The list of scanned discoveries objects to insert into the database
+        repo_url: str
+            The repository url of the discoveries
+        Returns
+        -------
+        list
+            List of the ids of the inserted discoveries
+        Notes
+        -----
+        This method is not thread-safe: modifying discoveries of the same repo
+        while running this method will result in unpredictable discoveries ids
+        being returned.
+        """
+
+        str_embeddings = []
+        for d in discoveries:
+            embedding = ""
+            for emb in d['embedding']:
+                embedding += str(emb) + ","
+            str_embeddings.append(embedding)
+        for i, d in enumerate(discoveries):
+            d['embedding'] = str_embeddings[i]
+        # Transform argument in list of tuples
+        discoveries = [
+            (d['file_name'], d['commit_id'], d['line_number'],
+             d['snippet'], repo_url, d['rule_id'], d['state'], d['embedding'])
+            for d in discoveries]
+
+        cursor = self.db.cursor()
+        try:
+            # Batch insert all discoveries
+            cursor.executemany(
+                'INSERT INTO discoveries (file_name, commit_id, \
+                line_number, snippet, repo_url, rule_id, state, embedding) \
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                discoveries
+            )
+            self.db.commit()
+
+            # Get the ids of inserted discoveries
+            discoveries_ids = cursor.execute(
+                'SELECT * FROM discoveries WHERE repo_url = ? \
+                ORDER BY id DESC LIMIT ?', (repo_url, len(discoveries)))
+
+            return [d[0] for d in discoveries_ids]
+        except Error:
+            # In case of error in the bulk operation, fall back to adding
+            # discoveries RBAR
+            self.db.rollback()
+            return map(lambda d: self.add_discovery(
+                file_name=d['file_name'],
+                commit_id=d['commit_id'],
+                line_number=d['line_number'],
+                snippet=d['snippet'],
+                repo_url=repo_url,
+                rule_id=d['rule_id'],
+                state=d['state'],
+                embedding=d['embedding']
+            ), discoveries)
+
+    def add_repo(self, repo_url):
+        """ Add a new repository.
+        Do not set the latest commit (it will be set when the repository is
+        scanned).
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+        Returns
+        -------
+        bool
+            `True` if the insert was successfull, `False` otherwise
+        """
+        return super().add_repo(repo_url=repo_url,
+                                query='INSERT INTO repos (url) VALUES (?);')
+
+    def add_rule(self, regex, category, description=''):
+        """ Add a new rule.
+        Parameters
+        ----------
+        regex: str
+            The regex to be matched
+        category: str
+            The category of the rule
+        description: str, optional
+            The description of the rule
+        Returns
+        -------
+        int
+            The id of the new rule (-1 in case of errors)
+        """
+        return super().add_rule(
+            regex=regex,
+            category=category,
+            description=description,
+            query='INSERT INTO rules (regex, category, description) VALUES (?, ?, ?)'
+        )
+
+    def delete_rule(self, ruleid):
+        """Delete a rule from database
+        Parameters
+        ----------
+        ruleid: int
+            The id of the rule that will be deleted.
+        Returns
+        ------
+        False
+            If the removal operation fails
+        True
+            Otherwise
+        """
+        return super().delete_rule(ruleid=ruleid,
+                                   query='DELETE FROM rules WHERE id=?')
+
+    def delete_repo(self, repo_url):
+        """ Delete a repository.
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository to delete
+        Returns
+        -------
+        bool
+            `True` if the repo was successfully deleted, `False` otherwise
+        """
+        return super().delete_repo(
+            repo_url=repo_url,
+            query='DELETE FROM repos WHERE url=?')
+
+    def delete_discoveries(self, repo_url):
+        """ Delete all discoveries of a repository.
+        Parameters
+        ----------
+        repo_url: str
+            The repository url of the discoveries to delete
+        Returns
+        -------
+        bool
+            `True` if the discoveries were successfully deleted, `False`
+            otherwise
+        """
+        return super().delete_discoveries(
+            repo_url=repo_url,
+            query='DELETE FROM discoveries WHERE repo_url=?')
+
+    def get_repo(self, repo_url):
+        """ Get a repository.
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+        Returns
+        -------
+        dict
+            A repository (an empty dictionary if the url does not exist)
+        """
+        return super().get_repo(repo_url=repo_url, query='SELECT * FROM repos WHERE url=?')
+
+    def get_rules(self, category=None):
+        """ Get the rules.
+        Differently from other get methods, here we pass the category as
+        argument. This is due to the fact that categories may have a slash
+        (e.g., `auth/password`). Encoding such categories in the url would
+        cause an error on the server side.
+        Parameters
+        ----------
+        category: str, optional
+            If specified get all the rules, otherwise get all the rules of this
+            category
+        Returns
+        -------
+        list
+            A list of rules (dictionaries)
+        """
+        return super().get_rules(
+            category=category,
+            category_query='SELECT * FROM rules WHERE category=?')
+
+    def get_rule(self, rule_id):
+        """ Get a rule.
+        Parameters
+        ----------
+        rule_id: int
+            The id of the rule
+        Returns
+        -------
+        dict
+            A rule
+        """
+        return super().get_rule(rule_id=rule_id,
+                                query='SELECT * FROM rules WHERE id=?')
+
+
     def get_discoveries(self, repo_url, file_name=None):
         """ Get all the discoveries of a repository.
 
@@ -250,13 +501,8 @@ class SqliteClient(Client):
         n_updated_snippets = 0
         for d in discoveries:
             if d['state'] == 'new':
-                """ Compute similarity of target snippet and snippet """
-                embedd = "".join(d['embedding'])
-                embedd = embedd.strip(',')
-                str_embedding = re.split(",",embedd)
-                str_embedding = "".join(str_embedding).strip("[").strip("]")
-                str_embedding = re.split(" ",str_embedding)
-                embedding = [float(emb) for emb in str_embedding]
+                str_embedding = re.split(",",d['embedding'])
+                embedding = [float(emb) for emb in str_embedding[:-1]]
                 similarity = compute_similarity(target_snippet_embedding, embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1

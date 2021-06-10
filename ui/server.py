@@ -277,7 +277,8 @@ def scan_repo():
         'models': models,
         'force': force_scan,
         'git_token': git_token,
-        'local_repo': local_repo
+        'local_repo': local_repo,
+        'similarity': True
     }
     if rules_to_use != 'all':
         args['category'] = rules_to_use

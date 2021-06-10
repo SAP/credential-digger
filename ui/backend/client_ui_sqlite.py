@@ -188,12 +188,9 @@ class SqliteUiClient(UiClient, SqliteClient):
         for d in discoveries[:100]:
             if d['state'] == 'new':
                 """ Compute similarity of target snippet and snippet """
-                embedd = "".join(d['embedding'])
-                embedd = embedd.strip(',')
-                str_embedding = re.split(",",embedd)
-                str_embedding = "".join(str_embedding).strip("[").strip("]")
-                str_embedding = re.split(" ",str_embedding)
-                embedding = [float(emb) for emb in str_embedding]
+                str_embedding = re.split(",",d['embedding'])
+                embedding = [float(emb) for emb in str_embedding[:-1]]
+
                 similarity = compute_similarity(target_snippet_embedding, embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1

@@ -896,7 +896,6 @@ class Client(Interface):
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
-            #print(new_discoveries[9])
         return discoveries_ids
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):
