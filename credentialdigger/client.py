@@ -22,8 +22,8 @@ Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_scan')
 Discovery = namedtuple(
     'Discovery',
-    'id file_name commit_id line_number snippet repo_url rule_id state'
-    'timestamp embedding')
+    'id file_name commit_id line_number snippet repo_url rule_id state \
+    timestamp embedding')
 
 
 class Interface(ABC):
