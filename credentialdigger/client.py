@@ -767,7 +767,7 @@ class Client(Interface):
 
     def _scan(self, repo_url, scanner, models=None, force=False, debug=False,
               generate_snippet_extractor=False,
-              similarity=True, **scanner_kwargs):
+              similarity=False, **scanner_kwargs):
         """ Launch the scan of a repository.
 
         Parameters
