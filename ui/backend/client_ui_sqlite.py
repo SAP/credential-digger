@@ -2,7 +2,12 @@ from credentialdigger import SqliteClient
 from credentialdigger.client import Discovery
 
 from .client_ui import UiClient
+import re
 
+from credentialdigger.snippet_similarity import (
+    build_embedding_model,
+    compute_similarity,
+    compute_snippet_embedding)
 
 class SqliteUiClient(UiClient, SqliteClient):
     def get_discoveries(self, repo_url, file_name=None, state_filter=None,
@@ -165,3 +170,33 @@ class SqliteUiClient(UiClient, SqliteClient):
                 " FROM discoveries WHERE repo_url=?"
                 " GROUP BY file_name"
             ))
+
+
+
+    def update_similar_snippets(self,
+                                target_snippet,
+                                state,
+                                repo_url,
+                                file_name=None,
+                                threshold=0.96):
+        discoveries = self.get_discoveries(repo_url, file_name)[1]
+        model = build_embedding_model()
+        """ Compute target snippet embedding """
+        target_snippet_embedding = compute_snippet_embedding(target_snippet,
+                                                             model)
+        n_updated_snippets = 0
+        for d in discoveries[:100]:
+            if d['state'] == 'new':
+                """ Compute similarity of target snippet and snippet """
+                embedd = "".join(d['embedding'])
+                embedd = embedd.strip(',')
+                str_embedding = re.split(",",embedd)
+                str_embedding = "".join(str_embedding).strip("[").strip("]")
+                str_embedding = re.split(" ",str_embedding)
+                embedding = [float(emb) for emb in str_embedding]
+                similarity = compute_similarity(target_snippet_embedding, embedding)
+                if similarity > threshold:
+                    n_updated_snippets += 1
+                    self.update_discovery(d['id'], state)
+        return n_updated_snippets
+

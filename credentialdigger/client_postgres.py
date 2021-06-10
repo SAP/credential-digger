@@ -121,9 +121,7 @@ class PgClient(Client):
         list
             List of the ids of the inserted discoveries
         """
-        print("2nd discovery being added =",discoveries[1])
         try:
-            print("try")
             # Batch insert all discoveries
             cursor = self.db.cursor()
             discoveries_tuples = extras.execute_values(
@@ -143,7 +141,6 @@ class PgClient(Client):
             self.db.commit()
             return [d[0] for d in discoveries_tuples]
         except Error:
-            print("except!")
             # In case of error in the bulk operation, fall back to adding
             # discoveries RBAR
             self.db.rollback()
