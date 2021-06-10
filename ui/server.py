@@ -418,8 +418,7 @@ def update_similar_discoveries():
     response1 = c.update_discovery_group(state, url, file, snippet)
     response2 = c.update_similar_snippets(snippet,
                                           state,
-                                          url,
-                                          threshold=0.95)
+                                          url)
     if (response1 is False or response2 is False):
         return 'Error in updating similar snippets', 500
     else:
