@@ -649,8 +649,8 @@ class Client(Interface):
         scan_path = os.path.abspath(scan_path)
 
         if self.get_repo(scan_path) != {} and force is False:
-            raise ValueError(f"The directory \"{scan_path}\" has already been "
-                             "scanned. Please use \"force\" to rescan it.")
+            raise ValueError(f'The directory \"{scan_path}\" has already been '
+                             'scanned. Please use \"force\" to rescan it.')
 
         rules = self._get_scan_rules(category, exclude)
         scanner = FileScanner(rules)
@@ -841,7 +841,7 @@ class Client(Interface):
         # update it in the list
         if len(new_discoveries) > 0:
             for model in models:
-                if model == "SnippetModel" and snippet_with_generator is True:
+                if model == 'SnippetModel' and snippet_with_generator is True:
                     # We will launch this model manually at the end
                     continue
                 try:
@@ -978,7 +978,7 @@ class Client(Interface):
         return False
 
     def _get_scan_rules(self, category=None, exclude=None):
-        """ Get the rules of the `category`, filtered by `exclude` 
+        """ Get the rules of the `category`, filtered by `exclude`
 
         Parameters
         ----------
