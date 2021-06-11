@@ -120,6 +120,9 @@ class Client(Interface):
     def add_discoveries(self, query, discoveries, repo_url):
         return
 
+    def add_embedding(self, query, discovery_id):
+        return self.query_id(query, discovery_id)
+
     def add_repo(self, query, repo_url):
         """ Add a new repository.
 
@@ -455,6 +458,9 @@ class Client(Interface):
             cursor.execute(query, (repo_url,))
         return cursor.fetchall()
 
+    def get_embedding(self, query, discovery_id):
+        return self.query_id(query, discovery_id)
+
     def update_repo(self, query, url, last_scan):
         """ Update the last scan timestamp of a repo.
 
@@ -561,7 +567,6 @@ class Client(Interface):
 
     def scan(self, repo_url, category=None, models=None, exclude=None,
              force=False, debug=False, generate_snippet_extractor=False,
-             similarity=False,
              local_repo=False, git_token=None):
         """ Launch the scan of a git repository.
 
@@ -607,7 +612,6 @@ class Client(Interface):
         return self._scan(
             repo_url=repo_url, scanner=scanner, models=models, force=force,
             debug=debug, generate_snippet_extractor=generate_snippet_extractor,
-            similarity=similarity,
             local_repo=local_repo, git_token=git_token)
 
     def scan_path(self, scan_path, category=None, models=None, exclude=None,
@@ -881,9 +885,6 @@ class Client(Interface):
 
         if similarity:
             model = build_embedding_model()
-            for d in new_discoveries:
-                embedding = compute_snippet_embedding(d['snippet'], model)
-                d['embedding'] = embedding
         # Insert the discoveries into the db
         discoveries_ids = list()
         if debug:
@@ -892,12 +893,19 @@ class Client(Interface):
                 new_id = self.add_discovery(
                     curr_d['file_name'], curr_d['commit_id'],
                     curr_d['line_number'], curr_d['snippet'], repo_url,
-                    curr_d['rule_id'], curr_d['state'], curr_d['embedding'])
+                    curr_d['rule_id'], curr_d['state'])
+                if similarity:
+                    embedding = compute_snippet_embedding(curr_d['snippet'], model)
+                    add_embedding(new_id, embedding)
                 if new_id != -1 and curr_d['state'] != 'false_positive':
                     discoveries_ids.append(new_id)
         else:
             # IDs of the discoveries added to the db
             discoveries_ids = self.add_discoveries(new_discoveries, repo_url)
+            if similarity:
+                for i,d in zip(discoveries_ids, new_discoveries):
+                    embedding = compute_snippet_embedding(d['snippet'], model)
+                    add_embedding(i, embedding)
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']

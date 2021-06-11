@@ -24,8 +24,13 @@ CREATE TABLE discoveries (
   rule_id INTEGER,
   state STATES NOT NULL DEFAULT 'new',
   timestamp TEXT NOT NULL DEFAULT timeofday(),
-  embedding FLOAT []  NOT NULL DEFAULT None,
   PRIMARY KEY (id),
   FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (rule_id) REFERENCES rules ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE TABLE embeddings (
+  id INT NOT NULL UNIQUE REFERENCES discoveries,
+  embedding FLOAT []  NOT NULL DEFAULT None,
+  PRIMARY KEY (id)
 );

@@ -47,10 +47,15 @@ class SqliteClient(Client):
                 rule_id INTEGER,
                 state TEXT NOT NULL DEFAULT 'new',
                 timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M','now', 'localtime')),
-                embedding TEXT,
                 PRIMARY KEY (id),
                 FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
                 FOREIGN KEY (rule_id) REFERENCES rules ON DELETE SET NULL ON UPDATE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS embeddings (
+                id INTEGER REFERENCES discoveries,
+                embedding TEXT,
+                PRIMARY KEY (id)
             );
 
             PRAGMA foreign_keys=ON;
@@ -124,9 +129,10 @@ class SqliteClient(Client):
             rule_id=rule_id,
             state=state,
             embedding=embedding,
-            query='INSERT INTO discoveries (file_name, commit_id, line_number, \
-            snippet, repo_url, rule_id, state, embedding) VALUES \
-            (?, ?, ?, ?, ?, ?, ?, ?)'
+            query1='INSERT INTO discoveries (file_name, commit_id, line_number, \
+            snippet, repo_url, rule_id, state) VALUES \
+            (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id'
+            query2='INSERT INTO embeddings (id, embeding) VALUES (?, ?)'
         )
 
     def add_discoveries(self, discoveries, repo_url):
@@ -170,9 +176,13 @@ class SqliteClient(Client):
             # Batch insert all discoveries
             cursor.executemany(
                 'INSERT INTO discoveries (file_name, commit_id, \
-                line_number, snippet, repo_url, rule_id, state, embedding) \
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                line_number, snippet, repo_url, rule_id, state) \
+                VALUES (?, ?, ?, ?, ?, ?, ?)',
                 discoveries
+            )
+            cursor.executemany(
+                'INSERT INTO embeddings (id, embedding) VALUES (?, ?)',
+                tuple()
             )
             self.db.commit()
 
