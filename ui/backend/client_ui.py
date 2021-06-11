@@ -133,40 +133,18 @@ class UiClient(Client):
                                 repo_url,
                                 file_name=None,
                                 threshold=0.96):
-        """ Find snippets that are similar to the target
-        snippet and update their state.
-
-        Parameters
-        ----------
-        target_snippet: str
-        state: str
-            state to update similar snippets to
-        repo_url: str
-        file_name: str
-            restrict to a given file the search for similar snippets
-        threshold: float
-            update snippets with similarity score above threshold.
-            Values lesser than 0.94 do not generally imply any relevant
-            amount of similarity between snippets, and should
-            therefore not be used.
-
-        Returns
-        -------
-        int
-            The number of similar snippets found and updated
-        """
-
-        discoveries = self.get_discoveries(repo_url, file_name)[1]
-        model = build_embedding_model()
+    
+        discoveries = self.get_discoveries(repo_url, file_name)[0]
         """ Compute target snippet embedding """
-        target_snippet_embedding = compute_snippet_embedding(target_snippet,
-                                                             model)
+        str_target_discovery_embedding = (self.get_embedding(target_discovery_id))[0].split(",")[:-1]
+        target_discovery_embedding = [float(emb) for emb in str_target_discovery_embedding]
         n_updated_snippets = 0
         for d in discoveries:
-            if d['state'] == 'new':
+            if d['state'] != state and self.get_embedding(d['id']):
                 """ Compute similarity of target snippet and snippet """
-                similarity = compute_similarity(target_snippet_embedding,
-                                                d['embedding'])
+                str_embedding = (self.get_embedding(d['id']))[0].split(",")[:-1]
+                embedding = [float(emb) for emb in str_embedding]
+                similarity = compute_similarity(target_discovery_embedding, embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)

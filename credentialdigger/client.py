@@ -23,7 +23,7 @@ Repo = namedtuple('Repo', 'url last_scan')
 Discovery = namedtuple(
     'Discovery',
     'id file_name commit_id line_number snippet repo_url rule_id state \
-    timestamp embedding')
+    timestamp')
 
 
 class Interface(ABC):
@@ -72,9 +72,11 @@ class Interface(ABC):
         except (TypeError, IndexError):
             """ A TypeError is raised if any of the required arguments is
             missing. """
+            print("except 1")
             self.db.rollback()
             return ()
         except self.Error:
+            print("except 2")
             self.db.rollback()
             return ()
 
@@ -121,7 +123,7 @@ class Client(Interface):
         return
 
     def add_embedding(self, query, discovery_id):
-        return self.query_id(query, discovery_id)
+        return self.query_check(query, discovery_id,)
 
     def add_repo(self, query, repo_url):
         """ Add a new repository.
@@ -255,6 +257,9 @@ class Client(Interface):
             otherwise
         """
         return self.query(query, repo_url,)
+
+    def delete_embedding(self, query, discovery_id):
+        return self.query_id(query, discovery_id)
 
     def get_repos(self):
         """ Get all the repositories.
@@ -459,7 +464,9 @@ class Client(Interface):
         return cursor.fetchall()
 
     def get_embedding(self, query, discovery_id):
-        return self.query_id(query, discovery_id)
+        cursor = self.db.cursor()
+        cursor.execute(query, (discovery_id,))
+        return cursor.fetchone()
 
     def update_repo(self, query, url, last_scan):
         """ Update the last scan timestamp of a repo.
@@ -567,7 +574,7 @@ class Client(Interface):
 
     def scan(self, repo_url, category=None, models=None, exclude=None,
              force=False, debug=False, generate_snippet_extractor=False,
-             local_repo=False, git_token=None):
+             similarity=False, local_repo=False, git_token=None):
         """ Launch the scan of a git repository.
 
         Parameters
@@ -612,7 +619,7 @@ class Client(Interface):
         return self._scan(
             repo_url=repo_url, scanner=scanner, models=models, force=force,
             debug=debug, generate_snippet_extractor=generate_snippet_extractor,
-            local_repo=local_repo, git_token=git_token)
+            similarity=similarity, local_repo=local_repo, git_token=git_token)
 
     def scan_path(self, scan_path, category=None, models=None, exclude=None,
                   force=False, debug=False, generate_snippet_extractor=False,
@@ -895,17 +902,15 @@ class Client(Interface):
                     curr_d['line_number'], curr_d['snippet'], repo_url,
                     curr_d['rule_id'], curr_d['state'])
                 if similarity:
-                    embedding = compute_snippet_embedding(curr_d['snippet'], model)
-                    add_embedding(new_id, embedding)
+                    self.add_embedding(new_id)
                 if new_id != -1 and curr_d['state'] != 'false_positive':
                     discoveries_ids.append(new_id)
         else:
             # IDs of the discoveries added to the db
             discoveries_ids = self.add_discoveries(new_discoveries, repo_url)
             if similarity:
-                for i,d in zip(discoveries_ids, new_discoveries):
-                    embedding = compute_snippet_embedding(d['snippet'], model)
-                    add_embedding(i, embedding)
+                for i in discoveries_ids:
+                    self.add_embedding(i)
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
@@ -1027,7 +1032,7 @@ class Client(Interface):
         return rules
 
     def update_similar_snippets(self,
-                                target_snippet,
+                                target_discovery_id,
                                 state,
                                 repo_url,
                                 file_name=None,
@@ -1056,16 +1061,16 @@ class Client(Interface):
         """
 
         discoveries = self.get_discoveries(repo_url, file_name)
-        model = build_embedding_model()
         """ Compute target snippet embedding """
-        target_snippet_embedding = compute_snippet_embedding(target_snippet,
-                                                             model)
+        str_target_discovery_embedding = (self.get_embedding(target_discovery_id))[0].split(",")[:-1]
+        target_discovery_embedding = [float(emb) for emb in str_target_discovery_embedding]
         n_updated_snippets = 0
         for d in discoveries:
-            if d['state'] == 'new':
+            if d['state'] != state and self.get_embedding(d['id']):
                 """ Compute similarity of target snippet and snippet """
-                similarity = compute_similarity(target_snippet_embedding,
-                                                d['embedding'])
+                str_embedding = (self.get_embedding(d['id']))[0].split(",")[:-1]
+                embedding = [float(emb) for emb in str_embedding]
+                similarity = compute_similarity(target_discovery_embedding, embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)

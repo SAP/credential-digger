@@ -128,11 +128,9 @@ class SqliteClient(Client):
             repo_url=repo_url,
             rule_id=rule_id,
             state=state,
-            embedding=embedding,
-            query1='INSERT INTO discoveries (file_name, commit_id, line_number, \
+            query='INSERT INTO discoveries (file_name, commit_id, line_number, \
             snippet, repo_url, rule_id, state) VALUES \
             (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id'
-            query2='INSERT INTO embeddings (id, embeding) VALUES (?, ?)'
         )
 
     def add_discoveries(self, discoveries, repo_url):
@@ -157,18 +155,10 @@ class SqliteClient(Client):
         being returned.
         """
 
-        str_embeddings = []
-        for d in discoveries:
-            embedding = ""
-            for emb in d['embedding']:
-                embedding += str(emb) + ","
-            str_embeddings.append(embedding)
-        for i, d in enumerate(discoveries):
-            d['embedding'] = str_embeddings[i]
         # Transform argument in list of tuples
         discoveries = [
             (d['file_name'], d['commit_id'], d['line_number'],
-             d['snippet'], repo_url, d['rule_id'], d['state'], d['embedding'])
+             d['snippet'], repo_url, d['rule_id'], d['state'])
             for d in discoveries]
 
         cursor = self.db.cursor()
@@ -180,10 +170,6 @@ class SqliteClient(Client):
                 VALUES (?, ?, ?, ?, ?, ?, ?)',
                 discoveries
             )
-            cursor.executemany(
-                'INSERT INTO embeddings (id, embedding) VALUES (?, ?)',
-                tuple()
-            )
             self.db.commit()
 
             # Get the ids of inserted discoveries
@@ -192,10 +178,12 @@ class SqliteClient(Client):
                 ORDER BY id DESC LIMIT ?', (repo_url, len(discoveries)))
 
             return [d[0] for d in discoveries_ids]
+        
         except Error:
             # In case of error in the bulk operation, fall back to adding
             # discoveries RBAR
             self.db.rollback()
+
             return map(lambda d: self.add_discovery(
                 file_name=d['file_name'],
                 commit_id=d['commit_id'],
@@ -204,8 +192,25 @@ class SqliteClient(Client):
                 repo_url=repo_url,
                 rule_id=d['rule_id'],
                 state=d['state'],
-                embedding=d['embedding']
             ), discoveries)
+
+    def add_embedding(self, discovery_id):
+        cursor = self.db.cursor()
+        snippet = self.get_discovery(discovery_id)['snippet']
+        model = build_embedding_model()
+        try:
+            embedding = compute_snippet_embedding(snippet, model)
+            embedding_str = ""
+            for emb in embedding:
+                embedding_str += str(emb) + ","
+
+            cursor.execute(
+                'INSERT INTO embeddings (id, embedding) VALUES (?, ?);',
+                (discovery_id, embedding_str)
+            )
+            self.db.commit()
+        except Error:
+            self.db.rollback()
 
     def add_repo(self, repo_url):
         """ Add a new repository.
@@ -302,6 +307,11 @@ class SqliteClient(Client):
         return super().delete_discoveries(
             repo_url=repo_url,
             query='DELETE FROM discoveries WHERE repo_url=?')
+
+    def delete_embedding(self, discovery_id):
+        return super().delete_embedding(
+            query='DELETE FROM embeddings WHERE id=?',
+            discovery_id=discovery_id)
 
     def get_repo(self, repo_url):
         """ Get a repository.
@@ -424,6 +434,9 @@ class SqliteClient(Client):
                                            query='SELECT file_name, snippet, count(id), state FROM discoveries \
                 WHERE repo_url=? GROUP BY file_name, snippet, state'
                                            )
+    
+    def get_embedding(self, discovery_id):
+        return super().get_embedding(query='SELECT embedding FROM embeddings WHERE id=?;', discovery_id=discovery_id)
 
     def update_repo(self, url, last_scan):
         """ Update the last scan timestamp of a repo.
@@ -519,7 +532,7 @@ class SqliteClient(Client):
         super().update_discovery_group(
             new_state=new_state, repo_url=repo_url, file_name=file_name,
             snippet=snippet, query=query)
-
+    """
     def update_similar_snippets(self,
                                 target_snippet,
                                 state,
@@ -528,7 +541,7 @@ class SqliteClient(Client):
                                 threshold=0.96):
         discoveries = self.get_discoveries(repo_url, file_name)
         model = build_embedding_model()
-        """ Compute target snippet embedding """
+        Compute target snippet embedding
         target_snippet_embedding = compute_snippet_embedding(target_snippet,
                                                              model)
         n_updated_snippets = 0
@@ -542,3 +555,4 @@ class SqliteClient(Client):
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)
         return n_updated_snippets
+        """
