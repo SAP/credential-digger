@@ -1,5 +1,5 @@
 """
-The 'scan_path' module can be used to scan a local directory or file on 
+The 'scan_path' module can be used to scan a local directory or file on
 the fly from the terminal. It supports both the Sqlite and Postgres clients.
 
 NOTE: Postgres is used by default. Please make sure that the environment
