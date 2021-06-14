@@ -83,7 +83,9 @@ class SnippetModel(BaseModel):
                 return True
             else:
                 data = self._pre_process(raw_data)
+
         input_text = data[-1]
+
         if(len(input_text) <= 3):
             # We ignore any password shorter than or equal to 3
             return True
