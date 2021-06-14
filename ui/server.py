@@ -415,7 +415,7 @@ def update_similar_discoveries():
     url = request.form.get('url')
     file = request.form.get('file')
 
-    response1 = c.update_discovery_group(state, url, file, snippet)
+    response1 = c.update_discovery_group(state, url, file, target_snippet)
     response2 = c.update_similar_snippets(target_snippet,
                                           state,
                                           url)
