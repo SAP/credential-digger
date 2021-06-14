@@ -64,8 +64,15 @@ class GitFileScanner(GitScanner, FileScanner):
             The location of a git repository (an url if local_repo is False, a
             local path otherwise)
         branch_or_commit: str
-            Restrict the scan to only one commit (or to the last commit of a
-            specific branch)
+            Specific commit (or last commit of a specific branch name) where
+            the whole repository will be scanned
+        max_depth: int, optional
+            The maximum depth to which traverse the subdirectories tree.
+            A negative value will not affect the scan.
+        ignore_list: list, optional
+            A list of paths to ignore during the scan. This can include file
+            names, directory names, or whole paths. Wildcards are supported as
+            per the fnmatch package.
         git_token: str, optional
             Git personal access token to authenticate to the git server
         local_repo: bool, optional
@@ -104,6 +111,16 @@ class GitFileScanner(GitScanner, FileScanner):
         ----------
         repo: `git.GitRepo`
             The repository object
+        branch_or_commit: str
+            Specific commit (or last commit of a specific branch name) where
+            the whole repository will be scanned
+        max_depth: int, optional
+            The maximum depth to which traverse the subdirectories tree.
+            A negative value will not affect the scan.
+        ignore_list: list, optional
+            A list of paths to ignore during the scan. This can include file
+            names, directory names, or whole paths. Wildcards are supported as
+            per the fnmatch package.
 
         Returns
         -------
