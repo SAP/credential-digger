@@ -101,7 +101,7 @@ class UiClient(Client):
             except GitCommandError:
                 return False, 'GitCommandError'
         return True, None
-    
+
     def update_similar_snippets(self,
                                 target_snippet,
                                 state,

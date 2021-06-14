@@ -1,5 +1,3 @@
-import re
-
 from credentialdigger import SqliteClient
 from credentialdigger.client import Discovery
 from credentialdigger.snippet_similarity import (
@@ -187,13 +185,15 @@ class SqliteUiClient(UiClient, SqliteClient):
             query = 'INSERT INTO embeddings (id, snippet, embedding) VALUES (?, ?, ?);'
             insert_tuples = []
             for i in range(len(discoveries_ids)):
-                insert_tuples.append((discoveries_ids[i], snippets[i], embedding_strings[i],))
+                insert_tuples.append((discoveries_ids[i],
+                                      snippets[i],
+                                      embedding_strings[i],))
             cursor.executemany(query, insert_tuples)
             self.db.commit()
         except Error:
             self.db.rollback()
-            map(lambda disc_id, emb: self.add_embedding(disc_id), zip(discoveries_ids, embedding_strings))
-
+            map(lambda disc_id, emb: self.add_embedding(disc_id),
+                zip(discoveries_ids, embedding_strings))
 
     def update_similar_snippets(self,
                                 target_snippet,
@@ -234,7 +234,8 @@ class SqliteUiClient(UiClient, SqliteClient):
                 """ Compute similarity of target snippet and snippet """
                 str_embedding = (self.get_embedding(discovery_id=d['id']))[0].split(",")[:-1]
                 embedding = [float(emb) for emb in str_embedding]
-                similarity = compute_similarity(target_snippet_embedding, embedding)
+                similarity = compute_similarity(target_snippet_embedding,
+                                                embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)

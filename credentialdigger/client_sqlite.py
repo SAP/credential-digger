@@ -1,4 +1,3 @@
-import re
 from sqlite3 import Error, connect
 
 from .client import Client
@@ -179,7 +178,7 @@ class SqliteClient(Client):
                 ORDER BY id DESC LIMIT ?', (repo_url, len(discoveries)))
 
             return [d[0] for d in discoveries_ids]
-        
+
         except Error:
             # In case of error in the bulk operation, fall back to adding
             # discoveries RBAR
@@ -226,12 +225,15 @@ class SqliteClient(Client):
             query = 'INSERT INTO embeddings (id, snippet, embedding) VALUES (?, ?, ?);'
             insert_tuples = []
             for i in range(len(discoveries_ids)):
-                insert_tuples.append((discoveries_ids[i], snippets[i], embedding_strings[i],))
+                insert_tuples.append((discoveries_ids[i],
+                                      snippets[i],
+                                      embedding_strings[i],))
             cursor.executemany(query, insert_tuples)
             self.db.commit()
         except Error:
             self.db.rollback()
-            map(lambda disc_id, emb: self.add_embedding(disc_id), zip(discoveries_ids, embedding_strings))
+            map(lambda disc_id, emb: self.add_embedding(disc_id),
+                zip(discoveries_ids, embedding_strings))
 
     def add_repo(self, repo_url):
         """ Add a new repository.
@@ -455,12 +457,12 @@ class SqliteClient(Client):
                                            query='SELECT file_name, snippet, count(id), state FROM discoveries \
                 WHERE repo_url=? GROUP BY file_name, snippet, state'
                                            )
-    
+
     def get_embedding(self, discovery_id=None, snippet=None):
         if discovery_id:
-            query = 'SELECT embedding FROM embeddings WHERE id=?';
+            query = 'SELECT embedding FROM embeddings WHERE id=?'
         else:
-            query = 'SELECT embedding FROM embeddings WHERE snippet=?';
+            query = 'SELECT embedding FROM embeddings WHERE snippet=?'
         return super().get_embedding(query=query, discovery_id=discovery_id, snippet=snippet)
 
     def update_repo(self, url, last_scan):
@@ -557,7 +559,7 @@ class SqliteClient(Client):
         super().update_discovery_group(
             new_state=new_state, repo_url=repo_url, file_name=file_name,
             snippet=snippet, query=query)
-        
+
     def update_similar_snippets(self,
                                 target_snippet,
                                 state,
@@ -597,9 +599,9 @@ class SqliteClient(Client):
                 """ Compute similarity of target snippet and snippet """
                 str_embedding = (self.get_embedding(discovery_id=d['id']))[0].split(",")[:-1]
                 embedding = [float(emb) for emb in str_embedding]
-                similarity = compute_similarity(target_snippet_embedding, embedding)
+                similarity = compute_similarity(target_snippet_embedding,
+                                                embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)
         return n_updated_snippets
-
