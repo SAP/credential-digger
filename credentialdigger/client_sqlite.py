@@ -462,9 +462,6 @@ class SqliteClient(Client):
             query = 'SELECT embedding FROM embeddings WHERE id=?';
         else:
             query = 'SELECT embedding FROM embeddings WHERE snippet=?';
-        #cursor = self.db.cursor;
-        #cursor.execute(query
-        #return
         return super().get_embedding(query=query, discovery_id=discovery_id, snippet=snippet)
 
     def update_repo(self, url, last_scan):

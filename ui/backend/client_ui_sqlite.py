@@ -202,9 +202,7 @@ class SqliteUiClient(UiClient, SqliteClient):
             The number of similar snippets found and updated
         """
 
-        print(target_snippet)
         discoveries = self.get_discoveries(repo_url, file_name)[1]
-        print("get emb =",self.get_embedding(snippet=target_snippet))
         """ Compute target snippet embedding """
         str_target_snippet_embedding = (self.get_embedding(snippet=target_snippet))[0].split(",")[:-1]
         target_snippet_embedding = [float(emb) for emb in str_target_snippet_embedding]

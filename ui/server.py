@@ -410,13 +410,13 @@ def update_discovery_group():
 
 @app.route('/update_similar_discoveries', methods=['POST'])
 def update_similar_discoveries():
-    snippet = request.form.get('snippet')
+    target_snippet = request.form.get('snippet')
     state = request.form.get('state')
     url = request.form.get('url')
     file = request.form.get('file')
 
     response1 = c.update_discovery_group(state, url, file, snippet)
-    response2 = c.update_similar_snippets(snippet,
+    response2 = c.update_similar_snippets(target_snippet,
                                           state,
                                           url)
     if (response1 is False or response2 is False):
