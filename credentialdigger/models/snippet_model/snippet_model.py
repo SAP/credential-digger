@@ -41,19 +41,16 @@ class SnippetModel(BaseModel):
 
     def analyze(self, discovery):
         """ Analyze a snippet and predict whether it is a false positive or not.
-
         Parameters
         ----------
         discovery: dict
             A discovery
-
         Returns
         -------
         bool
             True if the discovery is classified as false positive
         """
-        raw_data = self._remove_initial_junk(discovery['snippet'])
-
+        raw_data = discovery['snippet']
         # In some programming languages, we expect to find a password as a
         # string (thus, surrounded by quotes). If no quote appears in the
         # snippet, then there isn't any hardcoded password
@@ -70,23 +67,27 @@ class SnippetModel(BaseModel):
 
         # Convert data format
         data = self._pre_process(raw_data)
+        # Classify as a 'Leak' if this is a private key.
+        if(self._check_private_key(data)):
+            return False
+        if(not any(not c.isalnum() and c not in ' _.,?!/' for c in raw_data)):
+            # We ignore snippets that look like regular phrases with 
+            # no assignment
+            return True
 
         if len(data) < 2:
             # No need to run the model: we assume this is a false positive
             # since either the snippet is empty or there is just one word
+            if(not self._assignment_expression(raw_data)):
+                return True
+            else:
+                data = self._pre_process(raw_data)
+        input_text = data[-1]
+        if(len(input_text) <= 3):
+            # We ignore any password shorter than or equal to 3
             return True
-
-        if len(data) == 2:
-            # No need to pre-process data since we have only two words
-            # Predict if the string `word1 + ' ' + word2` is a false positive
-            label = self.model.predict(
-                data[0] + ' ' + data[1])[0]  # 0=label, 1=probability
         else:
-            finish_labels = self._label_preprocess(data)
-            # Predict if the string `word1 + ' ' + word2` is a false positive
-            label = self.model.predict(
-                data[finish_labels[0]] + ' ' +
-                data[finish_labels[1]])[0]  # 0=label, 1=probability
+            label = self.model.predict(input_text)[0]  # 0=label, 1=probability
 
         label = label[0]  # label was a tuple of 1 element
 
