@@ -101,7 +101,7 @@ class SnippetModel(BaseModel):
         Find words and strings in `raw_data` and extract them.
         We define as strings any sequence of characters included in `"` or `'`
         and as words any sequence of alphanumeric characters.
-
+        
         In particular, if a string does not contain characters, it is not
         matched. This is done in order to exclude patterns such as "###" or
         "***". In case the string has a mixed content, it is matched starting
