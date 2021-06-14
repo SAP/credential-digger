@@ -20,7 +20,7 @@ def build_embedding_model():
     """
 
     # Links for the pre-trained TensorFlow Hub preprocessing
-    and encoding layers
+    #and encoding layers
     tfhub_preprocessing = 'https://tfhub.dev/tensorflow/' \
                           'bert_en_uncased_preprocess/3'
     tfhub_encoder = 'https://tfhub.dev/tensorflow/small_bert/' \
