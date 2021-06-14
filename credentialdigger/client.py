@@ -84,7 +84,7 @@ class Client(Interface):
         super().__init__(db, error)
 
     def add_discovery(self, query, file_name, commit_id, line_number, snippet,
-                      repo_url, rule_id, state='new', embedding=None):
+                      repo_url, rule_id, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -114,7 +114,7 @@ class Client(Interface):
         return self.query_id(
             query, file_name,
             commit_id, line_number, snippet,
-            repo_url, rule_id, state, embedding)
+            repo_url, rule_id, state)
 
     @abstractmethod
     def add_discoveries(self, query, discoveries, repo_url):
@@ -921,6 +921,7 @@ class Client(Interface):
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
+        
         return discoveries_ids
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):

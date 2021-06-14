@@ -19,25 +19,25 @@ def build_embedding_model():
          and outputting embeddings for each token of the input strings
     """
 
-    """ Links for the pre-trained TensorFlow Hub preprocessing
-    and encoding layers """
+    # Links for the pre-trained TensorFlow Hub preprocessing
+    and encoding layers
     tfhub_preprocessing = 'https://tfhub.dev/tensorflow/' \
                           'bert_en_uncased_preprocess/3'
     tfhub_encoder = 'https://tfhub.dev/tensorflow/small_bert/' \
                     'bert_en_uncased_L-2_H-128_A-2/1'
-    """ Define model input type and name """
+    # Define model input type and name
     inputs = tf.keras.layers.Input(shape=(), dtype=tf.string, name='snippet')
-    """ Define preprocessing layer """
+    # Define preprocessing layer
     preprocessing_layer = hub.KerasLayer(tfhub_preprocessing,
                                          name='preprocessing')
-    """ Define encoding layer """
+    # Define encoding layer
     encoder = hub.KerasLayer(tfhub_encoder,
                              trainable=True, name='BERT_encoder')
-    """ Stack up the three layers """
+    # Stack up the three layers
     outputs = encoder(preprocessing_layer(inputs))
-    """ Retrieve token embeddings i.e. the 'sequence_output' values """
+    # Retrieve token embeddings i.e. the 'sequence_output' values
     model_outputs = outputs['sequence_output']
-    """ Return model """
+    # Return model
     return tf.keras.Model(inputs, model_outputs)
 
 
@@ -57,13 +57,12 @@ def compute_snippet_embedding(snippet, model):
         The 128 element embedding for the input snippet
     """
 
-    """ Preprocess snippet """
+    # Preprocess snippet
     preprocessed_snippet = snippet.replace("\'", "\"")
-    """ Compute snippet's token embeddings """
+    # Compute snippet's token embeddings
     small_bert_result = tf.squeeze(model(tf.constant([preprocessed_snippet])))
     small_bert_embeddings = small_bert_result.numpy()
-    """ Compute snippet's embedding as the mean of
-    the token embeddings """
+    # Compute snippet's embedding as mean of token embeddings
     snippet_embedding = np.mean(small_bert_embeddings, axis=0)
     return snippet_embedding.tolist()
 
@@ -85,8 +84,8 @@ def compute_similarity(arr1, arr2):
         The greater the value, the more similar the snippets
     """
 
-    """ The cosine similarity is computed using the dot product
-    of the two embedding vectors over the product of their norms """
+    # The cosine similarity is computed using the dot product
+    # of the two embedding vectors over the product of their norms
     emb_1 = np.array(arr1)
     emb_2 = np.array(arr2)
     cos_sim = np.dot(emb_1, emb_2) / (np.linalg.norm(emb_1) *

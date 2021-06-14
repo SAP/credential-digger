@@ -63,12 +63,11 @@ class PgClient(Client):
             self.db.rollback()
             return -1
         except Error:
-            print("except query id")
             self.db.rollback()
             return -1
 
     def add_discovery(self, file_name, commit_id, line_number, snippet,
-                      repo_url, rule_id, state='new', embedding=None):
+                      repo_url, rule_id, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -101,10 +100,9 @@ class PgClient(Client):
             repo_url=repo_url,
             rule_id=rule_id,
             state=state,
-            embedding=embedding,
             query='INSERT INTO discoveries (file_name, commit_id, line_number, \
-            snippet, repo_url, rule_id, state, embedding) VALUES \
-            (%s, %s, %s, %s, %s, %s, %s, ARRAY %s) RETURNING id')
+            snippet, repo_url, rule_id, state) VALUES \
+            (%s, %s, %s, %s, %s, %s, %s) RETURNING id')
 
     def add_discoveries(self, discoveries, repo_url):
         """ Bulk add new discoveries.
@@ -127,7 +125,7 @@ class PgClient(Client):
             discoveries_tuples = extras.execute_values(
                 cursor,
                 'INSERT INTO discoveries(file_name, commit_id, line_number, \
-                    snippet, repo_url, rule_id, state, embedding) \
+                    snippet, repo_url, rule_id, state) \
                     VALUES %s RETURNING id',
                 ((
                     d['file_name'],
@@ -136,8 +134,7 @@ class PgClient(Client):
                     d['snippet'],
                     repo_url,
                     d['rule_id'],
-                    d['state'],
-                    d['embedding'],
+                    d['state']
                 ) for d in iter(discoveries)), page_size=1000, fetch=True)
             self.db.commit()
             return [d[0] for d in discoveries_tuples]
@@ -152,8 +149,7 @@ class PgClient(Client):
                 snippet=d['snippet'],
                 repo_url=repo_url,
                 rule_id=d['rule_id'],
-                state=d['state'],
-                embedding=d['embedding'],
+                state=d['state']
             ), discoveries)
 
     def add_repo(self, repo_url):
