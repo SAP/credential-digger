@@ -48,8 +48,7 @@ class Interface(ABC):
             self.db.commit()
             return True
         except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
+            # A TypeError is raised if any of the required arguments is missing
             self.db.rollback()
             return False
         except self.Error:
@@ -70,8 +69,7 @@ class Interface(ABC):
             cursor.execute(query, args)
             return dict(cast(*cursor.fetchone())._asdict())
         except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
+            # A TypeError is raised if any of the required arguments is missing
             self.db.rollback()
             return ()
         except self.Error:
@@ -208,8 +206,7 @@ class Client(Interface):
             self.db.commit()
             return bool(cursor.fetchone()[0])
         except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
+            # A TypeError is raised if any of the required arguments is missing
             self.db.rollback()
             return False
         except self.Error:
@@ -346,8 +343,7 @@ class Client(Interface):
                 result = cursor.fetchone()
             return all_rules
         except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
+            # A TypeError is raised if any of the required arguments is missing
             self.db.rollback()
             return []
         except self.Error:
@@ -953,9 +949,20 @@ class Client(Interface):
         return discoveries_ids
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):
-        """ Use a model to analyze a list of discoveries. """
+        """ Use a model to analyze a list of discoveries.
+
+        Parameters
+        ----------
+        model_manager:
+        discoveries:
+        debug:
+
+        Returns
+        -------
+        """
+
         def _analyze_discovery(d):
-            if (d['state'] != 'false_positive' and model_manager.launch_model(d)):
+            if d['state'] != 'false_positive' and model_manager.launch_model(d):
                 d['state'] = 'false_positive'
                 return 1
             return 0
@@ -1053,8 +1060,8 @@ class Client(Interface):
 
         Raises
         ------
-            ValueError
-                If no rules are found or all rules have been filtered out
+        ValueError
+            If no rules are found or all rules have been filtered out
         """
         if exclude is None:
             exclude = []
@@ -1079,9 +1086,11 @@ class Client(Interface):
         Parameters
         ----------
         target_snippet: str
+            The target snippet
         state: str
             state to update similar snippets to
         repo_url: str
+            The url of the repository
         file_name: str
             restrict to a given file the search for similar snippets
         threshold: float
@@ -1095,19 +1104,18 @@ class Client(Interface):
         int
             The number of similar snippets found and updated
         """
-
         discoveries = self.get_discoveries(repo_url, file_name)
         model = build_embedding_model()
-        """ Compute target snippet embedding """
+        # Compute target snippet embedding
         target_snippet_embedding = compute_snippet_embedding(target_snippet,
                                                              model)
         n_updated_snippets = 0
         for d in discoveries:
             if d['state'] == 'new':
-                """ Compute snippet embedding """
+                # Compute snippet embedding
                 snippet_embedding = compute_snippet_embedding(d['snippet'],
                                                               model)
-                """ Compute similarity of target snippet and snippet """
+                # Compute similarity of target snippet and snippet
                 similarity = compute_similarity(target_snippet_embedding,
                                                 snippet_embedding)
                 if similarity > threshold:
