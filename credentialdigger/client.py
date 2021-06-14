@@ -465,15 +465,9 @@ class Client(Interface):
     def get_embedding(self, query, discovery_id=None, snippet=None):
         cursor = self.db.cursor()
         if discovery_id:
-            try:
-                cursor.execute(query, (discovery_id,))
-            except Error:
-                self.db.rollback()
+            cursor.execute(query, (discovery_id,))
         else:
-            try:
-                cursor.execute(query, (snippet,))
-            except Error:
-                self.db.rollback()
+            cursor.execute(query, (snippet,))
         return cursor.fetchone()
 
     def update_repo(self, query, url, last_scan):
@@ -921,7 +915,7 @@ class Client(Interface):
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
-        
+
         return discoveries_ids
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):
