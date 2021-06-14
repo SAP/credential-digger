@@ -4,6 +4,7 @@ import fasttext
 import string_utils
 
 from ..base_model import BaseModel
+from difflib import SequenceMatcher
 
 EXTENSIONS = set(['py', 'rb', 'c', 'cpp', 'cs', 'js', 'php', 'h', 'java', 'pl',
                   'go'])
