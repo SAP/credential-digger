@@ -171,7 +171,29 @@ class SqliteUiClient(UiClient, SqliteClient):
                 " FROM discoveries WHERE repo_url=?"
                 " GROUP BY file_name"
             ))
-    
+
+    def add_embeddings(self, repo_url):
+        cursor = self.db.cursor()
+        discoveries = self.get_discoveries(repo_url)[1]
+        discoveries_ids = [d['id'] for d in discoveries]
+        snippets = [d['snippet'] for d in discoveries]
+        model = build_embedding_model()
+        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
+        embedding_strings = ["" for i in discoveries]
+        for i in range(len(discoveries_ids)):
+            for emb in embeddings[i]:
+                embedding_strings[i] += str(emb) + ","
+        try:
+            query = 'INSERT INTO embeddings (id, snippet, embedding) VALUES (?, ?, ?);'
+            insert_tuples = []
+            for i in range(len(discoveries_ids)):
+                insert_tuples.append((discoveries_ids[i], snippets[i], embedding_strings[i],))
+            cursor.executemany(query, insert_tuples)
+            self.db.commit()
+        except Error:
+            self.db.rollback()
+            map(lambda disc_id, emb: self.add_embedding(disc_id), zip(discoveries_ids, embedding_strings))
+
 
     def update_similar_snippets(self,
                                 target_snippet,

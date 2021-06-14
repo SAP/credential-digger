@@ -219,8 +219,7 @@ class SqliteClient(Client):
         model = build_embedding_model()
         embeddings = [compute_snippet_embedding(s, model) for s in snippets]
         embedding_strings = ["" for i in discoveries]
-        for i in range(len(discoveries)):
-        #for i, emb_str in enumerate(embedding_strings):                
+        for i in range(len(discoveries_ids)):
             for emb in embeddings[i]:
                 embedding_strings[i] += str(emb) + ","
         try:
