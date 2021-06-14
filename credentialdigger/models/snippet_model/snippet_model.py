@@ -209,3 +209,10 @@ class SnippetModel(BaseModel):
                 #print(f'This is an assignment : {findings}')
                 return True
         return False
+    
+    def _check_private_key(self, snippet):
+        """ Check if this snippet is a private key
+        """
+        base_private_key = ['BEGIN', 'PRIVATE', 'KEY']
+        # Return True if similarity ration >= 85%
+        return SequenceMatcher(None, base_private_key, snippet).ratio() >= 0.85
