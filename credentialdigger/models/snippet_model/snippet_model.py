@@ -210,7 +210,6 @@ class SnippetModel(BaseModel):
         for symbol in assignment_symbols:
             findings = re.findall(f'(.*){symbol}(.*)', snippet)
             if(len(findings) > 0):
-                #print(f'This is an assignment : {findings}')
                 return True
         return False
 
