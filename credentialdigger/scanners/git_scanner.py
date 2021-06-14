@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import shutil
+import sys
 import tempfile
 
 import hyperscan
@@ -313,6 +314,8 @@ class GitScanner(BaseScanner):
                     row = r_groups.group(1)
 
             rh = ResultHandler()
+            if sys.platform == 'darwin':
+                row = row.encode('utf-8')
             self.stream.scan(row,
                              match_event_handler=rh.handle_results,
                              context=[row, filename, commit_hash, line_number])
