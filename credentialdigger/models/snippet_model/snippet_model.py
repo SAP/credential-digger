@@ -198,3 +198,14 @@ class SnippetModel(BaseModel):
             r"^((\s*|\ *)\@\@.*\@\@(\s*|\ *)|(\s*|\ *)\+(\s*|\ *)|(\s*|\ *)\-(\s*|\ *)|(\s*|\ *))",
             "",
             snippet).strip()
+
+    def _assignment_expression(self, snippet):
+        """ Check if the snippet is an assignment or not.
+        """
+        assignment_symbols = ['=', ':=', '<-', ':']
+        for symbol in assignment_symbols:
+            findings = re.findall(f'(.*){symbol}(.*)', snippet)
+            if(len(findings) > 0):
+                #print(f'This is an assignment : {findings}')
+                return True
+        return False
