@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import sys
 import tempfile
 from fnmatch import fnmatch
 
@@ -80,7 +81,7 @@ class FileScanner(BaseScanner):
         scan_path = os.path.abspath(scan_path)
         if not os.path.exists(scan_path):
             raise FileNotFoundError(
-                f"{scan_path} is not an existing directory.")
+                f'{scan_path} is not an existing directory.')
 
         # Copy directory/file to temp folder
         project_root = tempfile.mkdtemp().rstrip(os.path.sep)
@@ -136,13 +137,15 @@ class FileScanner(BaseScanner):
 
         full_path = os.path.join(project_root, relative_path)
         try:
-            with open(full_path, "r", encoding='utf-8') as file_to_scan:
+            with open(full_path, 'r', encoding='utf-8') as file_to_scan:
                 for row in file_to_scan:
                     rh = ResultHandler()
+                    if sys.platform == 'darwin':
+                        row = row.encode('utf-8')
                     self.stream.scan(
                         row,
                         match_event_handler=rh.handle_results,
-                        context=[row, relative_path, "", line_number])
+                        context=[row, relative_path, '', line_number])
                     if rh.result:
                         discoveries.append(rh.result)
                     line_number += 1
