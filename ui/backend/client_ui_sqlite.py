@@ -1,3 +1,5 @@
+from sqlite3 import Error
+
 from credentialdigger import SqliteClient
 from credentialdigger.client import Discovery
 from credentialdigger.snippet_similarity import (
