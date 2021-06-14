@@ -55,7 +55,7 @@ class GitFileScanner(GitScanner, FileScanner):
                              flags=flags)
 
     def scan(self, repo_url, branch_or_commit, max_depth=-1, ignore_list=[],
-             git_token=None, local_repo=False):
+             git_token=None):
         """ Scan a repository.
 
         Parameters
@@ -75,9 +75,6 @@ class GitFileScanner(GitScanner, FileScanner):
             per the fnmatch package.
         git_token: str, optional
             Git personal access token to authenticate to the git server
-        local_repo: bool, optional
-            If True, get the repository from a local directory instead of the
-            web
 
         Returns
         -------
