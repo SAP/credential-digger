@@ -133,17 +133,19 @@ class SnippetModel(BaseModel):
 
         >>> raw_data = '"password": "#####", "!@AAA12")'
         >>> print(self._pre_process(raw_data))
-        ['password', 'AAA12']
+        ['password','"#####', '!@AAA12']
         """
-        # r"((?<=').*?(?=')|(?<=\").*?(?=\")|[a-zA-Z0-9\._@-]+)"
-        # Match words and strings
-        # In strings, match the content starting from the first character
-        # e.g., "****" -> None
-        #       "$AAA123!!" -> AAA123!!
-        pattern = re.compile(
-            r"((?<=')\w\d.*?(?=')|(?<=\")\w\d.*?(?=\")|[\w\d]+)")
-        words = re.findall(pattern, raw_data)
-        return list(map(string_utils.snake_case_to_camel, words))
+        words = re.findall("(?<=').*?(?=')|(?<=\").*?(?=\")|[\w\d]+", raw_data)
+        strings = re.findall(r"(?<=').*?(?=')|(?<=\").*?(?=\")", raw_data)
+
+        camel_case_words = []
+        for w in words:
+            if(w in strings):
+                camel_case_words.append(w)
+            else:
+                camel_case_words.append(string_utils.snake_case_to_camel(w))
+
+        return camel_case_words
 
     def _label_preprocess(self, words_list):
         """ Output the extracted word from the label of the model.
