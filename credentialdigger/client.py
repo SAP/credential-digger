@@ -603,10 +603,10 @@ class Client(Interface):
             debug=debug, generate_snippet_extractor=generate_snippet_extractor,
             local_repo=local_repo, git_token=git_token)
 
-    def scan_snapshot(self, repo_url, commit_or_branch, category=None,
+    def scan_snapshot(self, repo_url, branch_or_commit, category=None,
                       models=None, exclude=None, force=False, debug=False,
-                      generate_snippet_extractor=False, max_depth=-1,
-                      ignore_list=[]):
+                      generate_snippet_extractor=False, git_token=None,
+                      max_depth=-1, ignore_list=[]):
         """ Launch the scan of the snapshot of a git repository.
         This scan mode takes into consideration the snapshot of the repository
         at one specific commit, or at the last commit of a specific branch.
@@ -615,7 +615,7 @@ class Client(Interface):
         ----------
         repo_url: str
             The url of the repo to scan
-        commit_or_branch: str
+        branch_or_commit: str
             The commit hash or the branch name
         category: str, optional
             If specified, scan the repo using all the rules of this category,
@@ -634,6 +634,8 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
         max_depth: int, optional
             The maximum depth to which traverse the subdirectories tree.
             A negative value will not affect the scan.
@@ -656,9 +658,10 @@ class Client(Interface):
         scanner = GitFileScanner(rules)
 
         return self._scan(
-            repo_url=scan_path, scanner=scanner, models=models, force=force,
-            debug=debug, generate_snippet_extractor=generate_snippet_extractor,
-            max_depth=max_depth, ignore_list=ignore_list)
+            repo_url=repo_url, branch_or_commit=branch_or_commit,
+            scanner=scanner, models=models, force=force, debug=debug,
+            generate_snippet_extractor=generate_snippet_extractor,
+            git_token=git_token, max_depth=max_depth, ignore_list=ignore_list)
 
     def scan_path(self, scan_path, category=None, models=None, exclude=None,
                   force=False, debug=False, generate_snippet_extractor=False,
