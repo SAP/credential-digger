@@ -102,14 +102,9 @@ class SnippetModel(BaseModel):
         We define as strings any sequence of characters included in `"` or `'`
         and as words any sequence of alphanumeric characters.
         
-        In particular, if a string does not contain characters, it is not
-        matched. This is done in order to exclude patterns such as "###" or
-        "***". In case the string has a mixed content, it is matched starting
-        from the first letter/number (e.g., "!@#QWE123" matches "QWE123").
-
-        Finally, convert words from snake_case (i.e., words separated by
-        underscores, like in Python convention) to CamelCase (i.e., Java
-        convention).
+        Finally, convert words (not strings) from snake_case (i.e., words 
+        separated by underscores, like in Python convention) to CamelCase 
+        (i.e., Java convention).
 
         Parameters
         ----------
