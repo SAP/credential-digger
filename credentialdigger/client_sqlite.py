@@ -95,7 +95,7 @@ class SqliteClient(Client):
         cursor.close()
 
     def add_discovery(self, file_name, commit_id, line_number, snippet,
-                      repo_url, rule_id, state='new', embedding=None):
+                      repo_url, rule_id, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -130,7 +130,7 @@ class SqliteClient(Client):
             state=state,
             query='INSERT INTO discoveries (file_name, commit_id, line_number, \
             snippet, repo_url, rule_id, state) VALUES \
-            (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id'
+            (?, ?, ?, ?, ?, ?, ?) RETURNING id'
         )
 
     def add_discoveries(self, discoveries, repo_url):
