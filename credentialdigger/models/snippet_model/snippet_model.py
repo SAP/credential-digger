@@ -71,7 +71,7 @@ class SnippetModel(BaseModel):
         if(self._check_private_key(data)):
             return False
         if(not any(not c.isalnum() and c not in ' _.,?!/' for c in raw_data)):
-            # We ignore snippets that look like regular phrases with 
+            # We ignore snippets that look like regular phrases with
             # no assignment
             return True
 
@@ -102,7 +102,7 @@ class SnippetModel(BaseModel):
         Find words and strings in `raw_data` and extract them.
         We define as strings any sequence of characters included in `"` or `'`
         and as words any sequence of alphanumeric characters.
-        
+
         Finally, convert words (not strings) from snake_case (i.e., words 
         separated by underscores, like in Python convention) to CamelCase 
         (i.e., Java convention).
@@ -210,7 +210,7 @@ class SnippetModel(BaseModel):
                 #print(f'This is an assignment : {findings}')
                 return True
         return False
-    
+
     def _check_private_key(self, snippet):
         """ Check if this snippet is a private key
         """
