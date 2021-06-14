@@ -72,11 +72,9 @@ class Interface(ABC):
         except (TypeError, IndexError):
             """ A TypeError is raised if any of the required arguments is
             missing. """
-            print("except 1")
             self.db.rollback()
             return ()
         except self.Error:
-            print("except 2")
             self.db.rollback()
             return ()
 
@@ -122,8 +120,8 @@ class Client(Interface):
     def add_discoveries(self, query, discoveries, repo_url):
         return
 
-    def add_embedding(self, query, discovery_id):
-        return self.query_check(query, discovery_id,)
+    def add_embedding(self, query, discovery_id, snippet):
+        return
 
     def add_repo(self, query, repo_url):
         """ Add a new repository.
@@ -259,7 +257,8 @@ class Client(Interface):
         return self.query(query, repo_url,)
 
     def delete_embedding(self, query, discovery_id):
-        return self.query_id(query, discovery_id)
+        cursor = self.db.cursor()
+        return cursor.execute(query, discovery_id)
 
     def get_repos(self):
         """ Get all the repositories.
@@ -463,9 +462,18 @@ class Client(Interface):
             cursor.execute(query, (repo_url,))
         return cursor.fetchall()
 
-    def get_embedding(self, query, discovery_id):
+    def get_embedding(self, query, discovery_id=None, snippet=None):
         cursor = self.db.cursor()
-        cursor.execute(query, (discovery_id,))
+        if discovery_id:
+            try:
+                cursor.execute(query, (discovery_id,))
+            except Error:
+                self.db.rollback()
+        else:
+            try:
+                cursor.execute(query, (snippet,))
+            except Error:
+                self.db.rollback()
         return cursor.fetchone()
 
     def update_repo(self, query, url, last_scan):
@@ -909,8 +917,7 @@ class Client(Interface):
             # IDs of the discoveries added to the db
             discoveries_ids = self.add_discoveries(new_discoveries, repo_url)
             if similarity:
-                for i in discoveries_ids:
-                    self.add_embedding(i)
+                self.add_embeddings(repo_url)
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
@@ -1032,7 +1039,7 @@ class Client(Interface):
         return rules
 
     def update_similar_snippets(self,
-                                target_discovery_id,
+                                target_snippet,
                                 state,
                                 repo_url,
                                 file_name=None,
@@ -1059,19 +1066,4 @@ class Client(Interface):
         int
             The number of similar snippets found and updated
         """
-
-        discoveries = self.get_discoveries(repo_url, file_name)
-        """ Compute target snippet embedding """
-        str_target_discovery_embedding = (self.get_embedding(target_discovery_id))[0].split(",")[:-1]
-        target_discovery_embedding = [float(emb) for emb in str_target_discovery_embedding]
-        n_updated_snippets = 0
-        for d in discoveries:
-            if d['state'] != state and self.get_embedding(d['id']):
-                """ Compute similarity of target snippet and snippet """
-                str_embedding = (self.get_embedding(d['id']))[0].split(",")[:-1]
-                embedding = [float(emb) for emb in str_embedding]
-                similarity = compute_similarity(target_discovery_embedding, embedding)
-                if similarity > threshold:
-                    n_updated_snippets += 1
-                    self.update_discovery(d['id'], state)
-        return n_updated_snippets
+        return

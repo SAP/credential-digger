@@ -54,7 +54,8 @@ class SqliteClient(Client):
 
             CREATE TABLE IF NOT EXISTS embeddings (
                 id INTEGER REFERENCES discoveries,
-                embedding TEXT,
+                snippet TEXT DEFAULT '',
+                embedding TEXT DEFAULT '',
                 PRIMARY KEY (id)
             );
 
@@ -194,23 +195,44 @@ class SqliteClient(Client):
                 state=d['state'],
             ), discoveries)
 
-    def add_embedding(self, discovery_id):
+    def add_embedding(self, discovery_id, embedding=None):
         cursor = self.db.cursor()
         snippet = self.get_discovery(discovery_id)['snippet']
-        model = build_embedding_model()
-        try:
+        if embedding is not None:
+            model = build_embedding_model()
             embedding = compute_snippet_embedding(snippet, model)
+        try:
             embedding_str = ""
             for emb in embedding:
                 embedding_str += str(emb) + ","
-
-            cursor.execute(
-                'INSERT INTO embeddings (id, embedding) VALUES (?, ?);',
-                (discovery_id, embedding_str)
-            )
+            query = 'INSERT INTO embeddings (id, embedding, snippet) VALUES (?, ?, ?);'
+            cursor.execute(query, (discovery_id, embedding_str, snippet,))
             self.db.commit()
         except Error:
             self.db.rollback()
+
+    def add_embeddings(self, repo_url):
+        cursor = self.db.cursor()
+        discoveries = self.get_discoveries(repo_url)
+        discoveries_ids = [d['id'] for d in discoveries]
+        snippets = [d['snippet'] for d in discoveries]
+        model = build_embedding_model()
+        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
+        embedding_strings = ["" for i in discoveries]
+        for i in range(len(discoveries)):
+        #for i, emb_str in enumerate(embedding_strings):                
+            for emb in embeddings[i]:
+                embedding_strings[i] += str(emb) + ","
+        try:
+            query = 'INSERT INTO embeddings (id, snippet, embedding) VALUES (?, ?, ?);'
+            insert_tuples = []
+            for i in range(len(discoveries_ids)):
+                insert_tuples.append((discoveries_ids[i], snippets[i], embedding_strings[i],))
+            cursor.executemany(query, insert_tuples)
+            self.db.commit()
+        except Error:
+            self.db.rollback()
+            map(lambda disc_id, emb: self.add_embedding(disc_id), zip(discoveries_ids, embedding_strings))
 
     def add_repo(self, repo_url):
         """ Add a new repository.
@@ -435,8 +457,15 @@ class SqliteClient(Client):
                 WHERE repo_url=? GROUP BY file_name, snippet, state'
                                            )
     
-    def get_embedding(self, discovery_id):
-        return super().get_embedding(query='SELECT embedding FROM embeddings WHERE id=?;', discovery_id=discovery_id)
+    def get_embedding(self, discovery_id=None, snippet=None):
+        if discovery_id:
+            query = 'SELECT embedding FROM embeddings WHERE id=?';
+        else:
+            query = 'SELECT embedding FROM embeddings WHERE snippet=?';
+        #cursor = self.db.cursor;
+        #cursor.execute(query
+        #return
+        return super().get_embedding(query=query, discovery_id=discovery_id, snippet=snippet)
 
     def update_repo(self, url, last_scan):
         """ Update the last scan timestamp of a repo.
@@ -532,27 +561,49 @@ class SqliteClient(Client):
         super().update_discovery_group(
             new_state=new_state, repo_url=repo_url, file_name=file_name,
             snippet=snippet, query=query)
-    """
+        
     def update_similar_snippets(self,
                                 target_snippet,
                                 state,
                                 repo_url,
                                 file_name=None,
                                 threshold=0.96):
+        """ Find snippets that are similar to the target
+        snippet and update their state.
+
+        Parameters
+        ----------
+        target_snippet: str
+        state: str
+            state to update similar snippets to
+        repo_url: str
+        file_name: str
+            restrict to a given file the search for similar snippets
+        threshold: float
+            update snippets with similarity score above threshold.
+            Values lesser than 0.94 do not generally imply any relevant
+            amount of similarity between snippets, and should
+            therefore not be used.
+
+        Returns
+        -------
+        int
+            The number of similar snippets found and updated
+        """
+
         discoveries = self.get_discoveries(repo_url, file_name)
-        model = build_embedding_model()
-        Compute target snippet embedding
-        target_snippet_embedding = compute_snippet_embedding(target_snippet,
-                                                             model)
+        """ Compute target snippet embedding """
+        str_target_snippet_embedding = (self.get_embedding(snippet=target_snippet))[0].split(",")[:-1]
+        target_snippet_embedding = [float(emb) for emb in str_target_snippet_embedding]
         n_updated_snippets = 0
         for d in discoveries:
-            if d['state'] == 'new':
-                str_embedding = re.split(",", d['embedding'])
-                embedding = [float(emb) for emb in str_embedding[:-1]]
-                similarity = compute_similarity(target_snippet_embedding,
-                                                embedding)
+            if d['state'] != state and self.get_embedding(discovery_id=d['id']):
+                """ Compute similarity of target snippet and snippet """
+                str_embedding = (self.get_embedding(discovery_id=d['id']))[0].split(",")[:-1]
+                embedding = [float(emb) for emb in str_embedding]
+                similarity = compute_similarity(target_snippet_embedding, embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)
         return n_updated_snippets
-        """
+

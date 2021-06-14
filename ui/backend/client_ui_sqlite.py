@@ -171,6 +171,7 @@ class SqliteUiClient(UiClient, SqliteClient):
                 " FROM discoveries WHERE repo_url=?"
                 " GROUP BY file_name"
             ))
+    
 
     def update_similar_snippets(self,
                                 target_snippet,
@@ -178,21 +179,42 @@ class SqliteUiClient(UiClient, SqliteClient):
                                 repo_url,
                                 file_name=None,
                                 threshold=0.96):
-        discoveries = self.get_discoveries(repo_url, file_name)[1]
-        model = build_embedding_model()
+        """ Find snippets that are similar to the target
+        snippet and update their state.
 
+        Parameters
+        ----------
+        target_snippet: str
+        state: str
+            state to update similar snippets to
+        repo_url: str
+        file_name: str
+            restrict to a given file the search for similar snippets
+        threshold: float
+            update snippets with similarity score above threshold.
+            Values lesser than 0.94 do not generally imply any relevant
+            amount of similarity between snippets, and should
+            therefore not be used.
+
+        Returns
+        -------
+        int
+            The number of similar snippets found and updated
+        """
+
+        print(target_snippet)
+        discoveries = self.get_discoveries(repo_url, file_name)[1]
+        print("get emb =",self.get_embedding(snippet=target_snippet))
         """ Compute target snippet embedding """
-        target_snippet_embedding = compute_snippet_embedding(target_snippet,
-                                                             model)
+        str_target_snippet_embedding = (self.get_embedding(snippet=target_snippet))[0].split(",")[:-1]
+        target_snippet_embedding = [float(emb) for emb in str_target_snippet_embedding]
         n_updated_snippets = 0
         for d in discoveries:
-            if d['state'] == 'new':
-                str_embedding = re.split(",", d['embedding'])
-                embedding = [float(emb) for emb in str_embedding[:-1]]
-
+            if d['state'] != state and self.get_embedding(discovery_id=d['id']):
                 """ Compute similarity of target snippet and snippet """
-                similarity = compute_similarity(target_snippet_embedding,
-                                                embedding)
+                str_embedding = (self.get_embedding(discovery_id=d['id']))[0].split(",")[:-1]
+                embedding = [float(emb) for emb in str_embedding]
+                similarity = compute_similarity(target_snippet_embedding, embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)
