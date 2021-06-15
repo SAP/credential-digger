@@ -196,9 +196,21 @@ class SqliteClient(Client):
             ), discoveries)
 
     def add_embedding(self, discovery_id, embedding=None, repo_url=''):
+        """ Add an embedding to the embeddings table.
+
+        Parameters
+        ----------
+        discovery_id: int
+            The id of the discovery whose embedding is being added
+        embedding: list
+            The embedding being added
+        repo_url: str
+            The discovery's repository url
+        """
+
         cursor = self.db.cursor()
         snippet = self.get_discovery(discovery_id)['snippet']
-        if embedding is not None:
+        if embedding is None:
             model = build_embedding_model()
             embedding = compute_snippet_embedding(snippet, model)
         try:
@@ -216,6 +228,14 @@ class SqliteClient(Client):
             self.db.rollback()
 
     def add_embeddings(self, repo_url):
+        """ Bulk add embeddings.
+
+        Parameters
+        ----------
+        repo_url: str
+            The discoveries' reposiroty url
+        """
+
         cursor = self.db.cursor()
         discoveries = self.get_discoveries(repo_url)
         discoveries_ids = [d['id'] for d in discoveries]
@@ -342,11 +362,27 @@ class SqliteClient(Client):
             query='DELETE FROM discoveries WHERE repo_url=?')
 
     def delete_embedding(self, discovery_id):
+        """ Delete an embedding.
+
+        Parameters
+        ----------
+        discovery_id: int   
+            The id of the discovery whose embedding is being deleted
+        """
+
         return super().delete_embedding(
             query='DELETE FROM embeddings WHERE id=?',
             discovery_id=discovery_id)
 
     def delete_embeddings(self, repo_url):
+        """ Delete all embeddings from a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The repository url of the embeddings to delete
+        """
+
         cursor = self.db.cursor()
         query = 'DELETE FROM embeddings WHERE repo_url=?;'
         return cursor.execute(query, (repo_url,))
@@ -474,6 +510,22 @@ class SqliteClient(Client):
                                            )
 
     def get_embedding(self, discovery_id=None, snippet=None):
+        """ Retrieve a discovery embedding.
+
+        Parameters
+        ----------
+        discovery_id: int
+            The id of the discovery whose embedding is being retrieved
+        snippet: str
+            The snippet whose embedding is being retrieved. omly used if 
+            discovery_id is not provided
+        
+        Returns
+        ------
+        str
+            The embedding
+        """
+
         if discovery_id:
             query = 'SELECT embedding FROM embeddings WHERE id=?'
         else:
