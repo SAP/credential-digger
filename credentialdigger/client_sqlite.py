@@ -366,7 +366,7 @@ class SqliteClient(Client):
 
         Parameters
         ----------
-        discovery_id: int   
+        discovery_id: int
             The id of the discovery whose embedding is being deleted
         """
 
@@ -517,9 +517,9 @@ class SqliteClient(Client):
         discovery_id: int
             The id of the discovery whose embedding is being retrieved
         snippet: str
-            The snippet whose embedding is being retrieved. omly used if 
+            The snippet whose embedding is being retrieved. omly used if
             discovery_id is not provided
-        
+
         Returns
         ------
         str
