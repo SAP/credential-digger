@@ -76,7 +76,7 @@ def configure_parser(parser):
             The extractor is generated using the ExtractorGenerator. If \
             `False`, use the pre-trained extractor model')
     parser.add_argument(
-        '--max_depth', type=int, default="-1",
+        '--max_depth', type=int, default='-1',
         help='Maximum depth for subdirectories scanning (If it is set to -1 or\
             not specified, all subdirectories will be scanned)')
 
