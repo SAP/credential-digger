@@ -650,7 +650,7 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        if self.get_repo(repo_url) != {} and force is False:
+        if self.get_repo(repo_url) != {} and not force:
             raise ValueError(f'The repository \"{repo_url}\" has already been '
                              'scanned. Please use \"force\" to rescan it.')
 
