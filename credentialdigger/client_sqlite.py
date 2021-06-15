@@ -348,10 +348,8 @@ class SqliteClient(Client):
 
     def delete_embeddings(self, repo_url):
         cursor = self.db.cursor()
-        try:
-            query = 'DELETE FROM embeddings WHERE repo_url=?;'
-            return cursor.execute(query, (repo_url,))
-        except self.Error:
+        query = 'DELETE FROM embeddings WHERE repo_url=?;'
+        return cursor.execute(query, (repo_url,))
 
     def get_repo(self, repo_url):
         """ Get a repository.
