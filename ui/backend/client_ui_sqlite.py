@@ -184,17 +184,20 @@ class SqliteUiClient(UiClient, SqliteClient):
             for emb in embeddings[i]:
                 embedding_strings[i] += str(emb) + ","
         try:
-            query = 'INSERT INTO embeddings (id, snippet, embedding) VALUES (?, ?, ?);'
+            query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) VALUES (?, ?, ?, ?);'
             insert_tuples = []
             for i in range(len(discoveries_ids)):
                 insert_tuples.append((discoveries_ids[i],
                                       snippets[i],
-                                      embedding_strings[i],))
+                                      embedding_strings[i],
+                                      repo_url,))
             cursor.executemany(query, insert_tuples)
             self.db.commit()
         except Error:
             self.db.rollback()
-            map(lambda disc_id, emb: self.add_embedding(disc_id),
+            map(lambda disc_id, emb: self.add_embedding(disc_id,
+                                                        emb,
+                                                        repo_url=repo_url),
                 zip(discoveries_ids, embedding_strings))
 
     def update_similar_snippets(self,
