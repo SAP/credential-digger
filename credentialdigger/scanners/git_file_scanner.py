@@ -88,7 +88,10 @@ class GitFileScanner(GitScanner, FileScanner):
                                         f'https://oauth2:{git_token}@')
 
         # Clone the repository locally
-        project_path, repo = self.get_git_repo(repo_url, local_repo)
+        # TODO: add support for local repositories
+        #       As long as that feature is not integrated yet, local_repo must
+        #       be set to False
+        project_path, repo = self.get_git_repo(repo_url, local_repo=False)
 
         # Scan the snapshot of the repository either at the last commit of
         # a branch or at a specific commit
