@@ -155,7 +155,6 @@ class SqliteClient(Client):
         while running this method will result in unpredictable discoveries ids
         being returned.
         """
-
         # Transform argument in list of tuples
         discoveries = [
             (d['file_name'], d['commit_id'], d['line_number'],
@@ -179,12 +178,10 @@ class SqliteClient(Client):
                 ORDER BY id DESC LIMIT ?', (repo_url, len(discoveries)))
 
             return [d[0] for d in discoveries_ids]
-
         except Error:
             # In case of error in the bulk operation, fall back to adding
             # discoveries RBAR
             self.db.rollback()
-
             return map(lambda d: self.add_discovery(
                 file_name=d['file_name'],
                 commit_id=d['commit_id'],
@@ -207,7 +204,6 @@ class SqliteClient(Client):
         repo_url: str
             The discovery's repository url
         """
-
         cursor = self.db.cursor()
         snippet = self.get_discovery(discovery_id)['snippet']
         if embedding is None:
@@ -235,7 +231,6 @@ class SqliteClient(Client):
         repo_url: str
             The discoveries' repository url
         """
-
         cursor = self.db.cursor()
         discoveries = self.get_discoveries(repo_url)
         discoveries_ids = [d['id'] for d in discoveries]
@@ -440,7 +435,6 @@ class SqliteClient(Client):
         """
         return super().get_rule(rule_id=rule_id,
                                 query='SELECT * FROM rules WHERE id=?')
-
 
     def get_discoveries(self, repo_url, file_name=None):
         """ Get all the discoveries of a repository.

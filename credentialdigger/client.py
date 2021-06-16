@@ -257,6 +257,16 @@ class Client(Interface):
         return self.query(query, repo_url,)
 
     def delete_embedding(self, query, discovery_id):
+        """ Delete an embedding. 
+
+        Parameters
+        ----------
+        query: str
+            The query to be run
+        discovery_id: int
+            The id of the discovery whose embedding is
+            to be deleted
+        """
         cursor = self.db.cursor()
         return cursor.execute(query, discovery_id)
 
