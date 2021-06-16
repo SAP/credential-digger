@@ -217,7 +217,7 @@ class PgClient(Client):
             embedding = compute_snippet_embedding(snippet, model)
         try:
             query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
-                    VALUES (%s, ARRAY %s, %s, %s);'
+                    VALUES (%s, %s, %s, %s);'
             cursor.execute(query, (discovery_id,
                                    embedding,
                                    snippet,
@@ -242,12 +242,12 @@ class PgClient(Client):
         embeddings = [compute_snippet_embedding(s, model) for s in snippets]
         try:
             query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
-                    VALUES (%s, ARRAY %s, %s, %s);'
+                    VALUES (%s, %s, %s, %s);'
             insert_tuples = []
             for i in range(len(discoveries_ids)):
                 insert_tuples.append((discoveries_ids[i],
-                                      snippets[i],
                                       embeddings[i],
+                                      snippets[i],
                                       repo_url))
             cursor.executemany(query, insert_tuples)
             self.db.commit()
