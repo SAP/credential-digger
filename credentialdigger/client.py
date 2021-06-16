@@ -257,7 +257,7 @@ class Client(Interface):
         return self.query(query, repo_url,)
 
     def delete_embedding(self, query, discovery_id):
-        """ Delete an embedding. 
+        """ Delete an embedding.
 
         Parameters
         ----------

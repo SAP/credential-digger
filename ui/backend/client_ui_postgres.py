@@ -223,13 +223,13 @@ class PgUiClient(UiClient, PgClient):
 
         discoveries = self.get_discoveries(repo_url, file_name)[1]
         # Compute target snippet embedding
-        target_snippet_embedding = self.get_embedding(snippet=target_snippet)[0]
+        target_embedding = self.get_embedding(snippet=target_snippet)[0]
         n_updated_snippets = 0
         for d in discoveries:
             if d['state'] != state and self.get_embedding(discovery_id=d['id']):
                 # Compute similarity of target snippet and snippet
                 embedding = self.get_embedding(discovery_id=d['id'])[0]
-                similarity = compute_similarity(target_snippet_embedding,
+                similarity = compute_similarity(target_embedding,
                                                 embedding)
                 if similarity > threshold:
                     n_updated_snippets += 1
