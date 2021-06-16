@@ -233,7 +233,7 @@ class SqliteClient(Client):
         Parameters
         ----------
         repo_url: str
-            The discoveries' reposiroty url
+            The discoveries' repository url
         """
 
         cursor = self.db.cursor()
