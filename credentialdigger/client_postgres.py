@@ -612,7 +612,7 @@ class PgClient(Client):
         n_updated_snippets = 0
         for d in discoveries:
             if (d['state'] != state and
-                self.get_embedding(discovery_id=d['id'])):
+                   self.get_embedding(discovery_id=d['id'])):
                 # Compute similarity of target snippet and snippet
                 embedding = self.get_embedding(discovery_id=d['id'])[0]
                 similarity = compute_similarity(target_embedding,
