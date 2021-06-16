@@ -184,7 +184,9 @@ class SqliteUiClient(UiClient, SqliteClient):
             for emb in embeddings[i]:
                 embedding_strings[i] += str(emb) + ","
         try:
-            query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) VALUES (?, ?, ?, ?);'
+            query = 'INSERT INTO embeddings \
+                    (id, snippet, embedding, repo_url) \
+                    VALUES (?, ?, ?, ?);'
             insert_tuples = []
             for i in range(len(discoveries_ids)):
                 insert_tuples.append((discoveries_ids[i],

@@ -169,7 +169,6 @@ class PgUiClient(UiClient, PgClient):
                 " GROUP BY file_name"
             ))
 
-
     def add_embeddings(self, repo_url):
         cursor = self.db.cursor()
         discoveries = self.get_discoveries(repo_url)[1]

@@ -619,4 +619,4 @@ class PgClient(Client):
                 if similarity > threshold:
                     n_updated_snippets += 1
                     self.update_discovery(d['id'], state)
-        return n_updated_snippets 
+        return n_updated_snippets
