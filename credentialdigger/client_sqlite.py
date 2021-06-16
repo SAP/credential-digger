@@ -517,7 +517,7 @@ class SqliteClient(Client):
         discovery_id: int
             The id of the discovery whose embedding is being retrieved
         snippet: str
-            The snippet whose embedding is being retrieved. omly used if
+            The snippet whose embedding is being retrieved. Only used if
             discovery_id is not provided
 
         Returns
@@ -530,7 +530,12 @@ class SqliteClient(Client):
             query = 'SELECT embedding FROM embeddings WHERE id=?'
         else:
             query = 'SELECT embedding FROM embeddings WHERE snippet=?'
-        return super().get_embedding(query=query, discovery_id=discovery_id, snippet=snippet)
+        str_embedding = super().get_embedding(query=query,
+                                              discovery_id=discovery_id,
+                                              snippet=snippet)
+        embedding = [float(emb) for emb in str_embedding[0].split(",")[:-1]]
+        
+        return embedding
 
     def update_repo(self, url, last_scan):
         """ Update the last scan timestamp of a repo.
@@ -658,14 +663,12 @@ class SqliteClient(Client):
 
         discoveries = self.get_discoveries(repo_url, file_name)
         # Compute target snippet embedding
-        str_target_snippet_embedding = (self.get_embedding(snippet=target_snippet))[0].split(",")[:-1]
-        target_snippet_embedding = [float(emb) for emb in str_target_snippet_embedding]
+        target_snippet_embedding = self.get_embedding(snippet=target_snippet)
         n_updated_snippets = 0
         for d in discoveries:
             if d['state'] != state and self.get_embedding(discovery_id=d['id']):
                 # Compute similarity of target snippet and snippet
-                str_embedding = (self.get_embedding(discovery_id=d['id']))[0].split(",")[:-1]
-                embedding = [float(emb) for emb in str_embedding]
+                embedding = self.get_embedding(discovery_id=d['id'])
                 similarity = compute_similarity(target_snippet_embedding,
                                                 embedding)
                 if similarity > threshold:

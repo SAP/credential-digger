@@ -1,5 +1,11 @@
+from sqlite3 import Error
+
 from credentialdigger import PgClient
 from credentialdigger.client import Discovery
+from credentialdigger.snippet_similarity import (
+    build_embedding_model,
+    compute_similarity,
+    compute_snippet_embedding)
 
 from .client_ui import UiClient
 
@@ -162,3 +168,71 @@ class PgUiClient(UiClient, PgClient):
                 " FROM discoveries WHERE repo_url=%s"
                 " GROUP BY file_name"
             ))
+
+
+    def add_embeddings(self, repo_url):
+        cursor = self.db.cursor()
+        discoveries = self.get_discoveries(repo_url)[1]
+        discoveries_ids = [d['id'] for d in discoveries]
+        snippets = [d['snippet'] for d in discoveries]
+        model = build_embedding_model()
+        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
+        try:
+            query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+                    VALUES (%s, %s, %s, %s);'
+            insert_tuples = []
+            for i in range(len(discoveries_ids)):
+                insert_tuples.append((discoveries_ids[i],
+                                      embeddings[i],
+                                      snippets[i],
+                                      repo_url,))
+            cursor.executemany(query, insert_tuples)
+            self.db.commit()
+        except Error:
+            self.db.rollback()
+            map(lambda disc_id, emb: self.add_embedding(disc_id,
+                                                        emb,
+                                                        repo_url=repo_url),
+                zip(discoveries_ids, embeddings))
+
+    def update_similar_snippets(self,
+                                target_snippet,
+                                state,
+                                repo_url,
+                                file_name=None,
+                                threshold=0.96):
+        """ Find snippets that are similar to the target
+        snippet and update their state.
+        Parameters
+        ----------
+        target_snippet: str
+        state: str
+            state to update similar snippets to
+        repo_url: str
+        file_name: str
+            restrict to a given file the search for similar snippets
+        threshold: float
+            update snippets with similarity score above threshold.
+            Values lesser than 0.94 do not generally imply any relevant
+            amount of similarity between snippets, and should
+            therefore not be used.
+        Returns
+        -------
+        int
+            The number of similar snippets found and updated
+        """
+
+        discoveries = self.get_discoveries(repo_url, file_name)[1]
+        # Compute target snippet embedding
+        target_snippet_embedding = self.get_embedding(snippet=target_snippet)[0]
+        n_updated_snippets = 0
+        for d in discoveries:
+            if d['state'] != state and self.get_embedding(discovery_id=d['id']):
+                # Compute similarity of target snippet and snippet
+                embedding = self.get_embedding(discovery_id=d['id'])[0]
+                similarity = compute_similarity(target_snippet_embedding,
+                                                embedding)
+                if similarity > threshold:
+                    n_updated_snippets += 1
+                    self.update_discovery(d['id'], state)
+        return n_updated_snippets

@@ -1,6 +1,8 @@
 from psycopg2 import Error, connect, extras
 
 from .client import Client
+from .snippet_similarity import (build_embedding_model, compute_similarity,
+                                 compute_snippet_embedding)
 
 
 class PgClient(Client):
@@ -196,6 +198,66 @@ class PgClient(Client):
             query='INSERT INTO rules (regex, category, description) \
                     VALUES (%s, %s, %s) RETURNING id')
 
+    def add_embedding(self, discovery_id, embedding=None, repo_url=''):
+        """ Add an embedding to the embeddings table.
+        Parameters
+        ----------
+        discovery_id: int
+            The id of the discovery whose embedding is being added
+        embedding: list
+            The embedding being added
+        repo_url: str
+            The discovery's repository url
+        """
+
+        cursor = self.db.cursor()
+        snippet = self.get_discovery(discovery_id)['snippet']
+        if embedding is None:
+            model = build_embedding_model()
+            embedding = compute_snippet_embedding(snippet, model)
+        try:
+            query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+                    VALUES (%s, ARRAY %s, %s, %s);'
+            cursor.execute(query, (discovery_id,
+                                   embedding,
+                                   snippet,
+                                   repo_url))
+            self.db.commit()
+        except Error:
+            self.db.rollback()
+
+    def add_embeddings(self, repo_url):
+        """ Bulk add embeddings.
+        Parameters
+        ----------
+        repo_url: str
+            The discoveries' reposiroty url
+        """
+
+        cursor = self.db.cursor()
+        discoveries = self.get_discoveries(repo_url)
+        discoveries_ids = [d['id'] for d in discoveries]
+        snippets = [d['snippet'] for d in discoveries]
+        model = build_embedding_model()
+        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
+        try:
+            query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+                    VALUES (%s, ARRAY %s, %s, %s);'
+            insert_tuples = []
+            for i in range(len(discoveries_ids)):
+                insert_tuples.append((discoveries_ids[i],
+                                      snippets[i],
+                                      embeddings[i],
+                                      repo_url))
+            cursor.executemany(query, insert_tuples)
+            self.db.commit()
+        except Error:
+            self.db.rollback()
+            map(lambda disc_id, emb: self.add_embedding(disc_id,
+                                                        emb,
+                                                        repo_url=repo_url),
+                zip(discoveries_ids, embeddings))
+
     def delete_rule(self, ruleid):
         """Delete a rule from database
 
@@ -228,6 +290,7 @@ class PgClient(Client):
         bool
             `True` if the repo was successfully deleted, `False` otherwise
         """
+        self.delete_embeddings(repo_url)
         return super().delete_repo(
             repo_url=repo_url,
             query='DELETE FROM repos WHERE url=%s RETURNING true')
@@ -249,6 +312,30 @@ class PgClient(Client):
         return super().delete_discoveries(
             repo_url=repo_url,
             query='DELETE FROM discoveries WHERE repo_url=%s RETURNING true')
+
+    def delete_embedding(self, discovery_id):
+        """ Delete an embedding.
+        Parameters
+        ----------
+        discovery_id: int
+            The id of the discovery whose embedding is being deleted
+        """
+
+        return super().delete_embedding(
+            query='DELETE FROM embeddings WHERE id=%s',
+            discovery_id=discovery_id)
+
+    def delete_embeddings(self, repo_url):
+        """ Delete all embeddings from a repository.
+        Parameters
+        ----------
+        repo_url: str
+            The repository url of the embeddings to delete
+        """
+
+        cursor = self.db.cursor()
+        query = 'DELETE FROM embeddings WHERE repo_url=%s;'
+        return cursor.execute(query, (repo_url,))
 
     def get_repo(self, repo_url):
         """ Get a repository.
@@ -374,6 +461,29 @@ class PgClient(Client):
             query='SELECT file_name, snippet, count(id), state FROM \
             discoveries WHERE repo_url=%s GROUP BY file_name, snippet, state')
 
+    def get_embedding(self, discovery_id=None, snippet=None):
+        """ Retrieve a discovery embedding.
+        Parameters
+        ----------
+        discovery_id: int
+            The id of the discovery whose embedding is being retrieved
+        snippet: str
+            The snippet whose embedding is being retrieved. omly used if
+            discovery_id is not provided
+        Returns
+        ------
+        str
+            The embedding
+        """
+
+        if discovery_id:
+            query = 'SELECT embedding FROM embeddings WHERE id=%s'
+        else:
+            query = 'SELECT embedding FROM embeddings WHERE snippet=%s'
+        return super().get_embedding(query=query,
+                                     discovery_id=discovery_id,
+                                     snippet=snippet)
+
     def update_repo(self, url, last_scan):
         """ Update the last scan timestamp of a repo.
 
@@ -468,3 +578,45 @@ class PgClient(Client):
         super().update_discovery_group(
             new_state=new_state, repo_url=repo_url, file_name=file_name,
             snippet=snippet, query=query)
+
+    def update_similar_snippets(self,
+                                target_snippet,
+                                state,
+                                repo_url,
+                                file_name=None,
+                                threshold=0.96):
+        """ Find snippets that are similar to the target
+        snippet and update their state.
+        Parameters
+        ----------
+        target_snippet: str
+        state: str
+            state to update similar snippets to
+        repo_url: str
+        file_name: str
+            restrict to a given file the search for similar snippets
+        threshold: float
+            update snippets with similarity score above threshold.
+            Values lesser than 0.94 do not generally imply any relevant
+            amount of similarity between snippets, and should
+            therefore not be used.
+        Returns
+        -------
+        int
+            The number of similar snippets found and updated
+        """
+
+        discoveries = self.get_discoveries(repo_url, file_name)
+        # Compute target snippet embedding
+        target_snippet_embedding = self.get_embedding(snippet=target_snippet)[0]
+        n_updated_snippets = 0
+        for d in discoveries:
+            if d['state'] != state and self.get_embedding(discovery_id=d['id']):
+                # Compute similarity of target snippet and snippet
+                embedding = self.get_embedding(discovery_id=d['id'])[0]
+                similarity = compute_similarity(target_snippet_embedding,
+                                                embedding)
+                if similarity > threshold:
+                    n_updated_snippets += 1
+                    self.update_discovery(d['id'], state)
+        return n_updated_snippets 
