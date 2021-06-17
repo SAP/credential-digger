@@ -468,12 +468,14 @@ class PgClient(Client):
         discovery_id: int
             The id of the discovery whose embedding is being retrieved
         snippet: str
-            The snippet whose embedding is being retrieved. omly used if
+            The snippet whose embedding is being retrieved. Only used if
             discovery_id is not provided
+        
         Returns
-        ------
-        str
-            The embedding
+        -------
+        tuple
+            Tuple containing a list with the embedding for the provided
+            snippet or id
         """
 
         if discovery_id:
