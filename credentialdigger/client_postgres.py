@@ -470,7 +470,7 @@ class PgClient(Client):
         snippet: str
             The snippet whose embedding is being retrieved. Only used if
             discovery_id is not provided
-        
+
         Returns
         -------
         tuple
