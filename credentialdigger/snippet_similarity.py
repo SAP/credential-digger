@@ -53,7 +53,7 @@ def compute_snippet_embedding(snippet, model):
 
     Returns
     -------
-    np.array
+    list
         The 128 element embedding for the input snippet
     """
 
