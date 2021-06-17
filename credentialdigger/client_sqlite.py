@@ -516,7 +516,7 @@ class SqliteClient(Client):
 
         Returns
         ------
-        str
+        list
             The embedding
         """
 
