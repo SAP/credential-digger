@@ -9,7 +9,6 @@ from git import GitCommandError, InvalidGitRepositoryError
 from git import Repo as GitRepo
 from parameterized import parameterized
 
-import pytest
 
 class TestGitFileScanner(unittest.TestCase):
     @classmethod
@@ -84,4 +83,14 @@ class TestGitFileScanner(unittest.TestCase):
             self.repo, branch_or_commit=commit_id, max_depth=1000000)
         self.assertEqual(len(discoveries), 0)
 
-    # TODO: test_scan_invalid_snapshot (with wrong branch name and commit id)
+    @parameterized.expand([
+        'fake_branch',
+        '9100008aa4003a3075007600300000000000e31a',
+        '09c75495f6malformed0dca034b46472c0901dc6'])
+    def test_scan_invalid_snapshot(self, mock_branch_or_commit):
+        """ Test raised exception on repo scan with invalid branch or commit.
+
+        """
+        with self.assertRaises(GitCommandError):
+            self.git_file_scanner._scan(
+                self.repo, branch_or_commit=mock_branch_or_commit)
