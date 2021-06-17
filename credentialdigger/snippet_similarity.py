@@ -72,9 +72,9 @@ def compute_similarity(arr1, arr2):
 
     Parameters
     ----------
-    emb_1: np.array
+    emb_1: list
         first snippet embedding
-    emb_2: np.array
+    emb_2: list
         second snippet embedding
 
     Returns
