@@ -527,8 +527,10 @@ class SqliteClient(Client):
         str_embedding = super().get_embedding(query=query,
                                               discovery_id=discovery_id,
                                               snippet=snippet)
-        embedding = [float(emb) for emb in str_embedding[0].split(",")[:-1]]
-
+        embedding = []
+        if str_embedding:
+            embedding = [float(emb) for emb in str_embedding[0].split(",")[:-1]]
+        
         return embedding
 
     def update_repo(self, url, last_scan):
@@ -657,18 +659,21 @@ class SqliteClient(Client):
 
         discoveries = self.get_discoveries(repo_url, file_name)
         # Compute target snippet embedding
-        target_snippet_embedding = self.get_embedding(snippet=target_snippet)
-        n_updated_snippets = 0
-        for d in discoveries:
-            if (
-                d['state'] != state
-                and self.get_embedding(discovery_id=d['id'])
-            ):
-                # Compute similarity of target snippet and snippet
-                embedding = self.get_embedding(discovery_id=d['id'])
-                similarity = compute_similarity(target_snippet_embedding,
-                                                embedding)
-                if similarity > threshold:
-                    n_updated_snippets += 1
-                    self.update_discovery(d['id'], state)
-        return n_updated_snippets
+        target_embedding = self.get_embedding(snippet=target_snippet)
+        if target_embedding:
+            n_updated_snippets = 0
+            for d in discoveries:
+                if (
+                    d['state'] != state
+                    and self.get_embedding(discovery_id=d['id'])
+                ):
+                    # Compute similarity of target snippet and snippet
+                    embedding = self.get_embedding(discovery_id=d['id'])
+                    similarity = compute_similarity(target_embedding,
+                                                    embedding)
+                    if similarity > threshold:
+                        n_updated_snippets += 1
+                        self.update_discovery(d['id'], state)
+            return n_updated_snippets
+        else:
+            return 0

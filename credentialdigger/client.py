@@ -474,11 +474,14 @@ class Client(Interface):
 
     def get_embedding(self, query, discovery_id=None, snippet=None):
         cursor = self.db.cursor()
-        if discovery_id:
-            cursor.execute(query, (discovery_id,))
-        else:
-            cursor.execute(query, (snippet,))
-        return cursor.fetchone()
+        try:
+            if discovery_id:
+                cursor.execute(query, (discovery_id,))
+            else:
+                cursor.execute(query, (snippet,))
+            return cursor.fetchone()
+        except self.Error:
+            return ()
 
     def update_repo(self, query, url, last_scan):
         """ Update the last scan timestamp of a repo.
