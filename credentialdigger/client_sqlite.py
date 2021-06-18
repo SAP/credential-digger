@@ -529,8 +529,10 @@ class SqliteClient(Client):
                                               snippet=snippet)
         embedding = []
         if str_embedding:
-            embedding = [float(emb) for emb in str_embedding[0].split(",")[:-1]]
-        
+            embedding = [float(emb)
+                         for emb in str_embedding[0].split(",")[:-1]
+                        ]
+
         return embedding
 
     def update_repo(self, url, last_scan):
