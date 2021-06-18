@@ -266,9 +266,21 @@ class Client(Interface):
         discovery_id: int
             The id of the discovery whose embedding is
             to be deleted
+
+        Returns
+        -------
+        bool
+            `True` if embedding was successfully deleted,
+            `False` otherwise
         """
-        cursor = self.db.cursor()
-        return cursor.execute(query, discovery_id)
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(query, discovery_id)
+            self.db.commit()
+            return True
+        except self.Error:
+            self.db.rollback()
+            return False
 
     def get_repos(self):
         """ Get all the repositories.

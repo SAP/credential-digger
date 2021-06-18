@@ -319,8 +319,13 @@ class PgClient(Client):
         ----------
         discovery_id: int
             The id of the discovery whose embedding is being deleted
-        """
 
+        Returns
+        -------
+        bool
+            `True` if embedding was successfully deleted,
+            `False` otherwise
+        """
         return super().delete_embedding(
             query='DELETE FROM embeddings WHERE id=%s',
             discovery_id=discovery_id)
@@ -331,11 +336,22 @@ class PgClient(Client):
         ----------
         repo_url: str
             The repository url of the embeddings to delete
-        """
 
-        cursor = self.db.cursor()
-        query = 'DELETE FROM embeddings WHERE repo_url=%s;'
-        return cursor.execute(query, (repo_url,))
+        Returns
+        -------
+        bool
+            `True` if embeddings were successfullt deleted,
+            `False` otherwise
+        """
+        try:
+            cursor = self.db.cursor()
+            query = 'DELETE FROM embeddings WHERE repo_url=%s;'
+            cursor.execute(query, (repo_url,))
+            self.db.commit()
+            return True
+        except self.Error:
+            self.db.rollback()
+            return False
 
     def get_repo(self, repo_url):
         """ Get a repository.
