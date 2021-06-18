@@ -530,8 +530,7 @@ class SqliteClient(Client):
         embedding = []
         if str_embedding:
             embedding = [float(emb)
-                         for emb in str_embedding[0].split(",")[:-1]
-                        ]
+                         for emb in str_embedding[0].split(",")[:-1]]
 
         return embedding
 
