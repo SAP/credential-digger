@@ -64,7 +64,8 @@ class UiClient(Client):
             result = cursor.fetchone()
         return files
 
-    def check_repo(self, repo_url, git_token=None, local_repo=False):
+    def check_repo(self, repo_url, git_token=None, local_repo=False,
+                   branch_or_commit=None):
         """
         Check git token validity for the repository
 
@@ -78,6 +79,8 @@ class UiClient(Client):
         local_repo: bool, optional
             If True, get the repository from a local directory instead of the
             web
+        branch_or_commit: str
+            TODO
 
         Returns
         -------
@@ -97,7 +100,14 @@ class UiClient(Client):
                 repo_url = repo_url.replace('https://',
                                             f'https://oauth2:{git_token}@')
             try:
-                g.ls_remote(repo_url)
+                remote_refs = g.ls_remote(repo_url)
+                if branch_or_commit and branch_or_commit not in remote_refs:
+                    # The branch_or_commit value could be a commit id
+                    # that is not in the head/ref/tag of this repository.
+                    # So the only way to verify it is to clone the repo and
+                    # do a checkout
+                    # TODO
+                    pass
             except GitCommandError:
                 return False, 'GitCommandError'
         return True, None
