@@ -135,13 +135,22 @@ class SnippetModel(BaseModel):
         >>> raw_data = '"password": "#####", "!@AAA12")'
         >>> print(self._pre_process(raw_data))
         ['password','"#####', '!@AAA12']
+
+        Manual execution
+        --------
+        >>> raw_data = 'pwd = "pwd_123";'
+        >>> print(self._pre_process(raw_data))
+        [
+            words = [pwd, pwd_123]
+            strings = [pwd_123] # Will not be converted into camel_case
+            camel_case_words = [Pwd, pwd_123]
+        ]
         """
         # Extract all the words in a snippet
         words = re.findall("(?<=').*?(?=')|(?<=\").*?(?=\")|[\w\d]+", raw_data)
         # Extract only the words that are between " or ', we refer to them strings
         strings = re.findall(r"(?<=').*?(?=')|(?<=\").*?(?=\")", raw_data)
 
-        
         camel_case_words = []
         for w in words:
             # If a word is a string, we do not make any changes to it
@@ -205,7 +214,7 @@ class SnippetModel(BaseModel):
         """ Remove junk from the beginning of a snippet.
         """
         return re.sub(
-            r"^((\s*|\ *)\@\@.*\@\@(\s*|\ *)|(\s*|\ *)\+(\s*|\ *)|(\s*|\ *)\-(\s*|\ *)|(\s*|\ *))",
+            r'^((\s*|\ *)\@\@.*\@\@(\s*|\ *)|(\s*|\ *)\+(\s*|\ *)|(\s*|\ *)\-(\s*|\ *)|(\s*|\ *))',
             "",
             snippet).strip()
 
