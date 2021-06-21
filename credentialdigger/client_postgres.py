@@ -1,8 +1,6 @@
 from psycopg2 import Error, connect, extras
 
 from .client import Client
-from .snippet_similarity import (build_embedding_model, compute_similarity,
-                                 compute_snippet_embedding)
 
 
 class PgClient(Client):
@@ -498,8 +496,8 @@ class PgClient(Client):
         else:
             query = 'SELECT embedding FROM embeddings WHERE snippet=%s'
         embedding = super().get_embedding(query=query,
-                                     discovery_id=discovery_id,
-                                     snippet=snippet)
+                                          discovery_id=discovery_id,
+                                          snippet=snippet)
         if embedding:
             return embedding[0]
         else:
