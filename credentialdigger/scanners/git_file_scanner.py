@@ -1,15 +1,9 @@
-import hashlib
 import logging
 import os
-import re
 import shutil
-import tempfile
 
 import hyperscan
-from git import NULL_TREE, GitCommandError, InvalidGitRepositoryError
-from git import Repo as GitRepo
 
-from .base_scanner import BaseScanner, ResultHandler
 from .file_scanner import FileScanner
 from .git_scanner import GitScanner
 
@@ -95,7 +89,8 @@ class GitFileScanner(GitScanner, FileScanner):
 
         # Scan the snapshot of the repository either at the last commit of
         # a branch or at a specific commit
-        discoveries = self._scan(repo, branch_or_commit, max_depth, ignore_list)
+        discoveries = self._scan(
+            repo, branch_or_commit, max_depth, ignore_list)
 
         # Delete repo folder
         shutil.rmtree(project_path)
