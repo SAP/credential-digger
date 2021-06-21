@@ -19,7 +19,8 @@ def build_embedding_model():
          and outputting embeddings for each token of the input strings
     """
 
-    # Links for the pre-trained TensorFlow Hub preprocessing and encoding layers
+    # Links for the pre-trained TensorFlow Hub preprocessing and encoding
+    # layers
     tfhub_preprocessing = 'https://tfhub.dev/tensorflow/' \
                           'bert_en_uncased_preprocess/3'
     tfhub_encoder = 'https://tfhub.dev/tensorflow/small_bert/' \
