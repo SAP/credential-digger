@@ -76,7 +76,9 @@ class SnippetModel(BaseModel):
             # No need to run the model: we assume this is a false positive
             # since either the snippet is empty or there is just one word
             return True
-
+            
+        # Extract the committed secret
+        index_of_value = self._label_preprocess(data)
         # Classify as a 'Leak' if this is a private key.
         if self._check_private_key(data):
             return False
@@ -86,8 +88,7 @@ class SnippetModel(BaseModel):
         if not any(not c.isalnum() and c not in ' _.,?!/' for c in raw_data):
             return True
 
-        input_text = data[-1]
-
+        input_text = data[index_of_value[1]]
         if len(input_text) <= 3:
             # We ignore any password shorter than or equal to 3
             return True
