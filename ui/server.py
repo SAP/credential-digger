@@ -261,7 +261,8 @@ def scan_repo():
     local_repo = not (repo_link.startswith('http://')
                       or repo_link.startswith('https://'))
 
-    url_is_valid, err_code = c.check_repo(repo_link, git_token, local_repo)
+    url_is_valid, err_code = c.check_repo(
+        repo_link, git_token, local_repo, snapshot)
     if not url_is_valid:
         return err_code, 401
 
