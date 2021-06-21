@@ -76,9 +76,10 @@ class SnippetModel(BaseModel):
             # No need to run the model: we assume this is a false positive
             # since either the snippet is empty or there is just one word
             return True
-            
+
         # Extract the committed secret
         index_of_value = self._label_preprocess(data)
+        
         # Classify as a 'Leak' if this is a private key.
         if self._check_private_key(data):
             return False
