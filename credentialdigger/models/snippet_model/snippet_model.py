@@ -76,7 +76,7 @@ class SnippetModel(BaseModel):
             # No need to run the model: we assume this is a false positive
             # since either the snippet is empty or there is just one word
             return True
-        
+
         # Classify as a 'Leak' if this is a private key.
         if self._check_private_key(data):
             return False
@@ -108,8 +108,8 @@ class SnippetModel(BaseModel):
         We define as strings any sequence of characters included in `"` or `'`
         and as words any sequence of alphanumeric characters.
 
-        Finally, convert words (not strings) from snake_case (i.e., words 
-        separated by underscores, like in Python convention) to CamelCase 
+        Finally, convert words (not strings) from snake_case (i.e., words
+        separated by underscores, like in Python convention) to CamelCase
         (i.e., Java convention).
 
         Parameters
@@ -147,9 +147,9 @@ class SnippetModel(BaseModel):
         ]
         """
         # Extract all the words in a snippet
-        words = re.findall("(?<=').*?(?=')|(?<=\").*?(?=\")|[\w\d]+", raw_data)
+        words = re.findall(r'(?<=\').*?(?=\')|(?<=").*?(?=")|[\w\d]+', raw_data)
         # Extract only the words that are between " or ', we refer to them strings
-        strings = re.findall(r"(?<=').*?(?=')|(?<=\").*?(?=\")", raw_data)
+        strings = re.findall(r'(?<=\').*?(?=\')|(?<=").*?(?=")', raw_data)
 
         camel_case_words = []
         for w in words:
@@ -217,7 +217,6 @@ class SnippetModel(BaseModel):
             r'^((\s*|\ *)\@\@.*\@\@(\s*|\ *)|(\s*|\ *)\+(\s*|\ *)|(\s*|\ *)\-(\s*|\ *)|(\s*|\ *))',
             "",
             snippet).strip()
-
 
     def _check_private_key(self, snippet):
         """ Check if this snippet is a private key
