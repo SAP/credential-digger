@@ -175,7 +175,7 @@ class UiClient(Client):
                 repo = GitRepo(project_path)
                 # Checkout this commit (an error is raised if not existing)
                 repo.git.checkout(commit_id)
-            except GitCommandError as e:
+            except GitCommandError:
                 shutil.rmtree(project_path)
                 return False, 'WrongBranchError'
 
