@@ -1,7 +1,7 @@
 from psycopg2 import Error, connect, extras
 
 from .client import Client
-from .snippet_similarity import (build_embedding_model, compute_similarity,
+from .snippet_similarity import (build_embedding_model,
                                  compute_snippet_embedding)
 
 
@@ -498,8 +498,8 @@ class PgClient(Client):
         else:
             query = 'SELECT embedding FROM embeddings WHERE snippet=%s'
         embedding = super().get_embedding(query=query,
-                                     discovery_id=discovery_id,
-                                     snippet=snippet)
+                                          discovery_id=discovery_id,
+                                          snippet=snippet)
         if embedding:
             return embedding[0]
         else:
@@ -526,7 +526,7 @@ class PgClient(Client):
         super().update_repo(
             url=url, last_scan=last_scan,
             query='UPDATE repos SET last_scan=%s WHERE url=%s RETURNING true'
-    )
+        )
 
     def update_discovery(self, discovery_id, new_state):
         """ Change the state of a discovery.
