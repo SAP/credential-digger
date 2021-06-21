@@ -1,3 +1,6 @@
+import os
+import shutil
+import tempfile
 from abc import abstractmethod
 from collections import namedtuple
 
