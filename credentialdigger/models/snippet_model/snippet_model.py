@@ -1,10 +1,11 @@
+from difflib import SequenceMatcher
 import re
 
 import fasttext
 import string_utils
 
 from ..base_model import BaseModel
-from difflib import SequenceMatcher
+
 
 EXTENSIONS = set(['py', 'rb', 'c', 'cpp', 'cs', 'js', 'php', 'h', 'java', 'pl',
                   'go'])
@@ -43,9 +44,11 @@ class SnippetModel(BaseModel):
     def analyze(self, discovery):
         """ Analyze a snippet and predict whether it is a false positive or not.
         Parameters
+
         ----------
         discovery: dict
             A discovery
+
         Returns
         -------
         bool
@@ -68,25 +71,24 @@ class SnippetModel(BaseModel):
 
         # Convert data format
         data = self._pre_process(raw_data)
-        # Classify as a 'Leak' if this is a private key.
-        if(self._check_private_key(data)):
-            return False
-        if(not any(not c.isalnum() and c not in ' _.,?!/' for c in raw_data)):
-            # We ignore snippets that look like regular phrases with
-            # no assignment
-            return True
 
         if len(data) < 2:
             # No need to run the model: we assume this is a false positive
             # since either the snippet is empty or there is just one word
-            if(not self._assignment_expression(raw_data)):
-                return True
-            else:
-                data = self._pre_process(raw_data)
+            return True
+        
+        # Classify as a 'Leak' if this is a private key.
+        if self._check_private_key(data):
+            return False
+
+        # We ignore snippets that look like regular phrases with
+        # no assignment
+        if not any(not c.isalnum() and c not in ' _.,?!/' for c in raw_data):
+            return True
 
         input_text = data[-1]
 
-        if(len(input_text) <= 3):
+        if len(input_text) <= 3:
             # We ignore any password shorter than or equal to 3
             return True
         else:
@@ -134,12 +136,16 @@ class SnippetModel(BaseModel):
         >>> print(self._pre_process(raw_data))
         ['password','"#####', '!@AAA12']
         """
+        # Extract all the words in a snippet
         words = re.findall("(?<=').*?(?=')|(?<=\").*?(?=\")|[\w\d]+", raw_data)
+        # Extract only the words that are between " or ', we refer to them strings
         strings = re.findall(r"(?<=').*?(?=')|(?<=\").*?(?=\")", raw_data)
 
+        
         camel_case_words = []
         for w in words:
-            if(w in strings):
+            # If a word is a string, we do not make any changes to it
+            if w in strings:
                 camel_case_words.append(w)
             else:
                 camel_case_words.append(string_utils.snake_case_to_camel(w))
@@ -203,19 +209,10 @@ class SnippetModel(BaseModel):
             "",
             snippet).strip()
 
-    def _assignment_expression(self, snippet):
-        """ Check if the snippet is an assignment or not.
-        """
-        assignment_symbols = ['=', ':=', '<-', ':']
-        for symbol in assignment_symbols:
-            findings = re.findall(f'(.*){symbol}(.*)', snippet)
-            if(len(findings) > 0):
-                return True
-        return False
 
     def _check_private_key(self, snippet):
         """ Check if this snippet is a private key
         """
         base_private_key = ['BEGIN', 'PRIVATE', 'KEY']
-        # Return True if similarity ration >= 85%
+        # Return True if similarity ratio >= 85%
         return SequenceMatcher(None, base_private_key, snippet).ratio() >= 0.85
