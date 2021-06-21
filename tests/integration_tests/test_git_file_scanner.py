@@ -1,11 +1,10 @@
 import shutil
 import tempfile
 import unittest
-from datetime import datetime, timezone
 from unittest.mock import patch
 
 from credentialdigger.scanners.git_file_scanner import GitFileScanner
-from git import GitCommandError, InvalidGitRepositoryError
+from git import GitCommandError
 from git import Repo as GitRepo
 from parameterized import parameterized
 
@@ -37,7 +36,7 @@ class TestGitFileScanner(unittest.TestCase):
     def test_get_git_repo_invalid_url(self, url, mock_clone_from):
         """ Test raised exception on repo clone with invalid urls.
 
-        Any Github urls must be prefixed with `:@` (empty username and password)
+        Any Github url must be prefixed with `:@` (empty username and password)
         in order to prevent GitPython from asking credentials in an interactive
         shell when running the test.
         """
@@ -52,7 +51,8 @@ class TestGitFileScanner(unittest.TestCase):
 #         """ Test repo copy with invalid paths """
 #         # Inexistent path
 #         with self.assertRaises(FileNotFoundError):
-#             self.git_file_scanner.get_git_repo('./inexistent_path', local_repo=True)
+#             self.git_file_scanner.get_git_repo(
+#                 './inexistent_path', local_repo=True)
 #         # Non-repo path
 #         with self.assertRaises(InvalidGitRepositoryError):
 #             self.git_file_scanner.get_git_repo(

@@ -965,7 +965,8 @@ class Client(Interface):
         """
 
         def _analyze_discovery(d):
-            if d['state'] != 'false_positive' and model_manager.launch_model(d):
+            if d['state'] != 'false_positive' and \
+                    model_manager.launch_model(d):
                 d['state'] = 'false_positive'
                 return 1
             return 0
