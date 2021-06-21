@@ -1066,7 +1066,6 @@ class Client(Interface):
                                 threshold=0.96):
         """ Find snippets that are similar to the target
         snippet and update their state.
-
         Parameters
         ----------
         target_snippet: str
@@ -1080,10 +1079,29 @@ class Client(Interface):
             Values lesser than 0.94 do not generally imply any relevant
             amount of similarity between snippets, and should
             therefore not be used.
-
         Returns
         -------
         int
             The number of similar snippets found and updated
         """
-        return
+
+        discoveries = self.get_discoveries(repo_url, file_name)
+        # Compute target snippet embedding
+        target_embedding = self.get_embedding(snippet=target_snippet)
+        n_updated_snippets = 0
+        if target_embedding:
+            for d in discoveries:
+                if (
+                    d['state'] != state
+                    and self.get_embedding(discovery_id=d['id'])
+                ):
+                    # Compute similarity of target snippet and snippet
+                    embedding = self.get_embedding(discovery_id=d['id'])
+                    similarity = compute_similarity(target_embedding,
+                                                    embedding)
+                    if similarity > threshold:
+                        n_updated_snippets += 1
+                        self.update_discovery(d['id'], state)
+            return n_updated_snippets
+        else:
+            return 0

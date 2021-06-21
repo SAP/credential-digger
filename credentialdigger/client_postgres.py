@@ -489,18 +489,21 @@ class PgClient(Client):
 
         Returns
         -------
-        tuple
-            Tuple containing a list with the embedding for the provided
+        list
+            The embedding for the provided
             snippet or id
         """
-
         if discovery_id:
             query = 'SELECT embedding FROM embeddings WHERE id=%s'
         else:
             query = 'SELECT embedding FROM embeddings WHERE snippet=%s'
-        return super().get_embedding(query=query,
+        embedding = super().get_embedding(query=query,
                                      discovery_id=discovery_id,
                                      snippet=snippet)
+        if embedding:
+            return embedding[0]
+        else:
+            return None
 
     def update_repo(self, url, last_scan):
         """ Update the last scan timestamp of a repo.
@@ -523,7 +526,7 @@ class PgClient(Client):
         super().update_repo(
             url=url, last_scan=last_scan,
             query='UPDATE repos SET last_scan=%s WHERE url=%s RETURNING true'
-        )
+    )
 
     def update_discovery(self, discovery_id, new_state):
         """ Change the state of a discovery.
@@ -596,51 +599,3 @@ class PgClient(Client):
         super().update_discovery_group(
             new_state=new_state, repo_url=repo_url, file_name=file_name,
             snippet=snippet, query=query)
-
-    def update_similar_snippets(self,
-                                target_snippet,
-                                state,
-                                repo_url,
-                                file_name=None,
-                                threshold=0.96):
-        """ Find snippets that are similar to the target
-        snippet and update their state.
-        Parameters
-        ----------
-        target_snippet: str
-        state: str
-            state to update similar snippets to
-        repo_url: str
-        file_name: str
-            restrict to a given file the search for similar snippets
-        threshold: float
-            update snippets with similarity score above threshold.
-            Values lesser than 0.94 do not generally imply any relevant
-            amount of similarity between snippets, and should
-            therefore not be used.
-        Returns
-        -------
-        int
-            The number of similar snippets found and updated
-        """
-
-        discoveries = self.get_discoveries(repo_url, file_name)
-        # Compute target snippet embedding
-        target_embedding = self.get_embedding(snippet=target_snippet)[0]
-        n_updated_snippets = 0
-        if target_embedding:
-            for d in discoveries:
-                if (
-                    d['state'] != state
-                    and self.get_embedding(discovery_id=d['id'])
-                ):
-                    # Compute similarity of target snippet and snippet
-                    embedding = self.get_embedding(discovery_id=d['id'])[0]
-                    similarity = compute_similarity(target_embedding,
-                                                    embedding)
-                    if similarity > threshold:
-                        n_updated_snippets += 1
-                        self.update_discovery(d['id'], state)
-            return n_updated_snippets
-        else:
-            return 0
