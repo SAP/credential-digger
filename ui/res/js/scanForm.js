@@ -78,6 +78,9 @@ function initScanRepo() {
           case 'GitCommandError':
             errMsg = 'Repository does not exist or provided git token is invalid.';
             break;
+          case 'WrongCommitError':
+            errMsg = 'Branch (or commit) does not exist for this repository.';
+            break;
           default:
             errMsg = 'Something went wrong.';
         }
