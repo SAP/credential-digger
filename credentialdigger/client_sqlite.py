@@ -1,6 +1,8 @@
 from sqlite3 import Error, connect
 
 from .client import Client
+from .snippet_similarity import (build_embedding_model, compute_similarity,
+                                 compute_snippet_embedding)
 
 
 class SqliteClient(Client):
