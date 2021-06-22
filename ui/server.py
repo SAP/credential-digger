@@ -257,12 +257,10 @@ def scan_repo():
     # then 'forceScan' will be set to False; thus, ignored.
     force_scan = request.form.get('forceScan') == 'force'
     git_token = request.form.get('gitToken')
-    snapshot = request.form.get('repoSnapshot')
     local_repo = not (repo_link.startswith('http://')
                       or repo_link.startswith('https://'))
 
-    url_is_valid, err_code = c.check_repo(
-        repo_link, git_token, local_repo, snapshot)
+    url_is_valid, err_code = c.check_repo(repo_link, git_token, local_repo)
     if not url_is_valid:
         return err_code, 401
 
@@ -273,8 +271,7 @@ def scan_repo():
     if use_snippet_model == 'snippet':
         models.append('SnippetModel')
 
-    # Setup scan arguments
-    target_scan_function = c.scan
+    # Scan
     args = {
         'repo_url': repo_link,
         'models': models,
@@ -284,15 +281,8 @@ def scan_repo():
     }
     if rules_to_use != 'all':
         args['category'] = rules_to_use
-    if snapshot:
-        args['branch_or_commit'] = snapshot
-        args.pop('local_repo')  # Remove this argument
-        # TODO: reintroduce it when local snapshots will be supported
-        target_scan_function = c.scan_snapshot
-        app.logger.debug(f'Scan snapshot of the repo at {snapshot}')
-
     thread = threading.Thread(name=f'credentialdigger@{repo_link}',
-                              target=target_scan_function,
+                              target=c.scan,
                               kwargs=args)
     thread.start()
 

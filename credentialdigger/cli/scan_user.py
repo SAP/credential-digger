@@ -106,4 +106,4 @@ def run(client, args):
         git_token=args.git_token,
         api_endpoint=args.api_endpoint)
 
-    logger.info(f'{len(discoveries)} repositories scanned.')
+    logger.info(f"{len(discoveries)} repositories scanned.")
