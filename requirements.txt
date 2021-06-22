@@ -1,7 +1,7 @@
 fasttext
 GitPython
-hyperscan==0.2.0; sys.platform == "darwin"
-hyperscan==0.1.5; sys.platform == "linux"
+hyperscan==0.2.0; sys.platform == 'darwin'
+hyperscan==0.1.5; sys.platform == 'linux'
 leven
 nltk
 numpy
@@ -14,9 +14,9 @@ pyyaml
 requests
 scikit-learn
 srsly
-tensorflow==2.5.0; python_version > "3.7"
+tensorflow==2.5.0; python_version >= "3.8"
 tensorflow==2.4.1; python_version < "3.8"
-tensorflow-text==2.5.0; python_version > "3.7"
+tensorflow-text==2.5.0; python_version >= "3.8"
 tensorflow-text==2.4.1; python_version < "3.8"
 tf-models-official
 tqdm
