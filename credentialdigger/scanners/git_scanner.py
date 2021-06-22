@@ -3,7 +3,6 @@ import logging
 import os
 import re
 import shutil
-import sys
 import tempfile
 
 import hyperscan
@@ -94,7 +93,7 @@ class GitScanner(BaseScanner):
             except InvalidGitRepositoryError as e:
                 shutil.rmtree(project_path)
                 raise InvalidGitRepositoryError(
-                    f'\"{repo_url}\" is not a local git repository.') from e
+                    f"\"{repo_url}\" is not a local git repository.") from e
         else:
             try:
                 GitRepo.clone_from(repo_url, project_path)
@@ -291,8 +290,8 @@ class GitScanner(BaseScanner):
             A list of dictionaries (each dictionary is a discovery)
         """
         detections = []
-        r_hunkheader = re.compile(r'@@\s*\-\d+(\,\d+)?\s\+(\d+)((\,\d+)?).*@@')
-        r_hunkaddition = re.compile(r'^\+\s*(\S(.*\S)?)\s*$')
+        r_hunkheader = re.compile(r"@@\s*\-\d+(\,\d+)?\s\+(\d+)((\,\d+)?).*@@")
+        r_hunkaddition = re.compile(r"^\+\s*(\S(.*\S)?)\s*$")
         rows = printable_diff.splitlines()
         line_number = 1
         for row in rows:
@@ -314,8 +313,6 @@ class GitScanner(BaseScanner):
                     row = r_groups.group(1)
 
             rh = ResultHandler()
-            if sys.platform == 'darwin':
-                row = row.encode('utf-8')
             self.stream.scan(row,
                              match_event_handler=rh.handle_results,
                              context=[row, filename, commit_hash, line_number])

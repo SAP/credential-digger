@@ -47,7 +47,7 @@ The tool supports several scan flavors: public and private repositories on
 github and gitlab, wiki pages, github organizations, local git repositories, local files and folders.
 Please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for the complete documentation.
 
-For the complete description of the approach of Credential Digger, [you can read this publication](https://www.scitepress.org/Papers/2021/102381/102381.pdf).
+For the complete description of the approach of Credential Digger, [you can read this publication](https://jam4.sapjam.com/groups/KxkEs5HqefZnmgxTYUSSov/documents/pDwaPu8XwYHnxgWwJZP94L/slide_viewer).
 
 ```
 @InProceedings {lrnto-icissp21,
