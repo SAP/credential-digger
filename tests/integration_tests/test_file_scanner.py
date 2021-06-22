@@ -11,7 +11,7 @@ class TestFileScanner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """ Instantiate the scanner with only the password-related rules. """
-        rules = [{'id': 9, 'regex': 'sshpass|password|pwd|passwd|pass',
+        rules = [{'id': 9, 'regex': 'sshpass|password|pwd|passwd|pass[\W_]',
                   'category': 'password', 'description': 'password keywords'}]
         cls.file_scanner = FileScanner(rules)
 
