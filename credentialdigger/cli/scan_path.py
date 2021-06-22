@@ -1,5 +1,5 @@
 """
-The 'scan_path' module can be used to scan a local directory or file on
+The 'scan_path' module can be used to scan a local directory or file on 
 the fly from the terminal. It supports both the Sqlite and Postgres clients.
 
 NOTE: Postgres is used by default. Please make sure that the environment
@@ -76,7 +76,7 @@ def configure_parser(parser):
             The extractor is generated using the ExtractorGenerator. If \
             `False`, use the pre-trained extractor model')
     parser.add_argument(
-        '--max_depth', type=int, default='-1',
+        '--max_depth', type=int, default="-1",
         help='Maximum depth for subdirectories scanning (If it is set to -1 or\
             not specified, all subdirectories will be scanned)')
 
