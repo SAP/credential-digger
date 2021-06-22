@@ -13,7 +13,7 @@ class TestGitFileScanner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Instantiate the scanner with only the password-related rules
-        rules = [{'id': 9, 'regex': 'sshpass|password|pwd|passwd|pass',
+        rules = [{'id': 9, 'regex': 'sshpass|password|pwd|passwd|pass[\W_]',
                   'category': 'password', 'description': 'password keywords'}]
         cls.git_file_scanner = GitFileScanner(rules)
 
@@ -58,6 +58,16 @@ class TestGitFileScanner(unittest.TestCase):
 #             self.git_file_scanner.get_git_repo(
 #                 './credentialdigger', local_repo=True)
 
+    def test_scan_snapshot_initial_commit(self):
+        """ Test discoveries count of the initial commit.
+
+        We know that they are 0, since there was only the LICENSE file.
+        """
+        commit_id = '91c0008384b0313e75be76ee30a9ae0e0b11e31a'
+        discoveries = self.git_file_scanner._scan(
+            self.repo, branch_or_commit=commit_id)
+        self.assertEqual(len(discoveries), 0)
+
     @parameterized.expand([
         'tests',                                      # Branch tests
         '09c75495f6a8ca7c3438dca034b46472c0901dc6',   # Commit in branch main
@@ -72,16 +82,6 @@ class TestGitFileScanner(unittest.TestCase):
             branch_or_commit=mock_branch_or_commit,
             max_depth=1000000)
         self.assertGreaterEqual(len(discoveries), 9)
-
-    def test_scan_snapshot_initial_commit(self):
-        """ Test discoveries count of the initial commit.
-
-        We know that they are 0, since there was only the LICENSE file.
-        """
-        commit_id = '91c0008384b0313e75be76ee30a9ae0e0b11e31a'
-        discoveries = self.git_file_scanner._scan(
-            self.repo, branch_or_commit=commit_id, max_depth=1000000)
-        self.assertEqual(len(discoveries), 0)
 
     @parameterized.expand([
         'fake_branch',
