@@ -2,8 +2,8 @@
  * Handles repository scan's form and interactions.
  */
 
-/** 
- * Register handlers on document ready event 
+/**
+ * Register handlers on document ready event
  */
 document.addEventListener("DOMContentLoaded", function () {
   /** Remove error on input's change. */
@@ -23,15 +23,15 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-/** 
- * Initialization of the form's event handlers 
+/**
+ * Initialization of the form's event handlers
  */
 function initScanRepo() {
   const rulesSelect = document.querySelector('#ruleSelector');
   const rulesCheckbox = document.querySelector('#cbAllRules');
 
-  /** 
-   * Add listener to start repo scan: when the form is submitted, if it is 
+  /**
+   * Add listener to start repo scan: when the form is submitted, if it is
    * valid start the scan
    */
   document.querySelector('#scan_repo').addEventListener('submit', function (e) {
@@ -52,7 +52,7 @@ function initScanRepo() {
       success: function() {
         // close popup and open ok modal
         document.querySelector('#addRepoModal').classList.remove('open');
-        
+
         const scanBtn = document.querySelector('#startRepoScan');
         scanBtn.classList.remove('disabled');
         scanBtn.disabled = false;
@@ -78,6 +78,9 @@ function initScanRepo() {
           case 'GitCommandError':
             errMsg = 'Repository does not exist or provided git token is invalid.';
             break;
+          case 'WrongCommitError':
+            errMsg = 'Branch (or commit) does not exist for this repository.';
+            break;
           default:
             errMsg = 'Something went wrong.';
         }
@@ -90,15 +93,15 @@ function initScanRepo() {
     });
   }, true);
 
-  /** 
-   * Add listener to repo category selector: uncheck he 'Use all rules' 
+  /**
+   * Add listener to repo category selector: uncheck he 'Use all rules'
    * checkbox when a category is being manually selected
    */
   rulesSelect.addEventListener('change', function () {
     if(rulesSelect.selectedIndex != -1) rulesCheckbox.checked = false;
   });
 
-  /** 
+  /**
    * Add listener to checkbox that selects all the rules: remove selection of
    * the rules select if this checkbox is checked
    */
