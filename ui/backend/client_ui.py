@@ -1,8 +1,15 @@
+import os
+import shutil
+import tempfile
 from abc import abstractmethod
 from collections import namedtuple
 
 import git
 from credentialdigger import Client
+from credentialdigger.snippet_similarity import (
+    build_embedding_model,
+    compute_similarity,
+    compute_snippet_embedding)
 from git import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 from git import Repo as GitRepo
 
@@ -60,7 +67,8 @@ class UiClient(Client):
             result = cursor.fetchone()
         return files
 
-    def check_repo(self, repo_url, git_token=None, local_repo=False):
+    def check_repo(self, repo_url, git_token=None, local_repo=False,
+                   branch_or_commit=None):
         """
         Check git token validity for the repository
 
@@ -74,11 +82,15 @@ class UiClient(Client):
         local_repo: bool, optional
             If True, get the repository from a local directory instead of the
             web
+        branch_or_commit: str
+            TODO
 
         Returns
         -------
         bool
             True if the git token is valid for the repository, False otherwise
+        str
+            TODO
         """
         if local_repo:
             try:
@@ -93,7 +105,124 @@ class UiClient(Client):
                 repo_url = repo_url.replace('https://',
                                             f'https://oauth2:{git_token}@')
             try:
-                g.ls_remote(repo_url)
+                remote_refs = g.ls_remote(repo_url)
+                if branch_or_commit and branch_or_commit not in remote_refs:
+                    # The branch_or_commit value could be a commit id
+                    # that is not in the head/ref/tag of this repository.
+                    # So the only way to verify it is to clone the repo and
+                    # do a checkout
+                    return self._check_repo_commit(repo_url, branch_or_commit)
             except GitCommandError:
                 return False, 'GitCommandError'
         return True, None
+
+    # TODO
+    def _check_repo_commit(self, repo_url, commit_id, local_repo=False):
+        """ Get a git repository.
+
+        TODO: implement local_repo support
+
+        Parameters
+        ----------
+        repo_url: str
+            The location of the git repository (an url if local is False, a
+            local path otherwise)
+        branch_or_commit: str
+            TODO
+        local_repo: bool
+            If True, get the repository from a local directory instead of the
+            web.
+
+        Returns
+        -------
+        bool
+            TODO
+        str
+            TODO
+
+        Raises
+        ------
+        FileNotFoundError
+            If repo_url is not an existing directory
+        git.InvalidGitRepositoryError
+            If the directory in repo_url is not a git repository
+        git.GitCommandError
+            If the url in repo_url is not a git repository, or access to the
+            repository is denied
+        """
+        project_path = tempfile.mkdtemp()
+        if local_repo:
+            # TODO: fix this (copied from git_scanner.get_git_repo)
+            # TODO: local_repo are not yet supported. The local_repo value is
+            # always set to False (at this moment)
+            project_path = os.path.join(tempfile.mkdtemp(), 'repo')
+            try:
+                shutil.copytree(repo_url, project_path)
+                repo = GitRepo(project_path)
+                repo.git.checkout(commit_id)
+            except FileNotFoundError as e:
+                shutil.rmtree(project_path)
+                raise e
+                # TODO: return the right values instead of raising exception
+            except InvalidGitRepositoryError as e:
+                shutil.rmtree(project_path)
+                raise InvalidGitRepositoryError(
+                    f'\"{repo_url}\" is not a local git repository.') from e
+                # TODO: return the right values instead of raising exception
+        else:
+            try:
+                GitRepo.clone_from(repo_url, project_path)
+                repo = GitRepo(project_path)
+                # Checkout this commit (an error is raised if not existing)
+                repo.git.checkout(commit_id)
+            except GitCommandError:
+                shutil.rmtree(project_path)
+                return False, 'WrongBranchError'
+
+        return True, None
+
+    def update_similar_snippets(self,
+                                target_snippet,
+                                state,
+                                repo_url,
+                                file_name=None,
+                                threshold=0.96):
+        """ Find snippets that are similar to the target
+        snippet and update their state.
+
+        Parameters
+        ----------
+        target_snippet: str
+        state: str
+            state to update similar snippets to
+        repo_url: str
+        file_name: str
+            restrict to a given file the search for similar snippets
+        threshold: float
+            update snippets with similarity score above threshold.
+            Values lesser than 0.94 do not generally imply any relevant
+            amount of similarity between snippets, and should
+            therefore not be used.
+
+        Returns
+        -------
+        int
+            The number of similar snippets found and updated
+        """
+
+        discoveries = self.get_discoveries(repo_url,
+                                           file_name,
+                                           state_filter='new')[1]
+        model = build_embedding_model()
+        target_snippet_embedding = compute_snippet_embedding(target_snippet,
+                                                             model)
+        n_updated_snippets = 0
+        for d in discoveries:
+            snippet_embedding = compute_snippet_embedding(d['snippet'],
+                                                          model)
+            similarity = compute_similarity(target_snippet_embedding,
+                                            snippet_embedding)
+            if similarity > threshold:
+                n_updated_snippets += 1
+                self.update_discovery(d['id'], state)
+        return n_updated_snippets
