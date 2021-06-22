@@ -5,6 +5,9 @@ import os
 from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
 
+from . import (add_rules, download, scan, scan_path, scan_snapshot, scan_user,
+               scan_wiki)
+
 logger = logging.getLogger(__name__)
 
 
@@ -16,8 +19,6 @@ class customParser(argparse.ArgumentParser):
 
 
 def main(sys_argv):
-    from . import add_rules, download, scan, scan_path, scan_user, scan_wiki
-
     # Main parser configuration
     main_parser = customParser('credentialdigger')
     subparsers = main_parser.add_subparsers()
@@ -91,6 +92,12 @@ def main(sys_argv):
         parents=[parser_dotenv, parser_sqlite, parser_scan_base])
     scan_path.configure_parser(parser_scan_path)
 
+    # scan_snapshot subparser configuration
+    parser_scan_snapshot = subparsers.add_parser(
+        'scan_snapshot', help='Scan the snapshot of a repository',
+        parents=[parser_dotenv, parser_sqlite, parser_scan_base])
+    scan_snapshot.configure_parser(parser_scan_snapshot)
+
     # Run the parser
     if len(sys_argv) == 1:
         main_parser.print_help()
@@ -105,7 +112,8 @@ def main(sys_argv):
         add_rules.run,
         scan_user.run,
         scan_wiki.run,
-        scan_path.run
+        scan_path.run,
+        scan_snapshot.run
     ]:
         # Connect to db only when running commands that need it
         if args.sqlite:
