@@ -1,7 +1,6 @@
 fasttext
 GitPython
-hyperscan==0.2.0; sys.platform == "darwin"
-hyperscan==0.1.5; sys.platform == "linux"
+hyperscan==0.1.5
 leven
 nltk
 numpy

@@ -47,7 +47,7 @@ The tool supports several scan flavors: public and private repositories on
 github and gitlab, wiki pages, github organizations, local git repositories, local files and folders.
 Please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for the complete documentation.
 
-For the complete description of the approach of Credential Digger, [you can read this publication](https://www.scitepress.org/Papers/2021/102381/102381.pdf).
+For the complete description of the approach of Credential Digger, [you can read this publication](https://jam4.sapjam.com/groups/KxkEs5HqefZnmgxTYUSSov/documents/pDwaPu8XwYHnxgWwJZP94L/slide_viewer).
 
 ```
 @InProceedings {lrnto-icissp21,
@@ -269,4 +269,4 @@ We invite your participation to the project through issues and pull requests. Pl
 
 -  [Credential Digger announcement](https://blogs.sap.com/2020/06/23/credential-digger-using-machine-learning-to-identify-hardcoded-credentials-in-github)
 -  [Credential Digger is now supporting Keras machine learning models](https://github.com/SAP/credential-digger/tree/keras_models)
--  [Credential Digger approach has been published at ICISSP 2021 conference](https://jam4.sapjam.com/groups/KxkEs5HqefZnmgxTYUSSov/documents/pDwaPu8XwYHnxgWwJZP94L/slide_viewer)
+-  [Credential Digger approach has been published at ICISSP 2021 conference](https://www.scitepress.org/Papers/2021/102381/102381.pdf)
