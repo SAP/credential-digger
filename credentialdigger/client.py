@@ -12,6 +12,9 @@ from .generator import ExtractorGenerator
 from .models.model_manager import ModelManager
 from .scanners.file_scanner import FileScanner
 from .scanners.git_scanner import GitScanner
+from .scanners.git_file_scanner import GitFileScanner
+from .snippet_similarity import (build_embedding_model, compute_similarity,
+                                 compute_snippet_embedding)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -45,8 +48,7 @@ class Interface(ABC):
             self.db.commit()
             return True
         except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
+            # A TypeError is raised if any of the required arguments is missing
             self.db.rollback()
             return False
         except self.Error:
@@ -67,8 +69,7 @@ class Interface(ABC):
             cursor.execute(query, args)
             return dict(cast(*cursor.fetchone())._asdict())
         except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
+            # A TypeError is raised if any of the required arguments is missing
             self.db.rollback()
             return ()
         except self.Error:
@@ -205,8 +206,7 @@ class Client(Interface):
             self.db.commit()
             return bool(cursor.fetchone()[0])
         except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
+            # A TypeError is raised if any of the required arguments is missing
             self.db.rollback()
             return False
         except self.Error:
@@ -343,8 +343,7 @@ class Client(Interface):
                 result = cursor.fetchone()
             return all_rules
         except (TypeError, IndexError):
-            """ A TypeError is raised if any of the required arguments is
-            missing. """
+            # A TypeError is raised if any of the required arguments is missing
             self.db.rollback()
             return []
         except self.Error:
@@ -604,6 +603,66 @@ class Client(Interface):
             debug=debug, generate_snippet_extractor=generate_snippet_extractor,
             local_repo=local_repo, git_token=git_token)
 
+    def scan_snapshot(self, repo_url, branch_or_commit, category=None,
+                      models=None, exclude=None, force=False, debug=False,
+                      generate_snippet_extractor=False, git_token=None,
+                      max_depth=-1, ignore_list=[]):
+        """ Launch the scan of the snapshot of a git repository.
+        This scan mode takes into consideration the snapshot of the repository
+        at one specific commit, or at the last commit of a specific branch.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repo to scan
+        branch_or_commit: str
+            The commit hash or the branch name
+        category: str, optional
+            If specified, scan the repo using all the rules of this category,
+            otherwise use all the rules in the db
+        models: list, optional
+            A list of models for the ML false positives detection
+        exclude: list, optional
+            A list of rules to exclude
+        force: bool, default `False`
+            Force a complete re-scan of the repository, in case it has already
+            been scanned previously
+        debug: bool, default `False`
+            Flag used to decide whether to visualize the progressbars during
+            the scan (e.g., during the insertion of the detections in the db)
+        generate_snippet_extractor: bool, default `False`
+            Generate the extractor model to be used in the SnippetModel. The
+            extractor is generated using the ExtractorGenerator. If `False`,
+            use the pre-trained extractor model
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
+        max_depth: int, optional
+            The maximum depth to which traverse the subdirectories tree.
+            A negative value will not affect the scan.
+        ignore_list: list, optional
+            A list of paths to ignore during the scan. This can include file
+            names, directory names, or whole paths. Wildcards are supported as
+            per the fnmatch package.
+
+        Returns
+        -------
+        list
+            The id of the discoveries detected by the scanner (excluded the
+            ones classified as false positives).
+        """
+        if self.get_repo(repo_url) != {} and not force:
+            raise ValueError(f'The repository \"{repo_url}\" has already been '
+                             'scanned. Please use \"force\" to rescan it.')
+
+        rules = self._get_scan_rules(category, exclude)
+        scanner = GitFileScanner(rules)
+
+        return self._scan(
+            repo_url=repo_url, branch_or_commit=branch_or_commit,
+            scanner=scanner, models=models, force=force, debug=debug,
+            generate_snippet_extractor=generate_snippet_extractor,
+            git_token=git_token, max_depth=max_depth, ignore_list=ignore_list)
+
     def scan_path(self, scan_path, category=None, models=None, exclude=None,
                   force=False, debug=False, generate_snippet_extractor=False,
                   max_depth=-1, ignore_list=[]):
@@ -647,8 +706,8 @@ class Client(Interface):
         scan_path = os.path.abspath(scan_path)
 
         if self.get_repo(scan_path) != {} and force is False:
-            raise ValueError(f"The directory \"{scan_path}\" has already been "
-                             "scanned. Please use \"force\" to rescan it.")
+            raise ValueError(f'The directory \"{scan_path}\" has already been '
+                             'scanned. Please use \"force\" to rescan it.')
 
         rules = self._get_scan_rules(category, exclude)
         scanner = FileScanner(rules)
@@ -839,7 +898,7 @@ class Client(Interface):
         # update it in the list
         if len(new_discoveries) > 0:
             for model in models:
-                if model == "SnippetModel" and snippet_with_generator is True:
+                if model == 'SnippetModel' and snippet_with_generator is True:
                     # We will launch this model manually at the end
                     continue
                 try:
@@ -893,9 +952,21 @@ class Client(Interface):
         return discoveries_ids
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):
-        """ Use a model to analyze a list of discoveries. """
+        """ Use a model to analyze a list of discoveries.
+
+        Parameters
+        ----------
+        model_manager:
+        discoveries:
+        debug:
+
+        Returns
+        -------
+        """
+
         def _analyze_discovery(d):
-            if (d['state'] != 'false_positive' and model_manager.launch_model(d)):
+            if d['state'] != 'false_positive' and \
+                    model_manager.launch_model(d):
                 d['state'] = 'false_positive'
                 return 1
             return 0
@@ -976,7 +1047,7 @@ class Client(Interface):
         return False
 
     def _get_scan_rules(self, category=None, exclude=None):
-        """ Get the rules of the `category`, filtered by `exclude` 
+        """ Get the rules of the `category`, filtered by `exclude`
 
         Parameters
         ----------
@@ -993,8 +1064,8 @@ class Client(Interface):
 
         Raises
         ------
-            ValueError
-                If no rules are found or all rules have been filtered out
+        ValueError
+            If no rules are found or all rules have been filtered out
         """
         if exclude is None:
             exclude = []
@@ -1006,3 +1077,52 @@ class Client(Interface):
             raise ValueError('No rules found')
 
         return rules
+
+    def update_similar_snippets(self,
+                                target_snippet,
+                                state,
+                                repo_url,
+                                file_name=None,
+                                threshold=0.96):
+        """ Find snippets that are similar to the target
+        snippet and update their state.
+
+        Parameters
+        ----------
+        target_snippet: str
+            The target snippet
+        state: str
+            state to update similar snippets to
+        repo_url: str
+            The url of the repository
+        file_name: str
+            restrict to a given file the search for similar snippets
+        threshold: float
+            update snippets with similarity score above threshold.
+            Values lesser than 0.94 do not generally imply any relevant
+            amount of similarity between snippets, and should
+            therefore not be used.
+
+        Returns
+        -------
+        int
+            The number of similar snippets found and updated
+        """
+        discoveries = self.get_discoveries(repo_url, file_name)
+        model = build_embedding_model()
+        # Compute target snippet embedding
+        target_snippet_embedding = compute_snippet_embedding(target_snippet,
+                                                             model)
+        n_updated_snippets = 0
+        for d in discoveries:
+            if d['state'] == 'new':
+                # Compute snippet embedding
+                snippet_embedding = compute_snippet_embedding(d['snippet'],
+                                                              model)
+                # Compute similarity of target snippet and snippet
+                similarity = compute_similarity(target_snippet_embedding,
+                                                snippet_embedding)
+                if similarity > threshold:
+                    n_updated_snippets += 1
+                    self.update_discovery(d['id'], state)
+        return n_updated_snippets
