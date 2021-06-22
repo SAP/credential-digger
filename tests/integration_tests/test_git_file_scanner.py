@@ -32,7 +32,7 @@ class TestGitFileScanner(unittest.TestCase):
         'https://:@github.com/SAP/inexistent-repo',
         'not_a_url',
         'https://nonexistent.url'])
-    @patch('credentialdigger.scanners.git_file_scanner.GitRepo.clone_from')
+    @patch('credentialdigger.scanners.git_scanner.GitRepo.clone_from')
     def test_get_git_repo_invalid_url(self, url, mock_clone_from):
         """ Test raised exception on repo clone with invalid urls.
 
