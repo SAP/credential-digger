@@ -13,7 +13,7 @@ pyyaml
 requests
 scikit-learn
 srsly
-tensorflow==2.4.1
-tensorflow-text==2.4.1
+tensorflow==2.4.2
+tensorflow-text==2.4.2
 tf-models-official
 tqdm
