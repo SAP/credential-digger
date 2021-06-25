@@ -1,5 +1,5 @@
-from difflib import SequenceMatcher
 import re
+from difflib import SequenceMatcher
 
 import fasttext
 import string_utils
@@ -43,8 +43,8 @@ class SnippetModel(BaseModel):
 
     def analyze(self, discovery):
         """ Analyze a snippet and predict whether it is a false positive or not.
-        Parameters
 
+        Parameters
         ----------
         discovery: dict
             A discovery
@@ -77,9 +77,6 @@ class SnippetModel(BaseModel):
             # since either the snippet is empty or there is just one word
             return True
 
-        # Extract the committed secret
-        index_of_value = self._label_preprocess(data)
-        
         # Classify as a 'Leak' if this is a private key.
         if self._check_private_key(data):
             return False
@@ -89,13 +86,21 @@ class SnippetModel(BaseModel):
         if not any(not c.isalnum() and c not in ' _.,?!/' for c in raw_data):
             return True
 
-        input_text = data[index_of_value[1]]
-        if len(input_text) <= 3:
+        # Extract the discovered secret
+        # For snippet = 'string password = "123"', we will obtain indices [1,2]
+        # index 1: password | index 2: 123  
+        index_of_value = self._label_preprocess(data)
+
+        # We retrieve only the leaked value to be tested by the classifier
+        extracted_value = data[index_of_value[1]]
+
+        if len(extracted_value) <= 3:
             # We ignore any password shorter than or equal to 3
             return True
         else:
-            label = self.model.predict(input_text)[0]  # 0=label, 1=probability
-
+            # Predict if the string is a false positive
+            label = self.model.predict(extracted_value)[0]  # 0=label, 1=probability
+            
         label = label[0]  # label was a tuple of 1 element
 
         # Last index of the prediction indicates the state
@@ -221,7 +226,13 @@ class SnippetModel(BaseModel):
             snippet).strip()
 
     def _check_private_key(self, snippet):
-        """ Check if this snippet is a private key
+        """Check if this snippet is a private key
+
+        Args:
+            snippet (str): A code snippet containing a secret
+
+        Returns:
+            boolean: True if this is a header of a private key, False otherwise.
         """
         base_private_key = ['BEGIN', 'PRIVATE', 'KEY']
         # Return True if similarity ratio >= 85%
