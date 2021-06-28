@@ -29,6 +29,10 @@
       <div class="form-item">
         <input id="gitTokenInput" type="text" name="gitToken" class="textInput" placeholder="Git token (for private repositories)">
       </div>
+      <div class="form-item">
+        <input id="repoSnapshotInput" type="text" name="repoSnapshot" class="textInput"
+        placeholder="Commit ID or branch name (to scan a snapshot of the repo, OPTIONAL)">
+      </div>
       <div><label><input type="checkbox" id="cbPathModel" name="pathModel" value="path" checked>Use Path model</label></div>
       <div><label><input type="checkbox" id="cbSnippetModel" name="snippetModel" value="snippet" checked>Use Snippet model</label></div>
       {% if rescan %}
