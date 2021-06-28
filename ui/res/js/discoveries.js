@@ -21,6 +21,7 @@ function initFilesDataTable() {
   const repoUrl = document.querySelector('#repo-url').innerText;
   $('#files-table').DataTable({
     ...defaultTableSettings,
+    pageLength: localStorage.hasOwnProperty('sharedPageLength') ? localStorage.getItem("sharedPageLength") : 10,
     order: [[1, "desc"]], // Set default column sorting
     columns: [ // Table columns definition
       {
@@ -68,6 +69,10 @@ function initFilesDataTable() {
       }
     }
   });
+
+  $('#files-table').on('length.dt', function (e, settings, len) {
+    localStorage.setItem('sharedPageLength', len);
+  });
 }
 
 /**
@@ -78,6 +83,7 @@ function initDiscoveriesDataTable() {
   const filename = document.querySelector('#file-name').innerText;
   $('#discoveries-table').DataTable({
     ...defaultTableSettings,
+    pageLength: localStorage.hasOwnProperty('sharedPageLength') ? localStorage.getItem("sharedPageLength") : 10,
     serverSide: true,
     order: [[3, "asc"]], // Set default column sorting
     columns: [ // Table columns definition
@@ -106,7 +112,7 @@ function initDiscoveriesDataTable() {
         orderable: false
       }
     ],
-    searchCols: [null, null, null, {search: 'new'}, null, null, null],
+    searchCols: [null, null, null, { search: 'new' }, null, null, null],
     ajax: { // AJAX source info
       url: "/get_discoveries",
       data: {
@@ -121,13 +127,13 @@ function initDiscoveriesDataTable() {
           <table>
             <thead>
               <tr>
-                ${filename ? '': '<th>File</th>'}
+                ${filename ? '' : '<th>File</th>'}
                 <th class="hash">Commit hash</th><th class="dt-center">Line number</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              ${item.occurrences.slice(0,10).map(i => `
+              ${item.occurrences.slice(0, 10).map(i => `
                 <tr>
                   ${filename ? "" : `<td class="filename"><span>${i.file_name}</span></td>`}
                   <td class="hash">${i.commit_id}</td>
@@ -160,10 +166,10 @@ function initDiscoveriesDataTable() {
     initComplete: function () {
       var column = this.api().columns(3);
       var select = $('<select><option value=""></option></select>')
-        .on( 'change', function () {
+        .on('change', function () {
           var val = $.fn.dataTable.util.escapeRegex($(this).val());
           column.search(val).draw();
-        } );
+        });
 
       select.append(`
         <option value="all">all</option>
@@ -180,8 +186,13 @@ function initDiscoveriesDataTable() {
           <div id="select-filter-container"></div>
         </div>`);
       $('#select-filter-container').append(select);
-  }
-  });
+    }
+  },
+
+    $('#discoveries-table').on('length.dt', function (e, settings, len) {
+      localStorage.setItem('sharedPageLength', len);
+    })
+  );
 }
 
 /**
@@ -200,7 +211,7 @@ function initUpdateDiscoveries() {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
     }
-    
+
     $.ajax({
       url: 'update_discovery_group',
       method: 'POST',
@@ -210,7 +221,7 @@ function initUpdateDiscoveries() {
         ...filename && { file: filename },
         ...snippet && { snippet: decodeHTML(snippet) }
       },
-      beforeSend: function() {
+      beforeSend: function () {
         datatable.processing(true);
       },
       success: function () {
@@ -225,19 +236,19 @@ function initUpdateDiscoveries() {
  */
 function initUpdateScanning() {
   // Get status only if scanning when loading the page
-  if(!document.querySelector('#newScan.disabled')) return;
+  if (!document.querySelector('#newScan.disabled')) return;
   scanInterval = setInterval(getScan, POLLING_INTERVAL);
 }
 
 let scanInterval = null;
-const getScan = function() {
+const getScan = function () {
   const repoUrl = document.querySelector('#repo-url').innerText;
   $.ajax({
     url: '/get_scan_status',
-    data: {url: repoUrl},
-    success: function(json) {
+    data: { url: repoUrl },
+    success: function (json) {
       const btn = document.querySelector('#newScan');
-      if(json.scanning) {
+      if (json.scanning) {
         btn.disabled = true;
         btn.classList.add('disabled');
         btn.classList.add('warning-bg');
@@ -252,7 +263,7 @@ const getScan = function() {
         btn.classList.add('primary-bg');
         btn.innerHTML = `
           <span class="icon icon-refresh"></span><span>Rescan</span>`;
-        if($('#discoveries-table, #files-table')) $('.dataTable').DataTable().ajax.reload();
+        if ($('#discoveries-table, #files-table')) $('.dataTable').DataTable().ajax.reload();
       }
     }
   })
