@@ -141,7 +141,7 @@ class SnippetModel(BaseModel):
 
         >>> raw_data = '"password": "#####", "!@AAA12")'
         >>> print(self._pre_process(raw_data))
-        ['password','"#####', '!@AAA12']
+        ['password','"#####"', '!@AAA12']
 
         Manual execution
         --------
