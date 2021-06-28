@@ -314,7 +314,7 @@ class GitScanner(BaseScanner):
                     row = r_groups.group(1)
 
             rh = ResultHandler()
-            if sys.platform == 'darwin':
+            if sys.version_info >= (3, 9):
                 row = row.encode('utf-8')
             self.stream.scan(row,
                              match_event_handler=rh.handle_results,
