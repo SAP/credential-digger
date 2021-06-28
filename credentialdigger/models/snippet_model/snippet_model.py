@@ -83,12 +83,12 @@ class SnippetModel(BaseModel):
 
         # We ignore snippets that look like regular phrases with
         # no assignment
-        if not any(not c.isalnum() and c not in ' _.,?!/' for c in raw_data):
+        if self._not_an_assignment(raw_data):
             return True
 
         # Extract the discovered secret
         # For snippet = 'string password = "123"', we will obtain indices [1,2]
-        # index 1: password | index 2: 123  
+        # index 1: password | index 2: 123
         index_of_value = self._label_preprocess(data)
 
         # We retrieve only the leaked value to be tested by the classifier
@@ -99,8 +99,9 @@ class SnippetModel(BaseModel):
             return True
         else:
             # Predict if the string is a false positive
-            label = self.model.predict(extracted_value)[0]  # 0=label, 1=probability
-            
+            label = self.model.predict(extracted_value)[
+                0]  # 0=label, 1=probability
+
         label = label[0]  # label was a tuple of 1 element
 
         # Last index of the prediction indicates the state
@@ -143,15 +144,6 @@ class SnippetModel(BaseModel):
         >>> print(self._pre_process(raw_data))
         ['password','"#####"', '!@AAA12']
 
-        Manual execution
-        --------
-        >>> raw_data = 'pwd = "pwd_123";'
-        >>> print(self._pre_process(raw_data))
-        [
-            words = [pwd, pwd_123]
-            strings = [pwd_123] # Will not be converted into camel_case
-            camel_case_words = [Pwd, pwd_123]
-        ]
         """
         # Extract all the words in a snippet
         words = re.findall(r'(?<=\').*?(?=\')|(?<=").*?(?=")|[\w\d]+', raw_data)
@@ -225,14 +217,41 @@ class SnippetModel(BaseModel):
             "",
             snippet).strip()
 
+    def _not_an_assignment(self, snippet):
+        """We ignore snippets that look like regular phrases with no assignment hints.
+        Parameters:
+        snippet: str
+                 A snippet (as appears in its commit diff)
+
+        Returns
+        -------
+        boolean 
+            If the snippet contains any symbols that may lead to password assignment
+
+        """
+
+        # The following symbols cannot be used to assign a value to a variable
+        # Symbols that do so are =, :, <-, ->, <<, >>, etc.
+        no_assignment_symbols = ' _.,?!/#|+-\\"\''
+
+        if not any(not c.isalnum() and c not in no_assignment_symbols for c in snippet):
+            return True
+
+        return False
+
     def _check_private_key(self, snippet):
         """Check if this snippet is a private key
 
-        Args:
-            snippet (str): A code snippet containing a secret
+        Parameters
+        ----------
+        snippet: str
+                 A snippet (as appears in its commit diff)
 
-        Returns:
-            boolean: True if this is a header of a private key, False otherwise.
+        Returns
+        -------
+        boolean
+            True if this is a header of a private key, False otherwise.
+
         """
         base_private_key = ['BEGIN', 'PRIVATE', 'KEY']
         # Return True if similarity ratio >= 85%
