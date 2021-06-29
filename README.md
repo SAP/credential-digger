@@ -62,7 +62,7 @@ For the complete description of the approach of Credential Digger, [you can read
 
 ## Requirements
 
-Credential Digger supports Python >= 3.6 and < 3.9, and works only with LINUX systems (currently, it has been tested on Ubuntu). [With some hacks](https://github.com/SAP/credential-digger/wiki/MacOS-support), it can be installed also on MacOS.
+Credential Digger supports Python >= 3.6 and < 3.10, and works only with Linux and MacOS systems.
 In case you don't meet these requirements, you may consider running a [Docker container](#docker) (that also includes a user interface).
 
 
@@ -74,6 +74,12 @@ First, you need to install the regular expression matching library [Hyperscan](h
 
 ```bash
 sudo apt install -y libhyperscan-dev build-essential python3-dev
+```
+
+or (for MacOS):
+
+```bash
+brew install hyperscan
 ```
 
 Then, you can install Credential Digger module using `pip`.
