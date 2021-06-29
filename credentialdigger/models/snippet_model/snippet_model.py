@@ -219,7 +219,7 @@ class SnippetModel(BaseModel):
 
     def _not_an_assignment(self, snippet):
         """We ignore snippets that look like regular phrases with no assignment hints.
-        
+
         Parameters
         ----------
         snippet: str
@@ -228,7 +228,7 @@ class SnippetModel(BaseModel):
         Returns
         -------
         boolean 
-            If the snippet contains any symbols that may lead to password assignment
+            True if the snippet contains any symbols that may lead to password assignment
 
         """
 
