@@ -219,7 +219,9 @@ class SnippetModel(BaseModel):
 
     def _not_an_assignment(self, snippet):
         """We ignore snippets that look like regular phrases with no assignment hints.
-        Parameters:
+        
+        Parameters
+        ----------
         snippet: str
                  A snippet (as appears in its commit diff)
 
