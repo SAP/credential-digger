@@ -140,10 +140,9 @@ class FileScanner(BaseScanner):
             with open(full_path, 'r', encoding='utf-8') as file_to_scan:
                 for row in file_to_scan:
                     rh = ResultHandler()
-                    if sys.platform == 'darwin':
-                        row = row.encode('utf-8')
                     self.stream.scan(
-                        row,
+                        row if sys.version_info < (3, 9) else row.encode(
+                            'utf-8'),
                         match_event_handler=rh.handle_results,
                         context=[row, relative_path, '', line_number])
                     if rh.result:
