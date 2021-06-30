@@ -2,7 +2,7 @@ import re
 from difflib import SequenceMatcher
 
 import fasttext
-import string_utils
+from string_utils import snake_case_to_camel
 
 from ..base_model import BaseModel
 
@@ -143,7 +143,6 @@ class SnippetModel(BaseModel):
         >>> raw_data = '"password": "#####", "!@AAA12")'
         >>> print(self._pre_process(raw_data))
         ['password','"#####"', '!@AAA12']
-
         """
         # Extract all the words in a snippet
         words = re.findall(r'(?<=\').*?(?=\')|(?<=").*?(?=")|[\w\d]+', raw_data)
@@ -156,7 +155,7 @@ class SnippetModel(BaseModel):
             if w in strings:
                 camel_case_words.append(w)
             else:
-                camel_case_words.append(string_utils.snake_case_to_camel(w))
+                camel_case_words.append(snake_case_to_camel(w))
 
         return camel_case_words
 
@@ -166,13 +165,12 @@ class SnippetModel(BaseModel):
         Parameters
         ----------
         words_list: list
-        model_extractor:
+            A list of words and/or strings
 
         Returns
         -------
         list
             A list of positions of words
-
         """
         # Build a data string (needed by the model)
         data = ' '.join(words_list)
@@ -199,7 +197,7 @@ class SnippetModel(BaseModel):
 
         # We need to check if the label number is below the number of words
         # Example:
-        # if we get label=24 but only 3 words ==> We assume it means
+        # if we get label=24 but we have only 3 words ==> We assume it means
         # the last word needs to be extracted
         for label in [first_label, second_label]:
             if label > size:
@@ -211,49 +209,61 @@ class SnippetModel(BaseModel):
 
     def _remove_initial_junk(self, snippet):
         """ Remove junk from the beginning of a snippet.
-        """
-        return re.sub(
-            r'^((\s*|\ *)\@\@.*\@\@(\s*|\ *)|(\s*|\ *)\+(\s*|\ *)|(\s*|\ *)\-(\s*|\ *)|(\s*|\ *))',
-            "",
-            snippet).strip()
-
-    def _not_an_assignment(self, snippet):
-        """We ignore snippets that look like regular phrases with no assignment hints.
 
         Parameters
         ----------
         snippet: str
-                 A snippet (as appears in its commit diff)
+            The code snippet
 
         Returns
         -------
-        boolean 
-            True if the snippet contains any symbols that may lead to password assignment
-
+        str
+            The same snippet, "cleaned" on the left
         """
+        return re.sub(
+            r'^((\s*|\ *)\@\@.*\@\@(\s*|\ *)|(\s*|\ *)\+(\s*|\ *)|(\s*|\ *)\-(\s*|\ *)|(\s*|\ *))',
+            '',
+            snippet).strip()
 
+    def _not_an_assignment(self, snippet):
+        """ Evaluate whether a line of code is an assignment or not.
+
+        The goal is to ignore snippets that look like regular phrases with no
+        assignment hints.
+
+        Parameters
+        ----------
+        snippet: str
+            A code snippet (as it appears in its commit diff)
+
+        Returns
+        -------
+        bool
+            True if the snippet contains any symbols that may lead to password
+            assignment, False otherwise
+        """
         # The following symbols cannot be used to assign a value to a variable
         # Symbols that do so are =, :, <-, ->, <<, >>, etc.
         no_assignment_symbols = ' _.,?!/#|+-\\"\''
 
-        if not any(not c.isalnum() and c not in no_assignment_symbols for c in snippet):
+        if not any(not c.isalnum() and c not in no_assignment_symbols
+                   for c in snippet):
             return True
 
         return False
 
     def _check_private_key(self, snippet):
-        """Check if this snippet is a private key
+        """ Check if this snippet is the header of a private key.
 
         Parameters
         ----------
         snippet: str
-                 A snippet (as appears in its commit diff)
+            A code snippet (as it appears in its commit diff)
 
         Returns
         -------
-        boolean
-            True if this is a header of a private key, False otherwise.
-
+        bool
+            True if the input is the header of a private key, False otherwise
         """
         base_private_key = ['BEGIN', 'PRIVATE', 'KEY']
         # Return True if similarity ratio >= 85%
