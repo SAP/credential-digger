@@ -877,8 +877,10 @@ class Client(Interface):
         if 'since_timestamp' in scanner_kwargs:
             scanner_kwargs['since_timestamp'] = from_timestamp
         try:
-            logger.debug('Scanning commits...')
-            new_discoveries = scanner.scan(repo_url, **scanner_kwargs)
+            logger.debug('Start scan')
+            new_discoveries = scanner.scan(repo_url,
+                                           debug=debug,
+                                           **scanner_kwargs)
             logger.info(f'Detected {len(new_discoveries)} discoveries.')
         except Exception as e:
             # Remove the newly added repo before bubbling the error
