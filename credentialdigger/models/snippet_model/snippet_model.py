@@ -145,8 +145,10 @@ class SnippetModel(BaseModel):
         ['password','"#####"', '!@AAA12']
         """
         # Extract all the words in a snippet
-        words = re.findall(r'(?<=\').*?(?=\')|(?<=").*?(?=")|[\w\d]+', raw_data)
-        # Extract only the words that are between " or ', we refer to them strings
+        words = re.findall(r'(?<=\').*?(?=\')|(?<=").*?(?=")|[\w\d]+',
+                           raw_data)
+        # Extract only the words that are between " or ', we refer to them
+        # as strings
         strings = re.findall(r'(?<=\').*?(?=\')|(?<=").*?(?=")', raw_data)
 
         camel_case_words = []
