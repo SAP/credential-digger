@@ -1,9 +1,11 @@
 import re
+from difflib import SequenceMatcher
 
 import fasttext
-import string_utils
+from string_utils import snake_case_to_camel
 
 from ..base_model import BaseModel
+
 
 EXTENSIONS = set(['py', 'rb', 'c', 'cpp', 'cs', 'js', 'php', 'h', 'java', 'pl',
                   'go'])
@@ -52,8 +54,7 @@ class SnippetModel(BaseModel):
         bool
             True if the discovery is classified as false positive
         """
-        raw_data = self._remove_initial_junk(discovery['snippet'])
-
+        raw_data = discovery['snippet']
         # In some programming languages, we expect to find a password as a
         # string (thus, surrounded by quotes). If no quote appears in the
         # snippet, then there isn't any hardcoded password
@@ -76,17 +77,30 @@ class SnippetModel(BaseModel):
             # since either the snippet is empty or there is just one word
             return True
 
-        if len(data) == 2:
-            # No need to pre-process data since we have only two words
-            # Predict if the string `word1 + ' ' + word2` is a false positive
-            label = self.model.predict(
-                data[0] + ' ' + data[1])[0]  # 0=label, 1=probability
+        # Classify as a 'Leak' if this is a private key.
+        if self._check_private_key(data):
+            return False
+
+        # We ignore snippets that look like regular phrases with
+        # no assignment
+        if self._not_an_assignment(raw_data):
+            return True
+
+        # Extract the discovered secret
+        # For snippet = 'string password = "123"', we will obtain indices [1,2]
+        # index 1: password | index 2: 123
+        index_of_value = self._label_preprocess(data)
+
+        # We retrieve only the leaked value to be tested by the classifier
+        extracted_value = data[index_of_value[1]]
+
+        if len(extracted_value) <= 3:
+            # We ignore any password shorter than or equal to 3
+            return True
         else:
-            finish_labels = self._label_preprocess(data)
-            # Predict if the string `word1 + ' ' + word2` is a false positive
-            label = self.model.predict(
-                data[finish_labels[0]] + ' ' +
-                data[finish_labels[1]])[0]  # 0=label, 1=probability
+            # Predict if the string is a false positive
+            label = self.model.predict(extracted_value)[
+                0]  # 0=label, 1=probability
 
         label = label[0]  # label was a tuple of 1 element
 
@@ -102,14 +116,9 @@ class SnippetModel(BaseModel):
         We define as strings any sequence of characters included in `"` or `'`
         and as words any sequence of alphanumeric characters.
 
-        In particular, if a string does not contain characters, it is not
-        matched. This is done in order to exclude patterns such as "###" or
-        "***". In case the string has a mixed content, it is matched starting
-        from the first letter/number (e.g., "!@#QWE123" matches "QWE123").
-
-        Finally, convert words from snake_case (i.e., words separated by
-        underscores, like in Python convention) to CamelCase (i.e., Java
-        convention).
+        Finally, convert words (not strings) from snake_case (i.e., words
+        separated by underscores, like in Python convention) to CamelCase
+        (i.e., Java convention).
 
         Parameters
         ----------
@@ -133,17 +142,24 @@ class SnippetModel(BaseModel):
 
         >>> raw_data = '"password": "#####", "!@AAA12")'
         >>> print(self._pre_process(raw_data))
-        ['password', 'AAA12']
+        ['password','"#####"', '!@AAA12']
         """
-        # r"((?<=').*?(?=')|(?<=\").*?(?=\")|[a-zA-Z0-9\._@-]+)"
-        # Match words and strings
-        # In strings, match the content starting from the first character
-        # e.g., "****" -> None
-        #       "$AAA123!!" -> AAA123!!
-        pattern = re.compile(
-            r"((?<=')\w\d.*?(?=')|(?<=\")\w\d.*?(?=\")|[\w\d]+)")
-        words = re.findall(pattern, raw_data)
-        return list(map(string_utils.snake_case_to_camel, words))
+        # Extract all the words in a snippet
+        words = re.findall(r'(?<=\').*?(?=\')|(?<=").*?(?=")|[\w\d]+',
+                           raw_data)
+        # Extract only the words that are between " or ', we refer to them
+        # as strings
+        strings = re.findall(r'(?<=\').*?(?=\')|(?<=").*?(?=")', raw_data)
+
+        camel_case_words = []
+        for w in words:
+            # If a word is a string, we do not make any changes to it
+            if w in strings:
+                camel_case_words.append(w)
+            else:
+                camel_case_words.append(snake_case_to_camel(w))
+
+        return camel_case_words
 
     def _label_preprocess(self, words_list):
         """ Output the extracted word from the label of the model.
@@ -151,13 +167,12 @@ class SnippetModel(BaseModel):
         Parameters
         ----------
         words_list: list
-        model_extractor:
+            A list of words and/or strings
 
         Returns
         -------
         list
             A list of positions of words
-
         """
         # Build a data string (needed by the model)
         data = ' '.join(words_list)
@@ -184,7 +199,7 @@ class SnippetModel(BaseModel):
 
         # We need to check if the label number is below the number of words
         # Example:
-        # if we get label=24 but only 3 words ==> We assume it means
+        # if we get label=24 but we have only 3 words ==> We assume it means
         # the last word needs to be extracted
         for label in [first_label, second_label]:
             if label > size:
@@ -196,8 +211,62 @@ class SnippetModel(BaseModel):
 
     def _remove_initial_junk(self, snippet):
         """ Remove junk from the beginning of a snippet.
+
+        Parameters
+        ----------
+        snippet: str
+            The code snippet
+
+        Returns
+        -------
+        str
+            The same snippet, "cleaned" on the left
         """
         return re.sub(
-            r"^((\s*|\ *)\@\@.*\@\@(\s*|\ *)|(\s*|\ *)\+(\s*|\ *)|(\s*|\ *)\-(\s*|\ *)|(\s*|\ *))",
-            "",
+            r'^((\s*|\ *)\@\@.*\@\@(\s*|\ *)|(\s*|\ *)\+(\s*|\ *)|(\s*|\ *)\-(\s*|\ *)|(\s*|\ *))',
+            '',
             snippet).strip()
+
+    def _not_an_assignment(self, snippet):
+        """ Evaluate whether a line of code is an assignment or not.
+
+        The goal is to ignore snippets that look like regular phrases with no
+        assignment hints.
+
+        Parameters
+        ----------
+        snippet: str
+            A code snippet (as it appears in its commit diff)
+
+        Returns
+        -------
+        bool
+            True if the snippet contains any symbols that may lead to password
+            assignment, False otherwise
+        """
+        # The following symbols cannot be used to assign a value to a variable
+        # Symbols that do so are =, :, <-, ->, <<, >>, etc.
+        no_assignment_symbols = ' _.,?!/#|+-\\"\''
+
+        if not any(not c.isalnum() and c not in no_assignment_symbols
+                   for c in snippet):
+            return True
+
+        return False
+
+    def _check_private_key(self, snippet):
+        """ Check if this snippet is the header of a private key.
+
+        Parameters
+        ----------
+        snippet: str
+            A code snippet (as it appears in its commit diff)
+
+        Returns
+        -------
+        bool
+            True if the input is the header of a private key, False otherwise
+        """
+        base_private_key = ['BEGIN', 'PRIVATE', 'KEY']
+        # Return True if similarity ratio >= 85%
+        return SequenceMatcher(None, base_private_key, snippet).ratio() >= 0.85

@@ -38,7 +38,7 @@ class TestScansSqlite(unittest.TestCase):
                       "--models", "PathModel", "SnippetModel",
                       "--category", "password",
                       "--force", "--local", repo_path])
-        self.assertEqual(cm.exception.code, 4)
+        self.assertEqual(cm.exception.code, 2)
 
     def test_scan_wiki(self):
         with self.assertRaises(SystemExit) as cm:
