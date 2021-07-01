@@ -50,7 +50,7 @@ class FileScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, scan_path, max_depth=-1, ignore_list=[]):
+    def scan(self, scan_path, max_depth=-1, ignore_list=[], debug=False):
         """ Scan a directory.
 
         Parameters
@@ -65,6 +65,8 @@ class FileScanner(BaseScanner):
             A list of paths to ignore during the scan. This can include file
             names, directory names, or whole paths. Wildcards are supported as
             per the fnmatch package.
+        debug: bool, optional
+            If True, visualize debug information during the scan
 
         Returns
         -------
@@ -77,6 +79,8 @@ class FileScanner(BaseScanner):
         FileNotFoundError
             If the given path is not an existing directory
         """
+        if debug:
+            logger.setLevel(level=logging.DEBUG)
         # Ensure that `dir_path` is treated as an absolute path
         scan_path = os.path.abspath(scan_path)
         if not os.path.exists(scan_path):
@@ -96,6 +100,7 @@ class FileScanner(BaseScanner):
         # Walk the directory tree and scan files
         for abs_dir_root, dirs, files in os.walk(project_root):
             rel_dir_root = abs_dir_root[len(project_root):].lstrip(os.path.sep)
+            logger.debug(f'Found {len(files)} total files')
 
             # Prune unwanted files and subdirectories
             self._prune(rel_dir_root, dirs, files,
@@ -103,6 +108,7 @@ class FileScanner(BaseScanner):
                         ignore_list=ignore_list)
 
             # Scan remaining files
+            logger.debug(f'Scan {len(files)} files')
             for file_name in files:
                 rel_file_path = os.path.join(rel_dir_root, file_name)
                 file_discoveries = self.scan_file(

@@ -106,7 +106,7 @@ class GitScanner(BaseScanner):
         return project_path, repo
 
     def scan(self, repo_url, since_timestamp=0, max_depth=1000000,
-             git_token=None, local_repo=False):
+             git_token=None, local_repo=False, debug=False):
         """ Scan a repository.
 
         Parameters
@@ -123,6 +123,8 @@ class GitScanner(BaseScanner):
         local_repo: bool, optional
             If True, get the repository from a local directory instead of the
             web
+        debug: bool, optional
+            If True, visualize debug information during the scan
 
         Returns
         -------
@@ -130,6 +132,9 @@ class GitScanner(BaseScanner):
             A list of discoveries (dictionaries). If there are no discoveries
             return an empty list
         """
+        if debug:
+            logger.setLevel(level=logging.DEBUG)
+
         if git_token:
             logger.debug('Authenticate user with token')
             repo_url = repo_url.replace('https://',
@@ -168,8 +173,10 @@ class GitScanner(BaseScanner):
 
         branches = repo.remotes.origin.fetch()
 
+        logger.debug('Scanning commits...')
         for remote_branch in branches:
             branch_name = remote_branch.name
+            logger.debug(f'Branch {branch_name} in progress...')
             prev_commit = None
             # Note that the iteration of the commits is backwards, so the
             # prev_commit is newer than curr_commit
