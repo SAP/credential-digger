@@ -877,8 +877,10 @@ class Client(Interface):
         if 'since_timestamp' in scanner_kwargs:
             scanner_kwargs['since_timestamp'] = from_timestamp
         try:
-            logger.debug('Scanning commits...')
-            new_discoveries = scanner.scan(repo_url, **scanner_kwargs)
+            logger.debug('Start scan')
+            new_discoveries = scanner.scan(repo_url,
+                                           debug=debug,
+                                           **scanner_kwargs)
             logger.info(f'Detected {len(new_discoveries)} discoveries.')
         except Exception as e:
             # Remove the newly added repo before bubbling the error
@@ -934,6 +936,7 @@ class Client(Interface):
         # Insert the discoveries into the db
         discoveries_ids = list()
         if debug:
+            logger.debug('Update database with these discoveries.')
             for i in tqdm(range(len(new_discoveries))):
                 curr_d = new_discoveries[i]
                 new_id = self.add_discovery(
@@ -942,6 +945,8 @@ class Client(Interface):
                     curr_d['rule_id'], curr_d['state'])
                 if new_id != -1 and curr_d['state'] != 'false_positive':
                     discoveries_ids.append(new_id)
+            logger.debug(f'{len(discoveries_ids)} discoveries left for manual '
+                         'review.')
         else:
             # IDs of the discoveries added to the db
             discoveries_ids = self.add_discoveries(new_discoveries, repo_url)
@@ -980,7 +985,7 @@ class Client(Interface):
                 false_positives += _analyze_discovery(discoveries[i])
 
             logger.debug(f'Model {model_name} classified {false_positives} '
-                         'discoveries.\nChange state to these discoveries')
+                         'discoveries.')
         else:
             for d in discoveries:
                 _analyze_discovery(d)

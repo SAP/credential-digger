@@ -49,7 +49,7 @@ class GitFileScanner(GitScanner, FileScanner):
                              flags=flags)
 
     def scan(self, repo_url, branch_or_commit, max_depth=-1, ignore_list=[],
-             git_token=None):
+             git_token=None, debug=False):
         """ Scan a repository.
 
         Parameters
@@ -69,6 +69,8 @@ class GitFileScanner(GitScanner, FileScanner):
             per the fnmatch package.
         git_token: str, optional
             Git personal access token to authenticate to the git server
+        debug: bool, optional
+            If True, visualize debug information during the scan
 
         Returns
         -------
@@ -76,6 +78,8 @@ class GitFileScanner(GitScanner, FileScanner):
             A list of discoveries (dictionaries). If there are no discoveries
             return an empty list
         """
+        if debug:
+            logger.setLevel(level=logging.DEBUG)
         if git_token:
             logger.debug('Authenticate user with token')
             repo_url = repo_url.replace('https://',
