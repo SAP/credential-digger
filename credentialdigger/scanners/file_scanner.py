@@ -150,7 +150,7 @@ class FileScanner(BaseScanner):
                         row if sys.version_info < (3, 9) else row.encode(
                             'utf-8'),
                         match_event_handler=rh.handle_results,
-                        context=[row, relative_path, '', line_number])
+                        context=[row.strip(), relative_path, '', line_number])
                     if rh.result:
                         discoveries.append(rh.result)
                     line_number += 1
