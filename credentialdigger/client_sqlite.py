@@ -204,7 +204,6 @@ class SqliteClient(Client):
         repo_url: str
             The discovery's repository url
         """
-        cursor = self.db.cursor()
         snippet = self.get_discovery(discovery_id)['snippet']
         if not embedding:
             model = build_embedding_model()
