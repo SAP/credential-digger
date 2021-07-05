@@ -127,7 +127,7 @@ class Client(Interface):
                       embedding=None,
                       repo_url=''):
         """ Add an embedding to the embeddings table.
-        
+
         Parameters
         ----------
         query: str
@@ -159,8 +159,8 @@ class Client(Interface):
         try:
             insert_tuples = list(zip(discoveries_ids,
                                      snippets,
-                                     embedding_strings,
-                                     [repo_url] * len(discoveries)))
+                                     embeddings,
+                                     [repo_url] * len(discoveries_ids)))
             cursor.executemany(query, insert_tuples)
             self.db.commit()
         except self.Error:
@@ -168,7 +168,7 @@ class Client(Interface):
             map(lambda disc_id, emb: self.add_embedding(disc_id,
                                                         emb,
                                                         repo_url=repo_url),
-                zip(discoveries_ids, embedding_strings))
+                zip(discoveries_ids, embeddings))
 
 
     def add_repo(self, query, repo_url):
@@ -719,7 +719,7 @@ class Client(Interface):
             use the pre-trained extractor model
         similarity: bool, default `False`
             Decide whether to build the embedding model and to compute and add
-            embeddings, to allow for updating of similar discoveries        
+            embeddings, to allow for updating of similar discoveries 
         local_repo: bool, optional
             If True, get the repository from a local directory instead of the
             web
@@ -1165,7 +1165,7 @@ class Client(Interface):
                                 threshold=0.96):
         """ Find snippets that are similar to the target
         snippet and update their state.
-        
+
         Parameters
         ----------
         target_snippet: str
@@ -1179,7 +1179,7 @@ class Client(Interface):
             Values lesser than 0.94 do not generally imply any relevant
             amount of similarity between snippets, and should
             therefore not be used.
-        
+
         Returns
         -------
         int
