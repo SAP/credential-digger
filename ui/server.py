@@ -416,6 +416,20 @@ def update_discovery_group():
     else:
         return 'OK', 200
 
+@app.route('/export_discoveries_csv', methods=['GET'])
+def export_discoveries_csv():
+    url = request.args.get('repo_url')
+    _, discoveries = c.get_discoveries(url)
+    # Add the category to each discovery
+    rulesdict, cat = _get_rules()
+    categories_found = set()
+    for discovery in discoveries:
+        if discovery['rule_id']:
+            discovery['category'] = rulesdict[discovery['rule_id']]['category']
+        else:
+            discovery['category'] = '(rule deleted)'
+        categories_found.add(discovery['category'])
+    return jsonify(discoveries)
 
 jwt = JWTManager(app)
 if __name__ == '__main__':
