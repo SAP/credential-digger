@@ -33,6 +33,6 @@ CREATE TABLE embeddings (
   id INTEGER REFERENCES discoveries,
   embedding FLOAT [],
   snippet TEXT DEFAULT '',
-  repo_url TEXT,
+  repo_url TEXT REFERENCES repos,
   PRIMARY KEY (id)
 );

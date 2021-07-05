@@ -312,6 +312,32 @@ class Client(Interface):
             self.db.rollback()
             return False
 
+    def delete_embeddings(self, query, repo_url):
+        """ Bulk delete embeddings.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run
+        repo_url: str
+            The url of the repository whose embeddings are
+            to be deleted
+
+        Returns
+        -------
+        bool
+            `True` if embeddings were successfully deleted,
+            `False` otherwise
+        """
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(query, (repo_url,))
+            self.db.commit()
+            return True
+        except self.Error:
+            self.db.rollback()
+            return False
+
     def get_repos(self):
         """ Get all the repositories.
 

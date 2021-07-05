@@ -55,7 +55,7 @@ class SqliteClient(Client):
                 id INTEGER REFERENCES discoveries,
                 snippet TEXT DEFAULT '',
                 embedding TEXT DEFAULT '',
-                repo_url TEXT,
+                repo_url TEXT REFERENCES repos,
                 PRIMARY KEY (id)
             );
 
@@ -367,7 +367,6 @@ class SqliteClient(Client):
             `True` if embedding was successfully deleted,
             `False` otherwise
         """
-
         return super().delete_embedding(
             query='DELETE FROM embeddings WHERE id=?',
             discovery_id=discovery_id)
@@ -386,15 +385,8 @@ class SqliteClient(Client):
             `True` if embeddings were successfully deleted,
             `False` otherwise
         """
-        try:
-            cursor = self.db.cursor()
-            query = 'DELETE FROM embeddings WHERE repo_url=?;'
-            cursor.execute(query, (repo_url,))
-            self.db.commit()
-            return True
-        except self.Error:
-            self.db.rollback()
-            return False
+        query = 'DELETE FROM embeddings WHERE repo_url=?;'
+        return super().delete_embeddings(query, repo_url)
 
     def get_repo(self, repo_url):
         """ Get a repository.

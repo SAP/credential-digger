@@ -339,15 +339,8 @@ class PgClient(Client):
             `True` if embeddings were successfullt deleted,
             `False` otherwise
         """
-        try:
-            cursor = self.db.cursor()
-            query = 'DELETE FROM embeddings WHERE repo_url=%s;'
-            cursor.execute(query, (repo_url,))
-            self.db.commit()
-            return True
-        except self.Error:
-            self.db.rollback()
-            return False
+        query = 'DELETE FROM embeddings WHERE repo_url=%s;'
+        return super().delete_embeddings(query, repo_url)
 
     def get_repo(self, repo_url):
         """ Get a repository.
