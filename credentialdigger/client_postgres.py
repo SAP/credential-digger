@@ -230,27 +230,18 @@ class PgClient(Client):
         repo_url: str
             The discoveries' repository url
         """
-        cursor = self.db.cursor()
         discoveries = self.get_discoveries(repo_url)
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
         model = build_embedding_model()
         embeddings = [compute_snippet_embedding(s, model) for s in snippets]
-        try:
-            query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+        query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
                     VALUES (%s, %s, %s, %s);'
-            insert_tuples = list(zip(discoveries_ids,
-                                     snippets,
-                                     embeddings,
-                                     [repo_url] * len(discoveries)))
-            cursor.executemany(query, insert_tuples)
-            self.db.commit()
-        except Error:
-            self.db.rollback()
-            map(lambda disc_id, emb: self.add_embedding(disc_id,
-                                                        emb,
-                                                        repo_url=repo_url),
-                zip(discoveries_ids, embeddings))
+        return super().add_embeddings(query,
+                                      discoveries_ids,
+                                      snippets,
+                                      embeddings,
+                                      repo_url)
 
     def delete_rule(self, ruleid):
         """Delete a rule from database

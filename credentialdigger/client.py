@@ -149,9 +149,27 @@ class Client(Interface):
         except self.Error:
             self.db.rollback()
 
-    @abstractmethod
-    def add_embeddings(self, query, repo_url):
-        return
+    def add_embeddings(self,
+                       query,
+                       discoveries_ids,
+                       snippets,
+                       embeddings,
+                       repo_url):
+        cursor = self.db.cursor()
+        try:
+            insert_tuples = list(zip(discoveries_ids,
+                                     snippets,
+                                     embedding_strings,
+                                     [repo_url] * len(discoveries)))
+            cursor.executemany(query, insert_tuples)
+            self.db.commit()
+        except self.Error:
+            self.db.rollback()
+            map(lambda disc_id, emb: self.add_embedding(disc_id,
+                                                        emb,
+                                                        repo_url=repo_url),
+                zip(discoveries_ids, embedding_strings))
+
 
     def add_repo(self, query, repo_url):
         """ Add a new repository.

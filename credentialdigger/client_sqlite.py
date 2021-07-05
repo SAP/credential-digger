@@ -227,7 +227,6 @@ class SqliteClient(Client):
         repo_url: str
             The discoveries' repository url
         """
-        cursor = self.db.cursor()
         discoveries = self.get_discoveries(repo_url)
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
@@ -239,21 +238,13 @@ class SqliteClient(Client):
             for emb in embedding:
                 embedding_string += str(emb) + ","
             embedding_strings.append(embedding_string)
-        try:
-            query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
+        query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
                     VALUES (?, ?, ?, ?);'
-            insert_tuples = list(zip(discoveries_ids,
-                                     snippets,
-                                     embedding_strings,
-                                     [repo_url] * len(discoveries)))
-            cursor.executemany(query, insert_tuples)
-            self.db.commit()
-        except Error:
-            self.db.rollback()
-            map(lambda disc_id, emb: self.add_embedding(disc_id,
-                                                        emb,
-                                                        repo_url=repo_url),
-                zip(discoveries_ids, embedding_strings))
+        return super().add_embeddings(query,
+                                      discoveries_ids,
+                                      snippets,
+                                      embedding_strings,
+                                      repo_url)
 
     def add_repo(self, repo_url):
         """ Add a new repository.
