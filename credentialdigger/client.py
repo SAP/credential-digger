@@ -719,7 +719,7 @@ class Client(Interface):
             use the pre-trained extractor model
         similarity: bool, default `False`
             Decide whether to build the embedding model and to compute and add
-            embeddings, to allow for updating of similar discoveries 
+            embeddings, to allow for updating of similar discoveries
         local_repo: bool, optional
             If True, get the repository from a local directory instead of the
             web
