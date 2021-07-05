@@ -155,6 +155,21 @@ class Client(Interface):
                        snippets,
                        embeddings,
                        repo_url):
+        """ Bulk add embeddings to the embeddings table.
+        
+        Parameters
+        ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
+        discoveries_ids: list
+            The ids of the discoveries whose embeddings are to be added
+        snippets: list
+            The snippets whose embeddings are to be added
+        embeddings: list
+            The embeddings to be added
+        repo_url: str
+            The discovery's repository url
+        """
         cursor = self.db.cursor()
         try:
             insert_tuples = list(zip(discoveries_ids,
