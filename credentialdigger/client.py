@@ -120,7 +120,37 @@ class Client(Interface):
     def add_discoveries(self, query, discoveries, repo_url):
         return
 
-    def add_embedding(self, query, discovery_id, snippet):
+    def add_embedding(self,
+                      query,
+                      discovery_id,
+                      snippet,
+                      embedding=None,
+                      repo_url=''):
+        """ Add an embedding to the embeddings table.
+        
+        Parameters
+        ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
+        discovery_id: int
+            The id of the discovery whose embedding is being added
+        embedding: list
+            The embedding being added
+        repo_url: str
+            The discovery's repository url
+        """
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(query, (discovery_id,
+                                   embedding,
+                                   snippet,
+                                   repo_url))
+            self.db.commit()
+        except self.Error:
+            self.db.rollback()
+
+    @abstractmethod
+    def add_embeddings(self, query, repo_url):
         return
 
     def add_repo(self, query, repo_url):
@@ -485,12 +515,30 @@ class Client(Interface):
         return cursor.fetchall()
 
     def get_embedding(self, query, discovery_id=None, snippet=None):
+        """ Retrieve a discovery embedding.
+        Parameters
+        ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
+        discovery_id: int
+            The id of the discovery whose embedding is being retrieved
+        snippet: str
+            The snippet whose embedding is being retrieved. Only used if
+            discovery_id is not provided
+        Returns
+        -------
+        list or str
+            The embedding for the provided
+            snippet or id
+        """
         cursor = self.db.cursor()
         try:
             if discovery_id:
                 cursor.execute(query, (discovery_id,))
-            else:
+            elif snippet:
                 cursor.execute(query, (snippet,))
+            else:
+                return ()
             return cursor.fetchone()
         except self.Error:
             return ()
@@ -625,6 +673,9 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
+        similarity: bool, default `False`
+            Decide whether to build the embedding model and to compute and add
+            embeddings, to allow for updating of similar discoveries        
         local_repo: bool, optional
             If True, get the repository from a local directory instead of the
             web
@@ -827,6 +878,9 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
+        similarity: bool, default `False`
+            Decide whether to build the embedding model and to compute and add
+            embeddings, to allow for updating of similar discoveries
         scanner_kwargs: kwargs
             Keyword arguments to be passed to the scanner
 
@@ -918,6 +972,7 @@ class Client(Interface):
                 logger.warning('SnippetModel not found. Skip it.')
 
         if similarity:
+            logger.info('Build embedding model for this repository')
             model = build_embedding_model()
         # Insert the discoveries into the db
         discoveries_ids = list()
@@ -1066,6 +1121,7 @@ class Client(Interface):
                                 threshold=0.96):
         """ Find snippets that are similar to the target
         snippet and update their state.
+        
         Parameters
         ----------
         target_snippet: str
@@ -1079,6 +1135,7 @@ class Client(Interface):
             Values lesser than 0.94 do not generally imply any relevant
             amount of similarity between snippets, and should
             therefore not be used.
+        
         Returns
         -------
         int
@@ -1089,19 +1146,22 @@ class Client(Interface):
         # Compute target snippet embedding
         target_embedding = self.get_embedding(snippet=target_snippet)
         n_updated_snippets = 0
-        if target_embedding:
+        # If specified target snippet is not found in the embeddings table,
+        # no update is performed
+        if not target_embedding:
+            return 0
+        # We have a target embedding for the target snippet
+        else:
             for d in discoveries:
                 if (
                     d['state'] != state
                     and self.get_embedding(discovery_id=d['id'])
                 ):
-                    # Compute similarity of target snippet and snippet
+                    # Compute similarity of target embedding and embedding
                     embedding = self.get_embedding(discovery_id=d['id'])
                     similarity = compute_similarity(target_embedding,
                                                     embedding)
                     if similarity > threshold:
-                        n_updated_snippets += 1
                         self.update_discovery(d['id'], state)
+                        n_updated_snippets += 1
             return n_updated_snippets
-        else:
-            return 0

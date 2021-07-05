@@ -419,7 +419,7 @@ def update_similar_discoveries():
     response2 = c.update_similar_snippets(target_snippet,
                                           state,
                                           url)
-    if (response1 is False or response2 is False):
+    if response1 is False or response2 is False:
         return 'Error in updating similar snippets', 500
     else:
         return 'OK', 200

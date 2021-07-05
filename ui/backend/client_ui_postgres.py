@@ -169,6 +169,13 @@ class PgUiClient(UiClient, PgClient):
             ))
 
     def add_embeddings(self, repo_url):
+        """ Bulk add embeddings.
+        
+        Parameters
+        ----------
+        repo_url: str
+            The discoveries' repository url
+        """
         cursor = self.db.cursor()
         discoveries = self.get_discoveries(repo_url)[1]
         discoveries_ids = [d['id'] for d in discoveries]
@@ -178,12 +185,10 @@ class PgUiClient(UiClient, PgClient):
         try:
             query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
                     VALUES (%s, %s, %s, %s);'
-            insert_tuples = []
-            for i in range(len(discoveries_ids)):
-                insert_tuples.append((discoveries_ids[i],
-                                      embeddings[i],
-                                      snippets[i],
-                                      repo_url,))
+            insert_tuples = list(zip(discoveries_ids,
+                                     snippets,
+                                     embeddings,
+                                     [repo_url] * len(discoveries)))
             cursor.executemany(query, insert_tuples)
             self.db.commit()
         except Error:

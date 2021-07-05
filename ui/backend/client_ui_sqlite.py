@@ -172,26 +172,33 @@ class SqliteUiClient(UiClient, SqliteClient):
             ))
 
     def add_embeddings(self, repo_url):
+        """ Bulk add embeddings.
+        
+        Parameters
+        ----------
+        repo_url: str
+            The discoveries' repository url
+        """
         cursor = self.db.cursor()
         discoveries = self.get_discoveries(repo_url)[1]
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
         model = build_embedding_model()
         embeddings = [compute_snippet_embedding(s, model) for s in snippets]
-        embedding_strings = ["" for i in discoveries]
-        for i in range(len(discoveries_ids)):
-            for emb in embeddings[i]:
-                embedding_strings[i] += str(emb) + ","
+        embedding_strings = []
+        for embedding in embeddings:
+            embedding_string = ""
+            for emb in embedding:
+                embedding_string += str(emb) + ","
+            embedding_strings.append(embedding_string)
         try:
             query = 'INSERT INTO embeddings \
                     (id, snippet, embedding, repo_url) \
                     VALUES (?, ?, ?, ?);'
-            insert_tuples = []
-            for i in range(len(discoveries_ids)):
-                insert_tuples.append((discoveries_ids[i],
-                                      snippets[i],
-                                      embedding_strings[i],
-                                      repo_url,))
+            insert_tuples = list(zip(discoveries_ids,
+                                     snippets,
+                                     embedding_strings,
+                                     [repo_url] * len(discoveries)))
             cursor.executemany(query, insert_tuples)
             self.db.commit()
         except Error:

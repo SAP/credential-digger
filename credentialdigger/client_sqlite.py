@@ -206,22 +206,19 @@ class SqliteClient(Client):
         """
         cursor = self.db.cursor()
         snippet = self.get_discovery(discovery_id)['snippet']
-        if embedding is None:
+        if not embedding:
             model = build_embedding_model()
             embedding = compute_snippet_embedding(snippet, model)
-        try:
-            embedding_str = ""
-            for emb in embedding:
-                embedding_str += str(emb) + ","
-            query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
-                    VALUES (?, ?, ?, ?);'
-            cursor.execute(query, (discovery_id,
-                                   embedding_str,
-                                   snippet,
-                                   repo_url))
-            self.db.commit()
-        except Error:
-            self.db.rollback()
+        embedding_str = ""
+        for emb in embedding:
+            embedding_str += str(emb) + ","
+        query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+                VALUES (?, ?, ?, ?);'
+        return super().add_embedding(query,
+                                     discovery_id,
+                                     snippet,
+                                     embedding_str,
+                                     repo_url)
 
     def add_embeddings(self, repo_url):
         """ Bulk add embeddings.
@@ -237,19 +234,19 @@ class SqliteClient(Client):
         snippets = [d['snippet'] for d in discoveries]
         model = build_embedding_model()
         embeddings = [compute_snippet_embedding(s, model) for s in snippets]
-        embedding_strings = ["" for i in discoveries]
-        for i in range(len(discoveries_ids)):
-            for emb in embeddings[i]:
-                embedding_strings[i] += str(emb) + ","
+        embedding_strings = []
+        for embedding in embeddings:
+            embedding_string = ""
+            for emb in embedding:
+                embedding_string += str(emb) + ","
+            embedding_strings.append(embedding_string)
         try:
             query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
                     VALUES (?, ?, ?, ?);'
-            insert_tuples = []
-            for i in range(len(discoveries_ids)):
-                insert_tuples.append((discoveries_ids[i],
-                                      snippets[i],
-                                      embedding_strings[i],
-                                      repo_url))
+            insert_tuples = list(zip(discoveries_ids,
+                                     snippets,
+                                     embedding_strings,
+                                     [repo_url] * len(discoveries)))
             cursor.executemany(query, insert_tuples)
             self.db.commit()
         except Error:
@@ -539,8 +536,10 @@ class SqliteClient(Client):
 
         if discovery_id:
             query = 'SELECT embedding FROM embeddings WHERE id=?'
-        else:
+        elif snippet:
             query = 'SELECT embedding FROM embeddings WHERE snippet=?'
+        else:
+            return None
         str_embedding = super().get_embedding(query=query,
                                               discovery_id=discovery_id,
                                               snippet=snippet)
@@ -548,7 +547,6 @@ class SqliteClient(Client):
         if str_embedding:
             embedding = [float(emb)
                          for emb in str_embedding[0].split(",")[:-1]]
-
         return embedding
 
     def update_repo(self, url, last_scan):
