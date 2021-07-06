@@ -55,7 +55,7 @@ class SqliteClient(Client):
                 id INTEGER REFERENCES discoveries,
                 snippet TEXT DEFAULT '',
                 embedding TEXT DEFAULT '',
-                repo_url TEXT REFERENCES repos,
+                repo_url TEXT,
                 PRIMARY KEY (id)
             );
 
@@ -204,20 +204,24 @@ class SqliteClient(Client):
         repo_url: str
             The discovery's repository url
         """
+        cursor = self.db.cursor()
         snippet = self.get_discovery(discovery_id)['snippet']
-        if not embedding:
+        if embedding is None:
             model = build_embedding_model()
             embedding = compute_snippet_embedding(snippet, model)
-        embedding_str = ""
-        for emb in embedding:
-            embedding_str += str(emb) + ","
-        query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
-                VALUES (?, ?, ?, ?);'
-        return super().add_embedding(query,
-                                     discovery_id,
-                                     snippet,
-                                     embedding_str,
-                                     repo_url)
+        try:
+            embedding_str = ""
+            for emb in embedding:
+                embedding_str += str(emb) + ","
+            query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+                    VALUES (?, ?, ?, ?);'
+            cursor.execute(query, (discovery_id,
+                                   embedding_str,
+                                   snippet,
+                                   repo_url))
+            self.db.commit()
+        except Error:
+            self.db.rollback()
 
     def add_embeddings(self, repo_url):
         """ Bulk add embeddings.
@@ -227,24 +231,33 @@ class SqliteClient(Client):
         repo_url: str
             The discoveries' repository url
         """
+        cursor = self.db.cursor()
         discoveries = self.get_discoveries(repo_url)
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
         model = build_embedding_model()
         embeddings = [compute_snippet_embedding(s, model) for s in snippets]
-        embedding_strings = []
-        for embedding in embeddings:
-            embedding_string = ""
-            for emb in embedding:
-                embedding_string += str(emb) + ","
-            embedding_strings.append(embedding_string)
-        query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
+        embedding_strings = ["" for i in discoveries]
+        for i in range(len(discoveries_ids)):
+            for emb in embeddings[i]:
+                embedding_strings[i] += str(emb) + ","
+        try:
+            query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
                     VALUES (?, ?, ?, ?);'
-        return super().add_embeddings(query,
-                                      discoveries_ids,
-                                      snippets,
-                                      embedding_strings,
-                                      repo_url)
+            insert_tuples = []
+            for i in range(len(discoveries_ids)):
+                insert_tuples.append((discoveries_ids[i],
+                                      snippets[i],
+                                      embedding_strings[i],
+                                      repo_url))
+            cursor.executemany(query, insert_tuples)
+            self.db.commit()
+        except Error:
+            self.db.rollback()
+            map(lambda disc_id, emb: self.add_embedding(disc_id,
+                                                        emb,
+                                                        repo_url=repo_url),
+                zip(discoveries_ids, embedding_strings))
 
     def add_repo(self, repo_url):
         """ Add a new repository.
@@ -357,6 +370,7 @@ class SqliteClient(Client):
             `True` if embedding was successfully deleted,
             `False` otherwise
         """
+
         return super().delete_embedding(
             query='DELETE FROM embeddings WHERE id=?',
             discovery_id=discovery_id)
@@ -375,8 +389,15 @@ class SqliteClient(Client):
             `True` if embeddings were successfully deleted,
             `False` otherwise
         """
-        query = 'DELETE FROM embeddings WHERE repo_url=?;'
-        return super().delete_embeddings(query, repo_url)
+        try:
+            cursor = self.db.cursor()
+            query = 'DELETE FROM embeddings WHERE repo_url=?;'
+            cursor.execute(query, (repo_url,))
+            self.db.commit()
+            return True
+        except self.Error:
+            self.db.rollback()
+            return False
 
     def get_repo(self, repo_url):
         """ Get a repository.
@@ -518,10 +539,8 @@ class SqliteClient(Client):
 
         if discovery_id:
             query = 'SELECT embedding FROM embeddings WHERE id=?'
-        elif snippet:
-            query = 'SELECT embedding FROM embeddings WHERE snippet=?'
         else:
-            return None
+            query = 'SELECT embedding FROM embeddings WHERE snippet=?'
         str_embedding = super().get_embedding(query=query,
                                               discovery_id=discovery_id,
                                               snippet=snippet)
@@ -529,6 +548,7 @@ class SqliteClient(Client):
         if str_embedding:
             embedding = [float(emb)
                          for emb in str_embedding[0].split(",")[:-1]]
+
         return embedding
 
     def update_repo(self, url, last_scan):
