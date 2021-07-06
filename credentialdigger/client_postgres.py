@@ -200,6 +200,7 @@ class PgClient(Client):
 
     def add_embedding(self, discovery_id, embedding=None, repo_url=''):
         """ Add an embedding to the embeddings table.
+        
         Parameters
         ----------
         discovery_id: int
@@ -209,54 +210,38 @@ class PgClient(Client):
         repo_url: str
             The discovery's repository url
         """
-
-        cursor = self.db.cursor()
         snippet = self.get_discovery(discovery_id)['snippet']
-        if embedding is None:
+        if not embedding:
             model = build_embedding_model()
             embedding = compute_snippet_embedding(snippet, model)
-        try:
-            query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
-                    VALUES (%s, %s, %s, %s);'
-            cursor.execute(query, (discovery_id,
-                                   embedding,
-                                   snippet,
-                                   repo_url))
-            self.db.commit()
-        except Error:
-            self.db.rollback()
+        query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+                VALUES (%s, %s, %s, %s);'
+        return super().add_embedding(query,
+                                     discovery_id,
+                                     embedding,
+                                     snippet,
+                                     repo_url)
 
     def add_embeddings(self, repo_url):
         """ Bulk add embeddings.
+        
         Parameters
         ----------
         repo_url: str
             The discoveries' reposiroty url
         """
-
-        cursor = self.db.cursor()
         discoveries = self.get_discoveries(repo_url)
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
         model = build_embedding_model()
         embeddings = [compute_snippet_embedding(s, model) for s in snippets]
-        try:
-            query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+        query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
                     VALUES (%s, %s, %s, %s);'
-            insert_tuples = []
-            for i in range(len(discoveries_ids)):
-                insert_tuples.append((discoveries_ids[i],
-                                      embeddings[i],
-                                      snippets[i],
-                                      repo_url))
-            cursor.executemany(query, insert_tuples)
-            self.db.commit()
-        except Error:
-            self.db.rollback()
-            map(lambda disc_id, emb: self.add_embedding(disc_id,
-                                                        emb,
-                                                        repo_url=repo_url),
-                zip(discoveries_ids, embeddings))
+        return super().add_embeddings(query,
+                                      discoveries_ids,
+                                      snippets,
+                                      embeddings,
+                                      repo_url)
 
     def delete_rule(self, ruleid):
         """Delete a rule from database
@@ -315,6 +300,7 @@ class PgClient(Client):
 
     def delete_embedding(self, discovery_id):
         """ Delete an embedding.
+        
         Parameters
         ----------
         discovery_id: int
@@ -332,6 +318,7 @@ class PgClient(Client):
 
     def delete_embeddings(self, repo_url):
         """ Delete all embeddings from a repository.
+        
         Parameters
         ----------
         repo_url: str
@@ -343,15 +330,8 @@ class PgClient(Client):
             `True` if embeddings were successfullt deleted,
             `False` otherwise
         """
-        try:
-            cursor = self.db.cursor()
-            query = 'DELETE FROM embeddings WHERE repo_url=%s;'
-            cursor.execute(query, (repo_url,))
-            self.db.commit()
-            return True
-        except self.Error:
-            self.db.rollback()
-            return False
+        query = 'DELETE FROM embeddings WHERE repo_url=%s;'
+        return super().delete_embeddings(query, repo_url)
 
     def get_repo(self, repo_url):
         """ Get a repository.
@@ -479,6 +459,7 @@ class PgClient(Client):
 
     def get_embedding(self, discovery_id=None, snippet=None):
         """ Retrieve a discovery embedding.
+        
         Parameters
         ----------
         discovery_id: int
@@ -495,8 +476,10 @@ class PgClient(Client):
         """
         if discovery_id:
             query = 'SELECT embedding FROM embeddings WHERE id=%s'
-        else:
+        elif snippet:
             query = 'SELECT embedding FROM embeddings WHERE snippet=%s'
+        else:
+            return none
         embedding = super().get_embedding(query=query,
                                           discovery_id=discovery_id,
                                           snippet=snippet)
