@@ -155,7 +155,7 @@ class Client(Interface):
                        embeddings,
                        repo_url):
         """ Bulk add embeddings to the embeddings table.
-        
+
         Parameters
         ----------
         query: str
@@ -571,7 +571,7 @@ class Client(Interface):
 
     def get_embedding(self, query, discovery_id=None, snippet=None):
         """ Retrieve a discovery embedding.
-        
+
         Parameters
         ----------
         query: str
@@ -581,7 +581,7 @@ class Client(Interface):
         snippet: str
             The snippet whose embedding is being retrieved. Only used if
             discovery_id is not provided
-        
+
         Returns
         -------
         list or str
@@ -1178,7 +1178,7 @@ class Client(Interface):
                                 threshold=0.96):
         """ Find snippets that are similar to the target
         snippet and update their state.
-        
+
         Parameters
         ----------
         target_snippet: str
@@ -1192,7 +1192,7 @@ class Client(Interface):
             Values lesser than 0.94 do not generally imply any relevant
             amount of similarity between snippets, and should
             therefore not be used.
-        
+
         Returns
         -------
         int

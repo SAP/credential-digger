@@ -200,7 +200,7 @@ class PgClient(Client):
 
     def add_embedding(self, discovery_id, embedding=None, repo_url=''):
         """ Add an embedding to the embeddings table.
-        
+
         Parameters
         ----------
         discovery_id: int
@@ -224,7 +224,7 @@ class PgClient(Client):
 
     def add_embeddings(self, repo_url):
         """ Bulk add embeddings.
-        
+
         Parameters
         ----------
         repo_url: str
@@ -300,7 +300,7 @@ class PgClient(Client):
 
     def delete_embedding(self, discovery_id):
         """ Delete an embedding.
-        
+
         Parameters
         ----------
         discovery_id: int
@@ -318,7 +318,7 @@ class PgClient(Client):
 
     def delete_embeddings(self, repo_url):
         """ Delete all embeddings from a repository.
-        
+
         Parameters
         ----------
         repo_url: str
@@ -459,7 +459,7 @@ class PgClient(Client):
 
     def get_embedding(self, discovery_id=None, snippet=None):
         """ Retrieve a discovery embedding.
-        
+
         Parameters
         ----------
         discovery_id: int
@@ -479,7 +479,7 @@ class PgClient(Client):
         elif snippet:
             query = 'SELECT embedding FROM embeddings WHERE snippet=%s'
         else:
-            return none
+            return None
         embedding = super().get_embedding(query=query,
                                           discovery_id=discovery_id,
                                           snippet=snippet)

@@ -173,7 +173,7 @@ class SqliteUiClient(UiClient, SqliteClient):
 
     def add_embeddings(self, repo_url):
         """ Bulk add embeddings.
-        
+
         Parameters
         ----------
         repo_url: str
