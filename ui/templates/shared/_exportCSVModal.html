@@ -1,0 +1,28 @@
+<!-- Export discoveries popup -->
+<div id="exportDiscovereisModal" class="modal">
+  <div class="modal-content">
+    <div class="topicHeaderWrapperAccept">
+      <h1 class="topicH1">Export discoveries as CSV</h1>
+    </div>
+    <span class="buttonsAccept">
+      <form name="export_discoveries" id="export_discoveries" action="/export_discoveries_csv" method="post">
+        <input name="repo_url" type="hidden" value="{{url}}">
+        <div><label><input type="checkbox"  name="check" value="new" checked>Export leaks
+            ({{leaks_count}})</label>
+        </div>
+        <div><label><input type="checkbox" name="check" value="false_positive" checked>Export false positives
+            ({{false_positives_count}})</label></div>
+        <div><label><input type="checkbox"  name="check" value="addressing" checked>Export 'addressing' discoveries
+            ({{addressing_count}})</label></div>
+        <div><label><input type="checkbox" name="check" value="not_relevant" checked>Export
+            'not-relevant' discoveries ({{not_relevant_count}})</label></div>
+        <div><label><input type="checkbox" name="check" value="fixed" checked>Export fixed discoveries
+            ({{fixed_count}})</label></div>
+        <br>
+        <button type="submit" class="btn outline-bg">Export</button>
+        <button type="button" class="btn outline-bg modal-closer">Cancel</button>
+      </form>
+
+    </span>
+  </div>
+</div>
