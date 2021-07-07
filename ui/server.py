@@ -1,5 +1,7 @@
+import csv
 import os
 import sys
+import io
 import threading
 import uuid
 from collections import defaultdict
@@ -177,19 +179,39 @@ def discoveries():
     active_scans = _get_active_scans()
     scanning = url in active_scans
 
+    _, discoveries = c.get_discoveries(url, file)
+    leaks_count = c.count_discoveries_per_state(discoveries, state='new')
+    false_positives_count = c.count_discoveries_per_state(
+        discoveries, state='false_positive')
+    addressing_count = c.count_discoveries_per_state(
+        discoveries, state='addressing')
+    not_relevant_count = c.count_discoveries_per_state(
+        discoveries, state='not_relevant')
+    fixed_count = c.count_discoveries_per_state(discoveries, state='fixed')
+
     if file:
         return render_template('discoveries/file.html',
                                url=url,
                                file=file,
                                discoveries_count=discoveries_count,
                                scanning=scanning,
-                               categories=list(cat))
+                               categories=list(cat),
+                               leaks_count=leaks_count,
+                               false_positives_count=false_positives_count,
+                               addressing_count=addressing_count,
+                               not_relevant_count=not_relevant_count,
+                               fixed_count=fixed_count)
     else:
         return render_template('discoveries/discoveries.html',
                                url=url,
                                discoveries_count=discoveries_count,
                                scanning=scanning,
-                               categories=list(cat))
+                               categories=list(cat),
+                               leaks_count=leaks_count,
+                               false_positives_count=false_positives_count,
+                               addressing_count=addressing_count,
+                               not_relevant_count=not_relevant_count,
+                               fixed_count=fixed_count)
 
 
 @app.route('/rules')
@@ -356,14 +378,7 @@ def get_discoveries():
         order_direction=order_direction)
 
     # Add the category to each discovery
-    rulesdict, cat = _get_rules()
-    categories_found = set()
-    for discovery in discoveries:
-        if discovery['rule_id']:
-            discovery['category'] = rulesdict[discovery['rule_id']]['category']
-        else:
-            discovery['category'] = '(rule deleted)'
-        categories_found.add(discovery['category'])
+    discoveries = assign_categories(discoveries)
 
     # Build the response json
     class States(Enum):
@@ -416,20 +431,57 @@ def update_discovery_group():
     else:
         return 'OK', 200
 
-@app.route('/export_discoveries_csv', methods=['GET'])
-def export_discoveries_csv():
-    url = request.args.get('repo_url')
-    _, discoveries = c.get_discoveries(url)
-    # Add the category to each discovery
+
+def assign_categories(discoveries):
+    """ Add the category to each discovery
+
+    Parameters
+    ----------
+    discoveries: list
+        List of discoveries without assigned categories to them
+
+    Returns
+    -------
+    list
+        List of discoveries with categories assigned to them
+    """
     rulesdict, cat = _get_rules()
-    categories_found = set()
     for discovery in discoveries:
         if discovery['rule_id']:
             discovery['category'] = rulesdict[discovery['rule_id']]['category']
         else:
             discovery['category'] = '(rule deleted)'
-        categories_found.add(discovery['category'])
-    return jsonify(discoveries)
+
+    return discoveries
+
+
+@app.route('/export_discoveries_csv', methods=['GET', 'POST'])
+def export_discoveries_csv():
+    url = request.form.get('repo_url')
+    _, discoveries = c.get_discoveries(url)
+
+    # Add the category to each discovery
+    discoveries = assign_categories(discoveries)
+
+    # States of discoveries to export
+    states = request.form.getlist('check')
+
+    # filter out based on states
+    filtered_discoveries = []
+    for d in discoveries:
+        if d['state'] in states:
+            filtered_discoveries.append(d)
+
+    si = io.StringIO()
+    keys = discoveries[0].keys()
+    cw = csv.DictWriter(si, keys)
+    cw.writeheader()
+    cw.writerows(filtered_discoveries)
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=discoveries.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
+
 
 jwt = JWTManager(app)
 if __name__ == '__main__':
