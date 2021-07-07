@@ -477,10 +477,11 @@ def export_discoveries_csv():
     cw = csv.DictWriter(si, keys)
     cw.writeheader()
     cw.writerows(filtered_discoveries)
-    output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = "attachment; filename=discoveries.csv"
-    output.headers["Content-type"] = "text/csv"
-    return output
+    response_csv = make_response(si.getvalue())
+    response_csv.headers["Content-Disposition"] = "attachment; \
+                                                filename=discoveries.csv"
+    response_csv.headers["Content-type"] = "text/csv"
+    return response_csv
 
 
 jwt = JWTManager(app)
