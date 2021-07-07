@@ -21,6 +21,7 @@ function initFilesDataTable() {
   const repoUrl = document.querySelector('#repo-url').innerText;
   $('#files-table').DataTable({
     ...defaultTableSettings,
+    pageLength: localStorage.hasOwnProperty('sharedPageLength') ? localStorage.getItem("sharedPageLength") : 10,
     order: [[1, "desc"]], // Set default column sorting
     columns: [ // Table columns definition
       {
@@ -68,6 +69,10 @@ function initFilesDataTable() {
       }
     }
   });
+
+  $('#files-table').on('length.dt', function (e, settings, len) {
+    localStorage.setItem('sharedPageLength', len);
+  });
 }
 
 /**
@@ -78,6 +83,7 @@ function initDiscoveriesDataTable() {
   const filename = document.querySelector('#file-name').innerText;
   $('#discoveries-table').DataTable({
     ...defaultTableSettings,
+    pageLength: localStorage.hasOwnProperty('sharedPageLength') ? localStorage.getItem("sharedPageLength") : 10,
     serverSide: true,
     order: [[3, "asc"]], // Set default column sorting
     columns: [ // Table columns definition
@@ -181,7 +187,12 @@ function initDiscoveriesDataTable() {
         </div>`);
       $('#select-filter-container').append(select);
     }
-  });
+  },
+
+    $('#discoveries-table').on('length.dt', function (e, settings, len) {
+      localStorage.setItem('sharedPageLength', len);
+    })
+  );
 }
 
 /**
