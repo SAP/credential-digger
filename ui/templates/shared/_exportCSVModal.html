@@ -7,16 +7,19 @@
     <span class="buttonsAccept">
       <form name="export_discoveries" id="export_discoveries" action="/export_discoveries_csv" method="post">
         <input name="repo_url" type="hidden" value="{{url}}">
-        <div><label><input type="checkbox"  name="check" value="new" checked>Export leaks
+        <div><label><input type="checkbox" id='cbAll' name="checkAll" value="all" checked onchange="changeAll()">Export all
+            ({{discoveries_count}})</label>
+        </div>
+        <div><label><input type="checkbox"  name="check" value="new" onchange="alternateCheckBoxes()">Export leaks
             ({{leaks_count}})</label>
         </div>
-        <div><label><input type="checkbox" name="check" value="false_positive" checked>Export false positives
+        <div><label><input type="checkbox" name="check" value="false_positive" onchange="alternateCheckBoxes()">Export false positives
             ({{false_positives_count}})</label></div>
-        <div><label><input type="checkbox"  name="check" value="addressing" checked>Export 'addressing' discoveries
+        <div><label><input type="checkbox"  name="check" value="addressing" onchange="alternateCheckBoxes()">Export 'addressing' discoveries
             ({{addressing_count}})</label></div>
-        <div><label><input type="checkbox" name="check" value="not_relevant" checked>Export
+        <div><label><input type="checkbox" name="check" value="not_relevant" onchange="alternateCheckBoxes()">Export
             'not-relevant' discoveries ({{not_relevant_count}})</label></div>
-        <div><label><input type="checkbox" name="check" value="fixed" checked>Export fixed discoveries
+        <div><label><input type="checkbox" name="check" value="fixed" onchange="alternateCheckBoxes()">Export fixed discoveries
             ({{fixed_count}})</label></div>
         <br>
         <button type="submit" class="btn outline-bg">Export</button>
