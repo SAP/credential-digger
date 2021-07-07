@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function initReposDataTable() {
   $('#repos-table').DataTable({
     ...defaultTableSettings,
+    pageLength: localStorage.hasOwnProperty('sharedPageLength') ? localStorage.getItem("sharedPageLength") : 10,
     processing: false,
     order: [[0, "desc"], [1, "desc"]], // Set default column sorting
     columns: [ // Table columns definition
@@ -88,10 +89,14 @@ function initReposDataTable() {
           }
         })
       }
-    },
-  });
+    }
+  },
 
-  setInterval(function() {
+    $('#repos-table').on('length.dt', function (e, settings, len) {
+      localStorage.setItem('sharedPageLength', len);
+    }));
+
+  setInterval(function () {
     $('.dataTable').DataTable().ajax.reload(null, false);
   }, POLLING_INTERVAL);
 }
@@ -101,7 +106,7 @@ function initReposDataTable() {
  */
 function initDeleteRepo() {
   // Use jQuery for easier event delegation
-  $(document).on('click', '.delete-repo-btn', function() {
+  $(document).on('click', '.delete-repo-btn', function () {
     const url = this.dataset.url;
     document.querySelector('#deleteRepoModal input[name="repo_url"]').value = url;
   });
