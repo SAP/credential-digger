@@ -226,3 +226,26 @@ class UiClient(Client):
                 n_updated_snippets += 1
                 self.update_discovery(d['id'], state)
         return n_updated_snippets
+
+    def count_discoveries_per_state(self, discoveries, state='new'):
+        """ Counts the number of occurences of a certain discovery type
+
+        Parameters
+        ----------
+        discoveries: list
+            List of discoveries
+        state: str
+            State of the discoveries to count, it can be one of these
+            ['new', 'false_positive', 'addressing', 'not_relevant', 'fixed']
+
+        Returns
+        -------
+        int
+            Number of occurences
+        """
+        count = 0
+        for d in discoveries:
+            if d['state'] == state:
+                count += 1
+
+        return count
