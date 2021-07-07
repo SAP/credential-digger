@@ -466,10 +466,11 @@ def export_discoveries_csv():
     # States of discoveries to export
     states = []
     if request.form.get('checkAll') == 'all':
-        states = ['new','false_positive','addressing','not_relevant','fixed']
+        states = ['new', 'false_positive',
+                  'addressing', 'not_relevant', 'fixed']
     else:
         states = request.form.getlist('check')
-        
+
     # filter out based on states
     filtered_discoveries = []
     for d in discoveries:
