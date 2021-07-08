@@ -191,28 +191,20 @@ def discoveries():
 
     page_to_render = 'discoveries/discoveries.html'
     if file:
-        return render_template('discoveries/file.html',
-                               url=url,
-                               file=file,
-                               discoveries_count=discoveries_count,
-                               scanning=scanning,
-                               categories=list(cat),
-                               leaks_count=leaks_count,
-                               false_positives_count=false_positives_count,
-                               addressing_count=addressing_count,
-                               not_relevant_count=not_relevant_count,
-                               fixed_count=fixed_count)
-    else:
-        return render_template('discoveries/discoveries.html',
-                               url=url,
-                               discoveries_count=discoveries_count,
-                               scanning=scanning,
-                               categories=list(cat),
-                               leaks_count=leaks_count,
-                               false_positives_count=false_positives_count,
-                               addressing_count=addressing_count,
-                               not_relevant_count=not_relevant_count,
-                               fixed_count=fixed_count)
+        page_to_render = 'discoveries/file.html'
+    
+    return render_template(page_to_render,
+                            url=url,
+                            file=file,
+                            discoveries_count=discoveries_count,
+                            scanning=scanning,
+                            categories=list(cat),
+                            leaks_count=leaks_count,
+                            false_positives_count=false_positives_count,
+                            addressing_count=addressing_count,
+                            not_relevant_count=not_relevant_count,
+                            fixed_count=fixed_count)
+
 
 
 @app.route('/rules')
