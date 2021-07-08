@@ -189,6 +189,7 @@ def discoveries():
         discoveries, state='not_relevant')
     fixed_count = c.count_discoveries_per_state(discoveries, state='fixed')
 
+    page_to_render = 'discoveries/discoveries.html'
     if file:
         return render_template('discoveries/file.html',
                                url=url,
