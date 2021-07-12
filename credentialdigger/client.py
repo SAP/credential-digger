@@ -125,7 +125,7 @@ class Client(Interface):
                       discovery_id,
                       snippet,
                       repo_url,
-                      embedding=None)
+                      embedding=None):
         """ Add an embedding to the embeddings table.
         Parameters
         ----------

@@ -1,10 +1,5 @@
-from sqlite3 import Error
-
 from credentialdigger import SqliteClient
 from credentialdigger.client import Discovery
-from credentialdigger.snippet_similarity import (
-    build_embedding_model,
-    compute_snippet_embedding)
 
 from .client_ui import UiClient
 
@@ -170,40 +165,3 @@ class SqliteUiClient(UiClient, SqliteClient):
                 " FROM discoveries WHERE repo_url=?"
                 " GROUP BY file_name"
             ))
-
-    def add_embeddings(self, repo_url):
-        """ Bulk add embeddings.
-
-        Parameters
-        ----------
-        repo_url: str
-            The discoveries' repository url
-        """
-        cursor = self.db.cursor()
-        discoveries = self.get_discoveries(repo_url)[1]
-        discoveries_ids = [d['id'] for d in discoveries]
-        snippets = [d['snippet'] for d in discoveries]
-        model = build_embedding_model()
-        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
-        embedding_strings = []
-        for embedding in embeddings:
-            embedding_string = ""
-            for emb in embedding:
-                embedding_string += str(emb) + ","
-            embedding_strings.append(embedding_string)
-        try:
-            query = 'INSERT INTO embeddings \
-                    (id, snippet, embedding, repo_url) \
-                    VALUES (?, ?, ?, ?);'
-            insert_tuples = list(zip(discoveries_ids,
-                                     snippets,
-                                     embedding_strings,
-                                     [repo_url] * len(discoveries)))
-            cursor.executemany(query, insert_tuples)
-            self.db.commit()
-        except Error:
-            self.db.rollback()
-            map(lambda disc_id, emb: self.add_embedding(disc_id,
-                                                        emb,
-                                                        repo_url=repo_url),
-                zip(discoveries_ids, embedding_strings))
