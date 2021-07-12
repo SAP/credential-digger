@@ -1,6 +1,6 @@
 import csv
-import os
 import io
+import os
 import sys
 import threading
 import uuid
