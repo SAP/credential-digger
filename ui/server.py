@@ -465,16 +465,22 @@ def export_discoveries_csv():
     filtered_discoveries = list(
         filter(lambda d: d.get('state') in states, discoveries))
 
-    stringIO = io.StringIO()
-    csv_writer = csv.DictWriter(stringIO, discoveries[0].keys())
-    csv_writer.writeheader()
-    csv_writer.writerows(filtered_discoveries)
-    response_csv = make_response(stringIO.getvalue())
-    response_csv.headers['Content-Disposition'] = 'attachment; \
-                                                filename=discoveries.csv'
-    response_csv.headers['Content-type'] = 'text/csv'
-    return response_csv
+    try:
+        stringIO = io.StringIO()
+        csv_writer = csv.DictWriter(stringIO, discoveries[0].keys())
+        csv_writer.writeheader()
+        csv_writer.writerows(filtered_discoveries)
+        response_csv = make_response(stringIO.getvalue())
+        response_csv.headers['Content-Disposition'] = 'attachment; \
+                                                    filename=discoveries.csv'
+        response_csv.headers['Content-type'] = 'text/csv'
+        return response_csv
+    except IndexError as error:
+        app.logger.error(error)
+    except Exception as exception:
+        app.logger.exception(exception)
 
+    return 'No content', 204
 
 jwt = JWTManager(app)
 if __name__ == '__main__':
