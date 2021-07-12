@@ -482,8 +482,9 @@ def export_discoveries_csv():
         csv_writer.writeheader()
         csv_writer.writerows(filtered_discoveries)
         response_csv = make_response(stringIO.getvalue())
-        response_csv.headers['Content-Disposition'] = 'attachment; \
-                                                    filename=discoveries.csv'
+        report_name = f'report-{url.split("/")[-1]}.csv'
+        response_csv.headers['Content-Disposition'] = f'attachment; \
+                                                    filename={report_name}'
         response_csv.headers['Content-type'] = 'text/csv'
         return response_csv
     except IndexError as error:
