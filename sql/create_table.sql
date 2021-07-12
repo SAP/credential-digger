@@ -32,7 +32,7 @@ CREATE TABLE discoveries (
 CREATE TABLE embeddings (
   id INTEGER REFERENCES discoveries,
   embedding FLOAT [],
-  snippet TEXT DEFAULT '',
+  snippet TEXT,
   repo_url TEXT REFERENCES repos,
   PRIMARY KEY (id)
 );

@@ -53,8 +53,8 @@ class SqliteClient(Client):
 
             CREATE TABLE IF NOT EXISTS embeddings (
                 id INTEGER REFERENCES discoveries,
-                snippet TEXT DEFAULT '',
-                embedding TEXT DEFAULT '',
+                snippet TEXT,
+                embedding TEXT,
                 repo_url TEXT REFERENCES repos,
                 PRIMARY KEY (id)
             );
@@ -192,7 +192,7 @@ class SqliteClient(Client):
                 state=d['state']
             ), discoveries)
 
-    def add_embedding(self, discovery_id, embedding=None, repo_url=''):
+    def add_embedding(self, discovery_id, repo_url, embedding=None):
         """ Add an embedding to the embeddings table.
 
         Parameters
@@ -208,16 +208,14 @@ class SqliteClient(Client):
         if not embedding:
             model = build_embedding_model()
             embedding = compute_snippet_embedding(snippet, model)
-        embedding_str = ""
-        for emb in embedding:
-            embedding_str += str(emb) + ","
+        embedding_str = ','.join(map(str, embedding))
         query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
                 VALUES (?, ?, ?, ?);'
         return super().add_embedding(query,
                                      discovery_id,
                                      snippet,
-                                     embedding_str,
-                                     repo_url)
+                                     repo_url,
+                                     embedding_str)
 
     def add_embeddings(self, repo_url):
         """ Bulk add embeddings.
@@ -227,23 +225,18 @@ class SqliteClient(Client):
         repo_url: str
             The discoveries' repository url
         """
-        discoveries = self.get_discoveries(repo_url)
-        discoveries_ids = [d['id'] for d in discoveries]
-        snippets = [d['snippet'] for d in discoveries]
-        model = build_embedding_model()
-        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
+        [discoveries_ids, snippets, embeddings] = self.compute_repo_embeddings(
+                                                repo_url)
         embedding_strings = []
         for embedding in embeddings:
-            embedding_string = ""
-            for emb in embedding:
-                embedding_string += str(emb) + ","
+            embedding_string = ','.join(map(str, embedding))
             embedding_strings.append(embedding_string)
         query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
                 VALUES (?, ?, ?, ?);'
         return super().add_embeddings(query,
                                       discoveries_ids,
                                       snippets,
-                                      embeddings,
+                                      embedding_strings,
                                       repo_url)
 
     def add_repo(self, repo_url):
@@ -308,7 +301,8 @@ class SqliteClient(Client):
                                    query='DELETE FROM rules WHERE id=?')
 
     def delete_repo(self, repo_url):
-        """ Delete a repository.
+        """ Delete a repository. Also triggers the deletion of
+        embeddings for the repository, if present.
 
         Parameters
         ----------
@@ -502,6 +496,12 @@ class SqliteClient(Client):
     def get_embedding(self, discovery_id=None, snippet=None):
         """ Retrieve a discovery embedding.
 
+        This method retrieves the embedding of the discovery whose id is
+        passed as argument.
+        If no id is provided, the method retrieves the embedding of
+        the arguments' snippet.
+        If the snippet is missing as well, None is returned.
+
         Parameters
         ----------
         discovery_id: int
@@ -528,8 +528,31 @@ class SqliteClient(Client):
         embedding = []
         if str_embedding:
             embedding = [float(emb)
-                         for emb in str_embedding[0].split(",")[:-1]]
+                         for emb in str_embedding.split(",")]
         return embedding
+
+    def get_embeddings(self, repo_url):
+        """ Retrieve embeddings for an entire repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The repository url
+
+        Returns
+        -------
+        dictionary
+            A dictionary with discovery ids as keys and matching
+            embeddings as values
+        """
+        query = 'SELECT id, embedding FROM embeddings WHERE repo_url=?;'
+        str_embeddings_dict = super().get_embeddings(query=query,
+                                                     repo_url=repo_url)
+        embeddings_dict = {}
+        for id, str_embedding in str_embeddings_dict.items():
+            embeddings_dict[id] = [float(emb)
+                                   for emb in str_embedding.split(",")]
+        return embeddings_dict
 
     def update_repo(self, url, last_scan):
         """ Update the last scan timestamp of a repo.

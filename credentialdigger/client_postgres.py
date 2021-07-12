@@ -198,17 +198,17 @@ class PgClient(Client):
             query='INSERT INTO rules (regex, category, description) \
                     VALUES (%s, %s, %s) RETURNING id')
 
-    def add_embedding(self, discovery_id, embedding=None, repo_url=''):
+    def add_embedding(self, discovery_id, repo_url, embedding=None):
         """ Add an embedding to the embeddings table.
 
         Parameters
         ----------
         discovery_id: int
             The id of the discovery whose embedding is being added
-        embedding: list
-            The embedding being added
         repo_url: str
             The discovery's repository url
+        embedding: list
+            The embedding being added
         """
         snippet = self.get_discovery(discovery_id)['snippet']
         if not embedding:
@@ -216,11 +216,11 @@ class PgClient(Client):
             embedding = compute_snippet_embedding(snippet, model)
         query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
                 VALUES (%s, %s, %s, %s);'
-        return super().add_embedding(query,
-                                     discovery_id,
-                                     embedding,
-                                     snippet,
-                                     repo_url)
+        super().add_embedding(query,
+                              discovery_id,
+                              snippet,
+                              repo_url,
+                              embedding)
 
     def add_embeddings(self, repo_url):
         """ Bulk add embeddings.
@@ -230,18 +230,15 @@ class PgClient(Client):
         repo_url: str
             The discoveries' reposiroty url
         """
-        discoveries = self.get_discoveries(repo_url)
-        discoveries_ids = [d['id'] for d in discoveries]
-        snippets = [d['snippet'] for d in discoveries]
-        model = build_embedding_model()
-        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
+        [discoveries_ids, snippets, embeddings] = self.compute_repo_embeddings(
+                                                repo_url)
         query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
-                    VALUES (%s, %s, %s, %s);'
-        return super().add_embeddings(query,
-                                      discoveries_ids,
-                                      snippets,
-                                      embeddings,
-                                      repo_url)
+                VALUES (%s, %s, %s, %s);'
+        super().add_embeddings(query,
+                               discoveries_ids,
+                               snippets,
+                               embeddings,
+                               repo_url)
 
     def delete_rule(self, ruleid):
         """Delete a rule from database
@@ -263,7 +260,8 @@ class PgClient(Client):
             query='DELETE FROM rules WHERE id=%s')
 
     def delete_repo(self, repo_url):
-        """ Delete a repository.
+        """ Delete a repository. Also triggers the deletion of
+        embeddings for the repository, if present.
 
         Parameters
         ----------
@@ -459,19 +457,25 @@ class PgClient(Client):
 
     def get_embedding(self, discovery_id=None, snippet=None):
         """ Retrieve a discovery embedding.
+        
+        This method retrieves the embedding of the discovery whose id is
+        passed as argument.
+        If no id is provided, the method retrieves the embedding of
+        the arguments' snippet.
+        If the snippet is missing as well, None is returned.
 
         Parameters
         ----------
-        discovery_id: int
+        discovery_id: int, optional
             The id of the discovery whose embedding is being retrieved
-        snippet: str
+        snippet: str, optional
             The snippet whose embedding is being retrieved. Only used if
             discovery_id is not provided
 
         Returns
         -------
         list
-            The embedding for the provided
+            The embedding (list of floats) for the provided
             snippet or id
         """
         if discovery_id:
@@ -480,13 +484,25 @@ class PgClient(Client):
             query = 'SELECT embedding FROM embeddings WHERE snippet=%s'
         else:
             return None
-        embedding = super().get_embedding(query=query,
-                                          discovery_id=discovery_id,
-                                          snippet=snippet)
-        if embedding:
-            return embedding[0]
-        else:
-            return None
+        return super().get_embedding(query=query,
+                                     discovery_id=discovery_id,
+                                     snippet=snippet)
+
+    def get_embeddings(self, repo_url):
+        """ Retrieve embeddings for an entire repository.
+        Parameters
+        ----------
+        repo_url: str
+            The repository url
+        Returns
+        -------
+        dictionary
+            A dictionary with discovery ids as keys and matching
+            embeddings as values
+        """
+        query = 'SELECT id, embedding FROM embeddings WHERE repo_url=%s;'
+        return super().get_embeddings(query=query,
+                                      repo_url=repo_url)
 
     def update_repo(self, url, last_scan):
         """ Update the last scan timestamp of a repo.
