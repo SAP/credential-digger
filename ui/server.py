@@ -320,6 +320,17 @@ def get_repos():
     repos = c.get_repos()
     for repo in repos:
         repo['lendiscoveries'] = c.get_discoveries_count(repo['url'])
+        _, discoveries = c.get_discoveries(repo['url'])
+        repo['leaks_count'] = c.count_discoveries_per_state(
+            discoveries, state='new')
+        repo['false_positives_count'] = c.count_discoveries_per_state(
+            discoveries, state='false_positive')
+        repo['addressing_count'] = c.count_discoveries_per_state(
+            discoveries, state='addressing')
+        repo['not_relevant_count'] = c.count_discoveries_per_state(
+            discoveries, state='not_relevant')
+        repo['fixed_count'] = c.count_discoveries_per_state(
+            discoveries, state='fixed')
         repo['scan_active'] = False
         if repo['url'] in active_scans:
             repo['scan_active'] = True
@@ -481,6 +492,7 @@ def export_discoveries_csv():
         app.logger.exception(exception)
 
     return 'No content', 204
+
 
 jwt = JWTManager(app)
 if __name__ == '__main__':
