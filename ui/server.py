@@ -370,7 +370,7 @@ def get_discoveries():
         order_direction=order_direction)
 
     # Add the category to each discovery
-    discoveries = assign_categories(discoveries)
+    discoveries = _assign_categories(discoveries)
 
     # Build the response json
     class States(Enum):
@@ -424,7 +424,7 @@ def update_discovery_group():
         return 'OK', 200
 
 
-def assign_categories(discoveries):
+def _assign_categories(discoveries):
     """ Add the category to each discovery
 
     Parameters
@@ -437,15 +437,13 @@ def assign_categories(discoveries):
     list
         List of discoveries with categories assigned to them
     """
-    rulesdict, cat = _get_rules()
+    rulesdict, _ = _get_rules()
     for discovery in discoveries:
         if discovery['rule_id']:
             discovery['category'] = rulesdict[discovery['rule_id']]['category']
         else:
             discovery['category'] = '(rule deleted)'
-
-    return discoveries
-
+            
 
 @app.route('/export_discoveries_csv', methods=['GET', 'POST'])
 def export_discoveries_csv():
@@ -453,7 +451,7 @@ def export_discoveries_csv():
     _, discoveries = c.get_discoveries(url)
 
     # Add the category to each discovery
-    discoveries = assign_categories(discoveries)
+    discoveries = _assign_categories(discoveries)
 
     # States of discoveries to export
     states = []
