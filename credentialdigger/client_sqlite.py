@@ -225,8 +225,9 @@ class SqliteClient(Client):
         repo_url: str
             The discoveries' repository url
         """
-        [discoveries_ids, snippets, embeddings] = self.compute_repo_embeddings(
-                                                repo_url)
+        [discoveries_ids,
+        snippets,
+        embeddings] = self.compute_repo_embeddings(repo_url)
         embedding_strings = []
         for embedding in embeddings:
             embedding_string = ','.join(map(str, embedding))
@@ -528,7 +529,7 @@ class SqliteClient(Client):
         embedding = []
         if str_embedding:
             embedding = [float(emb)
-                         for emb in str_embedding.split(",")]
+                         for emb in str_embedding.split(',')]
         return embedding
 
     def get_embeddings(self, repo_url):
@@ -551,7 +552,7 @@ class SqliteClient(Client):
         embeddings_dict = {}
         for id, str_embedding in str_embeddings_dict.items():
             embeddings_dict[id] = [float(emb)
-                                   for emb in str_embedding.split(",")]
+                                   for emb in str_embedding.split(',')]
         return embeddings_dict
 
     def update_repo(self, url, last_scan):

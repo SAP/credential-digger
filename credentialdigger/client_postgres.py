@@ -228,10 +228,11 @@ class PgClient(Client):
         Parameters
         ----------
         repo_url: str
-            The discoveries' reposiroty url
+            The discoveries' repository url
         """
-        [discoveries_ids, snippets, embeddings] = self.compute_repo_embeddings(
-                                                repo_url)
+        [discoveries_ids,
+        snippets,
+        embeddings] = self.compute_repo_embeddings(repo_url)
         query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
                 VALUES (%s, %s, %s, %s);'
         super().add_embeddings(query,
@@ -457,7 +458,7 @@ class PgClient(Client):
 
     def get_embedding(self, discovery_id=None, snippet=None):
         """ Retrieve a discovery embedding.
-        
+
         This method retrieves the embedding of the discovery whose id is
         passed as argument.
         If no id is provided, the method retrieves the embedding of
