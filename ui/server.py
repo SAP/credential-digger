@@ -462,20 +462,17 @@ def export_discoveries_csv():
         states = request.form.getlist('check')
 
     # filter out based on states
-    filtered_discoveries = []
-    for d in discoveries:
-        if d['state'] in states:
-            filtered_discoveries.append(d)
+    filtered_discoveries = list(
+        filter(lambda d: d.get('state') in states, discoveries))
 
-    si = io.StringIO()
-    keys = discoveries[0].keys()
-    cw = csv.DictWriter(si, keys)
-    cw.writeheader()
-    cw.writerows(filtered_discoveries)
-    response_csv = make_response(si.getvalue())
-    response_csv.headers["Content-Disposition"] = "attachment; \
-                                                filename=discoveries.csv"
-    response_csv.headers["Content-type"] = "text/csv"
+    stringIO = io.StringIO()
+    csv_writer = csv.DictWriter(stringIO, discoveries[0].keys())
+    csv_writer.writeheader()
+    csv_writer.writerows(filtered_discoveries)
+    response_csv = make_response(stringIO.getvalue())
+    response_csv.headers['Content-Disposition'] = 'attachment; \
+                                                filename=discoveries.csv'
+    response_csv.headers['Content-type'] = 'text/csv'
     return response_csv
 
 
