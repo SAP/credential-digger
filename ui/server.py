@@ -1,7 +1,7 @@
 import csv
 import os
-import sys
 import io
+import sys
 import threading
 import uuid
 from collections import defaultdict
