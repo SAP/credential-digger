@@ -43,12 +43,15 @@
   <tbody></tbody>
 </table>
 
+
 {% include 'shared/_deleteRepoModal.html' %}
+{% include 'shared/_exportCSVModal.html' %}
 
 {% with rescan=False %}
   {% include 'shared/_scanRepoModal.html' %}
 {% endwith %}
 
+<script src="/res/js/exportForm.js"></script>
 <script src="/res/js/scanForm.js"></script>
 <script src="/res/js/repos.js"></script>
 {% endblock %}
