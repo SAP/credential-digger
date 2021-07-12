@@ -226,8 +226,8 @@ class SqliteClient(Client):
             The discoveries' repository url
         """
         [discoveries_ids,
-        snippets,
-        embeddings] = self.compute_repo_embeddings(repo_url)
+         snippets,
+         embeddings] = self.compute_repo_embeddings(repo_url)
         embedding_strings = []
         for embedding in embeddings:
             embedding_string = ','.join(map(str, embedding))

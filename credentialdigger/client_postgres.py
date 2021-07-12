@@ -231,8 +231,8 @@ class PgClient(Client):
             The discoveries' repository url
         """
         [discoveries_ids,
-        snippets,
-        embeddings] = self.compute_repo_embeddings(repo_url)
+         snippets,
+         embeddings] = self.compute_repo_embeddings(repo_url)
         query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
                 VALUES (%s, %s, %s, %s);'
         super().add_embeddings(query,
