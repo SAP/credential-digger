@@ -127,6 +127,7 @@ class Client(Interface):
                       repo_url,
                       embedding=None):
         """ Add an embedding to the embeddings table.
+
         Parameters
         ----------
         query: str
