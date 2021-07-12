@@ -53,9 +53,9 @@ class SqliteClient(Client):
 
             CREATE TABLE IF NOT EXISTS embeddings (
                 id INTEGER REFERENCES discoveries,
-                snippet TEXT DEFAULT '',
-                embedding TEXT DEFAULT '',
-                repo_url TEXT DEFAULT '',
+                snippet TEXT,
+                embedding TEXT,
+                repo_url TEXT REFERENCES repos,
                 PRIMARY KEY (id)
             );
 
