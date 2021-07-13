@@ -69,8 +69,7 @@ class UiClient(Client):
 
     def check_repo(self, repo_url, git_token=None, local_repo=False,
                    branch_or_commit=None):
-        """
-        Check git token validity for the repository
+        """ Check git token validity for the repository.
 
         Parameters
         ----------
@@ -83,14 +82,14 @@ class UiClient(Client):
             If True, get the repository from a local directory instead of the
             web
         branch_or_commit: str
-            TODO
+            The branch name or the commit id the repo must be checked out at
 
         Returns
         -------
         bool
             True if the git token is valid for the repository, False otherwise
         str
-            TODO
+            The error raised (`None` if no errors where raised)
         """
         if local_repo:
             try:
@@ -116,7 +115,6 @@ class UiClient(Client):
                 return False, 'GitCommandError'
         return True, None
 
-    # TODO
     def _check_repo_commit(self, repo_url, commit_id, local_repo=False):
         """ Get a git repository.
 
@@ -128,7 +126,7 @@ class UiClient(Client):
             The location of the git repository (an url if local is False, a
             local path otherwise)
         branch_or_commit: str
-            TODO
+            The branch name or the commit id
         local_repo: bool
             If True, get the repository from a local directory instead of the
             web.
@@ -136,9 +134,10 @@ class UiClient(Client):
         Returns
         -------
         bool
-            TODO
+            Whether the repo has been successfully checked out at
+            `branch_or_commit`
         str
-            TODO
+            The error raised (`None` if no errors where raised)
 
         Raises
         ------
@@ -152,7 +151,10 @@ class UiClient(Client):
         """
         project_path = tempfile.mkdtemp()
         if local_repo:
-            # TODO: fix this (copied from git_scanner.get_git_repo)
+            # At the moment, local_repo is not supported and is always set to
+            # False
+            # TODO: implement and merge this (the following piece of code is
+            # copied from git_scanner.get_git_repo)
             # TODO: local_repo are not yet supported. The local_repo value is
             # always set to False (at this moment)
             project_path = os.path.join(tempfile.mkdtemp(), 'repo')

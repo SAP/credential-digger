@@ -18,9 +18,8 @@ def build_embedding_model():
          The embedding model, taking a list of strings as input,
          and outputting embeddings for each token of the input strings
     """
-
-    # Links for the pre-trained TensorFlow Hub preprocessing and encoding
-    # layers
+    # Links for the pre-trained TensorFlow Hub preprocessing
+    # and encoding layers
     tfhub_preprocessing = 'https://tfhub.dev/tensorflow/' \
                           'bert_en_uncased_preprocess/3'
     tfhub_encoder = 'https://tfhub.dev/tensorflow/small_bert/' \
@@ -53,37 +52,39 @@ def compute_snippet_embedding(snippet, model):
 
     Returns
     -------
-    np.array
+    list
         The 128 element embedding for the input snippet
     """
-
+    # Preprocess snippet
+    preprocessed_snippet = snippet.replace('\'', '"')
     # Compute snippet's token embeddings
-    small_bert_result = tf.squeeze(model(tf.constant([snippet])))
+    small_bert_result = tf.squeeze(model(tf.constant([preprocessed_snippet])))
     small_bert_embeddings = small_bert_result.numpy()
-    # Compute snippet's embedding as the mean of the token embeddings
+    # Compute snippet's embedding as mean of token embeddings
     snippet_embedding = np.mean(small_bert_embeddings, axis=0)
-    return snippet_embedding
+    return snippet_embedding.tolist()
 
 
-def compute_similarity(emb_1, emb_2):
+def compute_similarity(embedding_1, embedding_2):
     """ Compute the cosine similarity of two snippets' embeddings.
 
     Parameters
     ----------
-    emb_1: np.array
-        first snippet embedding
-    emb_2: np.array
-        second snippet embedding
+    embedding_1: list
+        First snippet embedding
+    embedding_2: list
+        Second snippet embedding
 
     Returns
     -------
-    double
+    float
         The cosine similariy: value between 0 and 1.
         The greater the value, the more similar the snippets
     """
-
-    # The cosine similarity is computed using the dot product of the two
-    # embedding vectors over the product of their norms
-    cos_sim = np.dot(emb_1, emb_2) / (np.linalg.norm(emb_1) *
-                                      np.linalg.norm(emb_2))
+    # The cosine similarity is computed using the dot product
+    # of the two embedding vectors over the product of their norms
+    arr_1 = np.array(embedding_1)
+    arr_2 = np.array(embedding_2)
+    cos_sim = np.dot(arr_1, arr_2) / (np.linalg.norm(arr_1) *
+                                      np.linalg.norm(arr_2))
     return cos_sim
