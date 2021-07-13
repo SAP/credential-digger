@@ -1,5 +1,5 @@
 /**
- * Handles all interactions in the discoveries pages (files listing, file 
+ * Handles all interactions in the discoveries pages (files listing, file
  * detail and discoveries).
  */
 
@@ -152,13 +152,17 @@ function initDiscoveriesDataTable() {
             </tbody>
           </table><div>`;
 
+	  const actions_template = discoveriesBtnGroupTemplate('Mark as')+`
+	  <input type="checkbox" class="cbSim" id="cbSim" value="yes" checked>
+          <label class="cb-label">Update similar discoveries</label>`;
+
           return {
             ...item,
             state: states[item.state],
             snippet: encodeHTML(item.snippet),
             tot: item.occurrences.length,
             occurrences: details,
-            actions: discoveriesBtnGroupTemplate('Mark as')
+            actions: actions_template
           }
         })
       }
@@ -207,27 +211,62 @@ function initUpdateDiscoveries() {
 
     if (document.querySelector("#files-table")) {
       filename = this.closest('tr').querySelector('.filename').innerText;
+      $.ajax({
+        url: 'update_discovery_group',
+        method: 'POST',
+        data: {
+          state: state,
+          url: repoUrl,
+          ...filename && { file: filename },
+          ...snippet && { snippet: decodeHTML(snippet) }
+        },
+        beforeSend: function() {
+          datatable.processing(true);
+	},
+        success: function () {
+          datatable.ajax.reload(null, false);
+        }
+      })
     } else {
       filename = document.querySelector("#file-name").innerText;
       snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
-    }
-
-    $.ajax({
-      url: 'update_discovery_group',
-      method: 'POST',
-      data: {
-        state: state,
-        url: repoUrl,
-        ...filename && { file: filename },
-        ...snippet && { snippet: decodeHTML(snippet) }
-      },
-      beforeSend: function () {
-        datatable.processing(true);
-      },
-      success: function () {
-        datatable.ajax.reload(null, false);
+      if (this.closest('tr')?.querySelector('#cbSim')?.checked) {
+	$.ajax({
+          url: 'update_similar_discoveries',
+          method: 'POST',
+          timeout:10000,
+	  data: {
+            state: state,
+            url: repoUrl,
+            ...filename && { file: filename },
+            ...snippet && { snippet: decodeHTML(snippet) },
+	  },
+          beforeSend: function() {
+            datatable.processing(true);
+          },
+          success: function () {
+            datatable.ajax.reload(null, false);
+          }
+        })
+      } else {
+        $.ajax({
+          url: 'update_discovery_group',
+          method: 'POST',
+          data: {
+            state: state,
+            url: repoUrl,
+            ...filename && { file: filename },
+            ...snippet && { snippet: decodeHTML(snippet) }
+          },
+          beforeSend: function() {
+            datatable.processing(true);
+          },
+          success: function () {
+            datatable.ajax.reload(null, false);
+         }
+        })
       }
-    })
+    }
   });
 }
 

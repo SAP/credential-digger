@@ -416,6 +416,22 @@ a.btn {
 .btn.disabled {
   opacity: 0.6;
 }
+
+input[type="checkbox"].cbSim {
+  vertical-align: middle;
+  cursor: pointer;
+}	
+input[type="checkbox"].cbSim:hover {
+  background-color: grey;
+}  
+input[type="checkbox"].cbSim:checked {
+  background-color: #5568d3;
+}
+.cb-label {
+  font-size: 11px;
+  cursor: default;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen    -Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
 /* #endregion */
 
 /* #region: COLORS */
