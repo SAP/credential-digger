@@ -1,6 +1,7 @@
 fasttext
 GitPython
-hyperscan==0.1.5
+hyperscan==0.2.0; python_version >= "3.9"
+hyperscan==0.1.5; python_version < "3.9"
 leven
 nltk
 numpy
@@ -13,7 +14,9 @@ pyyaml
 requests
 scikit-learn
 srsly
-tensorflow==2.4.2
-tensorflow-text==2.4.2
+tensorflow==2.5.0; python_version >= "3.8"
+tensorflow==2.4.2; python_version < "3.8"
+tensorflow-text==2.5.0; python_version >= "3.8"
+tensorflow-text==2.4.2; python_version < "3.8"
 tf-models-official
 tqdm

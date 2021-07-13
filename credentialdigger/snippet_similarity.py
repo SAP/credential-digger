@@ -18,7 +18,6 @@ def build_embedding_model():
          The embedding model, taking a list of strings as input,
          and outputting embeddings for each token of the input strings
     """
-
     # Links for the pre-trained TensorFlow Hub preprocessing
     # and encoding layers
     tfhub_preprocessing = 'https://tfhub.dev/tensorflow/' \
@@ -56,9 +55,8 @@ def compute_snippet_embedding(snippet, model):
     list
         The 128 element embedding for the input snippet
     """
-
     # Preprocess snippet
-    preprocessed_snippet = snippet.replace("\'", "\"")
+    preprocessed_snippet = snippet.replace('\'', '"')
     # Compute snippet's token embeddings
     small_bert_result = tf.squeeze(model(tf.constant([preprocessed_snippet])))
     small_bert_embeddings = small_bert_result.numpy()
@@ -83,7 +81,6 @@ def compute_similarity(embedding_1, embedding_2):
         The cosine similariy: value between 0 and 1.
         The greater the value, the more similar the snippets
     """
-
     # The cosine similarity is computed using the dot product
     # of the two embedding vectors over the product of their norms
     arr_1 = np.array(embedding_1)

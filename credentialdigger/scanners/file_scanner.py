@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import sys
 import tempfile
 from fnmatch import fnmatch
 
@@ -49,7 +50,7 @@ class FileScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, scan_path, max_depth=-1, ignore_list=[]):
+    def scan(self, scan_path, max_depth=-1, ignore_list=[], debug=False):
         """ Scan a directory.
 
         Parameters
@@ -64,6 +65,8 @@ class FileScanner(BaseScanner):
             A list of paths to ignore during the scan. This can include file
             names, directory names, or whole paths. Wildcards are supported as
             per the fnmatch package.
+        debug: bool, optional
+            If True, visualize debug information during the scan
 
         Returns
         -------
@@ -76,11 +79,13 @@ class FileScanner(BaseScanner):
         FileNotFoundError
             If the given path is not an existing directory
         """
+        if debug:
+            logger.setLevel(level=logging.DEBUG)
         # Ensure that `dir_path` is treated as an absolute path
         scan_path = os.path.abspath(scan_path)
         if not os.path.exists(scan_path):
             raise FileNotFoundError(
-                f"{scan_path} is not an existing directory.")
+                f'{scan_path} is not an existing directory.')
 
         # Copy directory/file to temp folder
         project_root = tempfile.mkdtemp().rstrip(os.path.sep)
@@ -95,6 +100,7 @@ class FileScanner(BaseScanner):
         # Walk the directory tree and scan files
         for abs_dir_root, dirs, files in os.walk(project_root):
             rel_dir_root = abs_dir_root[len(project_root):].lstrip(os.path.sep)
+            logger.debug(f'Found {len(files)} total files')
 
             # Prune unwanted files and subdirectories
             self._prune(rel_dir_root, dirs, files,
@@ -102,6 +108,7 @@ class FileScanner(BaseScanner):
                         ignore_list=ignore_list)
 
             # Scan remaining files
+            logger.debug(f'Scan {len(files)} files')
             for file_name in files:
                 rel_file_path = os.path.join(rel_dir_root, file_name)
                 file_discoveries = self.scan_file(
@@ -136,13 +143,14 @@ class FileScanner(BaseScanner):
 
         full_path = os.path.join(project_root, relative_path)
         try:
-            with open(full_path, "r", encoding='utf-8') as file_to_scan:
+            with open(full_path, 'r', encoding='utf-8') as file_to_scan:
                 for row in file_to_scan:
                     rh = ResultHandler()
                     self.stream.scan(
-                        row,
+                        row if sys.version_info < (3, 9) else row.encode(
+                            'utf-8'),
                         match_event_handler=rh.handle_results,
-                        context=[row, relative_path, "", line_number])
+                        context=[row.strip(), relative_path, '', line_number])
                     if rh.result:
                         discoveries.append(rh.result)
                     line_number += 1
