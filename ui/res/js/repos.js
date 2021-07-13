@@ -83,7 +83,7 @@ function initReposDataTable() {
                   </div>
                 </div>
               </div>
-              <button id="exportDiscoveries" class="btn modal-opener export-csv-btn" data-url="${item.url}" 
+              <button id="exportDiscoveries" class="btn btn primary-bg modal-opener export-csv-btn" data-url="${item.url}" 
                   data-lendiscoveries="${item.lendiscoveries}"
                   data-leaks_count="${item.leaks_count}"
                   data-false_positives_count="${item.false_positives_count}"
