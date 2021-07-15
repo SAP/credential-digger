@@ -1,45 +1,87 @@
-<script>
-
-</script>
+<script></script>
 <!-- Scan repo popup -->
 <div id="addRepoModal" class="modal">
   <div class="modal-content">
     <div class="topicHeaderWrapper">
-      <h1 class="topicH1" id="title"></h1><br>
+      <h1 class="topicH1" id="title"></h1>
+      <br />
       <span id="cancelAddRepo" class="close modal-closer">&times;</span>
     </div>
     <form id="scan_repo" name="scan_repo" action="/scan_repo" method="post">
-      <div id="inputUrl">
-      </div>
+      <div id="inputUrl"></div>
       <p class="formLabel">Select category :</p>
       <div class="form-item">
-        <select id="ruleSelector" name="rule_to_use" class="formSelect" size="4" multiple>
+        <select
+          id="ruleSelector"
+          name="rule_to_use"
+          class="formSelect"
+          size="4"
+          multiple
+        >
           {% for cat in categories %}
           <option value="{{cat}}">{{cat}}</option>
           {% endfor %}
         </select>
-        <div class="mt-10"><label><input type="checkbox" id="cbAllRules" name="rule_to_use" value="all" checked>Select
-            all rules</label></div>
+        <div class="mt-10">
+          <label
+            ><input
+              type="checkbox"
+              id="cbAllRules"
+              name="rule_to_use"
+              value="all"
+              checked
+            />Select all rules</label
+          >
+        </div>
       </div>
       <div class="form-item">
-        <input id="gitTokenInput" type="text" name="gitToken" class="textInput"
-          placeholder="Git token (for private repositories)">
+        <input
+          id="gitTokenInput"
+          type="text"
+          name="gitToken"
+          class="textInput"
+          placeholder="Git token (for private repositories)"
+        />
       </div>
       <div class="form-item">
-        <input id="repoSnapshotInput" type="text" name="repoSnapshot" class="textInput"
-          placeholder="Commit ID or branch name (to scan a snapshot of the repo, OPTIONAL)">
+        <input
+          id="repoSnapshotInput"
+          type="text"
+          name="repoSnapshot"
+          class="textInput"
+          placeholder="Commit ID or branch name (to scan a snapshot of the repo, OPTIONAL)"
+        />
       </div>
-      <div><label><input type="checkbox" id="cbPathModel" name="pathModel" value="path" checked>Use Path model</label>
+      <div>
+        <label
+          ><input
+            type="checkbox"
+            id="cbPathModel"
+            name="pathModel"
+            value="path"
+            checked
+          />Use Path model</label
+        >
       </div>
-      <div><label><input type="checkbox" id="cbSnippetModel" name="snippetModel" value="snippet" checked>Use Snippet
-          model</label></div>
-      <div id="forceRescan">
+      <div>
+        <label
+          ><input
+            type="checkbox"
+            id="cbSnippetModel"
+            name="snippetModel"
+            value="snippet"
+            checked
+          />Use Snippet model</label
+        >
       </div>
+      <div id="forceRescan"></div>
       <div class="formFooter">
         <span class="moreButtons">
-          <input type="hidden" name="freshtoggle" value="on">
+          <input type="hidden" name="freshtoggle" value="on" />
         </span>
-        <button id="startRepoScan" class="btn primary-bg" type="submit">Start Scan</button>
+        <button id="startRepoScan" class="btn primary-bg" type="submit">
+          Start Scan
+        </button>
       </div>
     </form>
   </div>
@@ -52,8 +94,10 @@
       <h1 class="topicH1">Scan is under way....</h1>
     </div>
     <div id="modal-waterfall">
-      <p>I'm scanning the repository. This can take seconds, minutes or even longer based on the quantity of code,
-        commits and branches.</p>
+      <p>
+        I'm scanning the repository. This can take seconds, minutes or even
+        longer based on the quantity of code, commits and branches.
+      </p>
     </div>
     <span class="buttonsAccept">
       <button class="button" id="okButton">Ok</button>
