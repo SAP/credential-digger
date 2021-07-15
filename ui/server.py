@@ -294,7 +294,8 @@ def scan_repo():
         'models': models,
         'force': force_scan,
         'git_token': git_token,
-        'local_repo': local_repo
+        'local_repo': local_repo,
+        'similarity': True
     }
     if rules_to_use != 'all':
         args['category'] = rules_to_use
@@ -435,6 +436,7 @@ def update_discovery_group():
         return 'OK', 200
 
 
+
 def _assign_categories(discoveries):
     """ Add the category to each discovery
 
@@ -493,6 +495,23 @@ def export_discoveries_csv():
         app.logger.exception(exception)
 
     return 'No content', 204
+
+
+@app.route('/update_similar_discoveries', methods=['POST'])
+def update_similar_discoveries():
+    target_snippet = request.form.get('snippet')
+    state = request.form.get('state')
+    url = request.form.get('url')
+    file = request.form.get('file')
+
+    response1 = c.update_discovery_group(state, url, file, target_snippet)
+    response2 = c.update_similar_snippets(target_snippet,
+                                          state,
+                                          url)
+    if response1 is False or response2 is False:
+        return 'Error in updating similar snippets', 500
+    else:
+        return 'OK', 200
 
 
 jwt = JWTManager(app)

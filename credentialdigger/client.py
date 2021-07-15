@@ -23,7 +23,8 @@ Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_scan')
 Discovery = namedtuple(
     'Discovery',
-    'id file_name commit_id line_number snippet repo_url rule_id state timestamp')
+    'id file_name commit_id line_number snippet repo_url rule_id state \
+    timestamp')
 
 
 class Interface(ABC):
@@ -111,11 +112,75 @@ class Client(Interface):
         """
         return self.query_id(
             query, file_name,
-            commit_id, line_number, snippet, repo_url, rule_id, state)
+            commit_id, line_number, snippet,
+            repo_url, rule_id, state)
 
     @abstractmethod
     def add_discoveries(self, query, discoveries, repo_url):
         return
+
+    def add_embedding(self,
+                      query,
+                      discovery_id,
+                      snippet,
+                      repo_url,
+                      embedding=None):
+        """ Add an embedding to the embeddings table.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
+        discovery_id: int
+            The id of the discovery whose embedding is to be added
+        snippet: str
+            The snippet whose embedding is to be added
+        repo_url: str
+            The discovery's repository url
+        embedding: list
+            The embedding to be added
+        """
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(query, (discovery_id,
+                                   embedding,
+                                   snippet,
+                                   repo_url))
+            self.db.commit()
+        except self.Error:
+            self.db.rollback()
+
+    def add_embeddings(self,
+                       query,
+                       discoveries_ids,
+                       snippets,
+                       embeddings,
+                       repo_url):
+        """ Bulk add embeddings to the embeddings table.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
+        discoveries_ids: list
+            The ids of the discoveries whose embeddings are to be added
+        snippets: list
+            The snippets whose embeddings are to be added
+        embeddings: list
+            The embeddings to be added
+        repo_url: str
+            The repository url
+        """
+        cursor = self.db.cursor()
+        try:
+            insert_tuples = list(zip(discoveries_ids,
+                                     snippets,
+                                     embeddings,
+                                     [repo_url] * len(discoveries_ids)))
+            cursor.executemany(query, insert_tuples)
+            self.db.commit()
+        except self.Error:
+            self.db.rollback()
 
     def add_repo(self, query, repo_url):
         """ Add a new repository.
@@ -248,6 +313,58 @@ class Client(Interface):
             otherwise
         """
         return self.query(query, repo_url,)
+
+    def delete_embedding(self, query, discovery_id):
+        """ Delete an embedding.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run
+        discovery_id: int
+            The id of the discovery whose embedding is
+            to be deleted
+
+        Returns
+        -------
+        bool
+            `True` if embedding was successfully deleted,
+            `False` otherwise
+        """
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(query, discovery_id)
+            self.db.commit()
+            return True
+        except self.Error:
+            self.db.rollback()
+            return False
+
+    def delete_embeddings(self, query, repo_url):
+        """ Bulk delete embeddings.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run
+        repo_url: str
+            The url of the repository whose embeddings are
+            to be deleted
+
+        Returns
+        -------
+        bool
+            `True` if embeddings were successfully deleted,
+            `False` otherwise
+        """
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(query, (repo_url,))
+            self.db.commit()
+            return True
+        except self.Error:
+            self.db.rollback()
+            return False
 
     def get_repos(self):
         """ Get all the repositories.
@@ -450,6 +567,68 @@ class Client(Interface):
             cursor.execute(query, (repo_url,))
         return cursor.fetchall()
 
+    def get_embedding(self, query, discovery_id=None, snippet=None):
+        """ Retrieve a discovery embedding.
+
+        This method retrieves the embedding of the discovery whose id is
+        passed as argument.
+        If no id is provided, the method retrieves the embedding of
+        the arguments' snippet.
+        If the snippet is missing as well, None is returned.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
+        discovery_id: int, optional
+            The id of the discovery whose embedding is being retrieved
+        snippet: str, optional
+            The snippet whose embedding is being retrieved. Only used if
+            discovery_id is not provided
+
+        Returns
+        -------
+        list or str
+            The embedding for the provided
+            snippet or id
+        """
+        cursor = self.db.cursor()
+        try:
+            if discovery_id:
+                cursor.execute(query, (discovery_id,))
+            elif snippet:
+                cursor.execute(query, (snippet,))
+            else:
+                return None
+            embedding_tuple = cursor.fetchone()
+            return embedding_tuple[0] if embedding_tuple else None
+        except self.Error:
+            return None
+
+    def get_embeddings(self, query, repo_url):
+        """ Retrieve embeddings for an entire repository.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run
+        repo_url: str
+            The repository url
+
+        Returns
+        -------
+        dictionary
+            A dictionary with discovery ids as keys and matching
+            embeddings as values
+        """
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(query, (repo_url,))
+            ids_embeddings_tuples = cursor.fetchall()
+            return dict(ids_embeddings_tuples)
+        except self.Error:
+            return None
+
     def update_repo(self, query, url, last_scan):
         """ Update the last scan timestamp of a repo.
 
@@ -556,7 +735,7 @@ class Client(Interface):
 
     def scan(self, repo_url, category=None, models=None, exclude=None,
              force=False, debug=False, generate_snippet_extractor=False,
-             local_repo=False, git_token=None):
+             similarity=False, local_repo=False, git_token=None):
         """ Launch the scan of a git repository.
 
         Parameters
@@ -580,6 +759,9 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
+        similarity: bool, default `False`
+            Decide whether to build the embedding model and to compute and add
+            embeddings, to allow for updating of similar discoveries
         local_repo: bool, optional
             If True, get the repository from a local directory instead of the
             web
@@ -601,7 +783,7 @@ class Client(Interface):
         return self._scan(
             repo_url=repo_url, scanner=scanner, models=models, force=force,
             debug=debug, generate_snippet_extractor=generate_snippet_extractor,
-            local_repo=local_repo, git_token=git_token)
+            similarity=similarity, local_repo=local_repo, git_token=git_token)
 
     def scan_snapshot(self, repo_url, branch_or_commit, category=None,
                       models=None, exclude=None, force=False, debug=False,
@@ -819,7 +1001,8 @@ class Client(Interface):
                           debug=debug, force=True, git_token=git_token)
 
     def _scan(self, repo_url, scanner, models=None, force=False, debug=False,
-              generate_snippet_extractor=False, **scanner_kwargs):
+              generate_snippet_extractor=False,
+              similarity=False, **scanner_kwargs):
         """ Launch the scan of a repository.
 
         Parameters
@@ -841,6 +1024,9 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
+        similarity: bool, default `False`
+            Decide whether to build the embedding model and to compute and add
+            embeddings, to allow for updating of similar discoveries
         scanner_kwargs: kwargs
             Keyword arguments to be passed to the scanner
 
@@ -933,6 +1119,9 @@ class Client(Interface):
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
 
+        if similarity:
+            logger.info('Build embedding model for this repository')
+            model = build_embedding_model()
         # Insert the discoveries into the db
         discoveries_ids = list()
         if debug:
@@ -943,6 +1132,8 @@ class Client(Interface):
                     curr_d['file_name'], curr_d['commit_id'],
                     curr_d['line_number'], curr_d['snippet'], repo_url,
                     curr_d['rule_id'], curr_d['state'])
+                if similarity:
+                    self.add_embedding(new_id, repo_url)
                 if new_id != -1 and curr_d['state'] != 'false_positive':
                     discoveries_ids.append(new_id)
             logger.debug(f'{len(discoveries_ids)} discoveries left for manual '
@@ -950,6 +1141,8 @@ class Client(Interface):
         else:
             # IDs of the discoveries added to the db
             discoveries_ids = self.add_discoveries(new_discoveries, repo_url)
+            if similarity:
+                self.add_embeddings(repo_url)
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
@@ -1083,6 +1276,28 @@ class Client(Interface):
 
         return rules
 
+    def compute_repo_embeddings(self, repo_url):
+        """ Compute embeddings for all discoveries in a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The repository url
+
+        Returns
+        -------
+        list
+            A list comprising three lists: the repository's discovery
+            ids, snippets, and embeddings
+        """
+        disc = self.get_discoveries(repo_url)
+        discoveries = disc[1] if len(disc) == 2 else disc
+        discoveries_ids = [d['id'] for d in discoveries]
+        snippets = [d['snippet'] for d in discoveries]
+        model = build_embedding_model()
+        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
+        return [discoveries_ids, snippets, embeddings]
+
     def update_similar_snippets(self,
                                 target_snippet,
                                 state,
@@ -1097,13 +1312,13 @@ class Client(Interface):
         target_snippet: str
             The target snippet
         state: str
-            state to update similar snippets to
+            State to update similar snippets to
         repo_url: str
             The url of the repository
         file_name: str
-            restrict to a given file the search for similar snippets
+            Restrict to a given file the search for similar snippets
         threshold: float
-            update snippets with similarity score above threshold.
+            Update snippets with similarity score above threshold.
             Values lesser than 0.94 do not generally imply any relevant
             amount of similarity between snippets, and should
             therefore not be used.
@@ -1113,21 +1328,31 @@ class Client(Interface):
         int
             The number of similar snippets found and updated
         """
-        discoveries = self.get_discoveries(repo_url, file_name)
-        model = build_embedding_model()
+        disc = self.get_discoveries(repo_url, file_name)
+        # Discoveries are the second element of the output of
+        # get_discoveries in the UI clients, but are the entire
+        # output in regular clients
+        discoveries = disc[1] if len(disc) == 2 else disc
         # Compute target snippet embedding
-        target_snippet_embedding = compute_snippet_embedding(target_snippet,
-                                                             model)
+        target_embedding = self.get_embedding(snippet=target_snippet)
+        # TODO: if this snippet has no embedding, compute it
+        # target_snippet_embedding = compute_snippet_embedding(target_snippet,
+        #                                                      model)
+
+        # If specified target snippet is not found in the embeddings table,
+        # no update is performed
+        if not target_embedding:
+            return 0
+
+        # We have a target embedding for the target snippet
         n_updated_snippets = 0
         for d in discoveries:
-            if d['state'] == 'new':
-                # Compute snippet embedding
-                snippet_embedding = compute_snippet_embedding(d['snippet'],
-                                                              model)
-                # Compute similarity of target snippet and snippet
-                similarity = compute_similarity(target_snippet_embedding,
-                                                snippet_embedding)
+            embedding = self.get_embedding(discovery_id=d['id'])
+            if d['state'] != state and embedding:
+                # Compute similarity of target embedding and embedding
+                similarity = compute_similarity(target_embedding,
+                                                embedding)
                 if similarity > threshold:
-                    n_updated_snippets += 1
                     self.update_discovery(d['id'], state)
+                    n_updated_snippets += 1
         return n_updated_snippets
