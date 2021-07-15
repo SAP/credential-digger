@@ -7,8 +7,8 @@
  * Register handlers on document ready event
  */
 document.addEventListener("DOMContentLoaded", function () {
-  if (document.querySelector('#files-table')) initFilesDataTable();
-  if (document.querySelector('#discoveries-table')) initDiscoveriesDataTable();
+  if (document.querySelector("#files-table")) initFilesDataTable();
+  if (document.querySelector("#discoveries-table")) initDiscoveriesDataTable();
   initUpdateDiscoveries();
 });
 
@@ -16,61 +16,74 @@ document.addEventListener("DOMContentLoaded", function () {
  * Initialize DataTable plugin on the files listing page's table
  */
 function initFilesDataTable() {
-  const repoUrl = document.querySelector('#repo-url').innerText;
-  $('#files-table').DataTable({
+  const repoUrl = document.querySelector("#repo-url").innerText;
+  $("#files-table").DataTable({
     ...defaultTableSettings,
 
-    pageLength: localStorage.hasOwnProperty('sharedPageLength') ? localStorage.getItem("sharedPageLength") : 10,
+    pageLength: localStorage.hasOwnProperty("sharedPageLength")
+      ? localStorage.getItem("sharedPageLength")
+      : 10,
     order: [[1, "desc"]], // Set default column sorting
-    columns: [ // Table columns definition
+    columns: [
+      // Table columns definition
       {
         data: "file_name",
         className: "filename",
-        orderSequence: ["asc", "desc"]
-      }, {
+        orderSequence: ["asc", "desc"],
+      },
+      {
         data: "new",
         className: "dt-center",
-        orderSequence: ["desc", "asc"]
-      }, {
+        orderSequence: ["desc", "asc"],
+      },
+      {
         data: "false_positives",
         className: "dt-center",
-        orderSequence: ["desc", "asc"]
-      }, {
+        orderSequence: ["desc", "asc"],
+      },
+      {
         data: "addressing",
         className: "dt-center",
-        orderSequence: ["desc", "asc"]
-      }, {
+        orderSequence: ["desc", "asc"],
+      },
+      {
         data: "not_relevant",
         className: "dt-center",
-        orderSequence: ["desc", "asc"]
-      }, {
+        orderSequence: ["desc", "asc"],
+      },
+      {
         data: "actions",
-        orderable: false
-      }
+        orderable: false,
+      },
     ],
-    ajax: { // AJAX source info
+    ajax: {
+      // AJAX source info
       url: "/get_files",
       data: { url: repoUrl },
       dataSrc: function (json) {
-        document.querySelector('#discoveriesCounter').innerText = json
-          .reduce((prev, curr) => prev + curr.tot_discoveries, 0);
+        document.querySelector("#discoveriesCounter").innerText = json.reduce(
+          (prev, curr) => prev + curr.tot_discoveries,
+          0
+        );
         // Map json data before sending it to datatable
-        return json.map(item => {
+        return json.map((item) => {
           return {
             ...item,
             file_name: `
-            <a href="/discoveries?url=${repoUrl}&file=${encodeURIComponent(item.file_name)}">
+            <a href="/discoveries?url=${repoUrl}&file=${encodeURIComponent(
+              item.file_name
+            )}">
               ${item.file_name}
             </a>`,
-            actions: discoveriesBtnGroupTemplate("Mark all as")
-          }
+            actions: discoveriesBtnGroupTemplate("Mark all as"),
+          };
         });
-      }
-    }
+      },
+    },
   });
 
-  $('#files-table').on('length.dt', function (e, settings, len) {
-    localStorage.setItem('sharedPageLength', len);
+  $("#files-table").on("length.dt", function (e, settings, len) {
+    localStorage.setItem("sharedPageLength", len);
   });
 }
 
@@ -78,103 +91,135 @@ function initFilesDataTable() {
  * Initialize DataTable plugin on the file detail and discoveries page's table
  */
 function initDiscoveriesDataTable() {
-  const repoUrl = document.querySelector('#repo-url').innerText;
-  const filename = document.querySelector('#file-name').innerText;
-  $('#discoveries-table').DataTable({
-    ...defaultTableSettings,
-    pageLength: localStorage.hasOwnProperty('sharedPageLength') ? localStorage.getItem("sharedPageLength") : 10,
-    serverSide: true,
-    order: [[3, "asc"]], // Set default column sorting
-    columns: [ // Table columns definition
-      {
-        data: null,
-        defaultContent: "",
-        orderable: false
-      }, {
-        data: "category",
-        className: "dt-center nowrap",
-      }, {
-        data: "snippet",
-        className: "snippet",
-      }, {
-        data: "state",
-        className: "dt-center nowrap",
-      }, {
-        data: "tot",
-        orderable: false,
-        className: "dt-center nowrap",
-      }, {
-        data: "occurrences",
-        className: "none"
-      }, {
-        data: "actions",
-        orderable: false
-      }
-    ],
-    searchCols: [null, null, null, { search: 'new' }, null, null, null],
-    ajax: { // AJAX source info
-      url: "/get_discoveries",
-      data: {
-        url: repoUrl,
-        ...filename && { file: filename }
-      },
-      dataSrc: function (json) {
-        return json.data.map(item => {
-          // Map json data before sending it to datatable
-          const details = `
+  const repoUrl = document.querySelector("#repo-url").innerText;
+  const filename = document.querySelector("#file-name").innerText;
+  $("#discoveries-table").DataTable(
+    {
+      ...defaultTableSettings,
+      pageLength: localStorage.hasOwnProperty("sharedPageLength")
+        ? localStorage.getItem("sharedPageLength")
+        : 10,
+      serverSide: true,
+      order: [[3, "asc"]], // Set default column sorting
+      columns: [
+        // Table columns definition
+        {
+          data: null,
+          defaultContent: "",
+          orderable: false,
+        },
+        {
+          data: "category",
+          className: "dt-center nowrap",
+        },
+        {
+          data: "snippet",
+          className: "snippet",
+        },
+        {
+          data: "state",
+          className: "dt-center nowrap",
+        },
+        {
+          data: "tot",
+          orderable: false,
+          className: "dt-center nowrap",
+        },
+        {
+          data: "occurrences",
+          className: "none",
+        },
+        {
+          data: "actions",
+          orderable: false,
+        },
+      ],
+      searchCols: [null, null, null, { search: "new" }, null, null, null],
+      ajax: {
+        // AJAX source info
+        url: "/get_discoveries",
+        data: {
+          url: repoUrl,
+          ...(filename && { file: filename }),
+        },
+        dataSrc: function (json) {
+          return json.data.map((item) => {
+            // Map json data before sending it to datatable
+            const details = `
           <div>
           <table>
             <thead>
               <tr>
-                ${filename ? '' : '<th>File</th>'}
+                ${filename ? "" : "<th>File</th>"}
                 <th class="hash">Commit hash</th><th class="dt-center">Line number</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              ${item.occurrences.slice(0, 10).map(i => `
+              ${item.occurrences
+                .slice(0, 10)
+                .map(
+                  (i) => `
                 <tr>
-                  ${filename ? "" : `<td class="filename"><span>${i.file_name}</span></td>`}
+                  ${
+                    filename
+                      ? ""
+                      : `<td class="filename"><span>${i.file_name}</span></td>`
+                  }
                   <td class="hash">${i.commit_id}</td>
                   <td class="dt-center">${i.line_number}</td>
                   <td>
-                    <a class="btn btn-light grey-color" target="_blank" href="${repoUrl.endsWith(".git") ? repoUrl.slice(0, -4) : repoUrl}/blob/${i.commit_id}/${i.file_name}#L${i.line_number}">
+                    <a class="btn btn-light grey-color" target="_blank" href="${
+                      repoUrl.endsWith(".git") ? repoUrl.slice(0, -4) : repoUrl
+                    }/blob/${i.commit_id}/${i.file_name}#L${i.line_number}">
                       <span class="icon icon-github"></span>
                       <span class="btn-text">Show on GitHub</span>
                     </a>
                   </td>
                 </tr>
-              `).join('\n')}
-              ${item.occurrences.length > 10 ? `
-              <tr><td colspan="${filename ? 3 : 4}">and ${item.occurrences.length - 10} more...<td></tr>
-              ` : ""}
+              `
+                )
+                .join("\n")}
+              ${
+                item.occurrences.length > 10
+                  ? `
+              <tr><td colspan="${filename ? 3 : 4}">and ${
+                      item.occurrences.length - 10
+                    } more...<td></tr>
+              `
+                  : ""
+              }
             </tbody>
           </table><div>`;
 
-	  const actions_template = discoveriesBtnGroupTemplate('Mark as')+`
+            const actions_template =
+              discoveriesBtnGroupTemplate("Mark as") +
+              `
 	  <input type="checkbox" class="cbSim" id="cbSim" value="yes" checked>
           <label class="cb-label">Update similar discoveries</label>`;
 
-          return {
-            ...item,
-            state: states[item.state],
-            snippet: encodeHTML(item.snippet),
-            tot: item.occurrences.length,
-            occurrences: details,
-            actions: actions_template
+            return {
+              ...item,
+              state: states[item.state],
+              snippet: encodeHTML(item.snippet),
+              tot: item.occurrences.length,
+              occurrences: details,
+              actions: actions_template,
+            };
+          });
+        },
+      },
+      initComplete: function () {
+        var column = this.api().columns(3);
+        var select = $('<select><option value=""></option></select>').on(
+          "change",
+          function () {
+            var val = $.fn.dataTable.util.escapeRegex($(this).val());
+            column.search(val).draw();
           }
-        })
-      }
-    },
-    initComplete: function () {
-      var column = this.api().columns(3);
-      var select = $('<select><option value=""></option></select>')
-        .on('change', function () {
-          var val = $.fn.dataTable.util.escapeRegex($(this).val());
-          column.search(val).draw();
-        });
+        );
 
-      select.append(`
+        select.append(`
         <option value="all">all</option>
         <option value="new" selected>leak</option>
         <option value="false_positive">false positive</option>
@@ -182,18 +227,19 @@ function initDiscoveriesDataTable() {
         <option value="not_relevant">not relevant</option>
       `);
 
-      $('#discoveries-table_filter').after(
-        `<div class="filter-state">
+        $("#discoveries-table_filter").after(
+          `<div class="filter-state">
           <span class="icon icon-filter_list"></span>
           <span>State:</span>
           <div id="select-filter-container"></div>
-        </div>`);
-      $('#select-filter-container').append(select);
-    }
-  },
+        </div>`
+        );
+        $("#select-filter-container").append(select);
+      },
+    },
 
-    $('#discoveries-table').on('length.dt', function (e, settings, len) {
-      localStorage.setItem('sharedPageLength', len);
+    $("#discoveries-table").on("length.dt", function (e, settings, len) {
+      localStorage.setItem("sharedPageLength", len);
     })
   );
 }
@@ -202,74 +248,72 @@ function initDiscoveriesDataTable() {
  * Event handler for update discoveries' button
  */
 function initUpdateDiscoveries() {
-  $(document).on('click', '.btn-group .btn', function () {
-    const repoUrl = document.querySelector('#repo-url').innerText;
+  $(document).on("click", ".btn-group .btn", function () {
+    const repoUrl = document.querySelector("#repo-url").innerText;
     const state = this.dataset.state;
     let filename, snippet;
-    const datatable = $('.dataTable').DataTable();
+    const datatable = $(".dataTable").DataTable();
 
     if (document.querySelector("#files-table")) {
-      filename = this.closest('tr').querySelector('.filename').innerText;
+      filename = this.closest("tr").querySelector(".filename").innerText;
       $.ajax({
-        url: 'update_discovery_group',
-        method: 'POST',
+        url: "update_discovery_group",
+        method: "POST",
         data: {
           state: state,
           url: repoUrl,
-          ...filename && { file: filename },
-          ...snippet && { snippet: decodeHTML(snippet) }
+          ...(filename && { file: filename }),
+          ...(snippet && { snippet: decodeHTML(snippet) }),
         },
-        beforeSend: function() {
+        beforeSend: function () {
           datatable.processing(true);
-	},
+        },
         success: function () {
           datatable.ajax.reload(null, false);
-        }
-      })
+        },
+      });
     } else {
       filename = document.querySelector("#file-name").innerText;
-      snippet = this.closest('tr')?.querySelector('.snippet')?.innerHTML;
-      if (this.closest('tr')?.querySelector('#cbSim')?.checked) {
-	$.ajax({
-          url: 'update_similar_discoveries',
-          method: 'POST',
-          timeout:10000,
-	  data: {
-            state: state,
-            url: repoUrl,
-            ...filename && { file: filename },
-            ...snippet && { snippet: decodeHTML(snippet) },
-	  },
-          beforeSend: function() {
-            datatable.processing(true);
-          },
-          success: function () {
-            datatable.ajax.reload(null, false);
-          }
-        })
-      } else {
+      snippet = this.closest("tr")?.querySelector(".snippet")?.innerHTML;
+      if (this.closest("tr")?.querySelector("#cbSim")?.checked) {
         $.ajax({
-          url: 'update_discovery_group',
-          method: 'POST',
+          url: "update_similar_discoveries",
+          method: "POST",
+          timeout: 10000,
           data: {
             state: state,
             url: repoUrl,
-            ...filename && { file: filename },
-            ...snippet && { snippet: decodeHTML(snippet) }
+            ...(filename && { file: filename }),
+            ...(snippet && { snippet: decodeHTML(snippet) }),
           },
-          beforeSend: function() {
+          beforeSend: function () {
             datatable.processing(true);
           },
           success: function () {
             datatable.ajax.reload(null, false);
-         }
-        })
+          },
+        });
+      } else {
+        $.ajax({
+          url: "update_discovery_group",
+          method: "POST",
+          data: {
+            state: state,
+            url: repoUrl,
+            ...(filename && { file: filename }),
+            ...(snippet && { snippet: decodeHTML(snippet) }),
+          },
+          beforeSend: function () {
+            datatable.processing(true);
+          },
+          success: function () {
+            datatable.ajax.reload(null, false);
+          },
+        });
       }
     }
   });
 }
-
-
 
 /**
  * Mapping of possible states of a discovery in the format "key-description".
@@ -278,10 +322,10 @@ const states = {
   new: "leak",
   false_positive: "false positive",
   addressing: "addressing",
-  not_relevant: "not relevant"
-}
+  not_relevant: "not relevant",
+};
 
-const discoveriesBtnGroupTemplate = mark => `
+const discoveriesBtnGroupTemplate = (mark) => `
 <div class="btn-group">
   <div class="btn primary-bg" data-state="false_positive">
     <span class="icon icon-outlined_flag"></span>
