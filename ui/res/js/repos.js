@@ -109,7 +109,7 @@ function initReposDataTable() {
                 </div>
               </div>
               <button 
-              class="btn modal-opener outline-pg dynamic-scan-btn ${
+              class="btn outline-bg modal-opener dynamic-scan-btn ${
                 item.scan_active ? `warning-bg disabled` : ``
               }" 
               data-url="${item.url}" 
@@ -184,6 +184,9 @@ function initAlternanteScanRescan() {
               <input id="repoLinkInput" type="text" name="repolink" class="textInput" placeholder="GitHub repo URL or local repo path">
           </div>
       `;
+      document.querySelector(
+        '#addRepoModal div[id="forceRescan"]'
+      ).innerHTML = ``;
       document.querySelector('#addRepoModal div[id="inputUrl"]').innerHTML =
         linkInput;
     }
