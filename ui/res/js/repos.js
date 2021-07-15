@@ -109,9 +109,9 @@ function initReposDataTable() {
                 </div>
               </div>
               <button 
-              class="btn outline-bg modal-opener dynamic-scan-btn ${
-                item.scan_active ? `warning-bg disabled` : ``
-              }" 
+              class="btn ${
+                item.scan_active ? `warning-bg disabled` : `outline-bg`
+              } modal-opener dynamic-scan-btn" 
               data-url="${item.url}" 
               data-rescan="${true}" 
               data-modal="addRepoModal"
