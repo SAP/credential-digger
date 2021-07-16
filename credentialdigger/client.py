@@ -697,8 +697,8 @@ class Client(Interface):
 
         return self.query_check(query, new_state, tuple(discoveries_ids))
 
-    def update_discovery_group(self, query, new_state, repo_url, file_name=None,
-                               snippet=None):
+    def update_discovery_group(self, query, new_state, repo_url,
+                               file_name=None, snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
@@ -725,9 +725,9 @@ class Client(Interface):
         if new_state not in ('new', 'false_positive', 'addressing',
                              'not_relevant', 'fixed'):
             return False
-        if snippet is None:
+        if not snippet:
             return self.query_check(query, new_state, repo_url, file_name)
-        elif file_name is None:
+        elif not file_name:
             return self.query_check(query, new_state, repo_url, snippet)
         else:
             return self.query_check(
@@ -1119,9 +1119,6 @@ class Client(Interface):
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
 
-        if similarity:
-            logger.info('Build embedding model for this repository')
-            model = build_embedding_model()
         # Insert the discoveries into the db
         discoveries_ids = list()
         if debug:
@@ -1132,8 +1129,6 @@ class Client(Interface):
                     curr_d['file_name'], curr_d['commit_id'],
                     curr_d['line_number'], curr_d['snippet'], repo_url,
                     curr_d['rule_id'], curr_d['state'])
-                if similarity:
-                    self.add_embedding(new_id, repo_url)
                 if new_id != -1 and curr_d['state'] != 'false_positive':
                     discoveries_ids.append(new_id)
             logger.debug(f'{len(discoveries_ids)} discoveries left for manual '
@@ -1141,11 +1136,13 @@ class Client(Interface):
         else:
             # IDs of the discoveries added to the db
             discoveries_ids = self.add_discoveries(new_discoveries, repo_url)
-            if similarity:
-                self.add_embeddings(repo_url)
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
+
+        if similarity:
+            logger.info('Compute embeddings for this repository')
+            self.add_embeddings(repo_url)
 
         return discoveries_ids
 
@@ -1335,7 +1332,8 @@ class Client(Interface):
         discoveries = disc[1] if len(disc) == 2 else disc
         # Compute target snippet embedding
         target_embedding = self.get_embedding(snippet=target_snippet)
-        # TODO: if this snippet has no embedding, compute it
+        # TODO: if this snippet has no embedding, compute it (allow the user to
+        # chose whether to compute missing embeddings or not)
         # target_snippet_embedding = compute_snippet_embedding(target_snippet,
         #                                                      model)
 
