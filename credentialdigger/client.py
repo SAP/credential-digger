@@ -1060,8 +1060,7 @@ class Client(Interface):
             from_timestamp = 0
 
         # Call scanner
-        if 'since_timestamp' in scanner_kwargs:
-            scanner_kwargs['since_timestamp'] = from_timestamp
+        scanner_kwargs['since_timestamp'] = from_timestamp
         try:
             logger.debug('Start scan')
             new_discoveries = scanner.scan(repo_url,
