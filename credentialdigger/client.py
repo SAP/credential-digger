@@ -777,11 +777,12 @@ class Client(Interface):
         if local_repo:
             repo_url = os.path.abspath(repo_url)
         else:
+            # Trim the tail of the repo's url by removing '/' and '.git'
             if repo_url.endswith('/'):
                 repo_url = repo_url[:-1]
             if repo_url.endswith('.git'):
                 repo_url = repo_url[:-4]
-                
+
         rules = self._get_scan_rules(category, exclude)
         scanner = GitScanner(rules)
 
