@@ -1139,7 +1139,8 @@ class Client(Interface):
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
 
-        if similarity:
+        if similarity and discoveries_ids:
+            # Compute similarities only if there are any discoveries left
             logger.info('Compute embeddings for this repository')
             self.add_embeddings(repo_url)
 
