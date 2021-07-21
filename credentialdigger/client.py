@@ -787,7 +787,8 @@ class Client(Interface):
 
     def scan_snapshot(self, repo_url, branch_or_commit, category=None,
                       models=None, exclude=None, force=False, debug=False,
-                      generate_snippet_extractor=False, git_token=None,
+                      generate_snippet_extractor=False,
+                      similarity=False, git_token=None,
                       max_depth=-1, ignore_list=[]):
         """ Launch the scan of the snapshot of a git repository.
         This scan mode takes into consideration the snapshot of the repository
@@ -843,11 +844,12 @@ class Client(Interface):
             repo_url=repo_url, branch_or_commit=branch_or_commit,
             scanner=scanner, models=models, force=force, debug=debug,
             generate_snippet_extractor=generate_snippet_extractor,
-            git_token=git_token, max_depth=max_depth, ignore_list=ignore_list)
+            similarity=similarity, git_token=git_token, max_depth=max_depth,
+            ignore_list=ignore_list)
 
     def scan_path(self, scan_path, category=None, models=None, exclude=None,
                   force=False, debug=False, generate_snippet_extractor=False,
-                  max_depth=-1, ignore_list=[]):
+                  similarity=False, max_depth=-1, ignore_list=[]):
         """ Launch the scan of a local directory or file.
 
         Parameters
@@ -897,10 +899,12 @@ class Client(Interface):
         return self._scan(
             repo_url=scan_path, scanner=scanner, models=models, force=force,
             debug=debug, generate_snippet_extractor=generate_snippet_extractor,
-            max_depth=max_depth, ignore_list=ignore_list)
+            similarity=similarity, max_depth=max_depth,
+            ignore_list=ignore_list)
 
     def scan_user(self, username, category=None, models=None, exclude=None,
                   debug=False, generate_snippet_extractor=False, forks=False,
+                  similarity=False,
                   git_token=None, api_endpoint='https://api.github.com'):
         """ Scan all the repositories of a user.
 
@@ -959,6 +963,7 @@ class Client(Interface):
             missing_ids[repo_url] = self._scan(repo_url, scanner,
                                                models=models,
                                                debug=debug,
+                                               similarity=similarity,
                                                git_token=git_token)
         return missing_ids
 
