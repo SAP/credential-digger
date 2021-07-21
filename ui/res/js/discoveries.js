@@ -169,12 +169,10 @@ function initDiscoveriesDataTable() {
                   <td class="hash">${i.commit_id}</td>
                   <td class="dt-center">${i.line_number}</td>
                   <td>
-                    <a class="btn btn-light grey-color" target="_blank" href="${
-                      repoUrl.endsWith(".git") ? repoUrl.slice(0, -4) : repoUrl
-                    }/blob/${i.commit_id}/${i.file_name}#L${i.line_number}">
-                      <span class="icon icon-github"></span>
-                      <span class="btn-text">Show on GitHub</span>
-                    </a>
+                  <a class="btn btn-light grey-color" target="_blank" href="${repoUrl}/blob/${i.commit_id}/${i.file_name}#L${i.line_number}">
+                  <span class="icon icon-github"></span>
+                  <span class="btn-text">Show on GitHub</span>
+                </a>
                   </td>
                 </tr>
               `

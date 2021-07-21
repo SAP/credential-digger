@@ -697,8 +697,8 @@ class Client(Interface):
 
         return self.query_check(query, new_state, tuple(discoveries_ids))
 
-    def update_discovery_group(self, query, new_state, repo_url, file_name=None,
-                               snippet=None):
+    def update_discovery_group(self, query, new_state, repo_url,
+                               file_name=None, snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
@@ -725,9 +725,9 @@ class Client(Interface):
         if new_state not in ('new', 'false_positive', 'addressing',
                              'not_relevant', 'fixed'):
             return False
-        if snippet is None:
+        if not snippet:
             return self.query_check(query, new_state, repo_url, file_name)
-        elif file_name is None:
+        elif not file_name:
             return self.query_check(query, new_state, repo_url, snippet)
         else:
             return self.query_check(
@@ -776,6 +776,12 @@ class Client(Interface):
         """
         if local_repo:
             repo_url = os.path.abspath(repo_url)
+        else:
+            # Trim the tail of the repo's url by removing '/' and '.git'
+            if repo_url.endswith('/'):
+                repo_url = repo_url[:-1]
+            if repo_url.endswith('.git'):
+                repo_url = repo_url[:-4]
 
         rules = self._get_scan_rules(category, exclude)
         scanner = GitScanner(rules)
@@ -1060,8 +1066,7 @@ class Client(Interface):
             from_timestamp = 0
 
         # Call scanner
-        if 'since_timestamp' in scanner_kwargs:
-            scanner_kwargs['since_timestamp'] = from_timestamp
+        scanner_kwargs['since_timestamp'] = from_timestamp
         try:
             logger.debug('Start scan')
             new_discoveries = scanner.scan(repo_url,
@@ -1119,9 +1124,6 @@ class Client(Interface):
             except ModuleNotFoundError:
                 logger.warning('SnippetModel not found. Skip it.')
 
-        if similarity:
-            logger.info('Build embedding model for this repository')
-            model = build_embedding_model()
         # Insert the discoveries into the db
         discoveries_ids = list()
         if debug:
@@ -1132,8 +1134,6 @@ class Client(Interface):
                     curr_d['file_name'], curr_d['commit_id'],
                     curr_d['line_number'], curr_d['snippet'], repo_url,
                     curr_d['rule_id'], curr_d['state'])
-                if similarity:
-                    self.add_embedding(new_id, repo_url)
                 if new_id != -1 and curr_d['state'] != 'false_positive':
                     discoveries_ids.append(new_id)
             logger.debug(f'{len(discoveries_ids)} discoveries left for manual '
@@ -1141,11 +1141,14 @@ class Client(Interface):
         else:
             # IDs of the discoveries added to the db
             discoveries_ids = self.add_discoveries(new_discoveries, repo_url)
-            if similarity:
-                self.add_embeddings(repo_url)
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
+
+        if similarity and discoveries_ids:
+            # Compute similarities only if there are any discoveries left
+            logger.info('Compute embeddings for this repository')
+            self.add_embeddings(repo_url)
 
         return discoveries_ids
 
@@ -1291,6 +1294,8 @@ class Client(Interface):
             ids, snippets, and embeddings
         """
         disc = self.get_discoveries(repo_url)
+        # If called by UI classes, disc is a tuple of 2 elements, and the
+        # actual discoveries are at the second element
         discoveries = disc[1] if len(disc) == 2 else disc
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
@@ -1303,6 +1308,7 @@ class Client(Interface):
                                 state,
                                 repo_url,
                                 file_name=None,
+                                compute_missing_embeddings=False,
                                 threshold=0.96):
         """ Find snippets that are similar to the target
         snippet and update their state.
@@ -1317,6 +1323,9 @@ class Client(Interface):
             The url of the repository
         file_name: str
             Restrict to a given file the search for similar snippets
+        compute_missing_embeddings: bool
+            Compute (or not) embeddings when they are missing from the db
+            (default `False`)
         threshold: float
             Update snippets with similarity score above threshold.
             Values lesser than 0.94 do not generally imply any relevant
@@ -1332,27 +1341,45 @@ class Client(Interface):
         # Discoveries are the second element of the output of
         # get_discoveries in the UI clients, but are the entire
         # output in regular clients
+        # (not the elegant way to do it, but hack for double inheritance)
         discoveries = disc[1] if len(disc) == 2 else disc
-        # Compute target snippet embedding
-        target_embedding = self.get_embedding(snippet=target_snippet)
-        # TODO: if this snippet has no embedding, compute it
-        # target_snippet_embedding = compute_snippet_embedding(target_snippet,
-        #                                                      model)
+        # Keep only the discoveries with a state different from the one
+        # passed as argument (same state discoveries will not be updated)
+        discoveries = filter(lambda d: d['state'] != state, discoveries)
 
-        # If specified target snippet is not found in the embeddings table,
-        # no update is performed
-        if not target_embedding:
+        # Get the embedding of the target snippet
+        target_embedding = self.get_embedding(snippet=target_snippet)
+        # Get all embeddings for this repo
+        all_embeddings = self.get_embeddings(repo_url=repo_url)
+        # Check if need to recompute embeddings
+        if not all_embeddings and compute_missing_embeddings:
+            logger.info(f'Compute embeddings for repo {repo_url}')
+            self.add_embeddings(repo_url)
+            all_embeddings = self.get_embeddings(repo_url=repo_url)
+            if not target_embedding:
+                # It may have just been computed
+                target_embedding = self.get_embedding(snippet=target_snippet)
+
+        # If the target snippet is not found in the embeddings table, or if
+        # the other embeddings are missing, no update is performed
+        if not target_embedding or not all_embeddings:
+            logger.debug('No embeddings found')
             return 0
 
-        # We have a target embedding for the target snippet
         n_updated_snippets = 0
         for d in discoveries:
-            embedding = self.get_embedding(discovery_id=d['id'])
-            if d['state'] != state and embedding:
-                # Compute similarity of target embedding and embedding
-                similarity = compute_similarity(target_embedding,
-                                                embedding)
-                if similarity > threshold:
-                    self.update_discovery(d['id'], state)
-                    n_updated_snippets += 1
+            embedding = all_embeddings.get(d['id'])
+            if not embedding and compute_missing_embeddings:
+                # Recompute it
+                logger.debug(f'Compute embedding for discovery {d["id"]}')
+                self.add_embedding(discovery_id=d['id'], repo_url=repo_url)
+                embedding = self.get_embedding(discovery_id=d['id'])
+            if not embedding:
+                continue
+            # Compute similarity of target_embedding and embedding
+            similarity = compute_similarity(target_embedding,
+                                            embedding)
+            if similarity > threshold:
+                self.update_discovery(d['id'], state)
+                n_updated_snippets += 1
         return n_updated_snippets
