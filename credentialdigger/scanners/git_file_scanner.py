@@ -73,7 +73,7 @@ class GitFileScanner(GitScanner, FileScanner):
             If True, visualize debug information during the scan
         kwargs: kwargs
             Keyword arguments to be passed to the scanner
-  
+
         Returns
         -------
         list
