@@ -50,7 +50,7 @@ class FileScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, scan_path, max_depth=-1, ignore_list=[], debug=False, 
+    def scan(self, scan_path, max_depth=-1, ignore_list=[], debug=False,
              **kwargs):
         """ Scan a directory.
 
