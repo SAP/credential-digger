@@ -1300,8 +1300,9 @@ class Client(Interface):
         """
         disc = self.get_discoveries(repo_url)
         # If called by UI classes, disc is a tuple of 2 elements, and the
-        # actual discoveries are at the second element
-        discoveries = disc[1] if len(disc) == 2 else disc
+        # actual discoveries are at the second element (the first one contains
+        # the number of discoveries, so, it's an int)
+        discoveries = disc[1] if disc and isinstance(disc[0], int) else disc
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
         model = build_embedding_model()
