@@ -50,7 +50,8 @@ class FileScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, scan_path, max_depth=-1, ignore_list=[], debug=False):
+    def scan(self, scan_path, max_depth=-1, ignore_list=[], debug=False,
+             **kwargs):
         """ Scan a directory.
 
         Parameters
@@ -67,6 +68,8 @@ class FileScanner(BaseScanner):
             per the fnmatch package.
         debug: bool, optional
             If True, visualize debug information during the scan
+        kwargs: kwargs
+            Keyword arguments to be passed to the scanner
 
         Returns
         -------
