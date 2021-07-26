@@ -45,7 +45,7 @@ optional arguments:
                         SnippetModel. The extractor is generated using the
                         ExtractorGenerator. If `False`, use the pre-trained
                         extractor model
-  --similarity          Build and use the similarity model to compute 
+  --similarity          Build and use the similarity model to compute
                         embeddings and allow for automatic update of similar
                         snippets
   --forks               Scan also repositories forked by this user
