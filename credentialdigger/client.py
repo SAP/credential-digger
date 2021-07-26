@@ -1,5 +1,6 @@
 import logging
 import os
+import urllib3
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from datetime import datetime, timezone
@@ -949,6 +950,9 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives), grouped by repository.
         """
+        # Disable warnings due to verify=false at login
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
         logger.debug(f'Use API endpoint {api_endpoint}')
 
         rules = self._get_scan_rules(category, exclude)
