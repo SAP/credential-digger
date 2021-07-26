@@ -11,7 +11,6 @@ usage: credentialdigger scan_snapshot [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                       [--snapshot BRANCH_NAME_OR_COMMIT_ID]
                                       [--category CATEGORY]
                                       [--models MODELS [MODELS ...]]
-                                      [--exclude EXCLUDE [EXCLUDE ...]]
                                       [--force] [--debug]
                                       [--git_token GIT_TOKEN]
                                       [--generate_snippet_extractor]
@@ -36,8 +35,6 @@ optional arguments:
   --models MODELS [MODELS ...]
                         A list of models for the ML false positives detection.
                         Cannot accept empty lists.
-  --exclude EXCLUDE [EXCLUDE ...]
-                        A list of rules to exclude
   --force               Force a complete re-scan of the repository, in case it
                         has already been scanned previously
   --debug               Flag used to decide whether to visualize the
@@ -129,7 +126,6 @@ def run(client, args):
         branch_or_commit=args.snapshot,
         category=args.category,
         models=args.models,
-        exclude=args.exclude,
         force=args.force,
         debug=args.debug,
         generate_snippet_extractor=args.generate_snippet_extractor,

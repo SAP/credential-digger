@@ -8,8 +8,7 @@ database.
 
 usage: credentialdigger scan_path [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                   [--category CATEGORY]
-                                  [--models MODELS [MODELS ...]]
-                                  [--exclude EXCLUDE [EXCLUDE ...]] [--debug]
+                                  [--models MODELS [MODELS ...]] [--debug]
                                   [--force] [--generate_snippet_extractor]
                                   [--similarity]
                                   [--max_depth MAX_DEPTH]
@@ -31,8 +30,6 @@ optional arguments:
   --models MODELS [MODELS ...]
                         A list of models for the ML false positives detection.
                         Cannot accept empty lists.
-  --exclude EXCLUDE [EXCLUDE ...]
-                        A list of rules to exclude
   --debug               Flag used to decide whether to visualize the
                         progressbars during the scan (e.g., during the
                         insertion of the detections in the db)
@@ -113,7 +110,6 @@ def run(client, args):
         scan_path=args.scan_path,
         category=args.category,
         models=args.models,
-        exclude=args.exclude,
         force=args.force,
         debug=args.debug,
         generate_snippet_extractor=args.generate_snippet_extractor,
