@@ -1,5 +1,5 @@
 """
-The 'scan_wiki' module can be used to scan the wiki of a git repository on the 
+The 'scan_wiki' module can be used to scan the wiki of a git repository on the
 fly from the terminal. It supports both the Sqlite and Postgres clients.
 
 NOTE: Postgres is used by default. Please make sure that the environment
@@ -9,7 +9,7 @@ database.
 usage: credentialdigger scan_wiki [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                   [--category CATEGORY]
                                   [--models MODELS [MODELS ...]]
-                                  [--exclude EXCLUDE [EXCLUDE ...]] [--debug]
+                                  [--debug]
                                   [--git_token GIT_TOKEN]
                                   repo_url
 
@@ -29,8 +29,6 @@ optional arguments:
   --models MODELS [MODELS ...]
                         A list of models for the ML false positives detection.
                         Cannot accept empty lists.
-  --exclude EXCLUDE [EXCLUDE ...]
-                        A list of rules to exclude
   --debug               Flag used to decide whether to visualize the
                         progressbars during the scan (e.g., during the
                         insertion of the detections in the db)
@@ -86,7 +84,6 @@ def run(client, args):
         repo_url=args.repo_url,
         category=args.category,
         models=args.models,
-        exclude=args.exclude,
         debug=args.debug,
         git_token=args.git_token)
 
