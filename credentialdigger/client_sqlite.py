@@ -525,7 +525,7 @@ class SqliteClient(Client):
             embeddings as values
         """
         query = 'SELECT id, embedding FROM embeddings WHERE repo_url=?;'
-        return = super().get_embeddings(query=query, repo_url=repo_url)
+        return super().get_embeddings(query=query, repo_url=repo_url)
 
     def update_repo(self, url, last_scan):
         """ Update the last scan timestamp of a repo.
