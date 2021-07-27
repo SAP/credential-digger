@@ -31,7 +31,7 @@ CREATE TABLE discoveries (
 
 CREATE TABLE embeddings (
   id INTEGER REFERENCES discoveries,
-  embedding FLOAT [],
+  embedding TEXT,
   snippet TEXT,
   repo_url TEXT REFERENCES repos,
   PRIMARY KEY (id)
