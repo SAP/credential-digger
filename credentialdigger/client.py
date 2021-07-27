@@ -175,7 +175,7 @@ class Client(Interface):
         try:
             insert_tuples = list(zip(discoveries_ids,
                                      snippets,
-                                     embeddings,
+                                     embedding_strings,
                                      [repo_url] * len(discoveries_ids)))
             cursor.executemany(query, insert_tuples)
             self.db.commit()
