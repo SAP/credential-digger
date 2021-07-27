@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import urllib3
@@ -123,7 +124,6 @@ class Client(Interface):
     def add_embedding(self,
                       query,
                       discovery_id,
-                      snippet,
                       repo_url,
                       embedding=None):
         """ Add an embedding to the embeddings table.
@@ -141,6 +141,11 @@ class Client(Interface):
         embedding: list
             The embedding to be added
         """
+        snippet = self.get_discovery(discovery_id)['snippet']
+        if not embedding:
+            model = build_embedding_model()
+            embedding = compute_snippet_embedding(snippet, model)
+        embedding = json.dumps(embedding)
         cursor = self.db.cursor()
         try:
             cursor.execute(query, (discovery_id,
@@ -151,32 +156,26 @@ class Client(Interface):
         except self.Error:
             self.db.rollback()
 
-    def add_embeddings(self,
-                       query,
-                       discoveries_ids,
-                       snippets,
-                       embeddings,
-                       repo_url):
+    def add_embeddings(self, query, repo_url):
         """ Bulk add embeddings to the embeddings table.
 
         Parameters
         ----------
         query: str
             The query to be run, with placeholders in place of parameters
-        discoveries_ids: list
-            The ids of the discoveries whose embeddings are to be added
-        snippets: list
-            The snippets whose embeddings are to be added
-        embeddings: list
-            The embeddings to be added
         repo_url: str
             The repository url
         """
+        [discoveries_ids,
+         snippets,
+         embeddings] = self.compute_repo_embeddings(repo_url)
+        embedding_strings = list(map(json.dumps, embeddings))
+
         cursor = self.db.cursor()
         try:
             insert_tuples = list(zip(discoveries_ids,
                                      snippets,
-                                     embeddings,
+                                     embedding_strings,
                                      [repo_url] * len(discoveries_ids)))
             cursor.executemany(query, insert_tuples)
             self.db.commit()
@@ -601,8 +600,11 @@ class Client(Interface):
                 cursor.execute(query, (snippet,))
             else:
                 return None
-            embedding_tuple = cursor.fetchone()
-            return embedding_tuple[0] if embedding_tuple else None
+            embedding_str = cursor.fetchone()[0]
+            return json.loads(embedding_str)
+        except IndexError:
+            # The embedding tuple was empty when fetched
+            return None
         except self.Error:
             return None
 
@@ -625,10 +627,12 @@ class Client(Interface):
         cursor = self.db.cursor()
         try:
             cursor.execute(query, (repo_url,))
-            ids_embeddings_tuples = cursor.fetchall()
-            return dict(ids_embeddings_tuples)
+            embeddings_tuples = cursor.fetchall()
         except self.Error:
             return None
+
+        return dict((emb_id, json.loads(emb_str)) for emb_id, emb_str in
+                    embeddings_tuples)
 
     def update_repo(self, query, url, last_scan):
         """ Update the last scan timestamp of a repo.
