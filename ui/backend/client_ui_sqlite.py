@@ -143,6 +143,7 @@ class SqliteUiClient(UiClient, SqliteClient):
         if state is not None:
             query += ' AND state LIKE ?'
             params.append(state)
+            
         return super().get_discoveries_count(query, params)
 
     def get_files_summary(self, repo_url):

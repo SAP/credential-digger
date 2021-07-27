@@ -120,7 +120,7 @@ class PgUiClient(UiClient, PgClient):
             (using SQL LIKE clause)
         state: str, optional
             The state of the discoveries to count.
-            
+
         Returns
         -------
         int
@@ -140,6 +140,7 @@ class PgUiClient(UiClient, PgClient):
         if state is not None:
             query += ' AND state LIKE %s'
             params.append(state)
+            
         return super().get_discoveries_count(query, params)
 
     def get_files_summary(self, repo_url):
