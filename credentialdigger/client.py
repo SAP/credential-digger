@@ -121,11 +121,7 @@ class Client(Interface):
     def add_discoveries(self, query, discoveries, repo_url):
         return
 
-    def add_embedding(self,
-                      query,
-                      discovery_id,
-                      repo_url,
-                      embedding=None):
+    def add_embedding(self, query, discovery_id, repo_url, embedding=None):
         """ Add an embedding to the embeddings table.
 
         Parameters
@@ -588,9 +584,8 @@ class Client(Interface):
 
         Returns
         -------
-        list or str
-            The embedding for the provided
-            snippet or id
+        list
+            The embedding for the provided snippet or id
         """
         cursor = self.db.cursor()
         try:
@@ -622,7 +617,7 @@ class Client(Interface):
         -------
         dictionary
             A dictionary with discovery ids as keys and matching
-            embeddings as values
+            embeddings (i.e., a list of floats) as values
         """
         cursor = self.db.cursor()
         try:
