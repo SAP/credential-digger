@@ -1,3 +1,4 @@
+import json
 from sqlite3 import Error, connect
 
 from .client import Client
@@ -208,7 +209,7 @@ class SqliteClient(Client):
         if not embedding:
             model = build_embedding_model()
             embedding = compute_snippet_embedding(snippet, model)
-        embedding_str = ','.join(map(str, embedding))
+        embedding_str = json.dumps(embedding)
         query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
                 VALUES (?, ?, ?, ?);'
         return super().add_embedding(query,
@@ -230,7 +231,7 @@ class SqliteClient(Client):
          embeddings] = self.compute_repo_embeddings(repo_url)
         embedding_strings = []
         for embedding in embeddings:
-            embedding_string = ','.join(map(str, embedding))
+            embedding_string = json.dumps(embedding)
             embedding_strings.append(embedding_string)
         query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
                 VALUES (?, ?, ?, ?);'
@@ -528,8 +529,7 @@ class SqliteClient(Client):
                                               snippet=snippet)
         embedding = []
         if str_embedding:
-            embedding = [float(emb)
-                         for emb in str_embedding.split(',')]
+            embedding = json.loads(str_embedding)
         return embedding
 
     def get_embeddings(self, repo_url):
@@ -550,9 +550,8 @@ class SqliteClient(Client):
         str_embeddings_dict = super().get_embeddings(query=query,
                                                      repo_url=repo_url)
         embeddings_dict = {}
-        for id, str_embedding in str_embeddings_dict.items():
-            embeddings_dict[id] = [float(emb)
-                                   for emb in str_embedding.split(',')]
+        for emb_id, str_embedding in str_embeddings_dict.items():
+            embeddings_dict[emb_id] = json.loads(str_embedding)
         return embeddings_dict
 
     def update_repo(self, url, last_scan):
