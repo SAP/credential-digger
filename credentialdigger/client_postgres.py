@@ -210,15 +210,10 @@ class PgClient(Client):
         embedding: list
             The embedding being added
         """
-        snippet = self.get_discovery(discovery_id)['snippet']
-        if not embedding:
-            model = build_embedding_model()
-            embedding = compute_snippet_embedding(snippet, model)
         query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
                 VALUES (%s, %s, %s, %s);'
         super().add_embedding(query,
                               discovery_id,
-                              snippet,
                               repo_url,
                               embedding)
 
@@ -230,16 +225,9 @@ class PgClient(Client):
         repo_url: str
             The discoveries' repository url
         """
-        [discoveries_ids,
-         snippets,
-         embeddings] = self.compute_repo_embeddings(repo_url)
         query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
                 VALUES (%s, %s, %s, %s);'
-        super().add_embeddings(query,
-                               discoveries_ids,
-                               snippets,
-                               embeddings,
-                               repo_url)
+        super().add_embeddings(query, repo_url)
 
     def delete_rule(self, ruleid):
         """Delete a rule from database
@@ -502,8 +490,7 @@ class PgClient(Client):
             embeddings as values
         """
         query = 'SELECT id, embedding FROM embeddings WHERE repo_url=%s;'
-        return super().get_embeddings(query=query,
-                                      repo_url=repo_url)
+        return super().get_embeddings(query=query, repo_url=repo_url)
 
     def update_repo(self, url, last_scan):
         """ Update the last scan timestamp of a repo.
