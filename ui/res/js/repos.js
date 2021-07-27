@@ -89,6 +89,7 @@ function initReposDataTable() {
             `
                 : `
               <span class="icon icon-check_circle_outline success-color"></span>`,
+              lendiscoveries: item.TP + ` (${item.total} Total)`,
               actions: `
             <div class="btns-container">
               <div class="btn-group">
