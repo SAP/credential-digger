@@ -104,7 +104,8 @@ class PgUiClient(UiClient, PgClient):
 
         return total_discoveries, discoveries
 
-    def get_discoveries_count(self, repo_url=None, file_name=None, where=None):
+    def get_discoveries_count(self, repo_url=None, file_name=None, where=None,
+                              state=None):
         """ Get the total number of discoveries.
 
         Parameters
@@ -117,7 +118,9 @@ class PgUiClient(UiClient, PgClient):
         where: str, optional
             Part of text contained in the snippet to filter discoveries on
             (using SQL LIKE clause)
-
+        state: str, optional
+            The state of the discoveries to count.
+            
         Returns
         -------
         int
@@ -134,7 +137,9 @@ class PgUiClient(UiClient, PgClient):
         if where is not None:
             query += ' AND snippet LIKE %%%s%%'
             params.append(where)
-
+        if state is not None:
+            query += ' AND state LIKE %s'
+            params.append(state)
         return super().get_discoveries_count(query, params)
 
     def get_files_summary(self, repo_url):
