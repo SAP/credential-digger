@@ -306,7 +306,8 @@ def get_repos():
 
     repos = c.get_repos()
     for repo in repos:
-        repo['lendiscoveries'] = c.get_discoveries_count(repo['url'])
+        repo['total'] = c.get_discoveries_count(repo['url'])
+        repo['TP'] = c.get_discoveries_count(repo['url'], state='new')
         repo['scan_active'] = False
         if repo['url'] in active_scans:
             repo['scan_active'] = True
@@ -433,6 +434,7 @@ def update_similar_discoveries():
         return 'Error in updating similar snippets', 500
     else:
         return 'OK', 200
+
 
 jwt = JWTManager(app)
 if __name__ == '__main__':
