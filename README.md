@@ -253,7 +253,8 @@ new_discoveries = c.scan(repo_url='https://github.com/user/repo',
                          debug=True)
 ```
 
-
+## Upgrading from v3 to v4 
+To upgrade from v3 to v4 to use the similarity model without losing your data, please [refer to the wiki](https://github.com/SAP/credential-digger/wiki/Similarity-Model#upgrading-from-v3-to-v4)
 
 ## CLI - Command Line Interface
 
