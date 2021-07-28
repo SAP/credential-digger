@@ -145,10 +145,10 @@ function initDiscoveriesDataTable() {
           ...(filename && { file: filename }),
         },
         dataSrc: function (json) {
-          postfix = " Leaks";
+          postfix = " leaks";
           switch (json.stateFilter) {
             case "false_positive":
-              postfix = " False positives";
+              postfix = " false positives";
               break;
             case "addressing":
               postfix = " addressing";

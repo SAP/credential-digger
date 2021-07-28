@@ -381,8 +381,8 @@ def get_discoveries():
     response = {
         'uniqueRecords': discoveries_count,
         'recordsFiltered': discoveries_count,
-        'recordsTotal':
-        c.get_discoveries_count(repo_url=url, state=state_filter),
+        'recordsTotal': c.get_discoveries_count(repo_url=url,
+                                                state=state_filter),
         'stateFilter': state_filter,
         'data': sorted([{'snippet': keys[0],
                          'category': keys[1],
