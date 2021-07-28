@@ -146,7 +146,6 @@ function initDiscoveriesDataTable() {
         },
         dataSrc: function (json) {
           postfix = " Leaks";
-          console.log(json.stateFilter);
           switch (json.stateFilter) {
             case "false_positive":
               postfix = " False positives";
