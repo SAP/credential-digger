@@ -1,8 +1,6 @@
 from psycopg2 import Error, connect, extras
 
 from .client import Client
-from .snippet_similarity import (build_embedding_model,
-                                 compute_snippet_embedding)
 
 
 class PgClient(Client):
