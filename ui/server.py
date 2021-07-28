@@ -377,9 +377,13 @@ def get_discoveries():
     discoveries = sorted(
         discoveries,
         key=lambda i: (i['snippet'], i['category'], States[i['state']].value))
+
     response = {
-        'recordsTotal': discoveries_count,
+        'uniqueRecords': discoveries_count,
         'recordsFiltered': discoveries_count,
+        'recordsTotal':
+                    c.get_discoveries_count(repo_url=url, state=state_filter),
+        'stateFilter': state_filter,
         'data': sorted([{'snippet': keys[0],
                          'category': keys[1],
                          'state': States(keys[2]).name,
