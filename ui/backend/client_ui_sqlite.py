@@ -107,7 +107,8 @@ class SqliteUiClient(UiClient, SqliteClient):
 
         return total_discoveries, all_discoveries
 
-    def get_discoveries_count(self, repo_url=None, file_name=None, where=None):
+    def get_discoveries_count(self, repo_url=None, file_name=None, where=None,
+                              state=None):
         """ Get the total number of discoveries.
 
         Parameters
@@ -120,6 +121,8 @@ class SqliteUiClient(UiClient, SqliteClient):
         where: str, optional
             Part of text contained in the snippet to filter discoveries on
             (using SQL LIKE clause)
+        state: str, optional
+            The state of the discoveries to count.
 
         Returns
         -------
@@ -137,7 +140,9 @@ class SqliteUiClient(UiClient, SqliteClient):
         if where is not None:
             query += ' AND snippet LIKE %%?%%'
             params.append(where)
-
+        if state is not None:
+            query += ' AND state LIKE ?'
+            params.append(state)
         return super().get_discoveries_count(query, params)
 
     def get_files_summary(self, repo_url):
