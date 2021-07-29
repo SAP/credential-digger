@@ -48,9 +48,6 @@ def main(sys_argv):
         help='A list of models for the ML false positives detection.\nCannot \
             accept empty lists.')
     parser_scan_base.add_argument(
-        '--exclude', default=None, nargs='+',
-        help='A list of rules to exclude')
-    parser_scan_base.add_argument(
         '--debug', action='store_true',
         help='Flag used to decide whether to visualize the progressbars \
             during the scan (e.g., during the insertion of the detections in \

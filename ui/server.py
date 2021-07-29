@@ -280,7 +280,8 @@ def scan_repo():
         'models': models,
         'force': force_scan,
         'git_token': git_token,
-        'local_repo': local_repo
+        'local_repo': local_repo,
+        'similarity': True
     }
     if rules_to_use != 'all':
         args['category'] = rules_to_use
@@ -305,7 +306,8 @@ def get_repos():
 
     repos = c.get_repos()
     for repo in repos:
-        repo['lendiscoveries'] = c.get_discoveries_count(repo['url'])
+        repo['total'] = c.get_discoveries_count(repo['url'])
+        repo['TP'] = c.get_discoveries_count(repo['url'], state='new')
         repo['scan_active'] = False
         if repo['url'] in active_scans:
             repo['scan_active'] = True
@@ -375,9 +377,13 @@ def get_discoveries():
     discoveries = sorted(
         discoveries,
         key=lambda i: (i['snippet'], i['category'], States[i['state']].value))
+
     response = {
-        'recordsTotal': discoveries_count,
+        'uniqueRecords': discoveries_count,
         'recordsFiltered': discoveries_count,
+        'recordsTotal': c.get_discoveries_count(repo_url=url,
+                                                state=state_filter),
+        'stateFilter': state_filter,
         'data': sorted([{'snippet': keys[0],
                          'category': keys[1],
                          'state': States(keys[2]).name,
@@ -413,6 +419,23 @@ def update_discovery_group():
     response = c.update_discovery_group(state, url, file, snippet)
     if response is False:
         return 'Error in updatating the discovery group', 500
+    else:
+        return 'OK', 200
+
+
+@app.route('/update_similar_discoveries', methods=['POST'])
+def update_similar_discoveries():
+    target_snippet = request.form.get('snippet')
+    state = request.form.get('state')
+    url = request.form.get('url')
+    file = request.form.get('file')
+
+    response1 = c.update_discovery_group(state, url, file, target_snippet)
+    response2 = c.update_similar_snippets(target_snippet,
+                                          state,
+                                          url)
+    if response1 is False or response2 is False:
+        return 'Error in updating similar snippets', 500
     else:
         return 'OK', 200
 

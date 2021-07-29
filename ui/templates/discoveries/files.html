@@ -34,10 +34,6 @@
       <span>Discoveries view</span>
     </a>
     <div class="divider"></div>
-    <button id="newScan" class="btn modal-opener {{'warning-bg disabled' if scanning else 'primary-bg'}}" {{'disabled' if scanning}} data-modal="addRepoModal">
-      <span class="icon {{'icon-timelapse' if scanning else 'icon-refresh'}}"></span>
-      <span>{{'Scanning...' if scanning else 'Rescan'}}</span>
-    </button>
     <button class="btn danger-bg modal-opener" data-modal="deleteRepoModal">
       <span class="icon icon-delete_outline"></span>
       <span>Delete Repo</span>
@@ -46,7 +42,7 @@
 </div>
 
 <div class="topicHeaderWrapper underTopicHeaderWrapper">
-  <h3 class="scanDescription"><span id="discoveriesCounter">{{discoveries_count}}</span> discoveries found</h3>
+  <h3 class="scanDescription"><span id="discoveriesCounter"></span> </h3>
 </div>
 <table id="files-table" class="dataTable" style="width: 100%">
   <!-- Header -->
@@ -70,12 +66,9 @@
 
 {% include 'shared/_deleteRepoModal.html' %}
 
-{% with rescan=True %}
-  {% include 'shared/_scanRepoModal.html' %}
-{% endwith %}
+{% include 'shared/_scanRepoModal.html' %}
 
 <div id="repo-url" class="hidden">{{url}}</div>
 
-<script src="/res/js/scanForm.js"></script>
 <script src="/res/js/discoveries.js"></script>
 {% endblock %}

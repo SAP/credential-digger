@@ -25,6 +25,7 @@ TLDR; watch the video ⬇️
 -  [Advanced install](#advanced-install)
     - [Build from source](#build-from-source)
     - [External postgres database](#external-postgres-database)
+-  [How to update the project](#upgrade-the-project)
 -  [Python library usage](#python-library-usage)
     - [Add rules](#add-rules)
     - [Scan a repository](#scan-a-repository)
@@ -194,6 +195,10 @@ sudo docker-compose -f docker-compose.postgres.yml up --build
 
 Most advanced users may also wish to use an external postgres database instead of the dockerized one we provide in our `docker-compose.postgres.yml`.
 
+## Upgrade the project
+If you are already running Credential Digger and you want to update it to a
+newer version, you can 
+[refer to the wiki for the needed steps](https://github.com/SAP/credential-digger/wiki/How-to-update-Credential-Digger).
 
 
 
@@ -252,8 +257,6 @@ new_discoveries = c.scan(repo_url='https://github.com/user/repo',
                          generate_snippet_extractor=True,
                          debug=True)
 ```
-
-
 
 ## CLI - Command Line Interface
 

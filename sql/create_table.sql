@@ -28,3 +28,11 @@ CREATE TABLE discoveries (
   FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (rule_id) REFERENCES rules ON DELETE SET NULL ON UPDATE CASCADE
 );
+
+CREATE TABLE embeddings (
+  id INTEGER REFERENCES discoveries,
+  embedding TEXT,
+  snippet TEXT,
+  repo_url TEXT REFERENCES repos,
+  PRIMARY KEY (id)
+);

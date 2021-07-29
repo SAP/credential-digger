@@ -125,7 +125,8 @@ class PgClient(Client):
             discoveries_tuples = extras.execute_values(
                 cursor,
                 'INSERT INTO discoveries(file_name, commit_id, line_number, \
-                    snippet, repo_url, rule_id, state) VALUES %s RETURNING id',
+                    snippet, repo_url, rule_id, state) \
+                    VALUES %s RETURNING id',
                 ((
                     d['file_name'],
                     d['commit_id'],
@@ -195,6 +196,37 @@ class PgClient(Client):
             query='INSERT INTO rules (regex, category, description) \
                     VALUES (%s, %s, %s) RETURNING id')
 
+    def add_embedding(self, discovery_id, repo_url, embedding=None):
+        """ Add an embedding to the embeddings table.
+
+        Parameters
+        ----------
+        discovery_id: int
+            The id of the discovery whose embedding is being added
+        repo_url: str
+            The discovery's repository url
+        embedding: list
+            The embedding being added
+        """
+        query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+                VALUES (%s, %s, %s, %s);'
+        super().add_embedding(query,
+                              discovery_id,
+                              repo_url,
+                              embedding)
+
+    def add_embeddings(self, repo_url):
+        """ Bulk add embeddings.
+
+        Parameters
+        ----------
+        repo_url: str
+            The discoveries' repository url
+        """
+        query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+                VALUES (%s, %s, %s, %s);'
+        super().add_embeddings(query, repo_url)
+
     def delete_rule(self, ruleid):
         """Delete a rule from database
 
@@ -215,7 +247,8 @@ class PgClient(Client):
             query='DELETE FROM rules WHERE id=%s')
 
     def delete_repo(self, repo_url):
-        """ Delete a repository.
+        """ Delete a repository. Also triggers the deletion of
+        embeddings for the repository, if present.
 
         Parameters
         ----------
@@ -227,6 +260,7 @@ class PgClient(Client):
         bool
             `True` if the repo was successfully deleted, `False` otherwise
         """
+        self.delete_embeddings(repo_url)
         return super().delete_repo(
             repo_url=repo_url,
             query='DELETE FROM repos WHERE url=%s RETURNING true')
@@ -248,6 +282,41 @@ class PgClient(Client):
         return super().delete_discoveries(
             repo_url=repo_url,
             query='DELETE FROM discoveries WHERE repo_url=%s RETURNING true')
+
+    def delete_embedding(self, discovery_id):
+        """ Delete an embedding.
+
+        Parameters
+        ----------
+        discovery_id: int
+            The id of the discovery whose embedding is being deleted
+
+        Returns
+        -------
+        bool
+            `True` if embedding was successfully deleted,
+            `False` otherwise
+        """
+        return super().delete_embedding(
+            query='DELETE FROM embeddings WHERE id=%s',
+            discovery_id=discovery_id)
+
+    def delete_embeddings(self, repo_url):
+        """ Delete all embeddings from a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The repository url of the embeddings to delete
+
+        Returns
+        -------
+        bool
+            `True` if embeddings were successfullt deleted,
+            `False` otherwise
+        """
+        query = 'DELETE FROM embeddings WHERE repo_url=%s;'
+        return super().delete_embeddings(query, repo_url)
 
     def get_repo(self, repo_url):
         """ Get a repository.
@@ -372,6 +441,54 @@ class PgClient(Client):
             snippet, state',
             query='SELECT file_name, snippet, count(id), state FROM \
             discoveries WHERE repo_url=%s GROUP BY file_name, snippet, state')
+
+    def get_embedding(self, discovery_id=None, snippet=None):
+        """ Retrieve a discovery embedding.
+
+        This method retrieves the embedding of the discovery whose id is
+        passed as argument.
+        If no id is provided, the method retrieves the embedding of
+        the arguments' snippet.
+        If the snippet is missing as well, None is returned.
+
+        Parameters
+        ----------
+        discovery_id: int, optional
+            The id of the discovery whose embedding is being retrieved
+        snippet: str, optional
+            The snippet whose embedding is being retrieved. Only used if
+            discovery_id is not provided
+
+        Returns
+        -------
+        list
+            The embedding (list of floats) for the provided
+            snippet or id
+        """
+        if discovery_id:
+            query = 'SELECT embedding FROM embeddings WHERE id=%s'
+        elif snippet:
+            query = 'SELECT embedding FROM embeddings WHERE snippet=%s'
+        else:
+            return None
+        return super().get_embedding(query=query,
+                                     discovery_id=discovery_id,
+                                     snippet=snippet)
+
+    def get_embeddings(self, repo_url):
+        """ Retrieve embeddings for an entire repository.
+        Parameters
+        ----------
+        repo_url: str
+            The repository url
+        Returns
+        -------
+        dictionary
+            A dictionary with discovery ids as keys and matching
+            embeddings as values
+        """
+        query = 'SELECT id, embedding FROM embeddings WHERE repo_url=%s;'
+        return super().get_embeddings(query=query, repo_url=repo_url)
 
     def update_repo(self, url, last_scan):
         """ Update the last scan timestamp of a repo.
