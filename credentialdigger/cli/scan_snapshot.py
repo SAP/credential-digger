@@ -11,10 +11,10 @@ usage: credentialdigger scan_snapshot [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                       [--snapshot BRANCH_NAME_OR_COMMIT_ID]
                                       [--category CATEGORY]
                                       [--models MODELS [MODELS ...]]
-                                      [--exclude EXCLUDE [EXCLUDE ...]]
                                       [--force] [--debug]
                                       [--git_token GIT_TOKEN]
                                       [--generate_snippet_extractor]
+                                      [--similarity]
                                       [--max_depth MAX_DEPTH]
                                       repo_url
 
@@ -35,8 +35,6 @@ optional arguments:
   --models MODELS [MODELS ...]
                         A list of models for the ML false positives detection.
                         Cannot accept empty lists.
-  --exclude EXCLUDE [EXCLUDE ...]
-                        A list of rules to exclude
   --force               Force a complete re-scan of the repository, in case it
                         has already been scanned previously
   --debug               Flag used to decide whether to visualize the
@@ -50,6 +48,9 @@ optional arguments:
                         SnippetModel. The extractor is generated using the
                         ExtractorGenerator. If `False`, use the pre-trained
                         extractor model
+ --similarity           Build and use the similarity model to compute
+                        embeddings and allow for automatic update of similar
+                        snippets
   --max_depth MAX_DEPTH
                         Maximum depth for subdirectories scanning (If it is
                         set to -1 or not specified, all subdirectories will be
@@ -89,6 +90,10 @@ def configure_parser(parser):
             The extractor is generated using the ExtractorGenerator. If \
             `False`, use the pre-trained extractor model')
     parser.add_argument(
+        'similarity', action='store_true',
+        help='Build and use the similarity model to compute embeddings \
+            and allow for automatic update of similar snippets')
+    parser.add_argument(
         '--git_token', default=None, type=str,
         help='Git personal access token to authenticate to the git server')
     parser.add_argument(
@@ -121,10 +126,10 @@ def run(client, args):
         branch_or_commit=args.snapshot,
         category=args.category,
         models=args.models,
-        exclude=args.exclude,
         force=args.force,
         debug=args.debug,
         generate_snippet_extractor=args.generate_snippet_extractor,
+        similarity=args.similarity,
         git_token=args.git_token,
         max_depth=args.max_depth)
 

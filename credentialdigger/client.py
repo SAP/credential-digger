@@ -1,5 +1,7 @@
+import json
 import logging
 import os
+import urllib3
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from datetime import datetime, timezone
@@ -23,7 +25,8 @@ Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_scan')
 Discovery = namedtuple(
     'Discovery',
-    'id file_name commit_id line_number snippet repo_url rule_id state timestamp')
+    'id file_name commit_id line_number snippet repo_url rule_id state \
+    timestamp')
 
 
 class Interface(ABC):
@@ -111,11 +114,69 @@ class Client(Interface):
         """
         return self.query_id(
             query, file_name,
-            commit_id, line_number, snippet, repo_url, rule_id, state)
+            commit_id, line_number, snippet,
+            repo_url, rule_id, state)
 
     @abstractmethod
     def add_discoveries(self, query, discoveries, repo_url):
         return
+
+    def add_embedding(self, query, discovery_id, repo_url, embedding=None):
+        """ Add an embedding to the embeddings table.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
+        discovery_id: int
+            The id of the discovery whose embedding is to be added
+        snippet: str
+            The snippet whose embedding is to be added
+        repo_url: str
+            The discovery's repository url
+        embedding: list
+            The embedding to be added
+        """
+        snippet = self.get_discovery(discovery_id)['snippet']
+        if not embedding:
+            model = build_embedding_model()
+            embedding = compute_snippet_embedding(snippet, model)
+        embedding = json.dumps(embedding)
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(query, (discovery_id,
+                                   embedding,
+                                   snippet,
+                                   repo_url))
+            self.db.commit()
+        except self.Error:
+            self.db.rollback()
+
+    def add_embeddings(self, query, repo_url):
+        """ Bulk add embeddings to the embeddings table.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
+        repo_url: str
+            The repository url
+        """
+        [discoveries_ids,
+         snippets,
+         embeddings] = self.compute_repo_embeddings(repo_url)
+        embedding_strings = list(map(json.dumps, embeddings))
+
+        cursor = self.db.cursor()
+        try:
+            insert_tuples = list(zip(discoveries_ids,
+                                     snippets,
+                                     embedding_strings,
+                                     [repo_url] * len(discoveries_ids)))
+            cursor.executemany(query, insert_tuples)
+            self.db.commit()
+        except self.Error:
+            self.db.rollback()
 
     def add_repo(self, query, repo_url):
         """ Add a new repository.
@@ -248,6 +309,58 @@ class Client(Interface):
             otherwise
         """
         return self.query(query, repo_url,)
+
+    def delete_embedding(self, query, discovery_id):
+        """ Delete an embedding.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run
+        discovery_id: int
+            The id of the discovery whose embedding is
+            to be deleted
+
+        Returns
+        -------
+        bool
+            `True` if embedding was successfully deleted,
+            `False` otherwise
+        """
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(query, discovery_id)
+            self.db.commit()
+            return True
+        except self.Error:
+            self.db.rollback()
+            return False
+
+    def delete_embeddings(self, query, repo_url):
+        """ Bulk delete embeddings.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run
+        repo_url: str
+            The url of the repository whose embeddings are
+            to be deleted
+
+        Returns
+        -------
+        bool
+            `True` if embeddings were successfully deleted,
+            `False` otherwise
+        """
+        try:
+            cursor = self.db.cursor()
+            cursor.execute(query, (repo_url,))
+            self.db.commit()
+            return True
+        except self.Error:
+            self.db.rollback()
+            return False
 
     def get_repos(self):
         """ Get all the repositories.
@@ -450,6 +563,72 @@ class Client(Interface):
             cursor.execute(query, (repo_url,))
         return cursor.fetchall()
 
+    def get_embedding(self, query, discovery_id=None, snippet=None):
+        """ Retrieve a discovery embedding.
+
+        This method retrieves the embedding of the discovery whose id is
+        passed as argument.
+        If no id is provided, the method retrieves the embedding of
+        the arguments' snippet.
+        If the snippet is missing as well, None is returned.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run, with placeholders in place of parameters
+        discovery_id: int, optional
+            The id of the discovery whose embedding is being retrieved
+        snippet: str, optional
+            The snippet whose embedding is being retrieved. Only used if
+            discovery_id is not provided
+
+        Returns
+        -------
+        list
+            The embedding for the provided snippet or id
+        """
+        cursor = self.db.cursor()
+        try:
+            if discovery_id:
+                cursor.execute(query, (discovery_id,))
+            elif snippet:
+                cursor.execute(query, (snippet,))
+            else:
+                return None
+            embedding_str = cursor.fetchone()[0]
+            return json.loads(embedding_str)
+        except IndexError:
+            # The embedding tuple was empty when fetched
+            return None
+        except self.Error:
+            return None
+
+    def get_embeddings(self, query, repo_url):
+        """ Retrieve embeddings for an entire repository.
+
+        Parameters
+        ----------
+        query: str
+            The query to be run
+        repo_url: str
+            The repository url
+
+        Returns
+        -------
+        dictionary
+            A dictionary with discovery ids as keys and matching
+            embeddings (i.e., a list of floats) as values
+        """
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(query, (repo_url,))
+            embeddings_tuples = cursor.fetchall()
+        except self.Error:
+            return None
+
+        return dict((emb_id, json.loads(emb_str)) for emb_id, emb_str in
+                    embeddings_tuples)
+
     def update_repo(self, query, url, last_scan):
         """ Update the last scan timestamp of a repo.
 
@@ -518,8 +697,8 @@ class Client(Interface):
 
         return self.query_check(query, new_state, tuple(discoveries_ids))
 
-    def update_discovery_group(self, query, new_state, repo_url, file_name=None,
-                               snippet=None):
+    def update_discovery_group(self, query, new_state, repo_url,
+                               file_name=None, snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
@@ -546,16 +725,16 @@ class Client(Interface):
         if new_state not in ('new', 'false_positive', 'addressing',
                              'not_relevant', 'fixed'):
             return False
-        if snippet is None:
+        if not snippet:
             return self.query_check(query, new_state, repo_url, file_name)
-        elif file_name is None:
+        elif not file_name:
             return self.query_check(query, new_state, repo_url, snippet)
         else:
             return self.query_check(
                 query, new_state, repo_url, file_name, snippet)
 
-    def scan(self, repo_url, category=None, models=None, exclude=None,
-             force=False, debug=False, generate_snippet_extractor=False,
+    def scan(self, repo_url, category=None, models=None, force=False,
+             debug=False, generate_snippet_extractor=False, similarity=False,
              local_repo=False, git_token=None):
         """ Launch the scan of a git repository.
 
@@ -568,8 +747,6 @@ class Client(Interface):
             otherwise use all the rules in the db
         models: list, optional
             A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
         force: bool, default `False`
             Force a complete re-scan of the repository, in case it has already
             been scanned previously
@@ -580,6 +757,9 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
+        similarity: bool, default `False`
+            Decide whether to build the embedding model and to compute and add
+            embeddings, to allow for updating of similar discoveries
         local_repo: bool, optional
             If True, get the repository from a local directory instead of the
             web
@@ -594,19 +774,25 @@ class Client(Interface):
         """
         if local_repo:
             repo_url = os.path.abspath(repo_url)
+        else:
+            # Trim the tail of the repo's url by removing '/' and '.git'
+            if repo_url.endswith('/'):
+                repo_url = repo_url[:-1]
+            if repo_url.endswith('.git'):
+                repo_url = repo_url[:-4]
 
-        rules = self._get_scan_rules(category, exclude)
+        rules = self._get_scan_rules(category)
         scanner = GitScanner(rules)
 
         return self._scan(
             repo_url=repo_url, scanner=scanner, models=models, force=force,
             debug=debug, generate_snippet_extractor=generate_snippet_extractor,
-            local_repo=local_repo, git_token=git_token)
+            similarity=similarity, local_repo=local_repo, git_token=git_token)
 
     def scan_snapshot(self, repo_url, branch_or_commit, category=None,
-                      models=None, exclude=None, force=False, debug=False,
-                      generate_snippet_extractor=False, git_token=None,
-                      max_depth=-1, ignore_list=[]):
+                      models=None, force=False, debug=False,
+                      generate_snippet_extractor=False, similarity=False,
+                      git_token=None, max_depth=-1, ignore_list=[]):
         """ Launch the scan of the snapshot of a git repository.
         This scan mode takes into consideration the snapshot of the repository
         at one specific commit, or at the last commit of a specific branch.
@@ -622,8 +808,6 @@ class Client(Interface):
             otherwise use all the rules in the db
         models: list, optional
             A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
         force: bool, default `False`
             Force a complete re-scan of the repository, in case it has already
             been scanned previously
@@ -654,18 +838,19 @@ class Client(Interface):
             raise ValueError(f'The repository \"{repo_url}\" has already been '
                              'scanned. Please use \"force\" to rescan it.')
 
-        rules = self._get_scan_rules(category, exclude)
+        rules = self._get_scan_rules(category)
         scanner = GitFileScanner(rules)
 
         return self._scan(
             repo_url=repo_url, branch_or_commit=branch_or_commit,
             scanner=scanner, models=models, force=force, debug=debug,
             generate_snippet_extractor=generate_snippet_extractor,
-            git_token=git_token, max_depth=max_depth, ignore_list=ignore_list)
+            similarity=similarity, git_token=git_token, max_depth=max_depth,
+            ignore_list=ignore_list)
 
-    def scan_path(self, scan_path, category=None, models=None, exclude=None,
-                  force=False, debug=False, generate_snippet_extractor=False,
-                  max_depth=-1, ignore_list=[]):
+    def scan_path(self, scan_path, category=None, models=None, force=False,
+                  debug=False, generate_snippet_extractor=False,
+                  similarity=False, max_depth=-1, ignore_list=[]):
         """ Launch the scan of a local directory or file.
 
         Parameters
@@ -677,8 +862,6 @@ class Client(Interface):
             otherwise use all the rules in the db
         models: list, optional
             A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
         force: bool, default `False`
             Force a complete re-scan of the repository, in case it has already
             been scanned previously
@@ -709,17 +892,19 @@ class Client(Interface):
             raise ValueError(f'The directory \"{scan_path}\" has already been '
                              'scanned. Please use \"force\" to rescan it.')
 
-        rules = self._get_scan_rules(category, exclude)
+        rules = self._get_scan_rules(category)
         scanner = FileScanner(rules)
 
         return self._scan(
             repo_url=scan_path, scanner=scanner, models=models, force=force,
             debug=debug, generate_snippet_extractor=generate_snippet_extractor,
-            max_depth=max_depth, ignore_list=ignore_list)
+            similarity=similarity, max_depth=max_depth,
+            ignore_list=ignore_list)
 
-    def scan_user(self, username, category=None, models=None, exclude=None,
-                  debug=False, generate_snippet_extractor=False, forks=False,
-                  git_token=None, api_endpoint='https://api.github.com'):
+    def scan_user(self, username, category=None, models=None, debug=False,
+                  generate_snippet_extractor=False, forks=False,
+                  similarity=False, git_token=None,
+                  api_endpoint='https://api.github.com'):
         """ Scan all the repositories of a user.
 
         Find all the repositories of a user, and scan
@@ -735,8 +920,6 @@ class Client(Interface):
             otherwise use all the rules in the db
         models: list, optional
             A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
@@ -757,30 +940,38 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives), grouped by repository.
         """
+        # Disable warnings due to verify=false at login
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
         logger.debug(f'Use API endpoint {api_endpoint}')
 
-        rules = self._get_scan_rules(category, exclude)
+        rules = self._get_scan_rules(category)
         scanner = GitScanner(rules)
 
         g = Github(base_url=api_endpoint,
                    login_or_token=git_token,
                    verify=False)
         missing_ids = {}
-        for repo in g.get_user(username).get_repos():
+        repositories = g.get_user(username).get_repos()
+        repos_num = repositories.totalCount
+        i = 0
+        for repo in repositories:
+            i += 1
             if not forks and repo.fork:
                 # Ignore this repo since it is a fork
-                logger.info(f'Ignore {repo} (it is a fork)')
+                logger.info(f'{i}/{repos_num}) Ignore {repo} (it is a fork)')
                 continue
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
-            logger.info(f'Scanning {repo.url}')
+            logger.info(f'{i}/{repos_num}) Scanning {repo.url}')
             missing_ids[repo_url] = self._scan(repo_url, scanner,
                                                models=models,
                                                debug=debug,
+                                               similarity=similarity,
                                                git_token=git_token)
         return missing_ids
 
-    def scan_wiki(self, repo_url, category=None, models=None, exclude=None,
+    def scan_wiki(self, repo_url, category=None, models=None,
                   debug=False, git_token=None):
         """ Scan the wiki of a repository.
 
@@ -796,8 +987,6 @@ class Client(Interface):
             otherwise use all the rules in the db
         models: list, optional
             A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
@@ -810,7 +999,7 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        rules = self._get_scan_rules(category, exclude)
+        rules = self._get_scan_rules(category)
         scanner = GitScanner(rules)
 
         # The url of a wiki is same as the url of its repo, but ending with
@@ -819,7 +1008,8 @@ class Client(Interface):
                           debug=debug, force=True, git_token=git_token)
 
     def _scan(self, repo_url, scanner, models=None, force=False, debug=False,
-              generate_snippet_extractor=False, **scanner_kwargs):
+              generate_snippet_extractor=False,
+              similarity=False, **scanner_kwargs):
         """ Launch the scan of a repository.
 
         Parameters
@@ -841,6 +1031,9 @@ class Client(Interface):
             Generate the extractor model to be used in the SnippetModel. The
             extractor is generated using the ExtractorGenerator. If `False`,
             use the pre-trained extractor model
+        similarity: bool, default `False`
+            Decide whether to build the embedding model and to compute and add
+            embeddings, to allow for updating of similar discoveries
         scanner_kwargs: kwargs
             Keyword arguments to be passed to the scanner
 
@@ -874,8 +1067,7 @@ class Client(Interface):
             from_timestamp = 0
 
         # Call scanner
-        if 'since_timestamp' in scanner_kwargs:
-            scanner_kwargs['since_timestamp'] = from_timestamp
+        scanner_kwargs['since_timestamp'] = from_timestamp
         try:
             logger.debug('Start scan')
             new_discoveries = scanner.scan(repo_url,
@@ -953,6 +1145,11 @@ class Client(Interface):
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
+
+        if similarity and discoveries_ids:
+            # Compute similarities only if there are any discoveries left
+            logger.info('Compute embeddings for this repository')
+            self.add_embeddings(repo_url)
 
         return discoveries_ids
 
@@ -1051,16 +1248,14 @@ class Client(Interface):
                     'is not in the chosen models. No extractor to generate.')
         return False
 
-    def _get_scan_rules(self, category=None, exclude=None):
-        """ Get the rules of the `category`, filtered by `exclude`
+    def _get_scan_rules(self, category=None,):
+        """ Get the rules of the `category`
 
         Parameters
         ----------
         category: str, optional
             If specified, scan the repo using all the rules of this category,
             otherwise use all the rules in the db
-        exclude: list, optional
-            A list of rules to exclude
 
         Returns
         -------
@@ -1072,22 +1267,43 @@ class Client(Interface):
         ValueError
             If no rules are found or all rules have been filtered out
         """
-        if exclude is None:
-            exclude = []
-
         rules = self.get_rules(category)
-        if exclude:
-            rules = list(filter(lambda x: x['id'] not in exclude, rules))
         if not rules:
             raise ValueError('No rules found')
 
         return rules
+
+    def compute_repo_embeddings(self, repo_url):
+        """ Compute embeddings for all discoveries in a repository.
+
+        Parameters
+        ----------
+        repo_url: str
+            The repository url
+
+        Returns
+        -------
+        list
+            A list comprising three lists: the repository's discovery
+            ids, snippets, and embeddings
+        """
+        disc = self.get_discoveries(repo_url)
+        # If called by UI classes, disc is a tuple of 2 elements, and the
+        # actual discoveries are at the second element (the first one contains
+        # the number of discoveries, so, it's an int)
+        discoveries = disc[1] if disc and isinstance(disc[0], int) else disc
+        discoveries_ids = [d['id'] for d in discoveries]
+        snippets = [d['snippet'] for d in discoveries]
+        model = build_embedding_model()
+        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
+        return [discoveries_ids, snippets, embeddings]
 
     def update_similar_snippets(self,
                                 target_snippet,
                                 state,
                                 repo_url,
                                 file_name=None,
+                                compute_missing_embeddings=False,
                                 threshold=0.96):
         """ Find snippets that are similar to the target
         snippet and update their state.
@@ -1097,13 +1313,16 @@ class Client(Interface):
         target_snippet: str
             The target snippet
         state: str
-            state to update similar snippets to
+            State to update similar snippets to
         repo_url: str
             The url of the repository
         file_name: str
-            restrict to a given file the search for similar snippets
+            Restrict to a given file the search for similar snippets
+        compute_missing_embeddings: bool
+            Compute (or not) embeddings when they are missing from the db
+            (default `False`)
         threshold: float
-            update snippets with similarity score above threshold.
+            Update snippets with similarity score above threshold.
             Values lesser than 0.94 do not generally imply any relevant
             amount of similarity between snippets, and should
             therefore not be used.
@@ -1113,21 +1332,49 @@ class Client(Interface):
         int
             The number of similar snippets found and updated
         """
-        discoveries = self.get_discoveries(repo_url, file_name)
-        model = build_embedding_model()
-        # Compute target snippet embedding
-        target_snippet_embedding = compute_snippet_embedding(target_snippet,
-                                                             model)
+        disc = self.get_discoveries(repo_url, file_name)
+        # Discoveries are the second element of the output of
+        # get_discoveries in the UI clients, but are the entire
+        # output in regular clients
+        # (not the elegant way to do it, but hack for double inheritance)
+        discoveries = disc[1] if len(disc) == 2 else disc
+        # Keep only the discoveries with a state different from the one
+        # passed as argument (same state discoveries will not be updated)
+        discoveries = filter(lambda d: d['state'] != state, discoveries)
+
+        # Get the embedding of the target snippet
+        target_embedding = self.get_embedding(snippet=target_snippet)
+        # Get all embeddings for this repo
+        all_embeddings = self.get_embeddings(repo_url=repo_url)
+        # Check if need to recompute embeddings
+        if not all_embeddings and compute_missing_embeddings:
+            logger.info(f'Compute embeddings for repo {repo_url}')
+            self.add_embeddings(repo_url)
+            all_embeddings = self.get_embeddings(repo_url=repo_url)
+            if not target_embedding:
+                # It may have just been computed
+                target_embedding = self.get_embedding(snippet=target_snippet)
+
+        # If the target snippet is not found in the embeddings table, or if
+        # the other embeddings are missing, no update is performed
+        if not target_embedding or not all_embeddings:
+            logger.debug('No embeddings found')
+            return 0
+
         n_updated_snippets = 0
         for d in discoveries:
-            if d['state'] == 'new':
-                # Compute snippet embedding
-                snippet_embedding = compute_snippet_embedding(d['snippet'],
-                                                              model)
-                # Compute similarity of target snippet and snippet
-                similarity = compute_similarity(target_snippet_embedding,
-                                                snippet_embedding)
-                if similarity > threshold:
-                    n_updated_snippets += 1
-                    self.update_discovery(d['id'], state)
+            embedding = all_embeddings.get(d['id'])
+            if not embedding and compute_missing_embeddings:
+                # Recompute it
+                logger.debug(f'Compute embedding for discovery {d["id"]}')
+                self.add_embedding(discovery_id=d['id'], repo_url=repo_url)
+                embedding = self.get_embedding(discovery_id=d['id'])
+            if not embedding:
+                continue
+            # Compute similarity of target_embedding and embedding
+            similarity = compute_similarity(target_embedding,
+                                            embedding)
+            if similarity > threshold:
+                self.update_discovery(d['id'], state)
+                n_updated_snippets += 1
         return n_updated_snippets
