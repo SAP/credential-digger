@@ -133,6 +133,8 @@ class FileScanner(BaseScanner):
             Root path of the scanned project
         relative_path: str
             Path of the file, relative to `project_root`
+        kwargs: kwargs
+            Keyword arguments to be passed to the scanner
 
         Returns
         -------
