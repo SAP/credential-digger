@@ -124,7 +124,7 @@ class FileScanner(BaseScanner):
         # NOTE: this may become inefficient when the discoveries are many.
         return all_discoveries
 
-    def scan_file(self, project_root, relative_path):
+    def scan_file(self, project_root, relative_path, **kwargs):
         """ Scan a single file for discoveries.
 
         Parameters
@@ -154,6 +154,9 @@ class FileScanner(BaseScanner):
                         match_event_handler=rh.handle_results,
                         context=[row.strip(), relative_path, '', line_number])
                     if rh.result:
+                        if 'branch_or_commit' in kwargs:
+                            rh.result.update(
+                                {'commit_id': kwargs['branch_or_commit']})
                         discoveries.append(rh.result)
                     line_number += 1
         except UnicodeDecodeError:
