@@ -137,7 +137,7 @@ def run(client, args):
         console.print(f'[red]{e}[/]')
 
     # if --save is specified, export the discoveries and exit
-    if args.save != None:
+    if args.save is not None:
         export_csv(args.repo_url, client, save=args.save)
         return True
 
