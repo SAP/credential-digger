@@ -87,6 +87,7 @@ def print_discoveries(discoveries, repo_url):
 
         console.print(table)
 
+
 def export_csv(repo_url, client, save=False):
     # Check if --save is specified
     if save == False:
