@@ -71,8 +71,8 @@ def print_discoveries(discoveries, repo_url):
 
         # Convert `int` columns to `str` to be eventually rendered.
         discoveries_list['id'] = discoveries_list['id'].astype(str)
-        discoveries_list['line_number'] = discoveries_list['line_number'].astype(
-            str)
+        int_to_str = discoveries_list['line_number'].astype(str)
+        discoveries_list['line_number'] = int_to_str
 
         # Convert to list and insert column names
         discoveries_list = discoveries_list.values.tolist()
