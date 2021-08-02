@@ -1,3 +1,5 @@
+import csv
+import io
 import logging
 import os
 from abc import ABC, abstractmethod
@@ -1401,3 +1403,47 @@ class Client(Interface):
                 discovery['category'] = category
             else:
                 discovery['category'] = '(rule deleted)'
+
+    def export_discoveries_csv(self, repo_url, states='all'):
+        """ Export discoveries as CSV
+
+        Parameters
+        ----------
+        repo_url: str
+            The repo containing the discoveries
+        sates: str | list
+            - str: if it equals 'all', then return all discoveries.
+                   return chosen state otherwise (i.e 'false_positive')
+            - list: return all the discoveries that have states contained
+                    in this list (i.e ['new', 'false_positive'])
+
+        Returns
+        str
+            Discoveries in CSV format.
+        """
+        discoveries = self.get_discoveries(repo_url)
+
+        # Add the category to each discovery
+        self.assign_categories(discoveries)
+
+        # States of discoveries to export
+        if states == 'all':
+            states = ['new', 'false_positive',
+                      'addressing', 'not_relevant', 'fixed']
+
+        # filter out based on states
+        filtered_discoveries = list(
+            filter(lambda d: d.get('state') in states, discoveries))
+
+        try:
+            stringIO = io.StringIO()
+            csv_writer = csv.DictWriter(stringIO, discoveries[0].keys())
+            csv_writer.writeheader()
+            csv_writer.writerows(filtered_discoveries)
+            csv_data = stringIO.getvalue()
+        except IndexError as error:
+            logger.error(error)
+        except Exception as exception:
+            logger.exception(exception)
+
+        return csv_data
