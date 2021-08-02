@@ -38,6 +38,7 @@ from rich.progress import track
 # Maximum number of discoveries to print. If repo has more discoveries,
 # the user will be given the option to export said discoveries.
 MAX_NUMBER_DISCOVERIES = 30
+
 logger = logging.getLogger(__name__)
 console = Console()
 
