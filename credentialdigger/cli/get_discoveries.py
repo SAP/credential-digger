@@ -86,3 +86,29 @@ def print_discoveries(discoveries, repo_url):
             table.add_row(*row)
 
         console.print(table)
+
+def export_csv(repo_url, client, save=False):
+    # Check if --save is specified
+    if save == False:
+        path = ''
+        # Read the export path from the console's input
+        while path == '':
+            path = console.input('Path to export CSV:')
+    else:
+        # if --save argument is set, we use it as an export path
+        path = save
+
+    try:
+        with open(path, newline='', mode='w') as csv_file:
+            with console.status('[bold]Exporting the discoveries..') as status:
+                data = client.export_discoveries_csv(repo_url)
+                csv_file.writelines(data)
+                console.print(
+                    '[bold][!] The discoveries have been exported \
+successfully.')
+    except Exception as e:
+        console.print(f'[red]{e}[/]')
+        try:
+            os.remove(path)
+        except OSError as osE:
+            console.print(f'[red]{osE}[/]')
