@@ -1,11 +1,13 @@
 import logging
+import os
+
 import numpy as np
 import tensorflow as tf
+import tensorflow.keras.preprocessing.text
 import tensorflow_hub as hub
 import tensorflow_text
-import tensorflow.keras.preprocessing.text
 
-logging.getLogger('tensorflow').setLevel(logging.ERROR)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 def build_embedding_model():

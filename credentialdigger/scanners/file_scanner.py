@@ -50,7 +50,8 @@ class FileScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def scan(self, scan_path, max_depth=-1, ignore_list=[], debug=False):
+    def scan(self, scan_path, max_depth=-1, ignore_list=[], debug=False,
+             **kwargs):
         """ Scan a directory.
 
         Parameters
@@ -67,6 +68,8 @@ class FileScanner(BaseScanner):
             per the fnmatch package.
         debug: bool, optional
             If True, visualize debug information during the scan
+        kwargs: kwargs
+            Keyword arguments to be passed to the scanner
 
         Returns
         -------
@@ -100,7 +103,6 @@ class FileScanner(BaseScanner):
         # Walk the directory tree and scan files
         for abs_dir_root, dirs, files in os.walk(project_root):
             rel_dir_root = abs_dir_root[len(project_root):].lstrip(os.path.sep)
-            logger.debug(f'Found {len(files)} total files')
 
             # Prune unwanted files and subdirectories
             self._prune(rel_dir_root, dirs, files,
@@ -108,9 +110,9 @@ class FileScanner(BaseScanner):
                         ignore_list=ignore_list)
 
             # Scan remaining files
-            logger.debug(f'Scan {len(files)} files')
             for file_name in files:
                 rel_file_path = os.path.join(rel_dir_root, file_name)
+                logger.debug(f'Scan file {rel_file_path}')
                 file_discoveries = self.scan_file(
                     project_root=project_root, relative_path=rel_file_path)
                 all_discoveries.extend(file_discoveries)

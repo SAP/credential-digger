@@ -64,24 +64,30 @@ class TestScans(unittest.TestCase):
 
         self.assertTrue(len(new_discoveries) == 0)
 
-    def test_get_scan_rules_no_exclude(self):
-        """ All rules shoould be returned if no `exclude` argument is specified
-        """
+    def test_get_scan_rules(self):
+        """ All rules shoould be returned """
         self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
         rules = self.client._get_scan_rules()
         self.assertTrue(len(rules) == 2)
 
-    def test_get_scan_rules_exclude(self):
-        """ `exclude` parameter should correctly filter out rules """
-        self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
-        rules = self.client._get_scan_rules(exclude=[2])
-        self.assertTrue(len(rules) == 1 and rules[0]["id"] == 1)
-
-    def test_get_scan_rules_exclude_all(self):
+    def test_get_scan_rules_empty_rules_result(self):
         """ A resulting empty ruleset should raise an error """
-        self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
+        self.client.get_rules.return_value = []
         with self.assertRaises(ValueError):
-            self.client._get_scan_rules(exclude=[1, 2])
+            self.client._get_scan_rules()
+
+# Deprecated with v4.0, with `exclude` deprecated from the APIs of the scan
+#     def test_get_scan_rules_exclude(self):
+#         """ `exclude` parameter should correctly filter out rules """
+#         self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
+#         rules = self.client._get_scan_rules(exclude=[2])
+#         self.assertTrue(len(rules) == 1 and rules[0]["id"] == 1)
+#
+#     def test_get_scan_rules_exclude_all(self):
+#         """ A resulting empty ruleset should raise an error """
+#         self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
+#         with self.assertRaises(ValueError):
+#             self.client._get_scan_rules(exclude=[1, 2])
 
     @patch('credentialdigger.scanners.git_scanner.GitScanner')
     def test_scan_valid(self, mock_scanner):

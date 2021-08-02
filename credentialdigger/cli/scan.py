@@ -8,10 +8,10 @@ database.
 
 usage: credentialdigger scan [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                              [--category CATEGORY]
-                             [--models MODELS [MODELS ...]]
-                             [--exclude EXCLUDE [EXCLUDE ...]] [--debug]
+                             [--models MODELS [MODELS ...]] [--debug]
                              [--git_token GIT_TOKEN] [--local] [--force]
                              [--generate_snippet_extractor]
+                             [--similarity]
                              repo_url
 
 positional arguments:
@@ -31,8 +31,6 @@ optional arguments:
   --models MODELS [MODELS ...]
                         A list of models for the ML false positives detection.
                         Cannot accept empty lists.
-  --exclude EXCLUDE [EXCLUDE ...]
-                        A list of rules to exclude
   --debug               Flag used to decide whether to visualize the
                         progressbars during the scan (e.g., during the
                         insertion of the detections in the db)
@@ -48,6 +46,9 @@ optional arguments:
                         SnippetModel. The extractor is generated using the
                         ExtractorGenerator. If `False`, use the pre-trained
                         extractor model
+  --similarity          Build and use the similarity model to compute
+                        embeddings and allow for automatic update of similar
+                        snippets
 """
 import logging
 import sys
@@ -83,6 +84,11 @@ def configure_parser(parser):
             The extractor is generated using the ExtractorGenerator. If \
             `False`, use the pre-trained extractor model')
     parser.add_argument(
+        '--similarity', action='store_true',
+        help='Build and use the similarity model to compute embeddings \
+            and allow for automatic update of similar snippets')
+
+    parser.add_argument(
         '--git_token', default=None, type=str,
         help='Git personal access token to authenticate to the git server')
 
@@ -109,10 +115,10 @@ def run(client, args):
         repo_url=args.repo_url,
         category=args.category,
         models=args.models,
-        exclude=args.exclude,
         force=args.force,
         debug=args.debug,
         generate_snippet_extractor=args.generate_snippet_extractor,
+        similarity=args.similarity,
         local_repo=args.local,
         git_token=args.git_token)
 

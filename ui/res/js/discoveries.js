@@ -61,10 +61,12 @@ function initFilesDataTable() {
       url: "/get_files",
       data: { url: repoUrl },
       dataSrc: function (json) {
-        document.querySelector("#discoveriesCounter").innerText = json.reduce(
+        document.querySelector("#discoveriesCounter").innerText = `${
+          json.length
+        } unique file paths found (${json.reduce(
           (prev, curr) => prev + curr.tot_discoveries,
           0
-        );
+        )}  total discoveries)`;
         // Map json data before sending it to datatable
         return json.map((item) => {
           return {
@@ -143,6 +145,37 @@ function initDiscoveriesDataTable() {
           ...(filename && { file: filename }),
         },
         dataSrc: function (json) {
+          postfix = " leaks";
+          switch (json.stateFilter) {
+            case "false_positive":
+              postfix = " false positives";
+              break;
+            case "addressing":
+              postfix = " addressing";
+              break;
+            case "not_relevant":
+              postfix = " not relevant";
+            default:
+              break;
+          }
+          if (json.stateFilter != null) {
+            document.querySelector("#shownDiscoveriesCounter").innerHTML =
+              `<b><u>` + json.recordsTotal + postfix + `</u></b>`;
+            document.querySelector("#shownDiscoveriesCounter").title =
+              json.uniqueRecords + " Unique snippets";
+            document.querySelector(
+              "#totalDiscoveriesCounterWithBrackets"
+            ).style.display = "";
+            document.querySelector("#totalDiscoveriesCounter").style.display =
+              "none";
+          } else {
+            document.querySelector("#shownDiscoveriesCounter").innerHTML = "";
+            document.querySelector(
+              "#totalDiscoveriesCounterWithBrackets"
+            ).style.display = "none";
+            document.querySelector("#totalDiscoveriesCounter").style.display =
+              "";
+          }
           return json.data.map((item) => {
             // Map json data before sending it to datatable
             const details = `
@@ -169,7 +202,9 @@ function initDiscoveriesDataTable() {
                   <td class="hash">${i.commit_id}</td>
                   <td class="dt-center">${i.line_number}</td>
                   <td>
-                  <a class="btn btn-light grey-color" target="_blank" href="${repoUrl}/blob/${i.commit_id}/${i.file_name}#L${i.line_number}">
+                  <a class="btn btn-light grey-color" target="_blank" href="${repoUrl}/blob/${
+                    i.commit_id
+                  }/${i.file_name}#L${i.line_number}">
                   <span class="icon icon-github"></span>
                   <span class="btn-text">Show on GitHub</span>
                 </a>
@@ -209,13 +244,12 @@ function initDiscoveriesDataTable() {
       },
       initComplete: function () {
         var column = this.api().columns(3);
-        var select = $('<select><option value=""></option></select>').on(
-          "change",
-          function () {
-            var val = $.fn.dataTable.util.escapeRegex($(this).val());
-            column.search(val).draw();
-          }
-        );
+        var select = $(
+          '<select id="stateSelector"><option value=""></option></select>'
+        ).on("change", function () {
+          var val = $.fn.dataTable.util.escapeRegex($(this).val());
+          column.search(val).draw();
+        });
 
         select.append(`
         <option value="all">all</option>

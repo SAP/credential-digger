@@ -60,12 +60,14 @@ function initReposDataTable() {
         url: "/get_repos",
         dataSrc: function (json) {
           document.querySelector("#lenDiscoveries").innerText = json.length;
-          document.querySelector("#allDiscoveries").innerText = json.reduce(
-            (prev, curr) => prev + curr.lendiscoveries,
-            0
-          );
+          document.querySelector("#allDiscoveries").innerText = 0;
           // Map json data before sending it to datatable
           return json.map((item) => {
+            current_total_count = parseInt(
+              document.querySelector("#allDiscoveries").innerText
+            );
+            document.querySelector("#allDiscoveries").innerText =
+              current_total_count + item.total;
             local_repo = !(
               item.url.startsWith("http://") || item.url.startsWith("https://")
             );
@@ -89,6 +91,7 @@ function initReposDataTable() {
             `
                 : `
               <span class="icon icon-check_circle_outline success-color"></span>`,
+              lendiscoveries: item.TP + ` (${item.total} Total)`,
               actions: `
             <div class="btns-container">
               <div class="btn-group">
