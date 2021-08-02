@@ -148,7 +148,7 @@ def run(client, args):
         response = ''
         while response.upper() not in ['Y', 'N']:
             response = console.input(
-                f'[bold]This repository has more than {MAX_NUMBER_DISCOVERIES}\
+                f'[bold]This repository has more than {MAX_NUMBER_DISCOVERIES} \
 discoveries, export them as .csv instead? (Y/N)')
         if(response.upper() == 'N'):
             print_discoveries(discoveries, args.repo_url)
