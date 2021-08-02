@@ -93,7 +93,7 @@ def print_discoveries(discoveries, repo_url):
 
 def export_csv(repo_url, client, save=False):
     # Check if --save is specified
-    if save == False:
+    if save is False:
         path = ''
         # Read the export path from the console's input
         while path == '':
