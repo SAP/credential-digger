@@ -3,6 +3,7 @@ import os
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from datetime import datetime, timezone
+from unicodedata import category
 
 import yaml
 from github import Github
@@ -1383,3 +1384,20 @@ class Client(Interface):
                 self.update_discovery(d['id'], state)
                 n_updated_snippets += 1
         return n_updated_snippets
+
+    def assign_categories(self, discoveries):
+        """ Add category to each discovery
+
+        Parameters
+        ----------
+        discoveries: list
+            List of discoveries without assigned categories to them
+
+        """
+        rulesdict = self.get_rules()
+        for discovery in discoveries:
+            if discovery['rule_id']:
+                category = rulesdict[discovery['rule_id']-1]['category']
+                discovery['category'] = category
+            else:
+                discovery['category'] = '(rule deleted)'
