@@ -1154,40 +1154,12 @@ class Client(Interface):
         return discoveries_ids
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):
-        """ Use a model to analyze a list of discoveries.
-
-        Parameters
-        ----------
-        model_manager:
-        discoveries:
-        debug:
-
-        Returns
-        -------
-        """
-
-        def _analyze_discovery(d):
-            if d['state'] != 'false_positive' and \
-                    model_manager.launch_model(d):
-                d['state'] = 'false_positive'
-                return 1
-            return 0
-
+        discoveries, n_false_positives = model_manager.launch_model(discoveries)
         if debug:
             model_name = model_manager.model.__class__.__name__
             logger.debug(f'Analyzing discoveries with model {model_name}')
-
-            false_positives = 0
-            for i in tqdm(range(len(discoveries))):
-                false_positives += _analyze_discovery(discoveries[i])
-
-            logger.debug(f'Model {model_name} classified {false_positives} '
-                         'discoveries.')
-        else:
-            for d in discoveries:
-                _analyze_discovery(d)
-
-        # Return updated discoveries
+            logger.debug(f'Model {model_name} detected {n_false_positives}'
+                         'false positives')
         return discoveries
 
     def _generate_snippet_extractor(self, repo_url):
