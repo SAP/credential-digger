@@ -1,11 +1,12 @@
 """
-The 'get_discoveries' module can be used to retrieve the discoveries on the fly 
+The 'get_discoveries' module can be used to retrieve the discoveries on the fly
 from the terminal. It supports both the Sqlite and Postgres clients.
 
 NOTE: Postgres is used by default. Please make sure that the environment
 variables are exported.
 
-usage: credentialdigger get_discoveries [-h] [--dotenv DOTENV] [--sqlite SQLITE]
+usage: credentialdigger get_discoveries [-h] [--dotenv DOTENV] 
+                                        [--sqlite SQLITE]
                                         [--save SAVE]
                                         repo_url
 
@@ -23,7 +24,7 @@ optional arguments:
                         postgres (must be up and running)
     --save SAVE         If specified, export the discoveries to the path passed
                         as an argument instead of showing them on the terminal.
-  
+
 """
 
 import logging
@@ -32,7 +33,6 @@ import pandas as pd
 
 from rich.console import Console
 from rich.table import Table
-from rich.progress import track
 
 # Maximum number of discoveries to print. If repo has more discoveries,
 # the user will be given the option to export said discoveries.
