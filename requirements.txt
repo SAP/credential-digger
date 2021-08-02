@@ -12,6 +12,7 @@ python-dotenv
 python-string-utils
 pyyaml
 requests
+rich
 scikit-learn
 srsly
 tensorflow==2.5.0; python_version >= "3.8"
