@@ -57,6 +57,7 @@ def configure_parser(parser):
         '--save', default=None, type=str,
         help='Path of the .csv file to which we export the discoveries.')
 
+
 def print_discoveries(discoveries, repo_url):
     status = f'[bold]Processing {len(discoveries)} discoveries...'
     with console.status(status) as status:
@@ -67,7 +68,8 @@ def print_discoveries(discoveries, repo_url):
 
         # Convert `int` columns to `str` to be eventually rendered.
         discoveries_list['id'] = discoveries_list['id'].astype(str)
-        discoveries_list['line_number'] = discoveries_list['line_number'].astype(str)
+        discoveries_list['line_number'] = discoveries_list['line_number'].astype(
+            str)
 
         # Convert to list and insert column names
         discoveries_list = discoveries_list.values.tolist()
