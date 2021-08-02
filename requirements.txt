@@ -1,3 +1,4 @@
+fasttext
 GitPython
 hyperscan==0.2.0; python_version >= "3.9"
 hyperscan==0.1.5; python_version < "3.9"
