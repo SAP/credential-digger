@@ -10,7 +10,7 @@ class SnippetModel(BaseModel):
         """ This class classifies a discovery as a false positive according to
         its code snippet.
         """
-        super().__init__(model, tokenizer, local_files_only)
+        super().__init__(model, tokenizer)
 
     def analyze(self, discoveries):
         """ Analyze a snippet and predict whether it is a leak or not.
@@ -20,16 +20,21 @@ class SnippetModel(BaseModel):
         discoveries: list of dict
             The discoveries
         """
-        snippets = [d['snippet'] for d in discoveries if d['state'] != 'false_positive']
+        fp_discoveries = [d for d in discoveries if d['state'] == 'false_positive']
+        new_discoveries = [d for d in discoveries if d['state'] != 'false_positive']
+        snippets = [d['snippet'] for d in new_discoveries]
         data = self.preprocess_data(snippets)
         outputs = self.model.predict(data)
         logits = outputs['logits']
         predictions = tf.argmax(logits, 1)
         n_false_positives = 0
-        for d, p in zip(discoveries, predictions):
+        for d, p in zip(new_discoveries, predictions):
             if p == 0:
                 d['state'] = 'false_positive'
                 n_false_positives += 1
+            else:
+                print(d['snippet'])
+        discoveries = fp_discoveries + new_discoveries
         return discoveries, n_false_positives
 
     def preprocess_data(self, snippets):
