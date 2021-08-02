@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
-from pathlib import Path
 
-import pkg_resources
-import srsly
 from transformers import TFRobertaForSequenceClassification, RobertaTokenizer
 
 
