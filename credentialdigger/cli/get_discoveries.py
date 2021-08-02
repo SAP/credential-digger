@@ -34,3 +34,25 @@ from rich.console import Console
 from rich.table import Table
 from rich import print
 from rich.progress import track
+
+logger = logging.getLogger(__name__)
+console = Console()
+
+
+def configure_parser(parser):
+    """
+    Configure arguments for command line parser.
+
+    Parameters
+    ----------
+    parser: `credentialdigger.cli.customParser`
+        Command line parser
+    """
+    parser.set_defaults(func=run)
+    parser.add_argument(
+        'repo_url', type=str,
+        help='The location of a git repository (an url if --local is not set, \
+            a local path otherwise)')
+    parser.add_argument(
+        '--save', default=None, type=str,
+        help='Path of the .csv file to which we export the discoveries.')
