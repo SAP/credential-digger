@@ -61,8 +61,7 @@ def configure_parser(parser):
 
 
 def print_discoveries(discoveries, repo_url):
-    status_update = f'[bold]Processing {len(discoveries)} discoveries...'
-    with console.status(status_update) as status:
+    with console.status(f'[bold]Processing {len(discoveries)} discoveries...'):
         discoveries_list = pd.DataFrame(discoveries)
         del discoveries_list['repo_url']
         del discoveries_list['timestamp']
@@ -103,7 +102,7 @@ def export_csv(repo_url, client, save=False):
 
     try:
         with open(path, newline='', mode='w') as csv_file:
-            with console.status('[bold]Exporting the discoveries..') as status:
+            with console.status('[bold]Exporting the discoveries..'):
                 data = client.export_discoveries_csv(repo_url)
                 csv_file.writelines(data)
                 console.print(
