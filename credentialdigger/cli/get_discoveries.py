@@ -32,7 +32,6 @@ import pandas as pd
 
 from rich.console import Console
 from rich.table import Table
-from rich import print
 from rich.progress import track
 
 # Maximum number of discoveries to print. If repo has more discoveries,
@@ -118,6 +117,7 @@ successfully.')
         except OSError as osE:
             console.print(f'[red]{osE}[/]')
 
+
 def run(client, args):
     """
     Retrieve discoveries of a git repository.
@@ -136,7 +136,7 @@ def run(client, args):
     except Exception as e:
         console.print(f'[red]{e}[/]')
 
-    # if --save is specified, export the discoveries and exit   
+    # if --save is specified, export the discoveries and exit
     if args.save != None:
         export_csv(args.repo_url, client, save=args.save)
         return True
@@ -156,4 +156,5 @@ discoveries, export them as .csv instead? (Y/N)')
             export_csv(args.repo_url, client)
     else:
         print_discoveries(discoveries, args.repo_url)
-        print(f'[bold] {args.repo_url} has {len(discoveries)} discoveries.')
+        console.print(
+            f'[bold] {args.repo_url} has {len(discoveries)} discoveries.')
