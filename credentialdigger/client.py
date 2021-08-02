@@ -5,7 +5,6 @@ import os
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from datetime import datetime, timezone
-from unicodedata import category
 
 import yaml
 from github import Github
