@@ -16,15 +16,16 @@ TLDR; watch the video ⬇️
 
 -  [Why](#why)
 -  [Requirements](#requirements)
+-  [Download and installation](#download-and-installation)
 -  [How to run](#how-to-run)
-    - [Install dependencies](#install-dependencies)
     - [Add rules](#add-rules)
     - [Install machine learning models](#install-machine-learning-models)
     - [Scan a repository](#scan-a-repository)
 -  [Docker container](#docker-container)
--  [Advanced install](#advanced-install)
+-  [Advanced installation](#advanced-install)
     - [Build from source](#build-from-source)
     - [External postgres database](#external-postgres-database)
+-  [How to update the project](#how-to-updade-the-project)
 -  [Python library usage](#python-library-usage)
     - [Add rules](#add-rules)
     - [Scan a repository](#scan-a-repository)
@@ -32,6 +33,7 @@ TLDR; watch the video ⬇️
 -  [CLI - Command Line Interface](#cli-command-line-interface)
 -  [Wiki](#wiki)
 -  [Contributing](#contributing)
+-  [How to obtain support](#how-to-obtain-support)
 -  [News](#news)
 
 
@@ -66,9 +68,7 @@ Credential Digger supports Python >= 3.6 and < 3.10, and works only with Linux a
 In case you don't meet these requirements, you may consider running a [Docker container](#docker) (that also includes a user interface).
 
 
-## How to run
-
-### Install dependencies
+## Download and Installation
 
 First, you need to install the regular expression matching library [Hyperscan](https://github.com/intel/hyperscan). Be sure to have `build-essential` and `python3-dev` too.
 
@@ -87,6 +87,8 @@ Then, you can install Credential Digger module using `pip`.
 ```bash
 pip install credentialdigger
 ```
+
+## How to run
 
 ### Add rules
 
@@ -151,7 +153,7 @@ sudo docker-compose up --build
 The UI is available at [http://localhost:5000/](http://localhost:5000/)
 
 
-## Advanced Install
+## Advanced Installation
 
 Credential Digger is modular, and offers a wide choice of components and adaptations.
 
@@ -194,6 +196,12 @@ sudo docker-compose -f docker-compose.postgres.yml up --build
 
 Most advanced users may also wish to use an external postgres database instead of the dockerized one we provide in our `docker-compose.postgres.yml`.
 
+
+
+## How to update the project
+If you are already running Credential Digger and you want to update it to a
+newer version, you can 
+[refer to the wiki for the needed steps](https://github.com/SAP/credential-digger/wiki/How-to-update-Credential-Digger).
 
 
 
@@ -253,8 +261,6 @@ new_discoveries = c.scan(repo_url='https://github.com/user/repo',
                          debug=True)
 ```
 
-
-
 ## CLI - Command Line Interface
 
 Credential Digger also offers a simple CLI to scan a repository. The CLI supports both sqlite and postgres databases. In case of postgres, you need either to export the credentials needed to connect to the database as environment variables or to setup a `.env` file. In case of sqlite, the path of the db must be passed as argument.
@@ -270,6 +276,11 @@ For further information, please refer to the [Wiki](https://github.com/SAP/crede
 ## Contributing
 
 We invite your participation to the project through issues and pull requests. Please refer to the [Contributing guidelines](https://github.com/SAP/credential-digger/blob/main/CONTRIBUTING.md) for how to contribute.
+
+## How to obtain support
+
+As a first step, we suggest to [read the wiki](https://github.com/SAP/credential-digger/wiki).
+In case you don't find the answers you need, you can open an [issue](https://github.com/SAP/credential-digger/issues) or contact the [maintainers](https://github.com/SAP/credential-digger/blob/main/setup.py#L19).
 
 ## News
 

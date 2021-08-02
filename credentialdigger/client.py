@@ -1,7 +1,9 @@
 import csv
+import json
 import io
 import logging
 import os
+import urllib3
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from datetime import datetime, timezone
@@ -121,12 +123,7 @@ class Client(Interface):
     def add_discoveries(self, query, discoveries, repo_url):
         return
 
-    def add_embedding(self,
-                      query,
-                      discovery_id,
-                      snippet,
-                      repo_url,
-                      embedding=None):
+    def add_embedding(self, query, discovery_id, repo_url, embedding=None):
         """ Add an embedding to the embeddings table.
 
         Parameters
@@ -142,6 +139,11 @@ class Client(Interface):
         embedding: list
             The embedding to be added
         """
+        snippet = self.get_discovery(discovery_id)['snippet']
+        if not embedding:
+            model = build_embedding_model()
+            embedding = compute_snippet_embedding(snippet, model)
+        embedding = json.dumps(embedding)
         cursor = self.db.cursor()
         try:
             cursor.execute(query, (discovery_id,
@@ -152,32 +154,26 @@ class Client(Interface):
         except self.Error:
             self.db.rollback()
 
-    def add_embeddings(self,
-                       query,
-                       discoveries_ids,
-                       snippets,
-                       embeddings,
-                       repo_url):
+    def add_embeddings(self, query, repo_url):
         """ Bulk add embeddings to the embeddings table.
 
         Parameters
         ----------
         query: str
             The query to be run, with placeholders in place of parameters
-        discoveries_ids: list
-            The ids of the discoveries whose embeddings are to be added
-        snippets: list
-            The snippets whose embeddings are to be added
-        embeddings: list
-            The embeddings to be added
         repo_url: str
             The repository url
         """
+        [discoveries_ids,
+         snippets,
+         embeddings] = self.compute_repo_embeddings(repo_url)
+        embedding_strings = list(map(json.dumps, embeddings))
+
         cursor = self.db.cursor()
         try:
             insert_tuples = list(zip(discoveries_ids,
                                      snippets,
-                                     embeddings,
+                                     embedding_strings,
                                      [repo_url] * len(discoveries_ids)))
             cursor.executemany(query, insert_tuples)
             self.db.commit()
@@ -590,9 +586,8 @@ class Client(Interface):
 
         Returns
         -------
-        list or str
-            The embedding for the provided
-            snippet or id
+        list
+            The embedding for the provided snippet or id
         """
         cursor = self.db.cursor()
         try:
@@ -602,8 +597,11 @@ class Client(Interface):
                 cursor.execute(query, (snippet,))
             else:
                 return None
-            embedding_tuple = cursor.fetchone()
-            return embedding_tuple[0] if embedding_tuple else None
+            embedding_str = cursor.fetchone()[0]
+            return json.loads(embedding_str)
+        except IndexError:
+            # The embedding tuple was empty when fetched
+            return None
         except self.Error:
             return None
 
@@ -621,15 +619,17 @@ class Client(Interface):
         -------
         dictionary
             A dictionary with discovery ids as keys and matching
-            embeddings as values
+            embeddings (i.e., a list of floats) as values
         """
         cursor = self.db.cursor()
         try:
             cursor.execute(query, (repo_url,))
-            ids_embeddings_tuples = cursor.fetchall()
-            return dict(ids_embeddings_tuples)
+            embeddings_tuples = cursor.fetchall()
         except self.Error:
             return None
+
+        return dict((emb_id, json.loads(emb_str)) for emb_id, emb_str in
+                    embeddings_tuples)
 
     def update_repo(self, query, url, last_scan):
         """ Update the last scan timestamp of a repo.
@@ -735,9 +735,9 @@ class Client(Interface):
             return self.query_check(
                 query, new_state, repo_url, file_name, snippet)
 
-    def scan(self, repo_url, category=None, models=None, exclude=None,
-             force=False, debug=False, generate_snippet_extractor=False,
-             similarity=False, local_repo=False, git_token=None):
+    def scan(self, repo_url, category=None, models=None, force=False,
+             debug=False, generate_snippet_extractor=False, similarity=False,
+             local_repo=False, git_token=None):
         """ Launch the scan of a git repository.
 
         Parameters
@@ -749,8 +749,6 @@ class Client(Interface):
             otherwise use all the rules in the db
         models: list, optional
             A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
         force: bool, default `False`
             Force a complete re-scan of the repository, in case it has already
             been scanned previously
@@ -785,7 +783,7 @@ class Client(Interface):
             if repo_url.endswith('.git'):
                 repo_url = repo_url[:-4]
 
-        rules = self._get_scan_rules(category, exclude)
+        rules = self._get_scan_rules(category)
         scanner = GitScanner(rules)
 
         return self._scan(
@@ -794,9 +792,9 @@ class Client(Interface):
             similarity=similarity, local_repo=local_repo, git_token=git_token)
 
     def scan_snapshot(self, repo_url, branch_or_commit, category=None,
-                      models=None, exclude=None, force=False, debug=False,
-                      generate_snippet_extractor=False, git_token=None,
-                      max_depth=-1, ignore_list=[]):
+                      models=None, force=False, debug=False,
+                      generate_snippet_extractor=False, similarity=False,
+                      git_token=None, max_depth=-1, ignore_list=[]):
         """ Launch the scan of the snapshot of a git repository.
         This scan mode takes into consideration the snapshot of the repository
         at one specific commit, or at the last commit of a specific branch.
@@ -812,8 +810,6 @@ class Client(Interface):
             otherwise use all the rules in the db
         models: list, optional
             A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
         force: bool, default `False`
             Force a complete re-scan of the repository, in case it has already
             been scanned previously
@@ -844,18 +840,19 @@ class Client(Interface):
             raise ValueError(f'The repository \"{repo_url}\" has already been '
                              'scanned. Please use \"force\" to rescan it.')
 
-        rules = self._get_scan_rules(category, exclude)
+        rules = self._get_scan_rules(category)
         scanner = GitFileScanner(rules)
 
         return self._scan(
             repo_url=repo_url, branch_or_commit=branch_or_commit,
             scanner=scanner, models=models, force=force, debug=debug,
             generate_snippet_extractor=generate_snippet_extractor,
-            git_token=git_token, max_depth=max_depth, ignore_list=ignore_list)
+            similarity=similarity, git_token=git_token, max_depth=max_depth,
+            ignore_list=ignore_list)
 
-    def scan_path(self, scan_path, category=None, models=None, exclude=None,
-                  force=False, debug=False, generate_snippet_extractor=False,
-                  max_depth=-1, ignore_list=[]):
+    def scan_path(self, scan_path, category=None, models=None, force=False,
+                  debug=False, generate_snippet_extractor=False,
+                  similarity=False, max_depth=-1, ignore_list=[]):
         """ Launch the scan of a local directory or file.
 
         Parameters
@@ -867,8 +864,6 @@ class Client(Interface):
             otherwise use all the rules in the db
         models: list, optional
             A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
         force: bool, default `False`
             Force a complete re-scan of the repository, in case it has already
             been scanned previously
@@ -899,17 +894,19 @@ class Client(Interface):
             raise ValueError(f'The directory \"{scan_path}\" has already been '
                              'scanned. Please use \"force\" to rescan it.')
 
-        rules = self._get_scan_rules(category, exclude)
+        rules = self._get_scan_rules(category)
         scanner = FileScanner(rules)
 
         return self._scan(
             repo_url=scan_path, scanner=scanner, models=models, force=force,
             debug=debug, generate_snippet_extractor=generate_snippet_extractor,
-            max_depth=max_depth, ignore_list=ignore_list)
+            similarity=similarity, max_depth=max_depth,
+            ignore_list=ignore_list)
 
-    def scan_user(self, username, category=None, models=None, exclude=None,
-                  debug=False, generate_snippet_extractor=False, forks=False,
-                  git_token=None, api_endpoint='https://api.github.com'):
+    def scan_user(self, username, category=None, models=None, debug=False,
+                  generate_snippet_extractor=False, forks=False,
+                  similarity=False, git_token=None,
+                  api_endpoint='https://api.github.com'):
         """ Scan all the repositories of a user.
 
         Find all the repositories of a user, and scan
@@ -925,8 +922,6 @@ class Client(Interface):
             otherwise use all the rules in the db
         models: list, optional
             A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
@@ -947,30 +942,38 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives), grouped by repository.
         """
+        # Disable warnings due to verify=false at login
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
         logger.debug(f'Use API endpoint {api_endpoint}')
 
-        rules = self._get_scan_rules(category, exclude)
+        rules = self._get_scan_rules(category)
         scanner = GitScanner(rules)
 
         g = Github(base_url=api_endpoint,
                    login_or_token=git_token,
                    verify=False)
         missing_ids = {}
-        for repo in g.get_user(username).get_repos():
+        repositories = g.get_user(username).get_repos()
+        repos_num = repositories.totalCount
+        i = 0
+        for repo in repositories:
+            i += 1
             if not forks and repo.fork:
                 # Ignore this repo since it is a fork
-                logger.info(f'Ignore {repo} (it is a fork)')
+                logger.info(f'{i}/{repos_num}) Ignore {repo} (it is a fork)')
                 continue
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
-            logger.info(f'Scanning {repo.url}')
+            logger.info(f'{i}/{repos_num}) Scanning {repo.url}')
             missing_ids[repo_url] = self._scan(repo_url, scanner,
                                                models=models,
                                                debug=debug,
+                                               similarity=similarity,
                                                git_token=git_token)
         return missing_ids
 
-    def scan_wiki(self, repo_url, category=None, models=None, exclude=None,
+    def scan_wiki(self, repo_url, category=None, models=None,
                   debug=False, git_token=None):
         """ Scan the wiki of a repository.
 
@@ -986,8 +989,6 @@ class Client(Interface):
             otherwise use all the rules in the db
         models: list, optional
             A list of models for the ML false positives detection
-        exclude: list, optional
-            A list of rules to exclude
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
@@ -1000,7 +1001,7 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        rules = self._get_scan_rules(category, exclude)
+        rules = self._get_scan_rules(category)
         scanner = GitScanner(rules)
 
         # The url of a wiki is same as the url of its repo, but ending with
@@ -1250,16 +1251,14 @@ class Client(Interface):
                     'is not in the chosen models. No extractor to generate.')
         return False
 
-    def _get_scan_rules(self, category=None, exclude=None):
-        """ Get the rules of the `category`, filtered by `exclude`
+    def _get_scan_rules(self, category=None,):
+        """ Get the rules of the `category`
 
         Parameters
         ----------
         category: str, optional
             If specified, scan the repo using all the rules of this category,
             otherwise use all the rules in the db
-        exclude: list, optional
-            A list of rules to exclude
 
         Returns
         -------
@@ -1271,12 +1270,7 @@ class Client(Interface):
         ValueError
             If no rules are found or all rules have been filtered out
         """
-        if exclude is None:
-            exclude = []
-
         rules = self.get_rules(category)
-        if exclude:
-            rules = list(filter(lambda x: x['id'] not in exclude, rules))
         if not rules:
             raise ValueError('No rules found')
 
@@ -1298,8 +1292,9 @@ class Client(Interface):
         """
         disc = self.get_discoveries(repo_url)
         # If called by UI classes, disc is a tuple of 2 elements, and the
-        # actual discoveries are at the second element
-        discoveries = disc[1] if len(disc) == 2 else disc
+        # actual discoveries are at the second element (the first one contains
+        # the number of discoveries, so, it's an int)
+        discoveries = disc[1] if disc and isinstance(disc[0], int) else disc
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
         model = build_embedding_model()

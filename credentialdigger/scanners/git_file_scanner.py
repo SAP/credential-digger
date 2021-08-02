@@ -49,7 +49,7 @@ class GitFileScanner(GitScanner, FileScanner):
                              flags=flags)
 
     def scan(self, repo_url, branch_or_commit, max_depth=-1, ignore_list=[],
-             git_token=None, debug=False):
+             git_token=None, debug=False, **kwargs):
         """ Scan a repository.
 
         Parameters
@@ -71,6 +71,8 @@ class GitFileScanner(GitScanner, FileScanner):
             Git personal access token to authenticate to the git server
         debug: bool, optional
             If True, visualize debug information during the scan
+        kwargs: kwargs
+            Keyword arguments to be passed to the scanner
 
         Returns
         -------

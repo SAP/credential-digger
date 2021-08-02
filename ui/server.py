@@ -306,7 +306,8 @@ def get_repos():
 
     repos = c.get_repos()
     for repo in repos:
-        repo['lendiscoveries'] = c.get_discoveries_count(repo['url'])
+        repo['total'] = c.get_discoveries_count(repo['url'])
+        repo['TP'] = c.get_discoveries_count(repo['url'], state='new')
         repo['scan_active'] = False
         if repo['url'] in active_scans:
             repo['scan_active'] = True
@@ -376,9 +377,13 @@ def get_discoveries():
     discoveries = sorted(
         discoveries,
         key=lambda i: (i['snippet'], i['category'], States[i['state']].value))
+
     response = {
-        'recordsTotal': discoveries_count,
+        'uniqueRecords': discoveries_count,
         'recordsFiltered': discoveries_count,
+        'recordsTotal': c.get_discoveries_count(repo_url=url,
+                                                state=state_filter),
+        'stateFilter': state_filter,
         'data': sorted([{'snippet': keys[0],
                          'category': keys[1],
                          'state': States(keys[2]).name,
@@ -433,6 +438,7 @@ def update_similar_discoveries():
         return 'Error in updating similar snippets', 500
     else:
         return 'OK', 200
+
 
 jwt = JWTManager(app)
 if __name__ == '__main__':

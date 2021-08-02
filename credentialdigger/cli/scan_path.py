@@ -8,9 +8,9 @@ database.
 
 usage: credentialdigger scan_path [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                   [--category CATEGORY]
-                                  [--models MODELS [MODELS ...]]
-                                  [--exclude EXCLUDE [EXCLUDE ...]] [--debug]
+                                  [--models MODELS [MODELS ...]] [--debug]
                                   [--force] [--generate_snippet_extractor]
+                                  [--similarity]
                                   [--max_depth MAX_DEPTH]
                                   scan_path
 
@@ -30,8 +30,6 @@ optional arguments:
   --models MODELS [MODELS ...]
                         A list of models for the ML false positives detection.
                         Cannot accept empty lists.
-  --exclude EXCLUDE [EXCLUDE ...]
-                        A list of rules to exclude
   --debug               Flag used to decide whether to visualize the
                         progressbars during the scan (e.g., during the
                         insertion of the detections in the db)
@@ -42,6 +40,10 @@ optional arguments:
                         SnippetModel. The extractor is generated using the
                         ExtractorGenerator. If `False`, use the pre-trained
                         extractor model
+  --similarity          Build and use the similarity model to compute
+                        embeddings and allow for automatic update of similar
+                        snippets
+
   --max_depth MAX_DEPTH
                         Maximum depth for subdirectories scanning (If it is
                         set to -1 or not specified, all subdirectories will be
@@ -76,6 +78,10 @@ def configure_parser(parser):
             The extractor is generated using the ExtractorGenerator. If \
             `False`, use the pre-trained extractor model')
     parser.add_argument(
+        '--similarity', action='store_true',
+        help='Build and use the similarity model to compute embeddings \
+            and allow for automatic update of similar snippets')
+    parser.add_argument(
         '--max_depth', type=int, default='-1',
         help='Maximum depth for subdirectories scanning (If it is set to -1 or\
             not specified, all subdirectories will be scanned)')
@@ -104,10 +110,10 @@ def run(client, args):
         scan_path=args.scan_path,
         category=args.category,
         models=args.models,
-        exclude=args.exclude,
         force=args.force,
         debug=args.debug,
         generate_snippet_extractor=args.generate_snippet_extractor,
+        similarity=args.similarity,
         max_depth=args.max_depth)
 
     sys.exit(len(discoveries))
