@@ -5,7 +5,7 @@ from the terminal. It supports both the Sqlite and Postgres clients.
 NOTE: Postgres is used by default. Please make sure that the environment
 variables are exported.
 
-usage: credentialdigger get_discoveries [-h] [--dotenv DOTENV] 
+usage: credentialdigger get_discoveries [-h] [--dotenv DOTENV]
                                         [--sqlite SQLITE]
                                         [--save SAVE]
                                         repo_url
