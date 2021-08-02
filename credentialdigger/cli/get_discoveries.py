@@ -62,8 +62,8 @@ def configure_parser(parser):
 
 
 def print_discoveries(discoveries, repo_url):
-    status = f'[bold]Processing {len(discoveries)} discoveries...'
-    with console.status(status) as status:
+    status_update = f'[bold]Processing {len(discoveries)} discoveries...'
+    with console.status(status_update) as status:
         discoveries_list = pd.DataFrame(discoveries)
         del discoveries_list['repo_url']
         del discoveries_list['timestamp']
