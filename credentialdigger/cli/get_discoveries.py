@@ -117,3 +117,43 @@ successfully.')
             os.remove(path)
         except OSError as osE:
             console.print(f'[red]{osE}[/]')
+
+def run(client, args):
+    """
+    Retrieve discoveries of a git repository.
+
+    Parameters
+    ----------
+    client: `credentialdigger.Client`
+        Instance of the client from which we retrieve results
+    args: `argparse.Namespace`
+        Arguments from command line parser.
+
+    """
+
+    try:
+        discoveries = client.get_discoveries(repo_url=args.repo_url)
+    except Exception as e:
+        console.print(f'[red]{e}[/]')
+
+    # if --save is specified, export the discoveries and exit   
+    if args.save != None:
+        export_csv(args.repo_url, client, save=args.save)
+        return True
+
+    if len(discoveries) == 0:
+        # if repo has no discoveries, exit
+        console.print(f'[bold] {args.repo_url} has 0 discoveries.')
+    elif len(discoveries) > MAX_NUMBER_DISCOVERIES:
+        response = ''
+        while response.upper() not in ['Y', 'N']:
+            response = console.input(
+                f'[bold]This repository has more than {MAX_NUMBER_DISCOVERIES}\
+discoveries, export them as .csv instead? (Y/N)')
+        if(response.upper() == 'N'):
+            print_discoveries(discoveries, args.repo_url)
+        else:
+            export_csv(args.repo_url, client)
+    else:
+        print_discoveries(discoveries, args.repo_url)
+        print(f'[bold] {args.repo_url} has {len(discoveries)} discoveries.')
