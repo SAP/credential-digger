@@ -54,8 +54,7 @@ def configure_parser(parser):
     parser.set_defaults(func=run)
     parser.add_argument(
         'repo_url', type=str,
-        help='The location of a git repository (an url if --local is not set, \
-            a local path otherwise)')
+        help='The url of the repo we want to retrieve the discoveries from.')
     parser.add_argument(
         '--save', default=None, type=str,
         help='Path of the .csv file to which we export the discoveries.')
