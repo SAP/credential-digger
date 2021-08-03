@@ -1413,6 +1413,7 @@ class Client(Interface):
                     in this list (i.e ['new', 'false_positive'])
 
         Returns
+        -------
         str
             Discoveries in CSV format.
         """
