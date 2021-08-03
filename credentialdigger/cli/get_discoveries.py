@@ -265,7 +265,7 @@ def run(client, args):
         while response.upper() not in ['Y', 'N', 'YES', 'NO']:
             response = console.input(
                 f'[bold]This repository has more than {MAX_NUMBER_DISCOVERIES} \
-discoveries, export them as .csv instead? (Y/N)')
+discoveries, export them as .csv instead? (Y/N) ')
         if response.upper() in ['N', 'NO']:
             print_discoveries(discoveries, args.repo_url)
         else:
