@@ -63,6 +63,10 @@ def configure_parser(parser):
         '--filename', default=None, type=str,
         help='The filename to filter discoveries on')
     parser.add_argument(
+        '--state', default=None, type=str,
+        help='The state to filter discoveries on. Possible options: \
+            [new, false_positive, addressing, not_relevant, fixed]')
+    parser.add_argument(
         '--save', default=None, type=str,
         help='Path of the .csv file to which we export the discoveries')
 
