@@ -115,6 +115,19 @@ def print_discoveries(discoveries, repo_url):
 
 
 def discoveries_to_csv(discoveries):
+    """ Generate CSV from list of discoveries
+
+    Parameters
+    ----------
+        discoveries: list
+            List of discoveries from which to generate the CSV
+
+    Returns
+    -------
+        str
+            A string containing CSV obtaining from the original list of
+            discoveries.
+    """
     try:
         stringIO = io.StringIO()
         csv_writer = csv.DictWriter(stringIO, discoveries[0].keys())
@@ -130,6 +143,18 @@ def discoveries_to_csv(discoveries):
 
 
 def export_csv(discoveries, client, save=False):
+    """ Export discoveries as a CSV file
+
+    Parameters
+    ----------
+        discoveries: list
+            List of discoveries from which to generate the CSV
+        client: `credentialdigger.Client`
+            Instance of the client from which we retrieve rules
+        save: bool
+            If True, we do not ask the user to enter a file path for the CSV
+            to be exported
+    """
     # Check if --save is specified
     if save is False:
         path = ''
@@ -167,7 +192,6 @@ def assign_categories(client, discoveries):
         Instance of the client from which we retrieve rules
     discoveries: list
         List of discoveries without assigned categories to them
-
     """
     rulesdict = client.get_rules()
     for discovery in discoveries:
@@ -190,6 +214,7 @@ def filter_discoveries(discoveries, state):
                    return chosen state otherwise (i.e 'false_positive')
             - list: return all the discoveries that have states contained
                     in this list (i.e ['new', 'false_positive'])
+
     Returns
     -------
     list
@@ -207,7 +232,7 @@ def filter_discoveries(discoveries, state):
 
 def run(client, args):
     """
-    Retrieve discoveries of a git repository.
+    Retrieve discoveries of a git repository and export them if needed
 
     Parameters
     ----------
