@@ -100,9 +100,6 @@ def print_discoveries(discoveries, repo_url):
 
 
 def discoveries_to_csv(discoveries):
-    # Add the category to each discovery
-    assign_categories(discoveries)
-
     try:
         stringIO = io.StringIO()
         csv_writer = csv.DictWriter(stringIO, discoveries[0].keys())
@@ -130,8 +127,10 @@ def export_csv(discoveries, client, save=False):
 
     try:
         with open(path, newline='', mode='w') as csv_file:
-            with console.status('[bold]Exporting the discoveries..'):
-                data = client.export_discoveries_csv(discoveries)
+            with console.status('[bold]Exporting the discoveries..'): 
+                # Add the category to each discovery
+                assign_categories(client,discoveries)
+                data = discoveries_to_csv(discoveries)
                 csv_file.writelines(data)
                 console.print(
                     '[bold][!] The discoveries have been exported \
@@ -164,7 +163,7 @@ def assign_categories(client, discoveries):
             discovery['category'] = '(rule deleted)'
 
 
-def filter_discoveries(discoveries, states='all'):
+def filter_discoveries(discoveries, state):
     """ Filter discoveries based on state
 
     Parameters
@@ -181,12 +180,12 @@ def filter_discoveries(discoveries, states='all'):
     list
         Filtered list of discoveries
     """
-    if states == 'all':
-        states = ['new', 'false_positive',
+    if state == 'all':
+        state = ['new', 'false_positive',
                   'addressing', 'not_relevant', 'fixed']
 
     filtered_discoveries = list(
-        filter(lambda d: d.get('state') in states, discoveries))
+        filter(lambda d: d.get('state') in state, discoveries))
 
     return filtered_discoveries
 
