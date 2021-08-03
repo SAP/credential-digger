@@ -150,11 +150,11 @@ def run(client, args):
         console.print(f'[bold] {args.repo_url} has 0 discoveries.')
     elif len(discoveries) > MAX_NUMBER_DISCOVERIES:
         response = ''
-        while response.upper() not in ['Y', 'N']:
+        while response.upper() not in ['Y', 'N', 'YES', 'NO']:
             response = console.input(
                 f'[bold]This repository has more than {MAX_NUMBER_DISCOVERIES} \
 discoveries, export them as .csv instead? (Y/N)')
-        if(response.upper() == 'N'):
+        if response.upper() in ['N', 'NO']:
             print_discoveries(discoveries, args.repo_url)
         else:
             export_csv(args.repo_url, client)
