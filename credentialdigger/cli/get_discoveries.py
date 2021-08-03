@@ -138,7 +138,8 @@ def run(client, args):
     """
 
     try:
-        discoveries = client.get_discoveries(repo_url=args.repo_url)
+        discoveries = client.get_discoveries(
+            repo_url=args.repo_url, file_name=args.filename)
     except Exception as e:
         console.print(f'[red]{e}[/]')
 
