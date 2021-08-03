@@ -18,7 +18,5 @@ class PathModel():
             if path_dict[d['file_name']] == 1:
                 d['state'] = 'false_positive'
                 n_false_positives += 1
-            else:
-                print(d['snippet'])
         return discoveries, n_false_positives
 
