@@ -133,6 +133,7 @@ class GitFileScanner(GitScanner, FileScanner):
         logger.debug(f'Checkout {branch_or_commit}')
         repo.git.checkout(branch_or_commit)
 
+        scan_kwargs = {'branch_or_commit': branch_or_commit}
         all_discoveries = []
 
         project_root = repo.working_tree_dir
@@ -149,7 +150,8 @@ class GitFileScanner(GitScanner, FileScanner):
             for file_name in files:
                 rel_file_path = os.path.join(rel_dir_root, file_name)
                 file_discoveries = self.scan_file(
-                    project_root=project_root, relative_path=rel_file_path)
+                    project_root=project_root, relative_path=rel_file_path,
+                    **scan_kwargs)
                 all_discoveries.extend(file_discoveries)
 
         return all_discoveries
