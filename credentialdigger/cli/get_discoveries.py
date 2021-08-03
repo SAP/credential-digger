@@ -18,12 +18,12 @@ optional arguments:
     -h, --help          Show this help message and exit
     --dotenv DOTENV     The path to the .env file which will be used in all
                         commands. If not specified, the one in the current
-                        directory will be used (if present).
+                        directory will be used (if present)
     --sqlite SQLITE     If specified, scan the repo using the sqlite client
                         passing as argument the path of the db. Otherwise, use
                         postgres (must be up and running)
     --save SAVE         If specified, export the discoveries to the path passed
-                        as an argument instead of showing them on the terminal.
+                        as an argument instead of showing them on the terminal
 
 """
 
