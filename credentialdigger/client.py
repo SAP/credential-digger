@@ -1399,7 +1399,7 @@ class Client(Interface):
             else:
                 discovery['category'] = '(rule deleted)'
 
-    def export_discoveries_csv(self, repo_url, states='all'):
+    def export_discoveries_csv(self, discoveries, states='all'):
         """ Export discoveries as CSV
 
         Parameters
@@ -1417,7 +1417,6 @@ class Client(Interface):
         str
             Discoveries in CSV format.
         """
-        discoveries = self.get_discoveries(repo_url)
 
         # Add the category to each discovery
         self.assign_categories(discoveries)
