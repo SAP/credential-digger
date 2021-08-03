@@ -97,7 +97,7 @@ def print_discoveries(discoveries, repo_url):
         console.print(table)
 
 
-def export_csv(repo_url, client, save=False):
+def export_csv(discoveries, client, save=False):
     # Check if --save is specified
     if save is False:
         path = ''
@@ -111,7 +111,7 @@ def export_csv(repo_url, client, save=False):
     try:
         with open(path, newline='', mode='w') as csv_file:
             with console.status('[bold]Exporting the discoveries..'):
-                data = client.export_discoveries_csv(repo_url)
+                data = client.export_discoveries_csv(discoveries)
                 csv_file.writelines(data)
                 console.print(
                     '[bold][!] The discoveries have been exported \
@@ -145,7 +145,7 @@ def run(client, args):
 
     # if --save is specified, export the discoveries and exit
     if args.save is not None:
-        export_csv(args.repo_url, client, save=args.save)
+        export_csv(discoveries, client, save=args.save)
         return True
 
     if len(discoveries) == 0:
@@ -160,7 +160,7 @@ discoveries, export them as .csv instead? (Y/N)')
         if response.upper() in ['N', 'NO']:
             print_discoveries(discoveries, args.repo_url)
         else:
-            export_csv(args.repo_url, client)
+            export_csv(discoveries, client)
     else:
         print_discoveries(discoveries, args.repo_url)
         console.print(
