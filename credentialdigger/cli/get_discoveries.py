@@ -64,7 +64,12 @@ def configure_parser(parser):
 def print_discoveries(discoveries, repo_url):
     with console.status(f'[bold]Processing {len(discoveries)} discoveries...'):
         discoveries_list = pd.DataFrame(discoveries)
+        
+        # Remove the repo_url column since it has been passed as an argument
         del discoveries_list['repo_url']
+        
+        # Remove timestamp and rule_id columns because they are not
+        # quite relevant 
         del discoveries_list['timestamp']
         del discoveries_list['rule_id']
 
