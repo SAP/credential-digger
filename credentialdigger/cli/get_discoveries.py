@@ -127,9 +127,9 @@ def export_csv(discoveries, client, save=False):
 
     try:
         with open(path, newline='', mode='w') as csv_file:
-            with console.status('[bold]Exporting the discoveries..'): 
+            with console.status('[bold]Exporting the discoveries..'):
                 # Add the category to each discovery
-                assign_categories(client,discoveries)
+                assign_categories(client, discoveries)
                 data = discoveries_to_csv(discoveries)
                 csv_file.writelines(data)
                 console.print(
@@ -182,12 +182,13 @@ def filter_discoveries(discoveries, state):
     """
     if state == 'all':
         state = ['new', 'false_positive',
-                  'addressing', 'not_relevant', 'fixed']
+                 'addressing', 'not_relevant', 'fixed']
 
     filtered_discoveries = list(
         filter(lambda d: d.get('state') in state, discoveries))
 
     return filtered_discoveries
+
 
 def run(client, args):
     """
