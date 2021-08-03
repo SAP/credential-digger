@@ -5,8 +5,8 @@ import os
 from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
 
-from . import (add_rules, download, scan, scan_path, scan_snapshot, scan_user,
-               scan_wiki, get_discoveries)
+from . import (add_rules, download, get_discoveries, scan, scan_path,
+               scan_snapshot, scan_user, scan_wiki)
 
 logger = logging.getLogger(__name__)
 
@@ -111,13 +111,13 @@ def main(sys_argv):
     load_dotenv(dotenv_path=args.dotenv, verbose=True)
 
     if args.func in [
-        scan.run,
         add_rules.run,
+        get_discoveries.run,
+        scan.run,
         scan_user.run,
         scan_wiki.run,
         scan_path.run,
-        scan_snapshot.run,
-        get_discoveries.run
+        scan_snapshot.run
     ]:
         # Connect to db only when running commands that need it
         if args.sqlite:
