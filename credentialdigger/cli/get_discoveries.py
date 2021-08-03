@@ -28,6 +28,8 @@ optional arguments:
 
 """
 
+import csv
+import io
 import logging
 import os
 
@@ -97,6 +99,24 @@ def print_discoveries(discoveries, repo_url):
         console.print(table)
 
 
+def discoveries_to_csv(discoveries):
+    # Add the category to each discovery
+    assign_categories(discoveries)
+
+    try:
+        stringIO = io.StringIO()
+        csv_writer = csv.DictWriter(stringIO, discoveries[0].keys())
+        csv_writer.writeheader()
+        csv_writer.writerows(discoveries)
+        csv_data = stringIO.getvalue()
+    except IndexError as error:
+        logger.error(error)
+    except Exception as exception:
+        logger.exception(exception)
+
+    return csv_data
+
+
 def export_csv(discoveries, client, save=False):
     # Check if --save is specified
     if save is False:
@@ -123,23 +143,27 @@ successfully.')
         except OSError as osE:
             console.print(f'[red]{osE}[/]')
 
+
 def assign_categories(client, discoveries):
-        """ Add category to each discovery
+    """ Add category to each discovery
 
-        Parameters
-        ----------
-        discoveries: list
-            List of discoveries without assigned categories to them
+    Parameters
+    ----------
+    client: `credentialdigger.Client`
+        Instance of the client from which we retrieve rules
+    discoveries: list
+        List of discoveries without assigned categories to them
 
-        """
-        rulesdict = client.get_rules()
-        for discovery in discoveries:
-            if discovery['rule_id']:
-                category = rulesdict[discovery['rule_id'] - 1]['category']
-                discovery['category'] = category
-            else:
-                discovery['category'] = '(rule deleted)'
-                
+    """
+    rulesdict = client.get_rules()
+    for discovery in discoveries:
+        if discovery['rule_id']:
+            category = rulesdict[discovery['rule_id'] - 1]['category']
+            discovery['category'] = category
+        else:
+            discovery['category'] = '(rule deleted)'
+
+
 def filter_discoveries(discoveries, states='all'):
     """ Filter discoveries based on state
 
