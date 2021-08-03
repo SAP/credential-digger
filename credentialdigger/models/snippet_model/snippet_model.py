@@ -32,8 +32,6 @@ class SnippetModel(BaseModel):
             if p == 0:
                 d['state'] = 'false_positive'
                 n_false_positives += 1
-            else:
-                print(d['snippet'])
         discoveries = fp_discoveries + new_discoveries
         return discoveries, n_false_positives
 
