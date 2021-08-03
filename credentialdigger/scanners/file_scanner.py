@@ -145,6 +145,12 @@ class FileScanner(BaseScanner):
         discoveries = []
         line_number = 1
 
+        # If branch_or_commit is passed, then it's a scan_snapshot
+        # The branch_or_commit is the same for every file to be scanned
+        commit_id = ''
+        if kwargs:
+            commit_id = kwargs.get('branch_or_commit', '')
+
         full_path = os.path.join(project_root, relative_path)
         try:
             with open(full_path, 'r', encoding='utf-8') as file_to_scan:
@@ -154,11 +160,10 @@ class FileScanner(BaseScanner):
                         row if sys.version_info < (3, 9) else row.encode(
                             'utf-8'),
                         match_event_handler=rh.handle_results,
-                        context=[row.strip(), relative_path, '', line_number])
+                        context=[row.strip(), relative_path, commit_id,
+                                 line_number]
+                    )
                     if rh.result:
-                        if 'branch_or_commit' in kwargs:
-                            rh.result.update(
-                                {'commit_id': kwargs['branch_or_commit']})
                         discoveries.append(rh.result)
                     line_number += 1
         except UnicodeDecodeError:
