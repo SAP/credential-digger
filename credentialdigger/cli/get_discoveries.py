@@ -212,6 +212,10 @@ def run(client, args):
     except Exception as e:
         console.print(f'[red]{e}[/]')
 
+    # If --state is specified, filter the discoveries based on it
+    if args.state is not None:
+        discoveries = filter_discoveries(discoveries, args.state)
+
     # if --save is specified, export the discoveries and exit
     if args.save is not None:
         export_csv(discoveries, client, save=args.save)
