@@ -123,6 +123,48 @@ successfully.')
         except OSError as osE:
             console.print(f'[red]{osE}[/]')
 
+def assign_categories(client, discoveries):
+        """ Add category to each discovery
+
+        Parameters
+        ----------
+        discoveries: list
+            List of discoveries without assigned categories to them
+
+        """
+        rulesdict = client.get_rules()
+        for discovery in discoveries:
+            if discovery['rule_id']:
+                category = rulesdict[discovery['rule_id'] - 1]['category']
+                discovery['category'] = category
+            else:
+                discovery['category'] = '(rule deleted)'
+                
+def filter_discoveries(discoveries, states='all'):
+    """ Filter discoveries based on state
+
+    Parameters
+    ----------
+    discoveries: list
+        List of discoveries to be filtered
+    states: str | list
+            - str: if it equals 'all', then return all discoveries.
+                   return chosen state otherwise (i.e 'false_positive')
+            - list: return all the discoveries that have states contained
+                    in this list (i.e ['new', 'false_positive'])
+    Returns
+    -------
+    list
+        Filtered list of discoveries
+    """
+    if states == 'all':
+        states = ['new', 'false_positive',
+                  'addressing', 'not_relevant', 'fixed']
+
+    filtered_discoveries = list(
+        filter(lambda d: d.get('state') in states, discoveries))
+
+    return filtered_discoveries
 
 def run(client, args):
     """
