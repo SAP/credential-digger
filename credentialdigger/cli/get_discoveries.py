@@ -11,7 +11,7 @@ usage: credentialdigger get_discoveries [-h] [--dotenv DOTENV]
                                         repo_url
 
 positional arguments:
-  repo_url              The url of the repo we want to retrieve the discoveries
+    repo_url            The url of the repo we want to retrieve the discoveries
                         from. Please make sure it has been scanned beforehand.
 
 optional arguments:
@@ -22,6 +22,7 @@ optional arguments:
     --sqlite SQLITE     If specified, scan the repo using the sqlite client
                         passing as argument the path of the db. Otherwise, use
                         postgres (must be up and running)
+    --filename FILENAME The filename to filter discoveries on
     --save SAVE         If specified, export the discoveries to the path passed
                         as an argument instead of showing them on the terminal
 
@@ -55,10 +56,13 @@ def configure_parser(parser):
     parser.set_defaults(func=run)
     parser.add_argument(
         'repo_url', type=str,
-        help='The url of the repo we want to retrieve the discoveries from.')
+        help='The url of the repo we want to retrieve the discoveries from')
+    parser.add_argument(
+        '--filename', default=None, type=str,
+        help='The filename to filter discoveries on')
     parser.add_argument(
         '--save', default=None, type=str,
-        help='Path of the .csv file to which we export the discoveries.')
+        help='Path of the .csv file to which we export the discoveries')
 
 
 def print_discoveries(discoveries, repo_url):
