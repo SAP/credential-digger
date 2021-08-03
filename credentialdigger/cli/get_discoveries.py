@@ -74,22 +74,31 @@ def configure_parser(parser):
 
 
 def print_discoveries(discoveries, repo_url):
+    """ Print discoveries on the terminal in a tabular format.
+
+    Parameters
+    ----------
+        discoveries: list
+            List of the discoveries to be printed.
+        repo_url : str
+            The url of the repo from which we retrieved the discoveries
+    """
     with console.status(f'[bold]Processing {len(discoveries)} discoveries...'):
-        discoveries_list = pd.DataFrame(discoveries)
+        discoveries_df = pd.DataFrame(discoveries)
         # Remove the repo_url column since it has been passed as an argument
-        del discoveries_list['repo_url']
+        del discoveries_df['repo_url']
         # Remove timestamp and rule_id columns because they are not
         # quite relevant
-        del discoveries_list['timestamp']
-        del discoveries_list['rule_id']
+        del discoveries_df['timestamp']
+        del discoveries_df['rule_id']
 
         # Convert `int` columns to `str` to be eventually rendered.
-        discoveries_list['id'] = discoveries_list['id'].astype(str)
-        int_to_str = discoveries_list['line_number'].astype(str)
-        discoveries_list['line_number'] = int_to_str
+        discoveries_df['id'] = discoveries_df['id'].astype(str)
+        discoveries_df['line_number'] = discoveries_df['line_number'].astype(
+            str)
 
         # Convert to list and insert column names
-        discoveries_list = discoveries_list.values.tolist()
+        discoveries_list = discoveries_df.values.tolist()
         columns = ['id', 'file_name', 'commit_id', 'line_number',
                    'snippet', 'state']
 
