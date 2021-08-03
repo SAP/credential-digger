@@ -134,7 +134,6 @@ def run(client, args):
         Instance of the client from which we retrieve results
     args: `argparse.Namespace`
         Arguments from command line parser.
-
     """
 
     try:
