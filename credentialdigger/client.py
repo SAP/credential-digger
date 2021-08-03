@@ -1,6 +1,4 @@
-import csv
 import json
-import io
 import logging
 import os
 import urllib3
