@@ -23,6 +23,8 @@ optional arguments:
                         passing as argument the path of the db. Otherwise, use
                         postgres (must be up and running)
     --filename FILENAME The filename to filter discoveries on
+    --state STATE       The state to filter discoveries on. Possible options:
+                        [new, false_positive, addressing, not_relevant, fixed]'
     --save SAVE         If specified, export the discoveries to the path passed
                         as an argument instead of showing them on the terminal
 
