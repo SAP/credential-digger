@@ -596,7 +596,7 @@ class Client(Interface):
                 return None
             embedding_str = cursor.fetchone()[0]
             return json.loads(embedding_str)
-        except IndexError:
+        except TypeError:
             # The embedding tuple was empty when fetched
             return None
         except self.Error:
@@ -1100,7 +1100,7 @@ class Client(Interface):
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
 
-        if similarity and discoveries_ids:
+        if similarity:
             # Compute similarities only if there are any discoveries left
             logger.info('Compute embeddings for this repository')
             self.add_embeddings(repo_url)
