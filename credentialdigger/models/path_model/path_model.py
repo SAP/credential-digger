@@ -5,6 +5,20 @@ import tensorflow as tf
 class PathModel():
 
     def analyze(self, discoveries):
+        """ Classify discoveries according to their paths.
+
+        Parameters
+        ----------
+        discoveries: list of dict
+            The discoveries to classify
+      
+        Returns
+        -------
+        discoveries: list of dict
+            The discoveries, with states updated according to their paths
+        n_false_positives: int
+            The number of discoveries classified as false positives
+        """
         file_paths = [d['file_name'] for d in discoveries]
         unique_paths = list(set(file_paths))
         path_dict = {}
@@ -19,4 +33,3 @@ class PathModel():
                 d['state'] = 'false_positive'
                 n_false_positives += 1
         return discoveries, n_false_positives
-
