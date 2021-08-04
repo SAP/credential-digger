@@ -14,7 +14,7 @@ class SnippetModel(BaseModel):
     def __init__(self,
                  model='melisande1/pw1',
                  tokenizer='microsoft/codebert-base-mlm',
-                 use_auth_token='api_uAUHSJqiZfkfCjBqnoMkUrWGEIsKJcRliN'):
+                 use_auth_token=''):
         """
         Parameters
         ----------
