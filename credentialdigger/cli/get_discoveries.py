@@ -34,6 +34,7 @@ import csv
 import io
 import logging
 import os
+import sys
 
 import pandas as pd
 
@@ -255,7 +256,7 @@ def run(client, args):
     # if --save is specified, export the discoveries and exit
     if args.save is not None:
         export_csv(discoveries, client, save=args.save)
-        return True
+        sys.exit(len(discoveries))
 
     if len(discoveries) == 0:
         # if repo has no discoveries, exit
@@ -274,3 +275,5 @@ discoveries, export them as .csv instead? (Y/N) ')
         print_discoveries(discoveries, args.repo_url)
         console.print(
             f'[bold] {args.repo_url} has {len(discoveries)} discoveries.')
+
+    sys.exit(len(discoveries))
