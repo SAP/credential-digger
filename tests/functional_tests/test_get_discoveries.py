@@ -76,4 +76,22 @@ class TestGetDiscoveries(unittest.TestCase):
         self.assertEqual(cm.exception.code, count)
 
     def test_csv_written(self):
-        pass
+        with self.assertRaises(SystemExit) as cm:
+            cli.main(
+                [
+                    '',
+                    'get_discoveries',
+                    'test_repo',
+                    '--sqlite',
+                    self.db_path,
+                    '--save',
+                    self.csv_path,
+                    '--state',
+                    'all'
+                ]
+            )
+        data_frame = pd.read_csv(self.csv_path)
+        try:
+            assert data_frame.notna().values.all()
+        except AssertionError:
+            assert False, ' CSV file contains NaN'
