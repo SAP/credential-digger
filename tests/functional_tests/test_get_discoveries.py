@@ -6,7 +6,7 @@ import pandas as pd
 
 from credentialdigger.cli import cli
 from credentialdigger.client_sqlite import SqliteClient
-from parameterized import param, parameterize
+from parameterized import param, parameterized
 
 
 class TestGetDiscoveries(unittest.TestCase):
@@ -48,5 +48,13 @@ class TestGetDiscoveries(unittest.TestCase):
         os.remove(cls.csv_path)
         pass
 
+    @parameterized.expand([
+        param(state='new', count=5),
+        param(state='false_positive', count=6),
+        param(state='addressing', count=7),
+        param(state='not_relevant', count=8),
+        param(state='fixed', count=9),
+        param(state='all', count=35)
+    ])
     def test_get_discoveries(self, state, count):
         pass
