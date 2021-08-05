@@ -17,3 +17,8 @@ class TestGetDiscoveries(unittest.TestCase):
         cls.tmp_path = tempfile.mkdtemp()
         cls.db_path = os.path.join(cls.tmp_path, "test_db.sqlite")
         cls.csv_path = os.path.join(cls.tmp_path, "test.csv")
+
+        # Set up sqlite database
+        client = SqliteClient(cls.db_path)
+        client.add_rules_from_file("tests/functional_tests/test_rules.yml")
+        client.add_repo("test_repo
