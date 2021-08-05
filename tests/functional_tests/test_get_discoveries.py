@@ -74,3 +74,6 @@ class TestGetDiscoveries(unittest.TestCase):
                 ]
             )
         self.assertEqual(cm.exception.code, count)
+
+    def test_csv_written(self):
+        pass
