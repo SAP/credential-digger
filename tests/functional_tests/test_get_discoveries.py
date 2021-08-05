@@ -30,12 +30,11 @@ class TestGetDiscoveries(unittest.TestCase):
                              'not_relevant', 'fixed']:
             for i in range(discoveries_count):
                 discovery = {
-
-                    'file_name': 'i',
-                    'commit_id': 'new',
-                    'line_number': 'i',
-                    'snippet': 'pwd=pwd',
-                    'rule_id': 5,
+                    'file_name': 'fake_file',
+                    'commit_id': '0xtmp_commit_id',
+                    'line_number': '1',
+                    'snippet': 'tmp_snippet',
+                    'rule_id': i,
                     'state': state,
                     'timestamp': '2021-08-05T01:13',
                 }
