@@ -30,7 +30,7 @@ class TestGetDiscoveries(unittest.TestCase):
                              'not_relevant', 'fixed']:
             for i in range(discoveries_count):
                 discovery = {
-                    'file_name': 'fake_file',
+                    'file_name': 'danger' if state == 'new' else 'fake_file',
                     'commit_id': '0xtmp_commit_id',
                     'line_number': '1',
                     'snippet': 'tmp_snippet',
@@ -74,8 +74,29 @@ class TestGetDiscoveries(unittest.TestCase):
             )
         self.assertEqual(cm.exception.code, count)
 
+    @parameterized.expand([
+        param(file='danger', count=5),
+        param(file='fake_file', count=30)
+    ])
     def test_get_discoveries_per_file(self, file, count):
-        pass
+        # Test if retrieve the correct number of discoveries for specific
+        # file name
+        with self.assertRaises(SystemExit) as cm:
+            cli.main(
+                [
+                    '',
+                    'get_discoveries',
+                    'test_repo',
+                    '--sqlite',
+                    self.db_path,
+                    '--save',
+                    self.csv_path,
+                    '--filename',
+                    file
+                ]
+            )
+        self.assertEqual(cm.exception.code, count)
+
     def test_csv_written(self):
         with self.assertRaises(SystemExit) as cm:
             cli.main(
