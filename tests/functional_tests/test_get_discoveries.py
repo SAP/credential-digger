@@ -57,4 +57,20 @@ class TestGetDiscoveries(unittest.TestCase):
         param(state='all', count=35)
     ])
     def test_get_discoveries(self, state, count):
-        pass
+        # Test if retrieve the correct number of discoveries for every possible
+        # state
+        with self.assertRaises(SystemExit) as cm:
+            cli.main(
+                [
+                    '',
+                    'get_discoveries',
+                    'test_repo',
+                    '--sqlite',
+                    self.db_path,
+                    '--save',
+                    self.csv_path,
+                    '--state',
+                    state
+                ]
+            )
+        self.assertEqual(cm.exception.code, count)
