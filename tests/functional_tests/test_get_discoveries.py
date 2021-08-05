@@ -47,3 +47,6 @@ class TestGetDiscoveries(unittest.TestCase):
         os.remove(cls.db_path)
         os.remove(cls.csv_path)
         pass
+
+    def test_get_discoveries(self, state, count):
+        pass
