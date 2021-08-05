@@ -41,3 +41,9 @@ class TestGetDiscoveries(unittest.TestCase):
                 discoveries.append(discovery)
             discoveries_count += 1
         client.add_discoveries(discoveries, 'test_repo')
+
+    @classmethod
+    def tearDownClass(cls):
+        os.remove(cls.db_path)
+        os.remove(cls.csv_path)
+        pass
