@@ -98,7 +98,7 @@ class TestGetDiscoveries(unittest.TestCase):
         self.assertEqual(cm.exception.code, count)
 
     def test_csv_written(self):
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(SystemExit):
             cli.main(
                 [
                     '',
