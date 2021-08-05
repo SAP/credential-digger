@@ -46,7 +46,6 @@ class TestGetDiscoveries(unittest.TestCase):
     def tearDownClass(cls):
         os.remove(cls.db_path)
         os.remove(cls.csv_path)
-        pass
 
     @parameterized.expand([
         param(state='new', count=5),
