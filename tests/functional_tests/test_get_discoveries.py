@@ -34,7 +34,7 @@ class TestGetDiscoveries(unittest.TestCase):
                     'commit_id': '0xtmp_commit_id',
                     'line_number': '1',
                     'snippet': 'tmp_snippet',
-                    'rule_id': i,
+                    'rule_id': 1,
                     'state': state,
                     'timestamp': '2021-08-05T01:13',
                 }
