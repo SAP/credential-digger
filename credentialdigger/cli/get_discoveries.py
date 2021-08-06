@@ -127,7 +127,7 @@ def discoveries_to_csv(discoveries):
     Returns
     -------
     str
-        A string containing CSV obtaining from the original list of
+        A string containing CSV obtained from the original list of
         discoveries.
     """
     try:
