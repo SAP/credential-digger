@@ -175,8 +175,8 @@ def export_csv(discoveries, client, save=False):
                 data = discoveries_to_csv(discoveries)
                 csv_file.writelines(data)
                 console.print(
-                    '[bold][!] The discoveries have been exported \
-successfully.')
+                    '[bold][!] The discoveries have been exported '
+                    'successfully.')
     except Exception as e:
         console.print(f'[red]{e}[/]')
         try:
@@ -264,8 +264,8 @@ def run(client, args):
         response = ''
         while response.upper() not in ['Y', 'N', 'YES', 'NO']:
             response = console.input(
-                f'[bold]This repository has more than {MAX_NUMBER_DISCOVERIES} \
-discoveries, export them as .csv instead? (Y/N) ')
+                f'[bold]This repository has more than {MAX_NUMBER_DISCOVERIES} '
+                'discoveries, export them as .csv instead? (Y/N) ')
         if response.upper() in ['N', 'NO']:
             print_discoveries(discoveries, args.repo_url)
         else:
