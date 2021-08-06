@@ -168,21 +168,20 @@ def export_csv(discoveries, client, save=False):
         path = save
 
     try:
-        with open(path, newline='', mode='w') as csv_file:
+        csv_file = open(path, newline='', mode='w')
+
+    except IOError as e:
+        console.print(f'[red]{e}[/]')
+    else:
+        with csv_file:
             with console.status('[bold]Exporting the discoveries..'):
                 # Add the category to each discovery
                 assign_categories(client, discoveries)
                 data = discoveries_to_csv(discoveries)
                 csv_file.writelines(data)
                 console.print(
-                    '[bold][!] The discoveries have been exported '
-                    'successfully.')
-    except Exception as e:
-        console.print(f'[red]{e}[/]')
-        try:
-            os.remove(path)
-        except OSError as osE:
-            console.print(f'[red]{osE}[/]')
+                    f'[bold][!] {len(discoveries) - 1} discoveries have been '
+                    'exported successfully.')
 
 
 def assign_categories(client, discoveries):
