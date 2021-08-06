@@ -204,7 +204,7 @@ def assign_categories(client, discoveries):
             discovery['category'] = '(rule deleted)'
 
 
-def filter_discoveries(discoveries, state):
+def filter_discoveries(discoveries, state=None):
     """ Filter discoveries based on state
 
     Parameters
@@ -220,7 +220,7 @@ def filter_discoveries(discoveries, state):
     list
         Filtered list of discoveries
     """
-    if state == 'all':
+    if state is None:
         state = ['new', 'false_positive',
                  'addressing', 'not_relevant', 'fixed']
 
