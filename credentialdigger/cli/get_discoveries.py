@@ -179,7 +179,7 @@ def export_csv(discoveries, client, save=False):
                 data = discoveries_to_csv(discoveries)
                 csv_file.writelines(data)
                 console.print(
-                    f'[bold][!] {len(discoveries) - 1} discoveries have been '
+                    f'[bold][!] {len(discoveries)} discoveries have been '
                     'exported successfully.')
 
 
