@@ -80,10 +80,10 @@ def print_discoveries(discoveries, repo_url):
 
     Parameters
     ----------
-        discoveries: list
-            List of the discoveries to be printed.
-        repo_url : str
-            The url of the repo from which we retrieved the discoveries
+    discoveries: list
+        List of the discoveries to be printed.
+    repo_url : str
+        The url of the repo from which we retrieved the discoveries
     """
     with console.status(f'[bold]Processing {len(discoveries)} discoveries...'):
         discoveries_df = pd.DataFrame(discoveries)
@@ -121,14 +121,14 @@ def discoveries_to_csv(discoveries):
 
     Parameters
     ----------
-        discoveries: list
-            List of discoveries from which to generate the CSV
+    discoveries: list
+        List of discoveries from which to generate the CSV
 
     Returns
     -------
-        str
-            A string containing CSV obtaining from the original list of
-            discoveries.
+    str
+        A string containing CSV obtaining from the original list of
+        discoveries.
     """
     try:
         stringIO = io.StringIO()
@@ -149,13 +149,13 @@ def export_csv(discoveries, client, save=False):
 
     Parameters
     ----------
-        discoveries: list
-            List of discoveries from which to generate the CSV
-        client: `credentialdigger.Client`
-            Instance of the client from which we retrieve rules
-        save: bool
-            If True, we do not ask the user to enter a file path for the CSV
-            to be exported
+    discoveries: list
+        List of discoveries from which to generate the CSV
+    client: `credentialdigger.Client`
+        Instance of the client from which we retrieve rules
+    save: bool
+        If True, we do not ask the user to enter a file path for the CSV
+        to be exported
     """
     # Check if --save is specified
     if save is False:
@@ -211,11 +211,9 @@ def filter_discoveries(discoveries, state):
     ----------
     discoveries: list
         List of discoveries to be filtered
-    states: str | list
-            - str: if it equals 'all', then return all discoveries.
-                   return chosen state otherwise (i.e 'false_positive')
-            - list: return all the discoveries that have states contained
-                    in this list (i.e ['new', 'false_positive'])
+    states: str
+        str: if it is not specified, then return all discoveries.
+             return chosen state otherwise (i.e 'false_positive').
 
     Returns
     -------
