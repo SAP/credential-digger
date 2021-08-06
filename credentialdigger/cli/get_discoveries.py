@@ -169,7 +169,6 @@ def export_csv(discoveries, client, save=False):
 
     try:
         csv_file = open(path, newline='', mode='w')
-
     except IOError as e:
         console.print(f'[red]{e}[/]')
     else:
