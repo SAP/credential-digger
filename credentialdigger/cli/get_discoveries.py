@@ -7,6 +7,8 @@ variables are exported.
 
 usage: credentialdigger get_discoveries [-h] [--dotenv DOTENV]
                                         [--sqlite SQLITE]
+                                        [--filename FILENAME]
+                                        [--state STATE]
                                         [--save SAVE]
                                         repo_url
 
