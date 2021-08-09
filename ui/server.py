@@ -381,8 +381,8 @@ def get_discoveries():
     response = {
         'uniqueRecords': discoveries_count,
         'recordsFiltered': discoveries_count,
-        'recordsTotal': c.get_discoveries_count(repo_url=url,
-                                                state=state_filter),
+        'recordsTotal': len(discoveries) if file_name
+        else c.get_discoveries_count(url, state=state_filter),
         'stateFilter': state_filter,
         'data': sorted([{'snippet': keys[0],
                          'category': keys[1],
@@ -393,12 +393,12 @@ def get_discoveries():
                                           'id': i['id']
                                           } for i in list(values)],
                          } for keys, values in groupby(
-                             discoveries, lambda i:
-                             (i['snippet'], i['category'],
-                              States[i['state']].value))],
+                             discoveries,
+                             lambda i: (i['snippet'],
+                                        i['category'],
+                                        States[i['state']].value))],
                        key=lambda i: States[i[order_by]].value,
-                       reverse=order_direction == 'desc')
-    }
+                       reverse=order_direction == 'desc')}
 
     return jsonify(response)
 
