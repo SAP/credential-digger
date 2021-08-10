@@ -244,4 +244,5 @@ def run(client, args):
         console.print(
             f'[bold] {args.repo_url} has {len(discoveries)} discoveries.')
 
+
     sys.exit(len(discoveries))
