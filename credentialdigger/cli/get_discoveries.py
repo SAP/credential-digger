@@ -173,8 +173,6 @@ def export_csv(discoveries, client, save=False):
     else:
         with csv_file:
             with console.status('[bold]Exporting the discoveries..'):
-                # Add the category to each discovery
-                assign_categories(client, discoveries)
                 data = discoveries_to_csv(discoveries)
                 csv_file.writelines(data)
                 console.print(
