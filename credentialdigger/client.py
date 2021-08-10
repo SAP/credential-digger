@@ -1212,7 +1212,8 @@ class Client(Interface):
         eg = ExtractorGenerator()
         return eg.generate_leak_snippets(repo_url)
 
-    def _check_snippet_with_generator(self, generate_snippet_extractor, models):
+    def _check_snippet_with_generator(
+            self, generate_snippet_extractor, models):
         """ Verify if the SnippetModel is needed, and, in this case, check
         whether the pre-trained or the generated extractor is wanted
 

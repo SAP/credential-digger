@@ -94,6 +94,11 @@ Licensor: Kenneth Reitz
 Website: https://github.com/psf/requests
 License: Apache 2.0
 
+Component: rich
+Licensor: Will McGugan
+Website: https://github.com/willmcgugan/rich
+License: MIT License
+
 Component: scikit-learn
 Licensor: scikit-learn developers
 Website: https://github.com/scikit-learn/scikit-learn
