@@ -35,7 +35,6 @@ optional arguments:
 import csv
 import io
 import logging
-import os
 import sys
 
 import pandas as pd
@@ -210,7 +209,7 @@ def filter_discoveries(discoveries, state=None):
     discoveries: list
         List of discoveries to be filtered
     states: str
-        str: if it is not specified, then return all discoveries.
+    str: if it is not specified, then return all discoveries.
              return chosen state otherwise (i.e 'false_positive').
 
     Returns
