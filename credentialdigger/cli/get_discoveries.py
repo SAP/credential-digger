@@ -182,25 +182,6 @@ def export_csv(discoveries, client, save=False):
                     'exported successfully.')
 
 
-def assign_categories(client, discoveries):
-    """ Add category to each discovery
-
-    Parameters
-    ----------
-    client: `credentialdigger.Client`
-        Instance of the client from which we retrieve rules
-    discoveries: list
-        List of discoveries without assigned categories to them
-    """
-    rulesdict = client.get_rules()
-    for discovery in discoveries:
-        if discovery['rule_id']:
-            category = rulesdict[discovery['rule_id'] - 1]['category']
-            discovery['category'] = category
-        else:
-            discovery['category'] = '(rule deleted)'
-
-
 def filter_discoveries(discoveries, state=None):
     """ Filter discoveries based on state
 
