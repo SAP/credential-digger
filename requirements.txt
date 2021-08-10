@@ -13,7 +13,7 @@ python-string-utils
 pyyaml
 requests
 scikit-learn
-srsly
+srsly>=2.4.0
 tensorflow==2.5.0; python_version >= "3.8"
 tensorflow==2.4.2; python_version < "3.8"
 tensorflow-text==2.5.0; python_version >= "3.8"
