@@ -7,6 +7,8 @@ variables are exported.
 
 usage: credentialdigger get_discoveries [-h] [--dotenv DOTENV]
                                         [--sqlite SQLITE]
+                                        [--filename FILENAME]
+                                        [--state STATE]
                                         [--save SAVE]
                                         repo_url
 
@@ -22,7 +24,7 @@ optional arguments:
     --sqlite SQLITE     If specified, scan the repo using the sqlite client
                         passing as argument the path of the db. Otherwise, use
                         postgres (must be up and running)
-    --filename FILENAME The filename to filter discoveries on
+    --filename FILENAME Show only the discoveries contained in this file
     --state STATE       The state to filter discoveries on. Possible options:
                         [new, false_positive, addressing, not_relevant, fixed]'
     --save SAVE         If specified, export the discoveries to the path passed
@@ -33,11 +35,9 @@ optional arguments:
 import csv
 import io
 import logging
-import os
 import sys
 
 import pandas as pd
-
 from rich.console import Console
 from rich.table import Table
 
@@ -50,8 +50,7 @@ console = Console()
 
 
 def configure_parser(parser):
-    """
-    Configure arguments for command line parser.
+    """ Configure arguments for command line parser.
 
     Parameters
     ----------
@@ -64,7 +63,7 @@ def configure_parser(parser):
         help='The url of the repo we want to retrieve the discoveries from')
     parser.add_argument(
         '--filename', default=None, type=str,
-        help='The filename to filter discoveries on')
+        help='Show only the discoveries contained in this file')
     parser.add_argument(
         '--state', default=None, type=str,
         help='The state to filter discoveries on. Possible options: \
@@ -79,10 +78,10 @@ def print_discoveries(discoveries, repo_url):
 
     Parameters
     ----------
-        discoveries: list
-            List of the discoveries to be printed.
-        repo_url : str
-            The url of the repo from which we retrieved the discoveries
+    discoveries: list
+        List of the discoveries to be printed.
+    repo_url: str
+        The url of the repo from which we retrieved the discoveries
     """
     with console.status(f'[bold]Processing {len(discoveries)} discoveries...'):
         discoveries_df = pd.DataFrame(discoveries)
@@ -103,9 +102,9 @@ def print_discoveries(discoveries, repo_url):
         columns = ['id', 'file_name', 'commit_id', 'line_number',
                    'snippet', 'state']
 
-        table = Table(
-            title=f'Discoveries found in "{repo_url}"',
-            pad_edge=False, show_lines=True)
+        table = Table(title=f'Discoveries found in "{repo_url}"',
+                      pad_edge=False,
+                      show_lines=True)
 
         for c in columns:
             table.add_column(c)
@@ -116,18 +115,17 @@ def print_discoveries(discoveries, repo_url):
 
 
 def discoveries_to_csv(discoveries):
-    """ Generate CSV from list of discoveries
+    """ Generate CSV from list of discoveries.
 
     Parameters
     ----------
-        discoveries: list
-            List of discoveries from which to generate the CSV
+    discoveries: list
+        List of discoveries from which to generate the CSV
 
     Returns
     -------
-        str
-            A string containing CSV obtaining from the original list of
-            discoveries.
+    str
+        A string containing CSV obtained from the original list of discoveries
     """
     try:
         stringIO = io.StringIO()
@@ -144,20 +142,20 @@ def discoveries_to_csv(discoveries):
 
 
 def export_csv(discoveries, client, save=False):
-    """ Export discoveries as a CSV file
+    """ Export discoveries as a CSV file.
 
     Parameters
     ----------
-        discoveries: list
-            List of discoveries from which to generate the CSV
-        client: `credentialdigger.Client`
-            Instance of the client from which we retrieve rules
-        save: bool
-            If True, we do not ask the user to enter a file path for the CSV
-            to be exported
+    discoveries: list
+        List of discoveries from which to generate the CSV
+    client: `credentialdigger.Client`
+        Instance of the client from which we retrieve rules
+    save: bool
+        If True, we do not ask the user to enter a file path for the CSV
+        to be exported
     """
     # Check if --save is specified
-    if save is False:
+    if not save:
         path = ''
         # Read the export path from the console's input
         while path == '':
@@ -167,73 +165,44 @@ def export_csv(discoveries, client, save=False):
         path = save
 
     try:
-        with open(path, newline='', mode='w') as csv_file:
-            with console.status('[bold]Exporting the discoveries..'):
-                # Add the category to each discovery
-                assign_categories(client, discoveries)
+        csv_file = open(path, newline='', mode='w')
+    except IOError as e:
+        console.print(f'[red]{e}\n'
+                      '[bold][!] Failed to export discoveries.[/]')
+    else:
+        with csv_file:
+            with console.status('[bold]Exporting the discoveries...'):
                 data = discoveries_to_csv(discoveries)
                 csv_file.writelines(data)
                 console.print(
-                    '[bold][!] The discoveries have been exported \
-successfully.')
-    except Exception as e:
-        console.print(f'[red]{e}[/]')
-        try:
-            os.remove(path)
-        except OSError as osE:
-            console.print(f'[red]{osE}[/]')
+                    f'[bold][!] {len(discoveries)} discoveries have been '
+                    'exported successfully.')
 
 
-def assign_categories(client, discoveries):
-    """ Add category to each discovery
-
-    Parameters
-    ----------
-    client: `credentialdigger.Client`
-        Instance of the client from which we retrieve rules
-    discoveries: list
-        List of discoveries without assigned categories to them
-    """
-    rulesdict = client.get_rules()
-    for discovery in discoveries:
-        if discovery['rule_id']:
-            category = rulesdict[discovery['rule_id'] - 1]['category']
-            discovery['category'] = category
-        else:
-            discovery['category'] = '(rule deleted)'
-
-
-def filter_discoveries(discoveries, state):
-    """ Filter discoveries based on state
+def filter_discoveries(discoveries, state=None):
+    """ Filter discoveries based on state.
 
     Parameters
     ----------
     discoveries: list
         List of discoveries to be filtered
-    states: str | list
-            - str: if it equals 'all', then return all discoveries.
-                   return chosen state otherwise (i.e 'false_positive')
-            - list: return all the discoveries that have states contained
-                    in this list (i.e ['new', 'false_positive'])
+    state: str, optional
+        Consider only the discoveries to the specified state. Keep all the
+        discoveries if the state is not specified
 
     Returns
     -------
     list
-        Filtered list of discoveries
+        The discoveries
     """
-    if state == 'all':
-        state = ['new', 'false_positive',
-                 'addressing', 'not_relevant', 'fixed']
+    if not state:
+        return discoveries
 
-    filtered_discoveries = list(
-        filter(lambda d: d.get('state') in state, discoveries))
-
-    return filtered_discoveries
+    return list(filter(lambda d: d.get('state') == state, discoveries))
 
 
 def run(client, args):
-    """
-    Retrieve discoveries of a git repository and export them if needed
+    """ Retrieve discoveries of a git repository and export them if needed.
 
     Parameters
     ----------
@@ -242,7 +211,6 @@ def run(client, args):
     args: `argparse.Namespace`
         Arguments from command line parser.
     """
-
     try:
         discoveries = client.get_discoveries(
             repo_url=args.repo_url, file_name=args.filename)
@@ -265,8 +233,8 @@ def run(client, args):
         response = ''
         while response.upper() not in ['Y', 'N', 'YES', 'NO']:
             response = console.input(
-                f'[bold]This repository has more than {MAX_NUMBER_DISCOVERIES} \
-discoveries, export them as .csv instead? (Y/N) ')
+                f'[bold]This repository has more than {MAX_NUMBER_DISCOVERIES}'
+                ' discoveries, export them as .csv instead? (Y/N) ')
         if response.upper() in ['N', 'NO']:
             print_discoveries(discoveries, args.repo_url)
         else:
