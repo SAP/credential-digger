@@ -21,7 +21,7 @@ function initReposDataTable() {
     {
       ...defaultTableSettings,
       pageLength: localStorage.hasOwnProperty("sharedPageLength")
-        ? localStorage.getItem("sharedPageLength")
+        ? parseInt(localStorage.getItem("sharedPageLength"))
         : 10,
       processing: false,
       order: [
