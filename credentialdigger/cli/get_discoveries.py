@@ -50,8 +50,7 @@ console = Console()
 
 
 def configure_parser(parser):
-    """
-    Configure arguments for command line parser.
+    """ Configure arguments for command line parser.
 
     Parameters
     ----------
@@ -81,7 +80,7 @@ def print_discoveries(discoveries, repo_url):
     ----------
     discoveries: list
         List of the discoveries to be printed.
-    repo_url : str
+    repo_url: str
         The url of the repo from which we retrieved the discoveries
     """
     with console.status(f'[bold]Processing {len(discoveries)} discoveries...'):
@@ -103,9 +102,9 @@ def print_discoveries(discoveries, repo_url):
         columns = ['id', 'file_name', 'commit_id', 'line_number',
                    'snippet', 'state']
 
-        table = Table(
-            title=f'Discoveries found in "{repo_url}"',
-            pad_edge=False, show_lines=True)
+        table = Table(title=f'Discoveries found in "{repo_url}"',
+                      pad_edge=False,
+                      show_lines=True)
 
         for c in columns:
             table.add_column(c)
@@ -116,7 +115,7 @@ def print_discoveries(discoveries, repo_url):
 
 
 def discoveries_to_csv(discoveries):
-    """ Generate CSV from list of discoveries
+    """ Generate CSV from list of discoveries.
 
     Parameters
     ----------
@@ -126,8 +125,7 @@ def discoveries_to_csv(discoveries):
     Returns
     -------
     str
-        A string containing CSV obtained from the original list of
-        discoveries.
+        A string containing CSV obtained from the original list of discoveries
     """
     try:
         stringIO = io.StringIO()
@@ -144,7 +142,7 @@ def discoveries_to_csv(discoveries):
 
 
 def export_csv(discoveries, client, save=False):
-    """ Export discoveries as a CSV file
+    """ Export discoveries as a CSV file.
 
     Parameters
     ----------
@@ -157,7 +155,7 @@ def export_csv(discoveries, client, save=False):
         to be exported
     """
     # Check if --save is specified
-    if save is False:
+    if not save:
         path = ''
         # Read the export path from the console's input
         while path == '':
@@ -173,7 +171,7 @@ def export_csv(discoveries, client, save=False):
                       '[bold][!] Failed to export discoveries.[/]')
     else:
         with csv_file:
-            with console.status('[bold]Exporting the discoveries..'):
+            with console.status('[bold]Exporting the discoveries...'):
                 data = discoveries_to_csv(discoveries)
                 csv_file.writelines(data)
                 console.print(
@@ -182,20 +180,20 @@ def export_csv(discoveries, client, save=False):
 
 
 def filter_discoveries(discoveries, state=None):
-    """ Filter discoveries based on state
+    """ Filter discoveries based on state.
 
     Parameters
     ----------
     discoveries: list
         List of discoveries to be filtered
-    states: str
-        if it is not specified, then return all discoveries.
-             return chosen state otherwise (i.e 'false_positive').
+    state: str, optional
+        Consider only the discoveries to the specified state. Keep all the
+        discoveries if the state is not specified
 
     Returns
     -------
     list
-        Filtered list of discoveries
+        The discoveries
     """
     if not state:
         return discoveries
@@ -204,8 +202,7 @@ def filter_discoveries(discoveries, state=None):
 
 
 def run(client, args):
-    """
-    Retrieve discoveries of a git repository and export them if needed
+    """ Retrieve discoveries of a git repository and export them if needed.
 
     Parameters
     ----------
@@ -214,7 +211,6 @@ def run(client, args):
     args: `argparse.Namespace`
         Arguments from command line parser.
     """
-
     try:
         discoveries = client.get_discoveries(
             repo_url=args.repo_url, file_name=args.filename)
