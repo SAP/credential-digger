@@ -196,14 +196,10 @@ def filter_discoveries(discoveries, state=None):
     list
         Filtered list of discoveries
     """
-    if state is None:
-        state = ['new', 'false_positive',
-                 'addressing', 'not_relevant', 'fixed']
+    if not state:
+        return discoveries
 
-    filtered_discoveries = list(
-        filter(lambda d: d.get('state') in state, discoveries))
-
-    return filtered_discoveries
+    return list(filter(lambda d: d.get('state') == state, discoveries))
 
 
 def run(client, args):
