@@ -49,8 +49,8 @@ class UiClient(Client):
         """
         query = '''SELECT repo_url,
                           COUNT(*) as total,
-                          sum(case when STATE='new' then 1 else 0 end) as tp 
-                          FROM discoveries 
+                          sum(case when STATE='new' then 1 else 0 end) as tp
+                          FROM discoveries
                           GROUP BY repo_url;
                 '''
         cursor = self.db.cursor()
