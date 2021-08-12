@@ -138,7 +138,7 @@ class PgUiClient(UiClient, PgClient):
             query += ' AND snippet LIKE %%%s%%'
             params.append(where)
         if state is not None:
-            query += ' AND state LIKE %s'
+            query += ' AND state=%s'
             params.append(state)
         return super().get_discoveries_count(query, params)
 
