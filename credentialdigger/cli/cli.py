@@ -5,8 +5,8 @@ import os
 from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
 
-from . import (add_rules, download, scan, scan_path, scan_snapshot, scan_user,
-               scan_wiki)
+from . import (add_rules, download, get_discoveries, scan, scan_path,
+               scan_snapshot, scan_user, scan_wiki)
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +95,12 @@ def main(sys_argv):
         parents=[parser_dotenv, parser_sqlite, parser_scan_base])
     scan_snapshot.configure_parser(parser_scan_snapshot)
 
+    # get_discoveries subparser configuration
+    parser_get_discoveries = subparsers.add_parser(
+        'get_discoveries', help='Get discoveries of a scanened repository',
+        parents=[parser_dotenv, parser_sqlite])
+    get_discoveries.configure_parser(parser_get_discoveries)
+
     # Run the parser
     if len(sys_argv) == 1:
         main_parser.print_help()
@@ -105,8 +111,9 @@ def main(sys_argv):
     load_dotenv(dotenv_path=args.dotenv, verbose=True)
 
     if args.func in [
-        scan.run,
         add_rules.run,
+        get_discoveries.run,
+        scan.run,
         scan_user.run,
         scan_wiki.run,
         scan_path.run,

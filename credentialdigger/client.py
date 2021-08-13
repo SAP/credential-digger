@@ -373,8 +373,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         query = 'SELECT * FROM repos'
         cursor = self.db.cursor()
@@ -403,8 +403,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         cursor = self.db.cursor()
         cursor.execute(query, (repo_url,))
@@ -499,8 +499,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         cursor = self.db.cursor()
         all_discoveries = []
@@ -553,8 +553,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         cursor = self.db.cursor()
         if state is not None:
@@ -1212,7 +1212,8 @@ class Client(Interface):
         eg = ExtractorGenerator()
         return eg.generate_leak_snippets(repo_url)
 
-    def _check_snippet_with_generator(self, generate_snippet_extractor, models):
+    def _check_snippet_with_generator(
+            self, generate_snippet_extractor, models):
         """ Verify if the SnippetModel is needed, and, in this case, check
         whether the pre-trained or the generated extractor is wanted
 
