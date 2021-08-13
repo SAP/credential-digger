@@ -307,14 +307,18 @@ def get_repos():
     repos = c.get_repos()
     repos_metadata = c.get_all_discoveries_count()
 
+    # Fill each repo with its metadata.
+    # repos_metadata contains only repos with discoveries, i.e., if a repo has
+    # been scanned and doesn't have discoveries then we have to set both
+    # "total" and "TP" to 0
     for repo in repos:
         for metadata in repos_metadata:
-            if repo.get('total'):
-                continue
             if repo['url'] == metadata[0]:
                 repo['total'] = metadata[1]  # Total number of discoveries
                 repo['TP'] = metadata[2]  # Number of new discoveries
+                break  # We found the repo, no need to check next metadata
             else:
+                # The repo was scanned and doesn't have discoveries
                 repo['total'] = 0
                 repo['TP'] = 0
         repo['scan_active'] = False
