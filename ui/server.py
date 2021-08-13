@@ -302,12 +302,25 @@ def scan_repo():
 
 @app.route('/get_repos')
 def get_repos():
+    # Get data from the database
     active_scans = _get_active_scans()
-
     repos = c.get_repos()
+    repos_metadata = c.get_all_discoveries_count()
+
+    # Fill each repo with its metadata.
+    # repos_metadata contains only repos with discoveries, i.e., if a repo has
+    # been scanned and doesn't have discoveries then we have to set both
+    # "total" and "TP" to 0
     for repo in repos:
-        repo['total'] = c.get_discoveries_count(repo['url'])
-        repo['TP'] = c.get_discoveries_count(repo['url'], state='new')
+        for metadata in repos_metadata:
+            if repo['url'] == metadata[0]:
+                repo['total'] = metadata[1]  # Total number of discoveries
+                repo['TP'] = metadata[2]  # Number of new discoveries
+                break  # We found the repo, no need to check next metadata
+            else:
+                # The repo was scanned and doesn't have discoveries
+                repo['total'] = 0
+                repo['TP'] = 0
         repo['scan_active'] = False
         if repo['url'] in active_scans:
             repo['scan_active'] = True
