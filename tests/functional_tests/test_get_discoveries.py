@@ -52,8 +52,7 @@ class TestGetDiscoveries(unittest.TestCase):
         param(state='false_positive', count=6),
         param(state='addressing', count=7),
         param(state='not_relevant', count=8),
-        param(state='fixed', count=9),
-        param(state='all', count=35)
+        param(state='fixed', count=9)
     ])
     def test_get_discoveries(self, state, count):
         # Test if retrieve the correct number of discoveries for every possible
