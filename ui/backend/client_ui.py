@@ -39,20 +39,19 @@ class UiClient(Client):
         return result
 
     def get_all_discoveries_count(self):
-        """ Get the total number of discoveries and the number of True
-        Positives per repo
+        """ Get the repositories together with their total number of
+        discoveries and the number of "new" ones.
 
         Returns
         -------
         list
-            A list of tuples containing (repo_url, total, true positive).
+            A list of tuples containing (repo_url, total disc, new disc)
         """
         query = '''SELECT repo_url,
                           COUNT(*) as total,
                           sum(case when STATE='new' then 1 else 0 end) as tp
                           FROM discoveries
-                          GROUP BY repo_url;
-                '''
+                          GROUP BY repo_url;'''
         cursor = self.db.cursor()
         cursor.execute(query)
         result = cursor.fetchall()
