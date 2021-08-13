@@ -373,8 +373,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         query = 'SELECT * FROM repos'
         cursor = self.db.cursor()
@@ -403,8 +403,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         cursor = self.db.cursor()
         cursor.execute(query, (repo_url,))
@@ -499,8 +499,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         cursor = self.db.cursor()
         all_discoveries = []
@@ -553,8 +553,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         cursor = self.db.cursor()
         if state is not None:

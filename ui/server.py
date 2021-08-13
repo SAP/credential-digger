@@ -309,11 +309,11 @@ def get_repos():
 
     for repo in repos:
         for metadata in repos_metadata:
-            if(repo.get('total')):
+            if repo.get('total'):
                 continue
-            if(repo['url'] == metadata[0]):
+            if repo['url'] == metadata[0]:
                 repo['total'] = metadata[1]  # Total number of discoveries
-                repo['TP'] = metadata[2]  # Total number of true positives
+                repo['TP'] = metadata[2]  # Number of new discoveries
             else:
                 repo['total'] = 0
                 repo['TP'] = 0
