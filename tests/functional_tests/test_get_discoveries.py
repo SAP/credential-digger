@@ -107,9 +107,7 @@ class TestGetDiscoveries(unittest.TestCase):
                     '--sqlite',
                     self.db_path,
                     '--save',
-                    self.csv_path,
-                    '--state',
-                    'all'
+                    self.csv_path
                 ]
             )
         data_frame = pd.read_csv(self.csv_path)
