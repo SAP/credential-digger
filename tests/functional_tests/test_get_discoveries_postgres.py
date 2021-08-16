@@ -6,15 +6,16 @@ import unittest
 import pandas as pd
 from credentialdigger.cli import cli
 from credentialdigger.client_postgres import PgClient
+from dotenv import load_dotenv
 from parameterized import param, parameterized
 
+load_dotenv()
 REPO_URL = ''.join(random.choice('0123456789ABCDEF') for i in range(16))
 
 
 class TestGetDiscoveries(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        # Add rules
         # Set CSV temporary export path
         cls.tmp_path = tempfile.mkdtemp()
         cls.csv_path = os.path.join(cls.tmp_path, 'test.csv')
