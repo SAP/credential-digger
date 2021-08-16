@@ -952,8 +952,14 @@ class Client(Interface):
                    login_or_token=git_token,
                    verify=False)
         missing_ids = {}
-        repositories = g.get_user(username).get_repos()
+
+        user = g.get_user(username)
+        if user.type == 'Organization':
+            # If this is an org, we change API call
+            user = g.get_organization(username)
+        repositories = user.get_repos()
         repos_num = repositories.totalCount
+
         i = 0
         for repo in repositories:
             i += 1
