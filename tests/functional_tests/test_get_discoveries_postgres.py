@@ -133,4 +133,4 @@ class TestGetDiscoveries(unittest.TestCase):
         try:
             assert data_frame.notna().values.all()
         except AssertionError:
-            assert False, ' CSV file contains NaN'
+            assert False, 'CSV file contains NaN'
