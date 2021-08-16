@@ -54,8 +54,16 @@ class TestGetDiscoveries(unittest.TestCase):
         param(state='fixed', count=9)
     ])
     def test_get_discoveries(self, state, count):
-        # Test if retrieve the correct number of discoveries for every possible
-        # state
+        """ Test if we retrieve the correct number of discoveries for every
+        possible state value
+
+        Parameters
+        ----------
+        state: str
+            The state to filter discoveries on
+        count: int
+            The expected number of discoveries to be returned
+        """
         with self.assertRaises(SystemExit) as cm:
             cli.main(
                 [
@@ -77,8 +85,16 @@ class TestGetDiscoveries(unittest.TestCase):
         param(file='fake_file', count=30)
     ])
     def test_get_discoveries_per_file(self, file, count):
-        # Test if retrieve the correct number of discoveries for specific
-        # file name
+        """ Test if we retrieve the correct number of discoveries based on
+        filename input
+
+        Parameters
+        ----------
+        file: str
+            The file name to filter discoveries on
+        count: int
+            The expected number of discoveries to be returned
+        """
         with self.assertRaises(SystemExit) as cm:
             cli.main(
                 [
@@ -96,6 +112,7 @@ class TestGetDiscoveries(unittest.TestCase):
         self.assertEqual(cm.exception.code, count)
 
     def test_csv_written(self):
+        # Test if the CLI command writes correctly the CSV file
         with self.assertRaises(SystemExit):
             cli.main(
                 [
