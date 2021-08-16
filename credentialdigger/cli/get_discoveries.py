@@ -21,9 +21,9 @@ optional arguments:
     --dotenv DOTENV     The path to the .env file which will be used in all
                         commands. If not specified, the one in the current
                         directory will be used (if present)
-    --sqlite SQLITE     If specified, scan the repo using the sqlite client
-                        passing as argument the path of the db. Otherwise, use
-                        postgres (must be up and running)
+    --sqlite SQLITE     If specified, get the discoveries using the sqlite
+                        client, passing as argument the path of the db.
+                        Otherwise, use postgres (must be up and running)
     --filename FILENAME Show only the discoveries contained in this file
     --state STATE       The state to filter discoveries on. Possible options:
                         [new, false_positive, addressing, not_relevant, fixed]'
