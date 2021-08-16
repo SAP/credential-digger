@@ -8,8 +8,8 @@ from credentialdigger.cli import cli
 from credentialdigger.client_postgres import PgClient
 from parameterized import param, parameterized
 
-REPO_URL = ''.join(random.choice('0123456789ABCDEF')
-                               for i in range(16))
+REPO_URL = ''.join(random.choice('0123456789ABCDEF') for i in range(16))
+
 
 class TestGetDiscoveries(unittest.TestCase):
     @classmethod
