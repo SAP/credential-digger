@@ -953,11 +953,20 @@ class Client(Interface):
                    verify=False)
         missing_ids = {}
 
-        user = g.get_user(username)
-        if user.type == 'Organization':
-            # If this is an org, we change API call
-            user = g.get_organization(username)
-        repositories = user.get_repos()
+        if g.get_user().login == username:
+            # Get the repos of the currently authenticated user
+            # The API for get_user(username) will return only the public
+            # repositories for that user, so it's not suitable to scan all the
+            # repos (private ones included) of the authenticated user
+            repositories = g.get_user().get_repos(affiliation='owner')
+            logger.debug('Scan repos of currently token-authenticated user')
+        else:
+            user = g.get_user(username)
+            if user.type == 'Organization':
+                # If this is an org, we have to change API call
+                user = g.get_organization(username)
+                logger.debug('Scan repos of an organization')
+            repositories = user.get_repos()
         repos_num = repositories.totalCount
 
         i = 0
