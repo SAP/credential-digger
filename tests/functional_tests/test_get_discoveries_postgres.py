@@ -13,7 +13,7 @@ REPO_URL = ''.join(random.choice('0123456789ABCDEF') for i in range(16))
 
 
 class TestGetDiscoveries(unittest.TestCase):
-    dotenv = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    dotenv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
     load_dotenv()
 
     @classmethod
@@ -67,7 +67,7 @@ class TestGetDiscoveries(unittest.TestCase):
     ])
     def test_get_discoveries(self, state, count):
         """ Test if we retrieve the correct number of discoveries for every
-        possible state value
+        possible state value.
 
         Parameters
         ----------
@@ -98,7 +98,7 @@ class TestGetDiscoveries(unittest.TestCase):
     ])
     def test_get_discoveries_per_file(self, file, count):
         """ Test if we retrieve the correct number of discoveries based on
-        filename input
+        filename input.
 
         Parameters
         ----------
@@ -124,7 +124,7 @@ class TestGetDiscoveries(unittest.TestCase):
         self.assertEqual(cm.exception.code, count)
 
     def test_csv_written(self):
-        # Test if the CLI command writes correctly the CSV file
+        """ Test if the CLI command writes correctly the CSV file. """
         with self.assertRaises(SystemExit):
             cli.main(
                 [
