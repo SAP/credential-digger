@@ -9,11 +9,13 @@ from credentialdigger.client_postgres import PgClient
 from dotenv import load_dotenv
 from parameterized import param, parameterized
 
-load_dotenv()
 REPO_URL = ''.join(random.choice('0123456789ABCDEF') for i in range(16))
 
 
 class TestGetDiscoveries(unittest.TestCase):
+    dotenv = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    load_dotenv()
+
     @classmethod
     def setUpClass(cls):
         # Set CSV temporary export path
@@ -83,7 +85,9 @@ class TestGetDiscoveries(unittest.TestCase):
                     '--save',
                     self.csv_path,
                     '--state',
-                    state
+                    state,
+                    '--dotenv',
+                    self.dotenv
                 ]
             )
         self.assertEqual(cm.exception.code, count)
@@ -112,7 +116,9 @@ class TestGetDiscoveries(unittest.TestCase):
                     '--save',
                     self.csv_path,
                     '--filename',
-                    file
+                    file,
+                    '--dotenv',
+                    self.dotenv
                 ]
             )
         self.assertEqual(cm.exception.code, count)
@@ -126,7 +132,9 @@ class TestGetDiscoveries(unittest.TestCase):
                     'get_discoveries',
                     REPO_URL,
                     '--save',
-                    self.csv_path
+                    self.csv_path,
+                    '--dotenv',
+                    self.dotenv
                 ]
             )
         data_frame = pd.read_csv(self.csv_path)
