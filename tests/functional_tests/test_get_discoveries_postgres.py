@@ -16,6 +16,10 @@ class TestGetDiscoveries(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        # Add rules
+        cli.main(['', 'add_rules', '--dotenv', cls.dotenv,
+                  'tests/functional_tests/test_rules.yml'])
+
         # Set CSV temporary export path
         cls.tmp_path = tempfile.mkdtemp()
         cls.csv_path = os.path.join(cls.tmp_path, 'test.csv')
@@ -28,7 +32,7 @@ class TestGetDiscoveries(unittest.TestCase):
                           dbport=os.getenv('DBPORT'))
 
         client.add_repo(REPO_URL)
-
+        
         # Insert fake discoveries
         discoveries = []
         discoveries_count = 5
