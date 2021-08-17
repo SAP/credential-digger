@@ -6,7 +6,6 @@ import unittest
 import pandas as pd
 from credentialdigger.cli import cli
 from credentialdigger.client_postgres import PgClient
-from dotenv import load_dotenv
 from parameterized import param, parameterized
 
 REPO_URL = ''.join(random.choice('0123456789ABCDEF') for i in range(16))
@@ -14,7 +13,6 @@ REPO_URL = ''.join(random.choice('0123456789ABCDEF') for i in range(16))
 
 class TestGetDiscoveries(unittest.TestCase):
     dotenv = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
-    load_dotenv()
 
     @classmethod
     def setUpClass(cls):
