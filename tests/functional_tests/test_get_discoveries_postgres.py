@@ -32,7 +32,7 @@ class TestGetDiscoveries(unittest.TestCase):
                           dbport=os.getenv('DBPORT'))
 
         client.add_repo(REPO_URL)
-        
+
         # Insert fake discoveries
         discoveries = []
         discoveries_count = 5
