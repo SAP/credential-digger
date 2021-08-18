@@ -40,12 +40,14 @@ class UiClient(Client):
 
     def get_all_discoveries_count(self):
         """ Get the repositories together with their total number of
-        discoveries and the number of "new" ones.
+        discoveries.
 
         Returns
         -------
         list
-            A list of tuples containing (repo_url, total disc, new disc)
+            A list of tuples containing (repo_url, total discoveries, true
+                                         positives, false positives,
+                                         addressing, not_relevant, fixed)
         """
         query = '''SELECT repo_url,
                           COUNT(*) AS total,
