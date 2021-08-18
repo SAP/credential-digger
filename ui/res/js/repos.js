@@ -128,6 +128,19 @@ function initReposDataTable() {
                   item.scan_active ? `Scanning...` : `Rescan`
                 }</span>                    
               </button>
+              <button id="exportDiscoveries" class="btn btn outline-bg modal-opener export-csv-btn" data-url="${
+                item.url
+              }" 
+              data-lendiscoveries="${item.lendiscoveries}"
+              data-leaks_count="${item.leaks_count}"
+              data-false_positives_count="${item.false_positives_count}"
+              data-addressing_count="${item.addressing_count}"
+              data-not_relevant_count="${item.not_relevant_count}"
+              data-fixed_count="${item.fixed_count}"
+              data-modal="exportDiscoveriesModal">
+                <span class="icon icon-file_download"></span>
+                <span>Export leaks</span>
+              </button>
               <button class="btn danger-bg modal-opener delete-repo-btn" data-url="${
                 item.url
               }" data-modal="deleteRepoModal">
