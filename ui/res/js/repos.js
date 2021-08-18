@@ -131,12 +131,12 @@ function initReposDataTable() {
               <button id="exportDiscoveries" class="btn btn outline-bg modal-opener export-csv-btn" data-url="${
                 item.url
               }" 
-              data-lendiscoveries="${item.lendiscoveries}"
-              data-leaks_count="${item.leaks_count}"
-              data-false_positives_count="${item.false_positives_count}"
-              data-addressing_count="${item.addressing_count}"
-              data-not_relevant_count="${item.not_relevant_count}"
-              data-fixed_count="${item.fixed_count}"
+              data-lendiscoveries="${item.total}"
+              data-leaks_count="${item.TP}"
+              data-false_positives_count="${item.FP}"
+              data-addressing_count="${item.addressing}"
+              data-not_relevant_count="${item.not_relevant}"
+              data-fixed_count="${item.fixed}"
               data-modal="exportDiscoveriesModal">
                 <span class="icon icon-file_download"></span>
                 <span>Export leaks</span>
