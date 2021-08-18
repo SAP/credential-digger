@@ -316,11 +316,22 @@ def get_repos():
             if repo['url'] == metadata[0]:
                 repo['total'] = metadata[1]  # Total number of discoveries
                 repo['TP'] = metadata[2]  # Number of new discoveries
+                repo['FP'] = metadata[3]  # Number of true positive discoveries
+                # Number of addressing discoveries
+                repo['addressing'] = metadata[4]
+                # Number of irrelevant discoveries
+                repo['not_relevant'] = metadata[5]
+                repo['fixed'] = metadata[6]  # Number of fixed discoveries
                 break  # We found the repo, no need to check next metadata
             else:
                 # The repo was scanned and doesn't have discoveries
                 repo['total'] = 0
                 repo['TP'] = 0
+                repo['FP'] = 0
+                repo['addressing'] = 0
+                repo['not_relevant'] = 0
+                repo['fixed'] = 0
+
         repo['scan_active'] = False
         if repo['url'] in active_scans:
             repo['scan_active'] = True
