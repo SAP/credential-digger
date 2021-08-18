@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initDeleteRepo();
   initModals();
   initAlternanteScanRescan();
+  initExportCSV();
 });
 
 /**
