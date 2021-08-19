@@ -12,6 +12,9 @@ class TestGetDiscoveries(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        """ Set up a database and insert fake discoveries into it for testing
+        purposes.
+        """
         # Set up sqlite database and CSV export temporary paths
         cls.tmp_path = tempfile.mkdtemp()
         cls.db_path = os.path.join(cls.tmp_path, 'test_db.sqlite')
