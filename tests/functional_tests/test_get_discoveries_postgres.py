@@ -55,7 +55,7 @@ class TestGetDiscoveries(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        # Remove the repo and all its discoveries
+        """ Remove the repo and all its discoveries. """
         cls.client.delete_repo(REPO_URL)
         cls.client.delete_discoveries(REPO_URL)
         os.remove(cls.csv_path)
