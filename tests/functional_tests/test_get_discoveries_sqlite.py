@@ -26,7 +26,7 @@ class TestGetDiscoveries(unittest.TestCase):
         discoveries = []
         discoveries_count = 5
         for state in ['new', 'false_positive', 'addressing',
-                             'not_relevant', 'fixed']:
+                      'not_relevant', 'fixed']:
             for i in range(discoveries_count):
                 discovery = {
                     'file_name': 'danger' if state == 'new' else 'fake_file',
