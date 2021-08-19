@@ -43,6 +43,7 @@ class TestGetDiscoveries(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        """ Remove database and exported CSV after finishing tests. """
         os.remove(cls.db_path)
         os.remove(cls.csv_path)
 
