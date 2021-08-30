@@ -1147,8 +1147,7 @@ class Client(Interface):
             with Progress() as progress:
                 inserting_task = progress.add_task('Inserting discoveries...',
                                                    total=len(new_discoveries))
-                for curr_discovery in new_discoveries:
-                    curr_d = curr_discovery
+                for curr_d in new_discoveries:
                     new_id = self.add_discovery(
                         curr_d['file_name'], curr_d['commit_id'],
                         curr_d['line_number'], curr_d['snippet'], repo_url,
