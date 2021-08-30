@@ -44,10 +44,7 @@
 </table>
 
 {% include 'shared/_deleteRepoModal.html' %}
-
-{% with rescan=False %}
-  {% include 'shared/_scanRepoModal.html' %}
-{% endwith %}
+{% include 'shared/_scanRepoModal.html' %}
 
 <script src="/res/js/scanForm.js"></script>
 <script src="/res/js/repos.js"></script>
