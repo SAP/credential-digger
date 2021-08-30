@@ -2,8 +2,8 @@ import copy
 import random
 
 import numpy as np
+from rich.progress import Progress
 from sklearn.metrics.pairwise import cosine_similarity
-from tqdm import tqdm
 
 from .stylometry import compute_vector, word_unigram_tf
 from .transform import (build_dummy_dict, choose_applicable_transformation,
@@ -71,26 +71,32 @@ def compute_dataset(corpus, actions_n, states_n, alpha, gamma, epochs_basis=50,
 
     dataset = []
 
-    # Apply Q-learning for each pattern
-    for pattern_index in tqdm(range(len(all_patterns))):
-        # Select a random extract and remove it from the corpus
-        reference_extract = corpus.pop(random.randrange(len(corpus)))
-        # Cut extracts too long
-        reference_extract = reference_extract[:extract_max_length]
+    with Progress() as progress:
+        patterns_count = len(all_patterns)
+        # Apply Q-learning for each pattern
+        for pattern_index in range(patterns_count):
+            qlearn_task = progress.add_task('Apply Q-learning to patterns...',
+                                            total=patterns_count)
+            # Select a random extract and remove it from the corpus
+            reference_extract = corpus.pop(random.randrange(len(corpus)))
+            # Cut extracts too long
+            reference_extract = reference_extract[:extract_max_length]
 
-        # Increase epochs for more complex patterns
-        epochs = int(epochs_basis * (1 + (pattern_index / len(all_patterns))))
-        # Update epochs in args
-        args['epochs'] = epochs
+            # Increase epochs for more complex patterns
+            epochs = int(epochs_basis *
+                         (1 + (pattern_index / patterns_count)))
+            # Update epochs in args
+            args['epochs'] = epochs
 
-        # Compute the optimal modifications to the basic patterns
-        final_transformation, modification_dict = _optimal_transformation(
-            reference_extract, all_patterns[pattern_index], args)
+            # Compute the optimal modifications to the basic patterns
+            final_transformation, modification_dict = _optimal_transformation(
+                reference_extract, all_patterns[pattern_index], args)
 
-        # Generate the dataset, with optimal transformations
-        for i in range(epochs):
-            dataset += generate_data(all_patterns[pattern_index],
-                                     modification_dict)
+            # Generate the dataset, with optimal transformations
+            for i in range(epochs):
+                dataset += generate_data(all_patterns[pattern_index],
+                                         modification_dict)
+            progress.update(qlearn_task, advance=1)
     return dataset
 
 
