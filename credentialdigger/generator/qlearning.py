@@ -73,10 +73,10 @@ def compute_dataset(corpus, actions_n, states_n, alpha, gamma, epochs_basis=50,
 
     with Progress() as progress:
         patterns_count = len(all_patterns)
+        qlearn_task = progress.add_task('Apply Q-learning to patterns...',
+                                        total=patterns_count)
         # Apply Q-learning for each pattern
         for pattern_index in range(patterns_count):
-            qlearn_task = progress.add_task('Apply Q-learning to patterns...',
-                                            total=patterns_count)
             # Select a random extract and remove it from the corpus
             reference_extract = corpus.pop(random.randrange(len(corpus)))
             # Cut extracts too long
