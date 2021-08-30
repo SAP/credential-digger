@@ -1146,7 +1146,7 @@ class Client(Interface):
             logger.debug('Update database with these discoveries.')
             total_discoveries = len(new_discoveries)
             with Progress() as progress:
-                inserting_task = progress.add_task("Inserting discoveries...",
+                inserting_task = progress.add_task('Inserting discoveries...',
                                                    total=total_discoveries)
                 for i in range(total_discoveries):
                     curr_d = new_discoveries[i]
