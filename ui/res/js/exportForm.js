@@ -18,3 +18,20 @@ function alternateCheckBoxes() {
     }
   }
 }
+
+/*
+    Make sure at least one checkbox is checked
+*/
+function validateCheckBoxes() {
+  let checkBoxes = document.getElementsByName("check");
+  for (let i = 0; i < checkBoxes.length; i++) {
+    let cb = checkBoxes[i];
+    if (cb.checked) {
+      document.getElementById("error_msg").hidden = true;
+      return true;
+    }
+  }
+  checkbox_All = $("#cbAll").prop("checked");
+  document.getElementById("error_msg").hidden = checkbox_All;
+  return checkbox_All;
+}
