@@ -1199,7 +1199,7 @@ class Client(Interface):
             total_discoveries = len(discoveries)
             false_positives = 0
             with Progress() as progress:
-                scanning_task = progress.add_task("Scanning discoveries...",
+                scanning_task = progress.add_task('Scanning discoveries...',
                                                   total=total_discoveries)
                 for i in range(total_discoveries):
                     false_positives += _analyze_discovery(discoveries[i])
