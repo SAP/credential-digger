@@ -288,5 +288,5 @@ class ExtractorGenerator:
                 for column in ['text', 'key', 'value']:
                     row_data[column] = _pre_process(row[column])
                 data_list.append(row_data)
-            progress.update(preprocess_task, advance=1)
+                progress.update(preprocess_task, advance=1)
         return pd.DataFrame(data=data_list)
