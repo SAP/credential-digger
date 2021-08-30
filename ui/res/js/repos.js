@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initDeleteRepo();
   initModals();
   initAlternanteScanRescan();
+  initExportCSV();
 });
 
 /**
@@ -127,6 +128,19 @@ function initReposDataTable() {
                   item.scan_active ? `Scanning...` : `Rescan`
                 }</span>                    
               </button>
+              <button id="exportDiscoveries" class="btn btn outline-bg modal-opener export-csv-btn" data-url="${
+                item.url
+              }" 
+              data-lendiscoveries="${item.total}"
+              data-leaks_count="${item.TP}"
+              data-false_positives_count="${item.FP}"
+              data-addressing_count="${item.addressing}"
+              data-not_relevant_count="${item.not_relevant}"
+              data-fixed_count="${item.fixed}"
+              data-modal="exportDiscoveriesModal">
+                <span class="icon icon-file_download"></span>
+                <span>Export leaks</span>
+              </button>
               <button class="btn danger-bg modal-opener delete-repo-btn" data-url="${
                 item.url
               }" data-modal="deleteRepoModal">
@@ -193,5 +207,32 @@ function initAlternanteScanRescan() {
       document.querySelector('#addRepoModal div[id="inputUrl"]').innerHTML =
         linkInput;
     }
+  });
+}
+
+function initExportCSV() {
+  // Use jQuery for easier event delegation
+  $(document).on("click", ".export-csv-btn", function () {
+    document.querySelector(
+      '#exportDiscoveriesModal input[name="repo_url"]'
+    ).value = this.dataset.url;
+    document.querySelector(
+      '#exportDiscoveriesModal a[id="discoveries_count"]'
+    ).innerHTML = `(${this.dataset.lendiscoveries})`;
+    document.querySelector(
+      '#exportDiscoveriesModal a[id="leaks_count"]'
+    ).innerHTML = `(${this.dataset.leaks_count})`;
+    document.querySelector(
+      '#exportDiscoveriesModal a[id="false_positives_count"]'
+    ).innerHTML = `(${this.dataset.false_positives_count})`;
+    document.querySelector(
+      '#exportDiscoveriesModal a[id="addressing_count"]'
+    ).innerHTML = `(${this.dataset.addressing_count})`;
+    document.querySelector(
+      '#exportDiscoveriesModal a[id="not_relevant_count"]'
+    ).innerHTML = `(${this.dataset.not_relevant_count})`;
+    document.querySelector(
+      '#exportDiscoveriesModal a[id="fixed_count"]'
+    ).innerHTML = `(${this.dataset.fixed_count})`;
   });
 }
