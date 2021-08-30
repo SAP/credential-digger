@@ -1,0 +1,90 @@
+<!-- Export discoveries popup -->
+<div id="exportDiscoveriesModal" class="modal">
+  <div class="modal-content">
+    <div class="topicHeaderWrapperAccept">
+      <h1 class="topicH1">Export discoveries as CSV</h1>
+    </div>
+    <span class="buttonsAccept">
+      <form
+        name="export_discoveries"
+        id="export_discoveries"
+        action="/export_discoveries_csv"
+        method="post"
+      >
+        <input name="repo_url" type="hidden" value="{{url}}" />
+        <div>
+          <label
+            ><input
+              type="checkbox"
+              id="cbAll"
+              name="checkAll"
+              value="all"
+              checked
+              onchange="changeAll()"
+            />Export all
+            <a id="discoveries_count">({{discoveries_count}})</a></label
+          >
+        </div>
+        <div>
+          <label
+            ><input
+              type="checkbox"
+              name="check"
+              value="new"
+              onchange="alternateCheckBoxes()"
+            />Export leaks <a id="leaks_count">({{leaks_count}})</a></label
+          >
+        </div>
+        <div>
+          <label
+            ><input
+              type="checkbox"
+              name="check"
+              value="false_positive"
+              onchange="alternateCheckBoxes()"
+            />Export false positives
+            <a id="false_positives_count">({{false_positives_count}})</a></label
+          >
+        </div>
+        <div>
+          <label
+            ><input
+              type="checkbox"
+              name="check"
+              value="addressing"
+              onchange="alternateCheckBoxes()"
+            />Export 'addressing' discoveries
+            <a id="addressing_count">({{addressing_count}})</a></label
+          >
+        </div>
+        <div>
+          <label
+            ><input
+              type="checkbox"
+              name="check"
+              value="not_relevant"
+              onchange="alternateCheckBoxes()"
+            />Export 'not-relevant' discoveries
+            <a id="not_relevant_count">({{not_relevant_count}})</a></label
+          >
+        </div>
+        <div>
+          <label
+            ><input
+              type="checkbox"
+              name="check"
+              value="fixed"
+              onchange="alternateCheckBoxes()"
+            />Export fixed discoveries
+            <a id="fixed_count">({{fixed_count}})</a></label
+          >
+        </div>
+        <br />
+        <button type="submit" class="btn primary-bg">Export</button>
+        <button type="button" class="btn outline-bg modal-closer">
+          Cancel
+        </button>
+      </form>
+    </span>
+  </div>
+</div>
