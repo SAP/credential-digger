@@ -1196,13 +1196,12 @@ class Client(Interface):
         if debug:
             model_name = model_manager.model.__class__.__name__
             logger.debug(f'Analyzing discoveries with model {model_name}')
-            total_discoveries = len(discoveries)
             false_positives = 0
             with Progress() as progress:
                 scanning_task = progress.add_task('Scanning discoveries...',
-                                                  total=total_discoveries)
-                for i in range(total_discoveries):
-                    false_positives += _analyze_discovery(discoveries[i])
+                                                  total=len(discoveries))
+                for curr_discovery in discoveries:
+                    false_positives += _analyze_discovery(curr_discovery)
                     progress.update(scanning_task, advance=1)
             logger.debug(f'Model {model_name} classified {false_positives} '
                          'discoveries.')
