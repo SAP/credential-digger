@@ -366,8 +366,9 @@ def export_discoveries_csv():
                                                     filename={report_name}'
         response_csv.headers['Content-type'] = 'text/csv'
         return response_csv
-    except IndexError as error:
-        app.logger.error(error)
+    except IndexError:
+        app.logger.error('No discoveries found for this repo. Impossible to'
+                         'generate a report')
     except Exception as exception:
         app.logger.exception(exception)
 
