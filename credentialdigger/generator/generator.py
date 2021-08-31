@@ -11,7 +11,7 @@ import pandas as pd
 import pkg_resources
 import string_utils
 from git import Repo as GitRepo
-from tqdm import tqdm
+from rich.progress import Progress
 
 from .qlearning import compute_dataset
 from .training import create_snippet_model
@@ -280,10 +280,13 @@ class ExtractorGenerator:
 
         data_list = []
         # Preprocess the dataset with naming convention, etc.
-        for idx, row in tqdm(data.iterrows(), total=data.shape[0]):
-            row_data = {}
-            for column in ['text', 'key', 'value']:
-                row_data[column] = _pre_process(row[column])
-            data_list.append(row_data)
-
+        with Progress() as progress:
+            preprocess_task = progress.add_task('Pre-processing dataset...',
+                                                total=data.shape[0])
+            for idx, row in data.iterrows():
+                row_data = {}
+                for column in ['text', 'key', 'value']:
+                    row_data[column] = _pre_process(row[column])
+                data_list.append(row_data)
+                progress.update(preprocess_task, advance=1)
         return pd.DataFrame(data=data_list)

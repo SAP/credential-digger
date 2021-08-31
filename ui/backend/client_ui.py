@@ -40,18 +40,39 @@ class UiClient(Client):
 
     def get_all_discoveries_count(self):
         """ Get the repositories together with their total number of
-        discoveries and the number of "new" ones.
+        discoveries.
 
         Returns
         -------
         list
-            A list of tuples containing (repo_url, total disc, new disc)
+            A list of tuples containing (repo_url, total discoveries, true
+                                         positives, false positives,
+                                         addressing, not_relevant, fixed)
         """
         query = '''SELECT repo_url,
-                          COUNT(*) as total,
-                          sum(case when STATE='new' then 1 else 0 end) as tp
-                          FROM discoveries
-                          GROUP BY repo_url;'''
+                          COUNT(*) AS total,
+                          sum(CASE
+                                  WHEN STATE='new' THEN 1
+                                  ELSE 0
+                              END) AS true_positive,
+                          sum(CASE
+                                  WHEN STATE='false_positive' THEN 1
+                                  ELSE 0
+                              END) AS false_positive,
+                          sum(CASE
+                                  WHEN STATE='addressing' THEN 1
+                                  ELSE 0
+                              END) AS addressing,
+                          sum(CASE
+                                  WHEN STATE='not_relevant' THEN 1
+                                  ELSE 0
+                              END) AS not_relevant,
+                          sum(CASE
+                                  WHEN STATE='fixed' THEN 1
+                                  ELSE 0
+                              END) AS fixed
+                        FROM discoveries
+                        GROUP BY repo_url;'''
         cursor = self.db.cursor()
         cursor.execute(query)
         result = cursor.fetchall()

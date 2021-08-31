@@ -133,12 +133,11 @@ def discoveries_to_csv(discoveries):
         csv_writer.writeheader()
         csv_writer.writerows(discoveries)
         csv_data = stringIO.getvalue()
+        return csv_data
     except IndexError as error:
         logger.error(error)
     except Exception as exception:
         logger.exception(exception)
-
-    return csv_data
 
 
 def export_csv(discoveries, client, save=False):
