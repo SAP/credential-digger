@@ -20,4 +20,3 @@ tensorflow==2.4.2; python_version < "3.8"
 tensorflow-text==2.5.0; python_version >= "3.8"
 tensorflow-text==2.4.2; python_version < "3.8"
 tf-models-official
-tqdm

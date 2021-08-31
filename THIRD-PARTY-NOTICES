@@ -109,11 +109,6 @@ Licensor: ExplosionAI UG
 Website: https://github.com/explosion/srsly
 License: MIT License
 
-Component: tqdm
-Licensor: Casper da Costa-Luis, Google Inc., Noam Yorav-Raphael, and contributors
-Website: https://github.com/tqdm/tqdm
-License: MIT License and MPLv2.0
-
 
 
 --------------------------------------------------------------------------------------------------------------------------
