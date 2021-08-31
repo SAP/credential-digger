@@ -8,13 +8,13 @@ from datetime import datetime, timezone
 
 import yaml
 from github import Github
-from tqdm import tqdm
+from rich.progress import Progress
 
 from .generator import ExtractorGenerator
 from .models.model_manager import ModelManager
 from .scanners.file_scanner import FileScanner
-from .scanners.git_scanner import GitScanner
 from .scanners.git_file_scanner import GitFileScanner
+from .scanners.git_scanner import GitScanner
 from .snippet_similarity import (build_embedding_model, compute_similarity,
                                  compute_snippet_embedding)
 
@@ -1144,14 +1144,17 @@ class Client(Interface):
         discoveries_ids = list()
         if debug:
             logger.debug('Update database with these discoveries.')
-            for i in tqdm(range(len(new_discoveries))):
-                curr_d = new_discoveries[i]
-                new_id = self.add_discovery(
-                    curr_d['file_name'], curr_d['commit_id'],
-                    curr_d['line_number'], curr_d['snippet'], repo_url,
-                    curr_d['rule_id'], curr_d['state'])
-                if new_id != -1 and curr_d['state'] != 'false_positive':
-                    discoveries_ids.append(new_id)
+            with Progress() as progress:
+                inserting_task = progress.add_task('Inserting discoveries...',
+                                                   total=len(new_discoveries))
+                for curr_d in new_discoveries:
+                    new_id = self.add_discovery(
+                        curr_d['file_name'], curr_d['commit_id'],
+                        curr_d['line_number'], curr_d['snippet'], repo_url,
+                        curr_d['rule_id'], curr_d['state'])
+                    if new_id != -1 and curr_d['state'] != 'false_positive':
+                        discoveries_ids.append(new_id)
+                    progress.update(inserting_task, advance=1)
             logger.debug(f'{len(discoveries_ids)} discoveries left for manual '
                          'review.')
         else:
@@ -1191,11 +1194,13 @@ class Client(Interface):
         if debug:
             model_name = model_manager.model.__class__.__name__
             logger.debug(f'Analyzing discoveries with model {model_name}')
-
             false_positives = 0
-            for i in tqdm(range(len(discoveries))):
-                false_positives += _analyze_discovery(discoveries[i])
-
+            with Progress() as progress:
+                scanning_task = progress.add_task('Scanning discoveries...',
+                                                  total=len(discoveries))
+                for curr_discovery in discoveries:
+                    false_positives += _analyze_discovery(curr_discovery)
+                    progress.update(scanning_task, advance=1)
             logger.debug(f'Model {model_name} classified {false_positives} '
                          'discoveries.')
         else:
