@@ -145,8 +145,8 @@ class Client(Interface):
         cursor = self.db.cursor()
         try:
             cursor.execute(query, (discovery_id,
-                                   embedding,
                                    snippet,
+                                   embedding,
                                    repo_url))
             self.db.commit()
         except self.Error:
