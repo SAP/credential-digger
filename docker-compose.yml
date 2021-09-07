@@ -10,6 +10,7 @@ services:
         - SSL_certificate=$SSL_certificate
         - SSL_private_key=$SSL_private_key
     container_name: credential_digger_sqlite
+    image: credential-digger_sqlite
     restart: always
     env_file:
       - ./.env
