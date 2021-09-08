@@ -9,11 +9,6 @@ In the event that we overlooked to list required notice, please bring this to ou
 
 Components:
 
-Component: fasttext
-Licensor: Facebook, Inc.
-Website: https://github.com/facebookresearch/fastText
-License: MIT License
-
 Component: flask
 Licensor: Pallets
 Website: https://github.com/pallets/flask
@@ -109,6 +104,10 @@ Licensor: Casper da Costa-Luis, Google Inc., Noam Yorav-Raphael, and contributor
 Website: https://github.com/tqdm/tqdm
 License: MIT License and MPLv2.0
 
+Component: transformers
+Licensor: Hugging Face
+Website: https://huggingface.co/transformers/
+License: Apache 2.0 
 
 
 --------------------------------------------------------------------------------------------------------------------------
