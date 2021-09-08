@@ -10,7 +10,6 @@ usage: credentialdigger scan [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                              [--category CATEGORY]
                              [--models MODELS [MODELS ...]] [--debug]
                              [--git_token GIT_TOKEN] [--local] [--force]
-                             [--generate_snippet_extractor]
                              [--similarity]
                              repo_url
 
@@ -41,11 +40,6 @@ optional arguments:
                         instead of the web
   --force               Force a complete re-scan of the repository, in case it
                         has already been scanned previously
-  --generate_snippet_extractor
-                        Generate the extractor model to be used in the
-                        SnippetModel. The extractor is generated using the
-                        ExtractorGenerator. If `False`, use the pre-trained
-                        extractor model
   --similarity          Build and use the similarity model to compute
                         embeddings and allow for automatic update of similar
                         snippets
@@ -78,11 +72,6 @@ def configure_parser(parser):
         '--force', action='store_true',
         help='Force a complete re-scan of the repository, in case it has \
             already been scanned previously')
-    parser.add_argument(
-        '--generate_snippet_extractor', action='store_true',
-        help='Generate the extractor model to be used in the SnippetModel. \
-            The extractor is generated using the ExtractorGenerator. If \
-            `False`, use the pre-trained extractor model')
     parser.add_argument(
         '--similarity', action='store_true',
         help='Build and use the similarity model to compute embeddings \
@@ -117,7 +106,6 @@ def run(client, args):
         models=args.models,
         force=args.force,
         debug=args.debug,
-        generate_snippet_extractor=args.generate_snippet_extractor,
         similarity=args.similarity,
         local_repo=args.local,
         git_token=args.git_token)
