@@ -1083,10 +1083,6 @@ class Client(Interface):
                     continue
 
         new_discoveries = password_discoveries + non_password_discoveries
-        # Check if we have to run the snippet model, and, in this case, if it
-        # will use the pre-trained extractor or the generated one
-        # Yet, since the SnippetModel may be slow, run it only if we still have
-        # discoveries to check
         fp_discoveries = [
             d for d in new_discoveries if d['state'] != 'false_positive']
 
@@ -1119,6 +1115,22 @@ class Client(Interface):
         return discoveries_ids
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):
+        """ Launch model and return discoveries with states updated.
+
+        Parameters
+        ----------
+        model_manager: ModelManager
+           The model manager
+        discoveries: list
+            The discoveries to feed to the model
+        debug: boolean
+            If true print model name and number of false positives detected
+
+        Return
+        ------
+        discoveries: list
+            The discoveries with states updated according to model predictions
+        """
         discoveries, n_false_positives = model_manager.launch_model(
                 discoveries)
         if debug:
