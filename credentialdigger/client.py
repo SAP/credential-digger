@@ -1067,8 +1067,10 @@ class Client(Interface):
         self.update_repo(repo_url, latest_timestamp)
 
         password_rule_id = self.get_rules('password')[0]['id']
-        password_discoveries = list(filter(lambda d: d['rule_id'] == password_rule_id, new_discoveries))
-        non_password_discoveries = list(filter(lambda d: d['rule_id'] != password_rule_id, new_discoveries))
+        password_discoveries = list(filter(lambda d:
+            d['rule_id'] == password_rule_id, new_discoveries))
+        non_password_discoveries = list(filter(lambda d:
+            d['rule_id'] != password_rule_id, new_discoveries))
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
         if len(password_discoveries) > 0:
@@ -1176,7 +1178,8 @@ class Client(Interface):
             similarity_model = globals['similarity_model']
         else:
             similarity_model = build_embedding_model()
-        embeddings = [compute_snippet_embedding(s, similarity_model) for s in snippets]
+        embeddings = [compute_snippet_embedding(s, similarity_model)
+                      for s in snippets]
         return [discoveries_ids, snippets, embeddings]
 
     def update_similar_snippets(self,
