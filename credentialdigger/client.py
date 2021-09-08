@@ -138,8 +138,13 @@ class Client(Interface):
         """
         snippet = self.get_discovery(discovery_id)['snippet']
         if not embedding:
-            model = build_embedding_model()
-            embedding = compute_snippet_embedding(snippet, model)
+            global similarity_model
+            if globals().get('similarity_model'):
+                similarity_model = globals()['similarity_model']
+            else:
+                similarity_model = build_embedding_model()
+            embedding = compute_snippet_embedding(snippet,
+                                                  similarity_model)
         embedding = json.dumps(embedding)
         cursor = self.db.cursor()
         try:
@@ -1166,8 +1171,12 @@ class Client(Interface):
         discoveries = disc[1] if disc and isinstance(disc[0], int) else disc
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
-        model = build_embedding_model()
-        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
+        global similarity_model
+        if globals().get('similarity_model'):
+            similarity_model = globals['similarity_model']
+        else:
+            similarity_model = build_embedding_model()
+        embeddings = [compute_snippet_embedding(s, similarity_model) for s in snippets]
         return [discoveries_ids, snippets, embeddings]
 
     def update_similar_snippets(self,
