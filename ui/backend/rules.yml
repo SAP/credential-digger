@@ -19,7 +19,7 @@ rules:
     category: token
     description: instagram token
 
-  - regex: '[1-9][0-9]+-[0-9a-zA-Z]{40}'
+  - regex: '^(sha)?[1-9][0-9]+-[0-9a-zA-Z]{40}'
     category: token
     description: twitter access token
 

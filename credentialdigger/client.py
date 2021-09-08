@@ -138,8 +138,13 @@ class Client(Interface):
         """
         snippet = self.get_discovery(discovery_id)['snippet']
         if not embedding:
-            model = build_embedding_model()
-            embedding = compute_snippet_embedding(snippet, model)
+            global similarity_model
+            if globals().get('similarity_model'):
+                similarity_model = globals()['similarity_model']
+            else:
+                similarity_model = build_embedding_model()
+            embedding = compute_snippet_embedding(snippet,
+                                                  similarity_model)
         embedding = json.dumps(embedding)
         cursor = self.db.cursor()
         try:
@@ -596,7 +601,7 @@ class Client(Interface):
                 return None
             embedding_str = cursor.fetchone()[0]
             return json.loads(embedding_str)
-        except IndexError:
+        except TypeError:
             # The embedding tuple was empty when fetched
             return None
         except self.Error:
@@ -733,7 +738,7 @@ class Client(Interface):
                 query, new_state, repo_url, file_name, snippet)
 
     def scan(self, repo_url, category=None, models=None, force=False,
-             debug=False,similarity=False, local_repo=False, git_token=None):
+             debug=False, similarity=False, local_repo=False, git_token=None):
         """ Launch the scan of a git repository.
 
         Parameters
@@ -782,7 +787,6 @@ class Client(Interface):
             repo_url=repo_url, scanner=scanner, models=models, force=force,
             debug=debug, similarity=similarity, local_repo=local_repo,
             git_token=git_token)
-
     def scan_snapshot(self, repo_url, branch_or_commit, category=None,
                       models=None, force=False, debug=False, similarity=False,
                       git_token=None, max_depth=-1, ignore_list=[]):
@@ -963,8 +967,8 @@ class Client(Interface):
                                                git_token=git_token)
         return missing_ids
 
-    def scan_wiki(self, repo_url, category=None, models=None,
-                  debug=False, git_token=None):
+    def scan_wiki(self, repo_url, category=None, models=None, debug=False,
+                  git_token=None):
         """ Scan the wiki of a repository.
 
         This method simply generates the url of a wiki from the url of its repo,
@@ -1071,16 +1075,28 @@ class Client(Interface):
         latest_timestamp = int(datetime.now(timezone.utc).timestamp())
         self.update_repo(repo_url, latest_timestamp)
 
+        # TODO: Consider only password rules
+        password_rule_id = self.get_rules('password')[0]['id']
+        password_discoveries = list(filter(lambda d:
+                d['rule_id'] == password_rule_id, new_discoveries))
+        non_password_discoveries = list(filter(lambda d:
+                d['rule_id'] != password_rule_id, new_discoveries))
+
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
-        if len(new_discoveries) > 0:
+        if len(password_discoveries) > 0:
             for model in models:
                 try:
                     mm = ModelManager(model)
-                    self._analyze_discoveries(mm, new_discoveries, debug)
+                    self._analyze_discoveries(mm, password_discoveries, debug)
                 except ModuleNotFoundError:
                     logger.warning(f'Model {model} not found. Skip it.')
                     continue
+
+        # TODO
+        new_discoveries = password_discoveries + non_password_discoveries
+        fp_discoveries = [
+            d for d in new_discoveries if d['state'] != 'false_positive']
 
         # Insert the discoveries into the db
         discoveries_ids = list()
@@ -1106,7 +1122,7 @@ class Client(Interface):
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
 
-        if similarity and discoveries_ids:
+        if similarity:
             # Compute similarities only if there are any discoveries left
             logger.info('Compute embeddings for this repository')
             self.add_embeddings(repo_url)
@@ -1114,25 +1130,24 @@ class Client(Interface):
         return discoveries_ids
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):
-        """ Use a model to analyze a list of discoveries.
+        """ Launch model and return discoveries with states updated.
 
         Parameters
         ----------
-        model_manager:
-        discoveries:
-        debug:
+        model_manager: ModelManager
+           The model manager
+        discoveries: list
+            The discoveries to feed to the model
+        debug: boolean
+            If true print model name and number of false positives detected
 
-        Returns
-        -------
+        Return
+        ------
+        discoveries: list
+            The discoveries with states updated according to model predictions
         """
-
-        def _analyze_discovery(d):
-            if d['state'] != 'false_positive' and \
-                    model_manager.launch_model(d):
-                d['state'] = 'false_positive'
-                return 1
-            return 0
-
+        discoveries, n_false_positives = model_manager.launch_model(
+                discoveries)
         if debug:
             model_name = model_manager.model.__class__.__name__
             logger.debug(f'Analyzing discoveries with model {model_name}')
@@ -1198,8 +1213,13 @@ class Client(Interface):
         discoveries = disc[1] if disc and isinstance(disc[0], int) else disc
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
-        model = build_embedding_model()
-        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
+        global similarity_model
+        if globals().get('similarity_model'):
+            similarity_model = globals['similarity_model']
+        else:
+            similarity_model = build_embedding_model()
+        embeddings = [compute_snippet_embedding(s, similarity_model)
+                      for s in snippets]
         return [discoveries_ids, snippets, embeddings]
 
     def update_similar_snippets(self,
