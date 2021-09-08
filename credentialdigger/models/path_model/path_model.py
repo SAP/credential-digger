@@ -22,8 +22,9 @@ class PathModel():
         unique_paths = list(set(file_paths))
         path_dict = {}
         for path in unique_paths:
-            if re.search(r'test|example|demo|Makefile|Gruntfile|Jenkinsfile|' \
-                         '\.md$|css$', path):
+            if re.search(
+                r'test|example|demo|Makefile|Gruntfile|Jenkinsfile|\.md$|css$',
+                path):
                 path_dict[path] = 1
             else:
                 path_dict[path] = 0

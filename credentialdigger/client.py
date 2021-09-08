@@ -1068,9 +1068,9 @@ class Client(Interface):
 
         password_rule_id = self.get_rules('password')[0]['id']
         password_discoveries = list(filter(lambda d:
-            d['rule_id'] == password_rule_id, new_discoveries))
+                d['rule_id'] == password_rule_id, new_discoveries))
         non_password_discoveries = list(filter(lambda d:
-            d['rule_id'] != password_rule_id, new_discoveries))
+                d['rule_id'] != password_rule_id, new_discoveries))
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
         if len(password_discoveries) > 0:
@@ -1119,7 +1119,8 @@ class Client(Interface):
         return discoveries_ids
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):
-        discoveries, n_false_positives = model_manager.launch_model(discoveries)
+        discoveries, n_false_positives = model_manager.launch_model(
+                discoveries)
         if debug:
             model_name = model_manager.model.__class__.__name__
             logger.debug(f'Analyzing discoveries with model {model_name}')
