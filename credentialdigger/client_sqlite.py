@@ -204,7 +204,7 @@ class SqliteClient(Client):
         """
         query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
                 VALUES (?, ?, ?, ?);'
-        return super().add_embedding(query,
+        super().add_embedding(query,
                                      discovery_id,
                                      repo_url,
                                      embedding)
@@ -219,7 +219,7 @@ class SqliteClient(Client):
         """
         query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
                 VALUES (?, ?, ?, ?);'
-        return super().add_embeddings(query, repo_url)
+        super().add_embeddings(query, repo_url)
 
     def add_repo(self, repo_url):
         """ Add a new repository.
