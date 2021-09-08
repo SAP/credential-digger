@@ -5,6 +5,7 @@ import urllib3
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from datetime import datetime, timezone
+from functools import reduce
 
 import yaml
 from github import Github
@@ -1080,10 +1081,12 @@ class Client(Interface):
                                    self.get_rules('password'),
                                    set())
 
-        password_discoveries = list(filter(lambda d:
-                d['rule_id'] in password_rule_ids, new_discoveries))
-        non_password_discoveries = list(filter(lambda d:
-                d['rule_id'] not in password_rule_ids, new_discoveries))
+        password_discoveries = list(
+            filter(lambda d: d['rule_id'] in password_rule_ids,
+                   new_discoveries))
+        non_password_discoveries = list(
+            filter(lambda d: d['rule_id'] not in password_rule_ids,
+                   new_discoveries))
 
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
