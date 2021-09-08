@@ -1061,17 +1061,21 @@ class Client(Interface):
         latest_timestamp = int(datetime.now(timezone.utc).timestamp())
         self.update_repo(repo_url, latest_timestamp)
 
+        password_rule_id = self.get_rules('password')[0]['id']
+        password_discoveries = list(filter(lambda d: d['rule_id'] == password_rule_id, new_discoveries))
+        non_password_discoveries = list(filter(lambda d: d['rule_id'] != password_rule_id, new_discoveries))
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
-        if len(new_discoveries) > 0:
+        if len(password_discoveries) > 0:
             for model in models:
                 try:
                     mm = ModelManager(model)
-                    self._analyze_discoveries(mm, new_discoveries, debug)
+                    self._analyze_discoveries(mm, password_discoveries, debug)
                 except ModuleNotFoundError:
                     logger.warning(f'Model {model} not found. Skip it.')
                     continue
 
+        new_discoveries = password_discoveries + non_password_discoveries
         # Check if we have to run the snippet model, and, in this case, if it
         # will use the pre-trained extractor or the generated one
         # Yet, since the SnippetModel may be slow, run it only if we still have
