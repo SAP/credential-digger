@@ -39,21 +39,21 @@ class SnippetModel(BaseModel):
         n_false_positives: int
             The number of false positives detected by the model
         """
-        fp_discoveries = [d for d in discoveries \
-                          if d['state'] == 'false_positive']
-        new_discoveries = [d for d in discoveries \
-                           if d['state'] != 'false_positive']
-        snippets = [d['snippet'] for d in new_discoveries]
+        fp_or_non_pw_discoveries = [d for d in discoveries \
+                                    if d['state'] == 'false_positive']
+        new_pw_discoveries = [d for d in discoveries \
+                              if d['state'] != 'false_positive']
+        snippets = [d['snippet'] for d in new_pw_discoveries]
         data = self.preprocess_data(snippets)
         outputs = self.model.predict(data)
         logits = outputs['logits']
         predictions = tf.argmax(logits, 1)
         n_false_positives = 0
-        for d, p in zip(new_discoveries, predictions):
+        for d, p in zip(new_pw_discoveries, predictions):
             if p == 0:
                 d['state'] = 'false_positive'
                 n_false_positives += 1
-        discoveries = fp_discoveries + new_discoveries
+        discoveries = fp_or_non_pw_discoveries + new_pw_discoveries
         return discoveries, n_false_positives
 
     def preprocess_data(self, snippets):
