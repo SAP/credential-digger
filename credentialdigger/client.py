@@ -1075,12 +1075,15 @@ class Client(Interface):
         latest_timestamp = int(datetime.now(timezone.utc).timestamp())
         self.update_repo(repo_url, latest_timestamp)
 
-        # TODO: Consider only password rules
-        password_rule_id = self.get_rules('password')[0]['id']
+        # Consider only password discoveries
+        password_rule_ids = reduce(lambda ids, rule: ids.add(rule['id']),
+                                   self.get_rules('password'),
+                                   set())
+
         password_discoveries = list(filter(lambda d:
-                d['rule_id'] == password_rule_id, new_discoveries))
+                d['rule_id'] in password_rule_ids, new_discoveries))
         non_password_discoveries = list(filter(lambda d:
-                d['rule_id'] != password_rule_id, new_discoveries))
+                d['rule_id'] not in password_rule_ids, new_discoveries))
 
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
@@ -1093,10 +1096,9 @@ class Client(Interface):
                     logger.warning(f'Model {model} not found. Skip it.')
                     continue
 
-        # TODO
+        # Re-add the non-password discoveries and insert all of them into the
+        # db
         new_discoveries = password_discoveries + non_password_discoveries
-        fp_discoveries = [
-            d for d in new_discoveries if d['state'] != 'false_positive']
 
         # Insert the discoveries into the db
         discoveries_ids = list()
@@ -1146,8 +1148,22 @@ class Client(Interface):
         discoveries: list
             The discoveries with states updated according to model predictions
         """
-        discoveries, n_false_positives = model_manager.launch_model(
-                discoveries)
+
+        # TODO: replace this function with the following block of code?
+        # discoveries, n_false_positives = model_manager.launch_model(
+        #         discoveries)
+        # model_name = model_manager.model.__class__.__name__
+        # logger.debug(f'Analyzing discoveries with model {model_name}')
+        # logger.debug(f'Model {model_name} detected {n_false_positives}'
+        #              'false positives')
+
+        def _analyze_discovery(d):
+            if d['state'] != 'false_positive' and \
+                    model_manager.launch_model(d):
+                d['state'] = 'false_positive'
+                return 1
+            return 0
+
         if debug:
             model_name = model_manager.model.__class__.__name__
             logger.debug(f'Analyzing discoveries with model {model_name}')
