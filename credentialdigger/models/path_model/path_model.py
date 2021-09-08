@@ -19,11 +19,12 @@ class PathModel():
             The number of discoveries classified as false positives
         """
         file_paths = [d['file_name'] for d in discoveries]
+        file_paths = [fp.lower() for fp in file_paths]
         unique_paths = list(set(file_paths))
         path_dict = {}
         for path in unique_paths:
             if re.search(
-                r'test|example|demo|Makefile|Gruntfile|Jenkinsfile|\.md$|css$',
+                r'^(con)?test|example|demo^(cra)?^(graph)?|package-lock|Makefile|Gruntfile|\.md$|css$|\.rst$',
                 path):
                 path_dict[path] = 1
             else:
