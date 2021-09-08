@@ -13,7 +13,7 @@ class SnippetModel(BaseModel):
 
         Parameters
         ----------
-        model: str 
+        model: str
             The transformer model's path
         tokenizer: str
             The tokenizer's path
@@ -34,14 +34,14 @@ class SnippetModel(BaseModel):
         Returns
         -------
         discoveries: list of dict
-            The discoveries, with states updated according to 
+            The discoveries, with states updated according to
             the model's predictions
         n_false_positives: int
             The number of false positives detected by the model
         """
-        fp_or_non_pw_discoveries = [d for d in discoveries \
+        fp_or_non_pw_discoveries = [d for d in discoveries
                                     if d['state'] == 'false_positive']
-        new_pw_discoveries = [d for d in discoveries \
+        new_pw_discoveries = [d for d in discoveries
                               if d['state'] != 'false_positive']
         snippets = [d['snippet'] for d in new_pw_discoveries]
         data = self.preprocess_data(snippets)
@@ -57,7 +57,7 @@ class SnippetModel(BaseModel):
         return discoveries, n_false_positives
 
     def preprocess_data(self, snippets):
-        """ Compute encodings of snippets and format them to a standard 
+        """ Compute encodings of snippets and format them to a standard
         Tensorflow dataset.
 
         Parameters
@@ -73,7 +73,7 @@ class SnippetModel(BaseModel):
         encodings = self.tokenizer(snippets,
                                    truncation=True,
                                    padding=True)
-        features = {x: encodings[x] \
+        features = {x: encodings[x]
                     for x in self.tokenizer.model_input_names}
         dataset = tf.data.Dataset.from_tensor_slices((features)).batch(8)
         return dataset
