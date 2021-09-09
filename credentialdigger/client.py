@@ -5,7 +5,6 @@ import urllib3
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from datetime import datetime, timezone
-from functools import reduce
 
 import yaml
 from github import Github
@@ -1077,9 +1076,9 @@ class Client(Interface):
         self.update_repo(repo_url, latest_timestamp)
 
         # Consider only password discoveries
-        password_rule_ids = reduce(lambda ids, rule: ids.add(rule['id']),
-                                   self.get_rules('password'),
-                                   set())
+        password_rule_ids = set()
+        map(lambda rule: password_rule_ids.add(rule['id']),
+            self.get_rules('password'))
 
         password_discoveries = list(
             filter(lambda d: d['rule_id'] in password_rule_ids,
