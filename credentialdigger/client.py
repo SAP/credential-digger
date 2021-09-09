@@ -972,8 +972,8 @@ class Client(Interface):
                   git_token=None):
         """ Scan the wiki of a repository.
 
-        This method simply generates the url of a wiki from the url of its repo,
-        and uses the same `scan` method that we use for repositories.
+        This method simply generates the url of a wiki from the url of its
+        repo, and uses the same `scan` method that we use for repositories.
 
         Parameters
         ----------
@@ -1186,7 +1186,7 @@ class Client(Interface):
         # Return updated discoveries
         return discoveries
 
-    def _get_scan_rules(self, category=None,):
+    def _get_scan_rules(self, category=None):
         """ Get the rules of the `category`
 
         Parameters
