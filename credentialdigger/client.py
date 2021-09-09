@@ -8,12 +8,12 @@ from datetime import datetime, timezone
 
 import yaml
 from github import Github
-from tqdm import tqdm
+from rich.progress import Progress
 
 from .models.model_manager import ModelManager
 from .scanners.file_scanner import FileScanner
-from .scanners.git_scanner import GitScanner
 from .scanners.git_file_scanner import GitFileScanner
+from .scanners.git_scanner import GitScanner
 from .snippet_similarity import (build_embedding_model, compute_similarity,
                                  compute_snippet_embedding)
 
@@ -149,8 +149,8 @@ class Client(Interface):
         cursor = self.db.cursor()
         try:
             cursor.execute(query, (discovery_id,
-                                   embedding,
                                    snippet,
+                                   embedding,
                                    repo_url))
             self.db.commit()
         except self.Error:
@@ -377,8 +377,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         query = 'SELECT * FROM repos'
         cursor = self.db.cursor()
@@ -407,8 +407,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         cursor = self.db.cursor()
         cursor.execute(query, (repo_url,))
@@ -503,8 +503,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         cursor = self.db.cursor()
         all_discoveries = []
@@ -557,8 +557,8 @@ class Client(Interface):
 
         Raises
         ------
-            TypeError
-                If any of the required arguments is missing
+        TypeError
+            If any of the required arguments is missing
         """
         cursor = self.db.cursor()
         if state is not None:
@@ -785,9 +785,8 @@ class Client(Interface):
 
         return self._scan(
             repo_url=repo_url, scanner=scanner, models=models, force=force,
-            debug=debug,
-            similarity=similarity, local_repo=local_repo, git_token=git_token)
-
+            debug=debug, similarity=similarity, local_repo=local_repo,
+            git_token=git_token)
     def scan_snapshot(self, repo_url, branch_or_commit, category=None,
                       models=None, force=False, debug=False, similarity=False,
                       git_token=None, max_depth=-1, ignore_list=[]):
@@ -885,8 +884,7 @@ class Client(Interface):
 
         return self._scan(
             repo_url=scan_path, scanner=scanner, models=models, force=force,
-            debug=debug,
-            similarity=similarity, max_depth=max_depth,
+            debug=debug, similarity=similarity, max_depth=max_depth,
             ignore_list=ignore_list)
 
     def scan_user(self, username, category=None, models=None, debug=False,
@@ -935,8 +933,23 @@ class Client(Interface):
                    login_or_token=git_token,
                    verify=False)
         missing_ids = {}
-        repositories = g.get_user(username).get_repos()
+
+        if g.get_user().login == username:
+            # Get the repos of the currently authenticated user
+            # The API for get_user(username) will return only the public
+            # repositories for that user, so it's not suitable to scan all the
+            # repos (private ones included) of the authenticated user
+            repositories = g.get_user().get_repos(affiliation='owner')
+            logger.debug('Scan repos of currently token-authenticated user')
+        else:
+            user = g.get_user(username)
+            if user.type == 'Organization':
+                # If this is an org, we have to change API call
+                user = g.get_organization(username)
+                logger.debug('Scan repos of an organization')
+            repositories = user.get_repos()
         repos_num = repositories.totalCount
+
         i = 0
         for repo in repositories:
             i += 1
@@ -958,8 +971,8 @@ class Client(Interface):
                   git_token=None):
         """ Scan the wiki of a repository.
 
-        This method simply generates the url of a wiki from the url of its repo,
-        and uses the same `scan` method that we use for repositories.
+        This method simply generates the url of a wiki from the url of its
+        repo, and uses the same `scan` method that we use for repositories.
 
         Parameters
         ----------
@@ -1062,11 +1075,18 @@ class Client(Interface):
         latest_timestamp = int(datetime.now(timezone.utc).timestamp())
         self.update_repo(repo_url, latest_timestamp)
 
-        password_rule_id = self.get_rules('password')[0]['id']
-        password_discoveries = list(filter(lambda d:
-                d['rule_id'] == password_rule_id, new_discoveries))
-        non_password_discoveries = list(filter(lambda d:
-                d['rule_id'] != password_rule_id, new_discoveries))
+        # Consider only password discoveries
+        password_rule_ids = set()
+        map(lambda rule: password_rule_ids.add(rule['id']),
+            self.get_rules('password'))
+
+        password_discoveries = list(
+            filter(lambda d: d['rule_id'] in password_rule_ids,
+                   new_discoveries))
+        non_password_discoveries = list(
+            filter(lambda d: d['rule_id'] not in password_rule_ids,
+                   new_discoveries))
+
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
         if len(password_discoveries) > 0:
@@ -1078,22 +1098,25 @@ class Client(Interface):
                     logger.warning(f'Model {model} not found. Skip it.')
                     continue
 
+        # Re-add the non-password discoveries and insert all of them into the
+        # db
         new_discoveries = password_discoveries + non_password_discoveries
-        fp_discoveries = [
-            d for d in new_discoveries if d['state'] != 'false_positive']
 
         # Insert the discoveries into the db
         discoveries_ids = list()
         if debug:
             logger.debug('Update database with these discoveries.')
-            for i in tqdm(range(len(new_discoveries))):
-                curr_d = new_discoveries[i]
-                new_id = self.add_discovery(
-                    curr_d['file_name'], curr_d['commit_id'],
-                    curr_d['line_number'], curr_d['snippet'], repo_url,
-                    curr_d['rule_id'], curr_d['state'])
-                if new_id != -1 and curr_d['state'] != 'false_positive':
-                    discoveries_ids.append(new_id)
+            with Progress() as progress:
+                inserting_task = progress.add_task('Inserting discoveries...',
+                                                   total=len(new_discoveries))
+                for curr_d in new_discoveries:
+                    new_id = self.add_discovery(
+                        curr_d['file_name'], curr_d['commit_id'],
+                        curr_d['line_number'], curr_d['snippet'], repo_url,
+                        curr_d['rule_id'], curr_d['state'])
+                    if new_id != -1 and curr_d['state'] != 'false_positive':
+                        discoveries_ids.append(new_id)
+                    progress.update(inserting_task, advance=1)
             logger.debug(f'{len(discoveries_ids)} discoveries left for manual '
                          'review.')
         else:
@@ -1127,16 +1150,42 @@ class Client(Interface):
         discoveries: list
             The discoveries with states updated according to model predictions
         """
-        discoveries, n_false_positives = model_manager.launch_model(
-                discoveries)
+
+        # TODO: replace this function with the following block of code?
+        # discoveries, n_false_positives = model_manager.launch_model(
+        #         discoveries)
+        # model_name = model_manager.model.__class__.__name__
+        # logger.debug(f'Analyzing discoveries with model {model_name}')
+        # logger.debug(f'Model {model_name} detected {n_false_positives}'
+        #              'false positives')
+
+        def _analyze_discovery(d):
+            if d['state'] != 'false_positive' and \
+                    model_manager.launch_model(d):
+                d['state'] = 'false_positive'
+                return 1
+            return 0
+
         if debug:
             model_name = model_manager.model.__class__.__name__
             logger.debug(f'Analyzing discoveries with model {model_name}')
-            logger.debug(f'Model {model_name} detected {n_false_positives}'
-                         'false positives')
+            false_positives = 0
+            with Progress() as progress:
+                scanning_task = progress.add_task('Scanning discoveries...',
+                                                  total=len(discoveries))
+                for curr_discovery in discoveries:
+                    false_positives += _analyze_discovery(curr_discovery)
+                    progress.update(scanning_task, advance=1)
+            logger.debug(f'Model {model_name} classified {false_positives} '
+                         'discoveries.')
+        else:
+            for d in discoveries:
+                _analyze_discovery(d)
+
+        # Return updated discoveries
         return discoveries
 
-    def _get_scan_rules(self, category=None,):
+    def _get_scan_rules(self, category=None):
         """ Get the rules of the `category`
 
         Parameters

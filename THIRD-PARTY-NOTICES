@@ -89,6 +89,11 @@ Licensor: Kenneth Reitz
 Website: https://github.com/psf/requests
 License: Apache 2.0
 
+Component: rich
+Licensor: Will McGugan
+Website: https://github.com/willmcgugan/rich
+License: MIT License
+
 Component: scikit-learn
 Licensor: scikit-learn developers
 Website: https://github.com/scikit-learn/scikit-learn
@@ -98,11 +103,6 @@ Component: srsly
 Licensor: ExplosionAI UG
 Website: https://github.com/explosion/srsly
 License: MIT License
-
-Component: tqdm
-Licensor: Casper da Costa-Luis, Google Inc., Noam Yorav-Raphael, and contributors
-Website: https://github.com/tqdm/tqdm
-License: MIT License and MPLv2.0
 
 Component: transformers
 Licensor: Hugging Face

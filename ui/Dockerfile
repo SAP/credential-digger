@@ -1,10 +1,12 @@
-FROM python:3.7
+FROM python:3.9-bullseye
 
 RUN pip install flask_jwt_extended Flask python-dotenv
 RUN apt-get update && apt-get install -y libhyperscan5 libpq-dev gunicorn3
 
 # Don't verify ssl for github enterprise
 RUN git config --global http.sslverify false
+# Docker Windows support
+RUN git config --global core.autocrlf false
 
 # Install Credential Digger
 RUN pip install credentialdigger

@@ -21,7 +21,7 @@ function initFilesDataTable() {
     ...defaultTableSettings,
 
     pageLength: localStorage.hasOwnProperty("sharedPageLength")
-      ? localStorage.getItem("sharedPageLength")
+      ? parseInt(localStorage.getItem("sharedPageLength"))
       : 10,
     order: [[1, "desc"]], // Set default column sorting
     columns: [
@@ -99,7 +99,7 @@ function initDiscoveriesDataTable() {
     {
       ...defaultTableSettings,
       pageLength: localStorage.hasOwnProperty("sharedPageLength")
-        ? localStorage.getItem("sharedPageLength")
+        ? parseInt(localStorage.getItem("sharedPageLength"))
         : 10,
       serverSide: true,
       order: [[3, "asc"]], // Set default column sorting
@@ -158,6 +158,7 @@ function initDiscoveriesDataTable() {
             default:
               break;
           }
+
           if (document.querySelector("#shownDiscoveriesCounter") !== null) {
             if (json.stateFilter != null) {
               document.querySelector("#shownDiscoveriesCounter").innerHTML =
@@ -178,6 +179,7 @@ function initDiscoveriesDataTable() {
                 "";
             }
           }
+
           return json.data.map((item) => {
             // Map json data before sending it to datatable
             const details = `

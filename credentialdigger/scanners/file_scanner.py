@@ -124,7 +124,7 @@ class FileScanner(BaseScanner):
         # NOTE: this may become inefficient when the discoveries are many.
         return all_discoveries
 
-    def scan_file(self, project_root, relative_path):
+    def scan_file(self, project_root, relative_path, **kwargs):
         """ Scan a single file for discoveries.
 
         Parameters
@@ -133,6 +133,8 @@ class FileScanner(BaseScanner):
             Root path of the scanned project
         relative_path: str
             Path of the file, relative to `project_root`
+        kwargs: kwargs
+            Keyword arguments to be passed to the scanner
 
         Returns
         -------
@@ -143,6 +145,12 @@ class FileScanner(BaseScanner):
         discoveries = []
         line_number = 1
 
+        # If branch_or_commit is passed, then it's a scan_snapshot
+        # The branch_or_commit is the same for every file to be scanned
+        commit_id = ''
+        if kwargs:
+            commit_id = kwargs.get('branch_or_commit', '')
+
         full_path = os.path.join(project_root, relative_path)
         try:
             with open(full_path, 'r', encoding='utf-8') as file_to_scan:
@@ -152,7 +160,9 @@ class FileScanner(BaseScanner):
                         row if sys.version_info < (3, 9) else row.encode(
                             'utf-8'),
                         match_event_handler=rh.handle_results,
-                        context=[row.strip(), relative_path, '', line_number])
+                        context=[row.strip(), relative_path, commit_id,
+                                 line_number]
+                    )
                     if rh.result:
                         discoveries.append(rh.result)
                     line_number += 1

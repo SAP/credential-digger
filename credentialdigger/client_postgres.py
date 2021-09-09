@@ -208,7 +208,7 @@ class PgClient(Client):
         embedding: list
             The embedding being added
         """
-        query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+        query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
                 VALUES (%s, %s, %s, %s);'
         super().add_embedding(query,
                               discovery_id,
@@ -223,7 +223,7 @@ class PgClient(Client):
         repo_url: str
             The discoveries' repository url
         """
-        query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+        query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
                 VALUES (%s, %s, %s, %s);'
         super().add_embeddings(query, repo_url)
 
@@ -466,9 +466,9 @@ class PgClient(Client):
             snippet or id
         """
         if discovery_id:
-            query = 'SELECT embedding FROM embeddings WHERE id=%s'
+            query = 'SELECT embedding FROM embeddings WHERE id=%s;'
         elif snippet:
-            query = 'SELECT embedding FROM embeddings WHERE snippet=%s'
+            query = 'SELECT embedding FROM embeddings WHERE snippet=%s;'
         else:
             return None
         return super().get_embedding(query=query,

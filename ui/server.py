@@ -1,3 +1,5 @@
+import csv
+import io
 import os
 import sys
 import threading
@@ -302,17 +304,75 @@ def scan_repo():
 
 @app.route('/get_repos')
 def get_repos():
+    # Get data from the database
     active_scans = _get_active_scans()
-
     repos = c.get_repos()
+    repos_metadata = c.get_all_discoveries_count()
+
+    # Fill each repo with its metadata.
+    # repos_metadata contains only repos with discoveries, i.e., if a repo has
+    # been scanned and doesn't have discoveries then we have to set both
+    # "total" and "TP" to 0
     for repo in repos:
-        repo['total'] = c.get_discoveries_count(repo['url'])
-        repo['TP'] = c.get_discoveries_count(repo['url'], state='new')
+        # Initilize repo fields
+        repo['total'] = 0
+        repo['TP'] = 0
+        repo['FP'] = 0
+        repo['addressing'] = 0
+        repo['not_relevant'] = 0
+        repo['fixed'] = 0
+        for metadata in repos_metadata:
+            if repo['url'] == metadata[0]:
+                repo['total'] = metadata[1]  # Total number of discoveries
+                repo['TP'] = metadata[2]  # Number of new discoveries
+                repo['FP'] = metadata[3]  # Number of true positive discoveries
+                # Number of addressing discoveries
+                repo['addressing'] = metadata[4]
+                # Number of irrelevant discoveries
+                repo['not_relevant'] = metadata[5]
+                repo['fixed'] = metadata[6]  # Number of fixed discoveries
+                break  # We found the repo, no need to check next metadata
+
         repo['scan_active'] = False
         if repo['url'] in active_scans:
             repo['scan_active'] = True
 
     return jsonify(repos)
+
+
+@app.route('/export_discoveries_csv', methods=['GET', 'POST'])
+def export_discoveries_csv():
+    url = request.form.get('repo_url')
+    _, discoveries = c.get_discoveries(url)
+
+    states = []
+    if request.form.get('checkAll') == 'all':
+        states = ['new', 'false_positive',
+                  'addressing', 'not_relevant', 'fixed']
+    else:
+        states = request.form.getlist('check')
+
+    filtered_discoveries = list(
+        filter(lambda d: d.get('state') in states, discoveries))
+
+    try:
+        stringIO = io.StringIO()
+        csv_writer = csv.DictWriter(stringIO, discoveries[0].keys())
+        csv_writer.writeheader()
+        csv_writer.writerows(filtered_discoveries)
+        response_csv = make_response(stringIO.getvalue())
+        report_name = f'report-{url.split("/")[-1]}.csv'
+        response_csv.headers['Content-Disposition'] = f'attachment; \
+                                                    filename={report_name}'
+        response_csv.headers['Content-type'] = 'text/csv'
+        return response_csv
+    except IndexError:
+        app.logger.error('No discoveries found for this repo. Impossible to'
+                         'generate a report')
+    except Exception as exception:
+        app.logger.exception(exception)
+
+    return 'No content', 204
 
 
 @app.route('/get_files', methods=['GET'])
@@ -381,8 +441,8 @@ def get_discoveries():
     response = {
         'uniqueRecords': discoveries_count,
         'recordsFiltered': discoveries_count,
-        'recordsTotal': c.get_discoveries_count(repo_url=url,
-                                                state=state_filter),
+        'recordsTotal': c.get_discoveries_count(url, state=state_filter,
+                                                file_name=file_name),
         'stateFilter': state_filter,
         'data': sorted([{'snippet': keys[0],
                          'category': keys[1],
@@ -393,12 +453,12 @@ def get_discoveries():
                                           'id': i['id']
                                           } for i in list(values)],
                          } for keys, values in groupby(
-                             discoveries, lambda i:
-                             (i['snippet'], i['category'],
-                              States[i['state']].value))],
+                             discoveries,
+                             lambda i: (i['snippet'],
+                                        i['category'],
+                                        States[i['state']].value))],
                        key=lambda i: States[i[order_by]].value,
-                       reverse=order_direction == 'desc')
-    }
+                       reverse=order_direction == 'desc')}
 
     return jsonify(response)
 

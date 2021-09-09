@@ -8,9 +8,8 @@ database.
 
 usage: credentialdigger scan_path [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                   [--category CATEGORY]
-                                  [--models MODELS [MODELS ...]]
-                                  [--debug] [--force]
-                                  [--similarity]
+                                  [--models MODELS [MODELS ...]] [--debug]
+                                  [--force] [--similarity]
                                   [--max_depth MAX_DEPTH]
                                   scan_path
 

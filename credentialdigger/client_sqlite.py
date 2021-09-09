@@ -202,7 +202,7 @@ class SqliteClient(Client):
         repo_url: str
             The discovery's repository url
         """
-        query = 'INSERT INTO embeddings (id, embedding, snippet, repo_url) \
+        query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
                 VALUES (?, ?, ?, ?);'
         super().add_embedding(query,
                                      discovery_id,
