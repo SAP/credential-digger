@@ -738,8 +738,7 @@ class Client(Interface):
                 query, new_state, repo_url, file_name, snippet)
 
     def scan(self, repo_url, category=None, models=None, force=False,
-             debug=False, similarity=False,
-             local_repo=False, git_token=None):
+             debug=False, similarity=False, local_repo=False, git_token=None):
         """ Launch the scan of a git repository.
 
         Parameters
@@ -790,8 +789,7 @@ class Client(Interface):
             similarity=similarity, local_repo=local_repo, git_token=git_token)
 
     def scan_snapshot(self, repo_url, branch_or_commit, category=None,
-                      models=None, force=False, debug=False,
-                      similarity=False,
+                      models=None, force=False, debug=False, similarity=False,
                       git_token=None, max_depth=-1, ignore_list=[]):
         """ Launch the scan of the snapshot of a git repository.
         This scan mode takes into consideration the snapshot of the repository
@@ -844,8 +842,7 @@ class Client(Interface):
             ignore_list=ignore_list)
 
     def scan_path(self, scan_path, category=None, models=None, force=False,
-                  debug=False,
-                  similarity=False, max_depth=-1, ignore_list=[]):
+                  debug=False, similarity=False, max_depth=-1, ignore_list=[]):
         """ Launch the scan of a local directory or file.
 
         Parameters
@@ -893,8 +890,7 @@ class Client(Interface):
             ignore_list=ignore_list)
 
     def scan_user(self, username, category=None, models=None, debug=False,
-                  forks=False,
-                  similarity=False, git_token=None,
+                  forks=False, similarity=False, git_token=None,
                   api_endpoint='https://api.github.com'):
         """ Scan all the repositories of a user.
 
@@ -958,8 +954,8 @@ class Client(Interface):
                                                git_token=git_token)
         return missing_ids
 
-    def scan_wiki(self, repo_url, category=None, models=None,
-                  debug=False, git_token=None):
+    def scan_wiki(self, repo_url, category=None, models=None, debug=False,
+                  git_token=None):
         """ Scan the wiki of a repository.
 
         This method simply generates the url of a wiki from the url of its repo,
