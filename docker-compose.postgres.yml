@@ -21,6 +21,7 @@ services:
         - path_model=$path_model
         - snippet_model=$snippet_model
     container_name: credential_digger_backend
+    image: credential-digger_pg
     restart: always
     env_file:
       - ./.env

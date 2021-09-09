@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initDeleteRepo();
   initModals();
   initAlternanteScanRescan();
+  initExportCSV();
 });
 
 /**
@@ -21,7 +22,7 @@ function initReposDataTable() {
     {
       ...defaultTableSettings,
       pageLength: localStorage.hasOwnProperty("sharedPageLength")
-        ? localStorage.getItem("sharedPageLength")
+        ? parseInt(localStorage.getItem("sharedPageLength"))
         : 10,
       processing: false,
       order: [
@@ -127,6 +128,26 @@ function initReposDataTable() {
                   item.scan_active ? `Scanning...` : `Rescan`
                 }</span>                    
               </button>
+              <button id="exportDiscoveries" class="btn btn ${
+                item.total == "0" ? `` : `outline-bg`
+              } modal-opener export-csv-btn" data-url="${item.url}" 
+              data-lendiscoveries="${item.total}"
+              data-leaks_count="${item.TP}"
+              data-false_positives_count="${item.FP}"
+              data-addressing_count="${item.addressing}"
+              data-not_relevant_count="${item.not_relevant}"
+              data-fixed_count="${item.fixed}"
+              data-modal="exportDiscoveriesModal"
+              ${item.total == "0" ? `disabled` : `enabled`}
+              ${
+                item.total == "0"
+                  ? `title='This repository has no discoveries to export'`
+                  : ""
+              }
+              >
+                <span class="icon icon-file_download"></span>
+                <span>Export leaks</span>
+              </button>
               <button class="btn danger-bg modal-opener delete-repo-btn" data-url="${
                 item.url
               }" data-modal="deleteRepoModal">
@@ -193,5 +214,55 @@ function initAlternanteScanRescan() {
       document.querySelector('#addRepoModal div[id="inputUrl"]').innerHTML =
         linkInput;
     }
+  });
+}
+
+function initExportCSV() {
+  // Use jQuery for easier event delegation
+  $(document).on("click", ".export-csv-btn", function () {
+    let repo_url = document.querySelector(
+      '#exportDiscoveriesModal input[name="repo_url"]'
+    );
+
+    repo_url.value = this.dataset.url;
+    let total_discoveries = document.querySelector(
+      '#exportDiscoveriesModal a[id="discoveries_count"]'
+    );
+    total_discoveries.innerHTML = `(${this.dataset.lendiscoveries})`;
+
+    let leaks_count = document.querySelector(
+      '#exportDiscoveriesModal a[id="leaks_count"]'
+    );
+    leaks_count.innerHTML = `(${this.dataset.leaks_count})`;
+    if (this.dataset.leaks_count == "0") leaks_count.parentElement.remove();
+    else leaks_count.innerHTML = `(${this.dataset.leaks_count})`;
+
+    false_positive_count = document.querySelector(
+      '#exportDiscoveriesModal a[id="false_positives_count"]'
+    );
+    if (this.dataset.false_positives_count == "0")
+      false_positive_count.parentElement.remove();
+    else
+      false_positive_count.innerHTML = `(${this.dataset.false_positives_count})`;
+
+    let = addressing_count = document.querySelector(
+      '#exportDiscoveriesModal a[id="addressing_count"]'
+    );
+    if (this.dataset.addressing_count == "0")
+      addressing_count.parentElement.remove();
+    else addressing_count.innerHTML = `(${this.dataset.addressing_count})`;
+
+    let not_relevant_count = document.querySelector(
+      '#exportDiscoveriesModal a[id="not_relevant_count"]'
+    );
+    if (this.dataset.not_relevant_count == "0")
+      not_relevant_count.parentElement.remove();
+    else not_relevant_count.innerHTML = `(${this.dataset.not_relevant_count})`;
+
+    let fixed_count = document.querySelector(
+      '#exportDiscoveriesModal a[id="fixed_count"]'
+    );
+    if (this.dataset.fixed_count == "0") fixed_count.parentElement.remove();
+    else fixed_count.innerHTML = `(${this.dataset.fixed_count})`;
   });
 }

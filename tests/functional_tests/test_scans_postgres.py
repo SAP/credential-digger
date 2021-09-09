@@ -46,7 +46,9 @@ class TestScansPostgres(unittest.TestCase):
                       "--models", "PathModel", "SnippetModel",
                       "--category", "password",
                       "--force", "--local", repo_path])
-        self.assertEqual(cm.exception.code, 2)
+        # When using the models, we expect to be left with less than 9
+        # discoveries to manually review
+        self.assertTrue(cm.exception.code < 9)
 
         shutil.rmtree(repo_path)
 

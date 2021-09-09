@@ -79,7 +79,7 @@ def configure_parser(parser):
         help='Force a complete re-scan of the repository, in case it has \
             already been scanned previously')
     parser.add_argument(
-        'similarity', action='store_true',
+        '--similarity', action='store_true',
         help='Build and use the similarity model to compute embeddings \
             and allow for automatic update of similar snippets')
     parser.add_argument(

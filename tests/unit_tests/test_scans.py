@@ -76,19 +76,6 @@ class TestScans(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.client._get_scan_rules()
 
-# Deprecated with v4.0, with `exclude` deprecated from the APIs of the scan
-#     def test_get_scan_rules_exclude(self):
-#         """ `exclude` parameter should correctly filter out rules """
-#         self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
-#         rules = self.client._get_scan_rules(exclude=[2])
-#         self.assertTrue(len(rules) == 1 and rules[0]["id"] == 1)
-#
-#     def test_get_scan_rules_exclude_all(self):
-#         """ A resulting empty ruleset should raise an error """
-#         self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
-#         with self.assertRaises(ValueError):
-#             self.client._get_scan_rules(exclude=[1, 2])
-
     @patch('credentialdigger.scanners.git_scanner.GitScanner')
     def test_scan_valid(self, mock_scanner):
         """ No errors should be thrown without optional parameters
@@ -99,61 +86,6 @@ class TestScans(unittest.TestCase):
         """
         mock_scanner.scan = Mock(return_value=[])
         self.client._scan("", mock_scanner)
-
-    @patch('credentialdigger.scanners.git_scanner.GitScanner')
-    def test_scan_generate_extractor_valid(self, mock_scanner):
-        """ Extractor should get generated if Snippet model is present and
-        there are still non-fp discoveries.
-
-        The generator is mocked as it takes a long time to run.
-        """
-        mock_scanner.scan = Mock(return_value=[{"state": "new"}])
-        self.client._generate_snippet_extractor = Mock(return_value=["", ""])
-        self.client._analyze_discoveries = Mock(
-            return_value=[{"state": "new"}])
-
-        self.client._scan(
-            "", mock_scanner,
-            generate_snippet_extractor=True, models=["SnippetModel"])
-
-        self.client._generate_snippet_extractor.assert_called()
-
-    @patch('credentialdigger.scanners.git_scanner.GitScanner')
-    @patch('credentialdigger.models.model_manager.ModelManager.__init__')
-    def test_scan_generate_extractor_no_snippet_model(self, mock_mm,
-                                                      mock_scanner):
-        """ Extractor should not get generated if Snippet model is not present
-
-        The generator is mocked as it takes a long time to run.
-        """
-        mock_mm.return_value = None
-        mock_scanner.scan = Mock(return_value=[{"state": "new"}])
-        self.client._generate_snippet_extractor = Mock(return_value=["", ""])
-        self.client._analyze_discoveries = Mock(
-            return_value=[{"state": "new"}])
-
-        self.client._scan(
-            "", mock_scanner,
-            generate_snippet_extractor=True, models=["PathModel"])
-
-        self.client._generate_snippet_extractor.assert_not_called()
-
-    @patch('credentialdigger.scanners.git_scanner.GitScanner')
-    def test_scan_generate_extractor_only_fp(self, mock_scanner):
-        """ Extractor should not get generated if Snippet model is not present
-
-        The generator is mocked as it takes a long time to run.
-        """
-        mock_scanner.scan = Mock(return_value=[{"state": "false_positive"}])
-        self.client._generate_snippet_extractor = Mock(return_value=["", ""])
-        self.client._analyze_discoveries = Mock(
-            return_value=[{"state": "new"}])
-
-        self.client._scan(
-            "", mock_scanner,
-            generate_snippet_extractor=True, models=["SnippetModel"])
-
-        self.client._generate_snippet_extractor.assert_not_called()
 
     @patch('credentialdigger.scanners.git_scanner.GitScanner')
     def test_scan_force(self, mock_scanner):

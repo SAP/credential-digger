@@ -2,12 +2,13 @@ import logging
 import os
 
 import numpy as np
+# In order not to raise tensorflow warnings, we need to set this environment
+# variable before importing the `tensorflow` package
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 import tensorflow.keras.preprocessing.text
 import tensorflow_hub as hub
 import tensorflow_text
-
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 def build_embedding_model():
