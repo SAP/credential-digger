@@ -76,7 +76,6 @@ def configure_parser(parser):
         '--similarity', action='store_true',
         help='Build and use the similarity model to compute embeddings \
             and allow for automatic update of similar snippets')
-
     parser.add_argument(
         '--git_token', default=None, type=str,
         help='Git personal access token to authenticate to the git server')
