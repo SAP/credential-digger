@@ -1,10 +1,17 @@
 import re
 
+from ..base_model import BaseModel
 
-class PathModel():
 
-    def analyze(self, discoveries):
+class PathModel(BaseModel):
+
+    def __init__(self):
+        self.fp_keywords = re.compile(
+            r'^(con)?test|example|demo^(cra)?^(graph)?|package-lock|Makefile|Gruntfile|\.md$|css$|\.rst$')
+
+    def analyze_batch(self, discoveries):
         """ Classify discoveries according to their paths.
+        Change each discovery state in-place.
 
         Parameters
         ----------
@@ -15,24 +22,42 @@ class PathModel():
         -------
         discoveries: list of dict
             The discoveries, with states updated according to their paths
-        n_false_positives: int
-            The number of discoveries classified as false positives
         """
-        file_paths = [d['file_name'] for d in discoveries]
-        file_paths = [fp.lower() for fp in file_paths]
-        unique_paths = list(set(file_paths))
         path_dict = {}
-        for path in unique_paths:
-            if re.search(
-                r'^(con)?test|example|demo^(cra)?^(graph)?|package-lock|Makefile|Gruntfile|\.md$|css$|\.rst$',
-                path):
-                path_dict[path] = 1
-            else:
-                path_dict[path] = 0
-        n_false_positives = 0
-        for d in discoveries:
-            if path_dict[d['file_name']] == 1:
-                d['state'] = 'false_positive'
-                n_false_positives += 1
 
-        return discoveries, n_false_positives
+        for discovery in discoveries:
+            # Ignore already classified discoveries
+            if discovery['state'] != 'new':
+                continue
+            # Transform all the paths in lowercase
+            preprocessed_path = discovery['file_name'].lower()
+
+            if preprocessed_path in path_dict:
+                # This path has already been classified, so don't re-classify
+                # it
+                discovery['state'] = path_dict[preprocessed_path]
+                continue
+
+            # Run the classification task
+            if self.fp_keywords.search(preprocessed_path):
+                path_dict[preprocessed_path] = 'false_positive'
+                discovery['state'] = 'false_positive'
+            else:
+                path_dict[preprocessed_path] = 'new'
+
+        return discoveries
+
+    def analyze(self, discovery):
+        """ Analyze a path and predict whether it is a false positive or not.
+
+        Parameters
+        ----------
+        discovery: dict
+            A discovery
+
+        Returns
+        -------
+        bool
+            True if the discovery is classified as false positive (i.e., spam)
+        """
+        return bool(self.fp_keywords.search(discovery['file_name'].lower()))
