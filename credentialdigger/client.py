@@ -1038,6 +1038,7 @@ class Client(Interface):
             logger.setLevel(level=logging.DEBUG)
 
         if models is None:
+            logger.debug('Don\'t use ML models')
             models = []
 
         # Try to add the repository to the db
@@ -1077,8 +1078,8 @@ class Client(Interface):
 
         # Consider only password discoveries
         password_rule_ids = set()
-        map(lambda rule: password_rule_ids.add(rule['id']),
-            self.get_rules('password'))
+        for rule in self.get_rules('password'):
+            password_rule_ids.add(rule['id'])
 
         password_discoveries = list(
             filter(lambda d: d['rule_id'] in password_rule_ids,
@@ -1151,7 +1152,8 @@ class Client(Interface):
             The discoveries with states updated according to model predictions
         """
 
-        # TODO: replace this function with the following block of code?
+        # TODO:choose whether to analyze the discoveries 1 by 1 or to do it in
+        # batch
         # discoveries, n_false_positives = model_manager.launch_model(
         #         discoveries)
         # model_name = model_manager.model.__class__.__name__
@@ -1159,10 +1161,10 @@ class Client(Interface):
         # logger.debug(f'Model {model_name} detected {n_false_positives}'
         #              'false positives')
 
-        def _analyze_discovery(d):
-            if d['state'] != 'false_positive' and \
-                    model_manager.launch_model(d):
-                d['state'] = 'false_positive'
+        def _analyze_discovery(this_discovery):
+            if this_discovery['state'] == 'new' and \
+                    model_manager.launch_model(this_discovery):
+                this_discovery['state'] = 'false_positive'
                 return 1
             return 0
 
