@@ -1154,12 +1154,14 @@ class Client(Interface):
 
         # TODO:choose whether to analyze the discoveries 1 by 1 or to do it in
         # batch
-        # discoveries, n_false_positives = model_manager.launch_model(
-        #         discoveries)
+        # discoveries = model_manager.launch_model_batch(discoveries)
         # model_name = model_manager.model.__class__.__name__
-        # logger.debug(f'Analyzing discoveries with model {model_name}')
+        # logger.debug(f'Analyzing discoveries in batch with model {model_name}')
+        # n_false_positives = sum([1 if d['state'] == 'false_positive' else 0 for
+        #                          d in discoveries])
         # logger.debug(f'Model {model_name} detected {n_false_positives}'
-        #              'false positives')
+        #              ' false positives')
+        # return discoveries
 
         def _analyze_discovery(this_discovery):
             if this_discovery['state'] == 'new' and \
