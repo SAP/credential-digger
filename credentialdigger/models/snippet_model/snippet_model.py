@@ -1,9 +1,12 @@
 import tensorflow as tf
 import transformers
-transformers.logging.set_verbosity_info()
 from transformers import TFRobertaForSequenceClassification, RobertaTokenizer
 
 from ..base_model import BaseModel
+
+# Silence loggers
+tf.get_logger().setLevel('ERROR')
+transformers.logging.set_verbosity(transformers.logging.ERROR)
 
 
 class SnippetModel(BaseModel):
@@ -23,21 +26,6 @@ class SnippetModel(BaseModel):
         use_auth_token: str, optional
             The token to access and download the model on the Hugging Face hub
         """
-        # if globals().get('snippet_model'):
-        #     self.model = globals()['snippet_model']
-        # else:
-        #     self.model = TFRobertaForSequenceClassification.from_pretrained(
-        #         model,
-        #         num_labels=2,
-        #         use_auth_token=use_auth_token)
-        #     global snippet_model
-        #     snippet_model = self.model
-        # if globals().get('snippet_tokenizer'):
-        #     self.tokenizer = globals()['snippet_tokenizer']
-        # else:
-        #     self.tokenizer = RobertaTokenizer.from_pretrained(tokenizer)
-        #     global snippet_tokenizer
-        #     snippet_tokenizer = self.tokenizer
         self.model = TFRobertaForSequenceClassification.from_pretrained(
             model,
             num_labels=2,
