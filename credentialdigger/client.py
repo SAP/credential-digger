@@ -1118,14 +1118,14 @@ class Client(Interface):
                     if new_id != -1 and curr_d['state'] != 'false_positive':
                         discoveries_ids.append(new_id)
                     progress.update(inserting_task, advance=1)
-            logger.debug(f'{len(discoveries_ids)} discoveries left for manual '
-                         'review.')
         else:
             # IDs of the discoveries added to the db
             discoveries_ids = self.add_discoveries(new_discoveries, repo_url)
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
+        logger.info(f'{len(discoveries_ids)} discoveries left for manual '
+                    'review.')
 
         if similarity:
             # Compute similarities only if there are any discoveries left
@@ -1152,17 +1152,6 @@ class Client(Interface):
             The discoveries with states updated according to model predictions
         """
 
-        # TODO:choose whether to analyze the discoveries 1 by 1 or to do it in
-        # batch
-        # discoveries = model_manager.launch_model_batch(discoveries)
-        # model_name = model_manager.model.__class__.__name__
-        # logger.debug(f'Analyzing discoveries in batch with model {model_name}')
-        # n_false_positives = sum([1 if d['state'] == 'false_positive' else 0 for
-        #                          d in discoveries])
-        # logger.debug(f'Model {model_name} detected {n_false_positives}'
-        #              ' false positives')
-        # return discoveries
-
         def _analyze_discovery(this_discovery):
             if this_discovery['state'] == 'new' and \
                     model_manager.launch_model(this_discovery):
@@ -1183,8 +1172,9 @@ class Client(Interface):
             logger.debug(f'Model {model_name} classified {false_positives} '
                          'discoveries.')
         else:
-            for d in discoveries:
-                _analyze_discovery(d)
+            # If we don't have to show debug info, we can process all the
+            # discoveries in batch
+            model_manager.launch_model_batch(discoveries)
 
         # Return updated discoveries
         return discoveries
