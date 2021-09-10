@@ -1,4 +1,6 @@
 import tensorflow as tf
+import transformers
+transformers.logging.set_verbosity_info()
 from transformers import TFRobertaForSequenceClassification, RobertaTokenizer
 
 from ..base_model import BaseModel
@@ -21,21 +23,26 @@ class SnippetModel(BaseModel):
         use_auth_token: str, optional
             The token to access and download the model on the Hugging Face hub
         """
-        if globals().get('snippet_model'):
-            self.model = globals()['snippet_model']
-        else:
-            self.model = TFRobertaForSequenceClassification.from_pretrained(
-                model,
-                num_labels=2,
-                use_auth_token=use_auth_token)
-            global snippet_model
-            snippet_model = self.model
-        if globals().get('snippet_tokenizer'):
-            self.tokenizer = globals()['snippet_tokenizer']
-        else:
-            self.tokenizer = RobertaTokenizer.from_pretrained(tokenizer)
-            global snippet_tokenizer
-            snippet_tokenizer = self.tokenizer
+        # if globals().get('snippet_model'):
+        #     self.model = globals()['snippet_model']
+        # else:
+        #     self.model = TFRobertaForSequenceClassification.from_pretrained(
+        #         model,
+        #         num_labels=2,
+        #         use_auth_token=use_auth_token)
+        #     global snippet_model
+        #     snippet_model = self.model
+        # if globals().get('snippet_tokenizer'):
+        #     self.tokenizer = globals()['snippet_tokenizer']
+        # else:
+        #     self.tokenizer = RobertaTokenizer.from_pretrained(tokenizer)
+        #     global snippet_tokenizer
+        #     snippet_tokenizer = self.tokenizer
+        self.model = TFRobertaForSequenceClassification.from_pretrained(
+            model,
+            num_labels=2,
+            use_auth_token=use_auth_token)
+        self.tokenizer = RobertaTokenizer.from_pretrained(tokenizer)
 
     def analyze_batch(self, discoveries):
         """ Analyze a snippet and predict whether it is a leak or not.
@@ -85,7 +92,7 @@ class SnippetModel(BaseModel):
             The number of false positives detected by the model
         """
         # Preprocess the snippet
-        data = self._pre_process(discovery['snippet'])
+        data = self._pre_process([discovery['snippet']])
         # Classify the processed snippet
         outputs = self.model.predict(data)
         predictions = tf.argmax(outputs['logits'], 1)
@@ -100,7 +107,7 @@ class SnippetModel(BaseModel):
 
         Parameters
         ----------
-        snippet: str
+        snippet: list of str
             The snippet to be preprocessed
 
         Returns
