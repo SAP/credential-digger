@@ -7,7 +7,7 @@ class PathModel(BaseModel):
 
     def __init__(self):
         self.fp_keywords = re.compile(
-            r'^(con)?test|example|demo^(cra)?^(graph)?|package-lock|Makefile|Gruntfile|\.md$|css$|\.rst$')
+            r'^(con)?test|example|demo^(cra)?^(graph)?|package-lock|makefile|gruntfile|\.md$|css$|\.rst$')
 
     def analyze_batch(self, discoveries):
         """ Classify discoveries according to their paths.
