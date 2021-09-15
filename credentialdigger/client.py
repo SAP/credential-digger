@@ -1080,35 +1080,17 @@ class Client(Interface):
         latest_timestamp = int(datetime.now(timezone.utc).timestamp())
         self.update_repo(repo_url, latest_timestamp)
 
-        # TODO: apply models on all the discoveries
-        # Consider only password discoveries
-        # password_rule_ids = set()
-        # for rule in self.get_rules('password'):
-        #     password_rule_ids.add(rule['id'])
-
-        # password_discoveries = list(
-        #     filter(lambda d: d['rule_id'] in password_rule_ids,
-        #            new_discoveries))
-        # non_password_discoveries = list(
-        #     filter(lambda d: d['rule_id'] not in password_rule_ids,
-        #            new_discoveries))
 
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
-        # if len(password_discoveries) > 0:
         if len(new_discoveries) > 0:
             for model in models:
                 try:
                     mm = ModelManager(model)
-                    #self._analyze_discoveries(mm, password_discoveries, debug)
                     self._analyze_discoveries(mm, new_discoveries, debug)
                 except ModuleNotFoundError:
                     logger.warning(f'Model {model} not found. Skip it.')
                     continue
-
-        # Re-add the non-password discoveries and insert all of them into the
-        # db
-        #new_discoveries = password_discoveries + non_password_discoveries
 
         # Insert the discoveries into the db
         discoveries_ids = list()
