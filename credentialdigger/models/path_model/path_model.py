@@ -9,6 +9,21 @@ class PathModel(BaseModel):
         self.fp_keywords = re.compile(
             r'^(con)?test|example|demo^(cra)?^(graph)?|package-lock|makefile|gruntfile|\.md$|css$|\.rst$')
 
+    def analyze(self, discovery):
+        """ Analyze a path and predict whether it is a false positive or not.
+
+        Parameters
+        ----------
+        discovery: dict
+            A discovery
+
+        Returns
+        -------
+        bool
+            True if the discovery is classified as false positive (i.e., spam)
+        """
+        return bool(self.fp_keywords.search(discovery['file_name'].lower()))
+
     def analyze_batch(self, discoveries):
         """ Classify discoveries according to their paths.
         Change each discovery state in-place.
@@ -46,18 +61,3 @@ class PathModel(BaseModel):
                 path_dict[preprocessed_path] = 'new'
 
         return discoveries
-
-    def analyze(self, discovery):
-        """ Analyze a path and predict whether it is a false positive or not.
-
-        Parameters
-        ----------
-        discovery: dict
-            A discovery
-
-        Returns
-        -------
-        bool
-            True if the discovery is classified as false positive (i.e., spam)
-        """
-        return bool(self.fp_keywords.search(discovery['file_name'].lower()))
