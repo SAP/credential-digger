@@ -17,6 +17,7 @@ from .scanners.git_scanner import GitScanner
 from .snippet_similarity import (build_embedding_model, compute_similarity,
                                  compute_snippet_embedding)
 
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
@@ -138,10 +139,13 @@ class Client(Interface):
         """
         snippet = self.get_discovery(discovery_id)['snippet']
         if not embedding:
+            # We have to compute the embedding for this snippet
             global similarity_model
-            if globals().get('similarity_model'):
-                similarity_model = globals()['similarity_model']
-            else:
+            similarity_model = globals().get('similarity_model')
+            # If the similarity model has not been computed yet, we have to do
+            # it now. We also keep it in the global variables in order not to
+            # compute it every time (it can be time consuming)
+            if not similarity_model:
                 similarity_model = build_embedding_model()
             embedding = compute_snippet_embedding(snippet,
                                                   similarity_model)
@@ -1076,32 +1080,35 @@ class Client(Interface):
         latest_timestamp = int(datetime.now(timezone.utc).timestamp())
         self.update_repo(repo_url, latest_timestamp)
 
+        # TODO: apply models on all the discoveries
         # Consider only password discoveries
-        password_rule_ids = set()
-        for rule in self.get_rules('password'):
-            password_rule_ids.add(rule['id'])
+        # password_rule_ids = set()
+        # for rule in self.get_rules('password'):
+        #     password_rule_ids.add(rule['id'])
 
-        password_discoveries = list(
-            filter(lambda d: d['rule_id'] in password_rule_ids,
-                   new_discoveries))
-        non_password_discoveries = list(
-            filter(lambda d: d['rule_id'] not in password_rule_ids,
-                   new_discoveries))
+        # password_discoveries = list(
+        #     filter(lambda d: d['rule_id'] in password_rule_ids,
+        #            new_discoveries))
+        # non_password_discoveries = list(
+        #     filter(lambda d: d['rule_id'] not in password_rule_ids,
+        #            new_discoveries))
 
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
-        if len(password_discoveries) > 0:
+        # if len(password_discoveries) > 0:
+        if len(new_discoveries) > 0:
             for model in models:
                 try:
                     mm = ModelManager(model)
-                    self._analyze_discoveries(mm, password_discoveries, debug)
+                    #self._analyze_discoveries(mm, password_discoveries, debug)
+                    self._analyze_discoveries(mm, new_discoveries, debug)
                 except ModuleNotFoundError:
                     logger.warning(f'Model {model} not found. Skip it.')
                     continue
 
         # Re-add the non-password discoveries and insert all of them into the
         # db
-        new_discoveries = password_discoveries + non_password_discoveries
+        #new_discoveries = password_discoveries + non_password_discoveries
 
         # Insert the discoveries into the db
         discoveries_ids = list()
@@ -1127,10 +1134,11 @@ class Client(Interface):
         logger.info(f'{len(discoveries_ids)} discoveries left for manual '
                     'review.')
 
-        if similarity:
+        if similarity and len(discoveries_ids) > 0:
             # Compute similarities only if there are any discoveries left
             logger.info('Compute embeddings for this repository')
             self.add_embeddings(repo_url)
+            logger.debug('Done')
 
         return discoveries_ids
 
@@ -1225,11 +1233,15 @@ class Client(Interface):
         discoveries = disc[1] if disc and isinstance(disc[0], int) else disc
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
+
         global similarity_model
-        if globals().get('similarity_model'):
-            similarity_model = globals['similarity_model']
-        else:
+        similarity_model = globals().get('similarity_model')
+        # If the similarity model has not been computed yet, we have to do
+        # it now. We also keep it in the global variables in order not to
+        # compute it every time (it can be time consuming)
+        if not similarity_model:
             similarity_model = build_embedding_model()
+
         embeddings = [compute_snippet_embedding(s, similarity_model)
                       for s in snippets]
         return [discoveries_ids, snippets, embeddings]
@@ -1255,8 +1267,8 @@ class Client(Interface):
         file_name: str
             Restrict to a given file the search for similar snippets
         compute_missing_embeddings: bool
-            Compute (or not) embeddings when they are missing from the db
             (default `False`)
+            Compute (or not) embeddings when they are missing from the db
         threshold: float
             Update snippets with similarity score above threshold.
             Values lesser than 0.94 do not generally imply any relevant
