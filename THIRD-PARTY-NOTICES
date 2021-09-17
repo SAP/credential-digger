@@ -74,11 +74,6 @@ Licensor: Saurabh Kumar
 Website: https://github.com/theskumar/python-dotenv
 License: BSD License
 
-Component: python-string-utils
-Licensor: Davide Zanotti
-Website: https://github.com/daveoncode/python-string-utils
-License: MIT License
-
 Component: pyyaml
 Licensor: Ingy döt Net and Kirill Simonov
 Website: https://github.com/yaml/pyyaml
