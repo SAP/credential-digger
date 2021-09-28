@@ -26,7 +26,7 @@ Repo = namedtuple('Repo', 'url last_scan')
 Discovery = namedtuple(
     'Discovery',
     'id file_name commit_id line_number snippet repo_url rule_id state \
-    timestamp')
+    timestamp hue')
 
 
 class Interface(ABC):

@@ -44,6 +44,7 @@ class SqliteClient(Client):
                 rule_id INTEGER,
                 state TEXT NOT NULL DEFAULT 'new',
                 timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M','now', 'localtime')),
+                hue INTEGER DEFAULT 0,
                 PRIMARY KEY (id),
                 FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
                 FOREIGN KEY (rule_id) REFERENCES rules ON DELETE SET NULL ON UPDATE CASCADE

@@ -135,6 +135,10 @@ function initDiscoveriesDataTable() {
           data: "actions",
           orderable: false,
         },
+	{
+	  data: "color",
+	  className: 'none',
+	}
       ],
       searchCols: [null, null, null, { search: "new" }, null, null, null],
       ajax: {
@@ -234,6 +238,14 @@ function initDiscoveriesDataTable() {
               `
 	  <input type="checkbox" class="cbSim" id="cbSim" value="yes" checked>
           <label class="cb-label">Update similar discoveries</label>`;
+            
+	    //color_box = <div class='color-box' style="background-color:hsl(0, 100%, 50%)></div>
+	    var color_box = document.createElement('div');
+	    color_box.style.style.padding = 20px;
+	    if !${item.hue}:
+                color_box.style.backgroundColor = "hsl(0, 100%,100%)";
+	    else:
+                color_box.style.backgroundColor = "hsl("+${item.hue}+", 100%, 50%)";
 
             return {
               ...item,
@@ -242,6 +254,7 @@ function initDiscoveriesDataTable() {
               tot: item.occurrences.length,
               occurrences: details,
               actions: actions_template,
+              color: color_box
             };
           });
         },

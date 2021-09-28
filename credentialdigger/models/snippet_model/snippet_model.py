@@ -12,9 +12,9 @@ transformers.logging.set_verbosity(transformers.logging.ERROR)
 class SnippetModel(BaseModel):
 
     def __init__(self,
-                 model='melisande1/pw1',
+                 model='melisande2/PW1',
                  tokenizer='microsoft/codebert-base-mlm',
-                 use_auth_token=''):
+                 use_auth_token='api_cpiOBAfbCzhsBKVhvQdDFMSwTzVmdyuzqt'):
         """
         Parameters
         ----------
@@ -57,10 +57,14 @@ class SnippetModel(BaseModel):
         outputs = self.model.predict(data)
         logits = outputs['logits']
         predictions = tf.argmax(logits, 1)
+        probabilities = tf.nn.softmax(logits).numpy()
+        hues = [int((p[0] ** 2) * 100) for p in probabilities]
         # Check predictions and set FP discoveries accordingly
-        for d, p in zip(new_discoveries, predictions):
+        for d, p, h in zip(new_discoveries, predictions, hues):
             if p == 0:
                 d['state'] = 'false_positive'
+            d['hue'] = h
+        print(hues)
         return new_discoveries + no_new_discoveries
 
     def analyze(self, discovery):
