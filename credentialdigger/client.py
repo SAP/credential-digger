@@ -1082,7 +1082,7 @@ class Client(Interface):
 
 
         for d in new_discoveries:
-            d['hue']=0
+            d['hue']=100
 
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
