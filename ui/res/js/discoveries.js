@@ -240,14 +240,14 @@ function initDiscoveriesDataTable() {
           <label class="cb-label">Update similar discoveries</label>`;
             
 	    //var color_box = 
-	    //<div style="background-color:hsl("+${item.hue}>""</div>
+	    //<div style="background-color:hsl("+${item.hue}+", 100%, 50%)">""</div>
 	    //color_box = <div class='color-box' style="background-color:hsl(0, 100%, 50%)></div>
 	    var color_box = document.createElement('div');
 	    color_box.innerHTML = "";
 	    color_box.style.padding = 20px;
-	    if ${item.hue}:
-                color_box.style.backgroundColor = "hsl("+${item.hue}+", 100%, 50%)";
-	    else:
+	    //if ${item.hue}:
+            //    color_box.style.backgroundColor = "hsl("+${item.hue}+", 100%, 50%)";
+	    //else:
             color_box.style.backgroundColor = "hsl(0, 100%,100%)";
 
             return {
