@@ -85,7 +85,7 @@ class Client(Interface):
         super().__init__(db, error)
 
     def add_discovery(self, query, file_name, commit_id, line_number, snippet,
-                      repo_url, rule_id, state='new'):
+                      repo_url, rule_id, hue, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -115,7 +115,7 @@ class Client(Interface):
         return self.query_id(
             query, file_name,
             commit_id, line_number, snippet,
-            repo_url, rule_id, state)
+            repo_url, rule_id, hue, state)
 
     @abstractmethod
     def add_discoveries(self, query, discoveries, repo_url):
@@ -1081,6 +1081,9 @@ class Client(Interface):
         self.update_repo(repo_url, latest_timestamp)
 
 
+        for d in new_discoveries:
+            d['hue']=0
+
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
         if len(new_discoveries) > 0:
@@ -1103,7 +1106,7 @@ class Client(Interface):
                     new_id = self.add_discovery(
                         curr_d['file_name'], curr_d['commit_id'],
                         curr_d['line_number'], curr_d['snippet'], repo_url,
-                        curr_d['rule_id'], curr_d['state'])
+                        curr_d['rule_id'], curr_d['hue'], curr_d['state'])
                     if new_id != -1 and curr_d['state'] != 'false_positive':
                         discoveries_ids.append(new_id)
                     progress.update(inserting_task, advance=1)
