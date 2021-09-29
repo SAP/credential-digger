@@ -436,7 +436,7 @@ def get_discoveries():
 
     discoveries = sorted(
         discoveries,
-        key=lambda i: (i['snippet'], i['category'], States[i['state']].value))
+        key=lambda i: (i['snippet'], i['category'], States[i['state']].value, i['hue']))
 
     response = {
         'uniqueRecords': discoveries_count,
@@ -452,6 +452,7 @@ def get_discoveries():
                                           'commit_id': i['commit_id'],
                                           'id': i['id']
                                           } for i in list(values)],
+                         'color': keys[3],
                          } for keys, values in groupby(
                              discoveries,
                              lambda i: (i['snippet'],
