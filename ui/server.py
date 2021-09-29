@@ -457,7 +457,8 @@ def get_discoveries():
                              discoveries,
                              lambda i: (i['snippet'],
                                         i['category'],
-                                        States[i['state']].value))],
+                                        States[i['state']].value)),
+                                        i['hue'],],
                        key=lambda i: States[i[order_by]].value,
                        reverse=order_direction == 'desc')}
 
