@@ -57,6 +57,7 @@ class PathModel(BaseModel):
             if self.fp_keywords.search(preprocessed_path):
                 path_dict[preprocessed_path] = 'false_positive'
                 discovery['state'] = 'false_positive'
+                discovery['hue'] = 100
             else:
                 path_dict[preprocessed_path] = 'new'
 
