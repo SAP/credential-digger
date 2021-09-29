@@ -244,8 +244,9 @@ function initDiscoveriesDataTable() {
 	    //var color_box = 
 	    //<div style="background-color:hsl(20, 100%, 50%);padding:20px">""</div>
 	    //color_box = <div class='color-box' style="background-color:hsl(0, 100%, 50%)></div>
-	    var color_box = document.createElement('div');
-	    color_box.innerHTML = "test";
+	    //var color_box = document.createElement('div');
+	    //color_box.innerHTML = "test";
+	    var color_box = <div style="color:blue;padding:20px">test</div>
 	    //color_box.style.padding = 20px;
 	    //if ${item.hue}:
             //    color_box.style.backgroundColor = "hsl("+${item.hue}+", 100%, 50%)";
