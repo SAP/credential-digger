@@ -243,10 +243,10 @@ function initDiscoveriesDataTable() {
 	    var color_box = document.createElement('div');
             color_box.innerHTML = "";
 	    color_box.style.style.padding = 20px;
-	    if !${item.hue}:
-                color_box.style.backgroundColor = "hsl(0, 100%,100%)";
-	    else:
-                color_box.style.backgroundColor = "hsl("+${item.hue}+", 100%, 50%)";
+	    //if ${item.hue}:
+            //    color_box.style.backgroundColor = "hsl("+${item.hue}+", 100%, 50%)";
+	    //else:
+            color_box.style.backgroundColor = "hsl(0, 100%,100%)";
 
             return {
               ...item,
