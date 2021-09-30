@@ -1083,7 +1083,7 @@ class Client(Interface):
         # By default, discoveries are set to the leak color (red),
         # i.e., a hsl hue of 0
         for d in new_discoveries:
-            d['hue']=0
+            d['hue'] = 0
 
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list

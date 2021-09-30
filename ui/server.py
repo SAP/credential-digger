@@ -436,7 +436,8 @@ def get_discoveries():
 
     discoveries = sorted(
         discoveries,
-        key=lambda i: (i['snippet'], i['category'], States[i['state']].value, i['hue']))
+        key=lambda i: (i['snippet'], i['category'], States[i['state']].value,
+                       i['hue']))
 
     response = {
         'uniqueRecords': discoveries_count,
