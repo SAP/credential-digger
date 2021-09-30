@@ -51,12 +51,18 @@ class PathModel(BaseModel):
                 # This path has already been classified, so don't re-classify
                 # it
                 discovery['state'] = path_dict[preprocessed_path]
+                # If discovery is classified as FP, the confidence is total,
+                # so the color is set to green, i.e. a hsl hue of 100
+                if discovery['state'] == 'false_positive':
+                    discovery['hue'] = 100
                 continue
 
             # Run the classification task
             if self.fp_keywords.search(preprocessed_path):
                 path_dict[preprocessed_path] = 'false_positive'
                 discovery['state'] = 'false_positive'
+                # If discovery is classified as FP, the confidence is total,
+                # so the color is set to green, i.e. a hsl hue of 100
                 discovery['hue'] = 100
             else:
                 path_dict[preprocessed_path] = 'new'

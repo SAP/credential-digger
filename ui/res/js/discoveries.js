@@ -241,7 +241,7 @@ function initDiscoveriesDataTable() {
 	    
 	    var color_box = `${item.color ? `
 	    <div style="background-color:hsl(${item.color}, 100%, 50%);padding:20px;width:20px"></div>`
-	    :`<div style="background-color:hsl(20, 100%, 50%);padding:20px;width:20px"></div>`}`;
+	    :`<div style="background-color:hsl(0, 100%, 50%);padding:20px;width:20px"></div>`}`;
 
             return {
               ...item,

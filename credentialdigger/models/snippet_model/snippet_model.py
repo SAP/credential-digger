@@ -57,7 +57,11 @@ class SnippetModel(BaseModel):
         outputs = self.model.predict(data)
         logits = outputs['logits']
         predictions = tf.argmax(logits, 1)
+        # Compute the probabilities of the discoveries belonging to each class
         probabilities = tf.nn.softmax(logits).numpy()
+        # Compute the hsl hue (color) of a discovery as the square of the
+        # probability of it being a FP (in percentage).
+        # (The square is chosen to augment contrast.)
         hues = [int((p[0] ** 2) * 100) for p in probabilities]
         # Check predictions and set FP discoveries accordingly
         for d, p, h in zip(new_discoveries, predictions, hues):
