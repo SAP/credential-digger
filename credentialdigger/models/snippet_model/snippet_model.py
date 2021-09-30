@@ -12,9 +12,9 @@ transformers.logging.set_verbosity(transformers.logging.ERROR)
 class SnippetModel(BaseModel):
 
     def __init__(self,
-                 model='melisande2/PW1',
+                 model='',
                  tokenizer='microsoft/codebert-base-mlm',
-                 use_auth_token='api_cpiOBAfbCzhsBKVhvQdDFMSwTzVmdyuzqt'):
+                 use_auth_token=''):
         """
         Parameters
         ----------
