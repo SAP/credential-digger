@@ -198,7 +198,7 @@ class GitFileScanner(GitScanner, FileScanner):
             A list of discoveries (dictionaries). If there are no discoveries
             return an empty list
         """
-        logger.debug('Compute diff between {commit_to} and {commit_from}')
+        logger.debug(f'Compute diff between {commit_to} and {commit_from}')
         # Instantiate commit objects (needed to calculate the diff)
         old_commit = repo.commit(commit_from)
         new_commit_snapshot = repo.commit(commit_to)
