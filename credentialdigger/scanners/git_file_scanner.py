@@ -190,7 +190,9 @@ class GitFileScanner(GitScanner, FileScanner):
         repo: `git.GitRepo`
             The repository object
         commit_to: str
+            The commit id of the snapshot to scan
         commit_from: str
+            The commit id of the old scan on the same repo
 
         Returns
         -------
