@@ -213,6 +213,4 @@ class GitFileScanner(GitScanner, FileScanner):
                                diff_filter='AM')
 
         # Delegate the diff scan to the GitScanner parent class
-        discoveries = self._diff_worker(diff, new_commit_snapshot)
-
-        return discoveries
+        return self._diff_worker(diff, new_commit_snapshot)
