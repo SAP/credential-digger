@@ -834,9 +834,15 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        if self.get_repo(repo_url) != {} and not force:
-            raise ValueError(f'The repository \"{repo_url}\" has already been '
-                             'scanned. Please use \"force\" to rescan it.')
+        if self.get_repo(repo_url) != {}:
+            logger.info(f'The repository \"{repo_url}\" has already been '
+                        'scanned.')
+            if force:
+                logger.info('It will be rescanned (old discoveries will be '
+                            'deleted) due to force=True')
+            else:
+                logger.info('Only the diff with the previous scan will be '
+                            'considered')
 
         rules = self._get_scan_rules(category)
         scanner = GitFileScanner(rules)
