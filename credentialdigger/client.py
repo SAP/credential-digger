@@ -1103,6 +1103,17 @@ class Client(Interface):
 
         # Update latest scan timestamp of the repo
         latest_timestamp = int(datetime.now(timezone.utc).timestamp())
+        if scanner_kwargs.get('branch_or_commit'):
+            # Set the last_scan timestamp to the timestamp of this commit
+            # In case there is a `branch_or_commit` in the kwargs of the
+            # scanner, then the user requested to scan a snapshot.
+            # In this case, we need to set the scan time (i.e., the `last_scan`
+            # attribute of the repo in the db) to this timestamp not to lose
+            # discoveries in case of future non-forced re-scans
+            latest_timestamp = scanner.get_commit_timestamp(
+                repo_url,
+                scanner_kwargs['branch_or_commit'],
+                scanner_kwargs.get('git_token', None))
         self.update_repo(repo_url, latest_timestamp)
 
         # Check if we need to generate the extractor

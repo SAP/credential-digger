@@ -95,13 +95,7 @@ class GitFileScanner(GitScanner, FileScanner):
         project_path, repo = self.get_git_repo(repo_url, local_repo=False)
 
         # Get the commit id of the snapshot to scan
-        try:
-            commit_to = repo.git.log('-1', branch_or_commit,
-                                     pretty='format:"%H"').strip('"')
-            logger.debug(f'Branch {branch_or_commit} refers to commit id '
-                         f'{commit_to}')
-        except GitCommandError:
-            commit_to = branch_or_commit
+        commit_to = self.get_commit_id_from_branch(repo, branch_or_commit)
 
         commit_from = None
         since_timestamp = kwargs.get('since_timestamp')
@@ -112,6 +106,7 @@ class GitFileScanner(GitScanner, FileScanner):
 
         discoveries = []
         if commit_from:
+            # Scan the diff from the last scan
             discoveries = self._scan_diff(repo, commit_to, commit_from)
         else:
             # Scan the snapshot of the repository either at the last commit of
@@ -119,16 +114,9 @@ class GitFileScanner(GitScanner, FileScanner):
             discoveries = self._scan(
                 repo, commit_to, max_depth, ignore_list)
 
-        # # Scan the snapshot of the repository either at the last commit of
-        # # a branch or at a specific commit
-        # discoveries = self._scan(
-        #     repo, branch_or_commit, max_depth, ignore_list)
-
         # Delete repo folder
         shutil.rmtree(project_path)
 
-        # Generate a list of discoveries and return it.
-        # N.B.: This may become inefficient when the discoveries are many.
         return discoveries
 
     def _scan(self, repo, branch_or_commit, max_depth=-1, ignore_list=[]):

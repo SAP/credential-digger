@@ -105,6 +105,67 @@ class GitScanner(BaseScanner):
 
         return project_path, repo
 
+    def get_commit_id_from_branch(self, repo, branch_name):
+        """ Get the commit id of the last commit pushed to a branch.
+
+        Parameters
+        ----------
+        repo: `GitPython.Repo`
+            The repository object
+        branch_name: str
+            The name of a branch of this repo
+
+        Returns
+        -------
+        str
+            The commit id
+        """
+        try:
+            # if branch_or_commit is a branch name, we have to find the
+            # corresponding commit id
+            commit_to = repo.git.show_ref(branch_name, hash=True)
+            logger.debug(f'Branch {branch_name} refers to commit id '
+                         f'{commit_to}')
+        except GitCommandError:
+            # branch_name was already a commit id
+            commit_to = branch_name
+        return commit_to
+
+    def get_commit_timestamp(self, repo_url, commit_id, git_token=None):
+        """ Get the timestamp of the commit id of a repo.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of a repository
+        commit_id: str
+            The id of a commit
+        git_token: str, optional
+            The personal user access token to access to this repo (needed for
+            private repos)
+
+        Returns
+        -------
+        int
+            The timestamp of commit_id
+        """
+        if git_token:
+            logger.debug('Authenticate user with token')
+            repo_url = repo_url.replace('https://',
+                                        f'https://oauth2:{git_token}@')
+
+        # TODO: once local repos are supported in scan_snapshot, we will have
+        # to pass local_repo as argument
+        project_path, repo = self.get_git_repo(repo_url, local_repo=False)
+
+        # Get the commit timestamp
+        commit_date = int(repo.git.show(commit_id, format='%ct', quiet=True
+                                        ).strip())
+        # Delete repo folder
+        shutil.rmtree(project_path)
+
+        return commit_date
+
     def scan(self, repo_url, since_timestamp=0, max_depth=1000000,
              git_token=None, local_repo=False, debug=False):
         """ Scan a repository.
