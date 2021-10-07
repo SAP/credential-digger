@@ -125,11 +125,12 @@ class GitFileScanner(GitScanner, FileScanner):
             discoveries = self._scan(
                 repo, commit_to, max_depth, ignore_list)
 
+        # Get the commit timestamp
+        commit_date = int(repo.git.show(commit_to, format='%ct').strip())
+
         # Delete repo folder
         shutil.rmtree(project_path)
 
-        # Get the commit timestamp
-        commit_date = int(repo.git.show(commit_to, format='%ct').strip())
         return discoveries, commit_date
 
     def _scan(self, repo, branch_or_commit, max_depth=-1, ignore_list=[]):
