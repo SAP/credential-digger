@@ -123,8 +123,7 @@ class GitScanner(BaseScanner):
         try:
             # if branch_or_commit is a branch name, we have to find the
             # corresponding commit id
-            commit_to = repo.git.log('-1', branch_name,
-                                     pretty='format:"%H"').strip('"')
+            commit_to = repo.git.show_ref(branch_name, hash=True)
             logger.debug(f'Branch {branch_name} refers to commit id '
                          f'{commit_to}')
         except GitCommandError:
