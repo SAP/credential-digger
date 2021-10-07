@@ -80,8 +80,6 @@ class GitFileScanner(GitScanner, FileScanner):
         list
             A list of discoveries (dictionaries). If there are no discoveries
             return an empty list
-        int
-            The timestamp of the commit id of the snapshot
         """
         if debug:
             logger.setLevel(level=logging.DEBUG)
@@ -97,16 +95,7 @@ class GitFileScanner(GitScanner, FileScanner):
         project_path, repo = self.get_git_repo(repo_url, local_repo=False)
 
         # Get the commit id of the snapshot to scan
-        try:
-            # if branch_or_commit is a branch name, we have to find the
-            # corresponding commit id
-            commit_to = repo.git.log('-1', branch_or_commit,
-                                     pretty='format:"%H"').strip('"')
-            logger.debug(f'Branch {branch_or_commit} refers to commit id '
-                         f'{commit_to}')
-        except GitCommandError:
-            # branch_or_commit was already a commit id
-            commit_to = branch_or_commit
+        commit_to = self.get_commit_id_from_branch(repo, branch_or_commit)
 
         commit_from = None
         since_timestamp = kwargs.get('since_timestamp')
@@ -125,13 +114,10 @@ class GitFileScanner(GitScanner, FileScanner):
             discoveries = self._scan(
                 repo, commit_to, max_depth, ignore_list)
 
-        # Get the commit timestamp
-        commit_date = int(repo.git.show(commit_to, format='%ct').strip())
-
         # Delete repo folder
         shutil.rmtree(project_path)
 
-        return discoveries, commit_date
+        return discoveries
 
     def _scan(self, repo, branch_or_commit, max_depth=-1, ignore_list=[]):
         """ Perform the actual scan of the snapshot of the repository.
