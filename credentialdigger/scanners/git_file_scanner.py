@@ -80,6 +80,8 @@ class GitFileScanner(GitScanner, FileScanner):
         list
             A list of discoveries (dictionaries). If there are no discoveries
             return an empty list
+        int
+            The timestamp of the commit id of the snapshot
         """
         if debug:
             logger.setLevel(level=logging.DEBUG)
@@ -96,11 +98,14 @@ class GitFileScanner(GitScanner, FileScanner):
 
         # Get the commit id of the snapshot to scan
         try:
+            # if branch_or_commit is a branch name, we have to find the
+            # corresponding commit id
             commit_to = repo.git.log('-1', branch_or_commit,
                                      pretty='format:"%H"').strip('"')
             logger.debug(f'Branch {branch_or_commit} refers to commit id '
                          f'{commit_to}')
         except GitCommandError:
+            # branch_or_commit was already a commit id
             commit_to = branch_or_commit
 
         commit_from = None
@@ -112,6 +117,7 @@ class GitFileScanner(GitScanner, FileScanner):
 
         discoveries = []
         if commit_from:
+            # Scan the diff from the last scan
             discoveries = self._scan_diff(repo, commit_to, commit_from)
         else:
             # Scan the snapshot of the repository either at the last commit of
@@ -119,17 +125,12 @@ class GitFileScanner(GitScanner, FileScanner):
             discoveries = self._scan(
                 repo, commit_to, max_depth, ignore_list)
 
-        # # Scan the snapshot of the repository either at the last commit of
-        # # a branch or at a specific commit
-        # discoveries = self._scan(
-        #     repo, branch_or_commit, max_depth, ignore_list)
-
         # Delete repo folder
         shutil.rmtree(project_path)
 
-        # Generate a list of discoveries and return it.
-        # N.B.: This may become inefficient when the discoveries are many.
-        return discoveries
+        # Get the commit timestamp
+        commit_date = int(repo.git.show(commit_to, format='%ct').strip())
+        return discoveries, commit_date
 
     def _scan(self, repo, branch_or_commit, max_depth=-1, ignore_list=[]):
         """ Perform the actual scan of the snapshot of the repository.

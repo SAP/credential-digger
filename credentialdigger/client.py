@@ -847,12 +847,22 @@ class Client(Interface):
         rules = self._get_scan_rules(category)
         scanner = GitFileScanner(rules)
 
-        return self._scan(
+        # The scanner for snapshots returns a tuple with 2 elements: a list of
+        # discoveries and the timestamp of the chosen snapshot
+        # Indeed, we need to set the scan time (i.e., the `last_scan` attribute
+        # of the repo in the db) to this timestamp not to lose discoveries in
+        # case of future non-forced re-scans
+        discoveries, commit_timestamp = self._scan(
             repo_url=repo_url, branch_or_commit=branch_or_commit,
             scanner=scanner, models=models, force=force, debug=debug,
             generate_snippet_extractor=generate_snippet_extractor,
             similarity=similarity, git_token=git_token, max_depth=max_depth,
             ignore_list=ignore_list)
+
+        # Update the repo scan timestamp
+        self.update_repo(repo_url, commit_timestamp)
+
+        return discoveries
 
     def scan_path(self, scan_path, category=None, models=None, force=False,
                   debug=False, generate_snippet_extractor=False,
