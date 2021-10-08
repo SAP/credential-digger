@@ -22,13 +22,14 @@ if os.getenv('LOCAL_REPO') == 'True':
     # Load credentialdigger from local repo instead of pip
     sys.path.insert(0, os.path.join(APP_ROOT, '..'))
 
+# Import classes from backend after chosing the APP_ROOT
 from backend import PgUiClient, SqliteUiClient  # noqa
 
 app = Flask('__name__',
             static_folder=os.path.join(APP_ROOT, './res'),
             template_folder=os.path.join(APP_ROOT, './templates'))
 app.config['UPLOAD_FOLDER'] = os.path.join(APP_ROOT, './backend')
-app.config['DEBUG'] = True  # Remove this line in production
+app.config['DEBUG'] = bool(os.getenv('DEBUG', 'False'))
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 if os.getenv('USE_PG') == 'True':
@@ -133,12 +134,12 @@ def logout():
         resp = make_response(redirect(url_for('root')))
         resp.delete_cookie('AUTH')
         return resp
-    else:
-        return redirect(url_for('root'))
+    return redirect(url_for('root'))
 
 
 @app.route('/')
 def root():
+    """ Show the homepage (list of scanned repos). """
     repos = c.get_repos()
 
     # Total num of discoveries
@@ -155,6 +156,7 @@ def root():
 
 @app.route('/files', methods=['GET'])
 def files():
+    """ Files view of a repo. """
     # Get all the discoveries of this repository
     url = request.args.get('url')
     rulesdict, cat = _get_rules()
@@ -171,6 +173,7 @@ def files():
 
 @app.route('/discoveries', methods=['GET'])
 def discoveries():
+    """ Discoveries view of a repo. """
     # Get all the discoveries of this repository
     url = request.args.get('url')
     file = request.args.get('file')
@@ -186,40 +189,44 @@ def discoveries():
                                discoveries_count=discoveries_count,
                                scanning=scanning,
                                categories=list(cat))
-    else:
-        return render_template('discoveries/discoveries.html',
-                               url=url,
-                               discoveries_count=discoveries_count,
-                               scanning=scanning,
-                               categories=list(cat))
+    return render_template('discoveries/discoveries.html',
+                           url=url,
+                           discoveries_count=discoveries_count,
+                           scanning=scanning,
+                           categories=list(cat))
 
 
 @app.route('/rules')
 def rules():
-    rules = c.get_rules()
-    return render_template('rules.html', rules=rules)
+    """ Rules page. """
+    all_rules = c.get_rules()
+    return render_template('rules.html', rules=all_rules)
 
 
 @app.route('/delete_repo', methods=['POST'])
 def delete_repo():
+    """ Delete a repo. """
     c.delete_repo(**request.values)
     return redirect('/')
 
 
 @app.route('/add_rule', methods=['POST'])
 def add_rule():
+    """ Add a new rule. """
     c.add_rule(**request.values)
     return redirect('/rules')
 
 
 @app.route('/delete_rule', methods=['POST'])
 def delete_rule():
+    """ Delete a rule. """
     c.delete_rule(**request.values)
     return redirect('/rules')
 
 
 @app.route('/upload_rule', methods=['POST'])
 def upload_rule():
+    """ Upload a file with new rules. """
     file = request.files['filename']
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -229,9 +236,10 @@ def upload_rule():
 
 @app.route('/download_rule')
 def download_rule():
-    rules = c.get_rules()
+    """ Export rules in a file. """
+    all_rules = c.get_rules()
     dictrules = defaultdict(list)
-    for rule in rules:
+    for rule in all_rules:
         dictrules['rules'].append({
             'regex': rule['regex'],
             'category': rule['category'],
@@ -250,6 +258,7 @@ def download_rule():
 
 @app.route('/scan_repo', methods=['POST'])
 def scan_repo():
+    """ Scan a repo. """
     # Get scan properties
     repo_link = request.form['repolink'].strip()
     rules_to_use = request.form.get('rule_to_use')
@@ -304,6 +313,7 @@ def scan_repo():
 
 @app.route('/get_repos')
 def get_repos():
+    """ Get repos and metadata (i.e., number of discoveries, FPs, etc.). """
     # Get data from the database
     active_scans = _get_active_scans()
     repos = c.get_repos()
@@ -342,6 +352,7 @@ def get_repos():
 
 @app.route('/export_discoveries_csv', methods=['GET', 'POST'])
 def export_discoveries_csv():
+    """ Export the discoveries of a repo in a csv file. """
     url = request.form.get('repo_url')
     _, discoveries = c.get_discoveries(url)
 
@@ -356,11 +367,11 @@ def export_discoveries_csv():
         filter(lambda d: d.get('state') in states, discoveries))
 
     try:
-        stringIO = io.StringIO()
-        csv_writer = csv.DictWriter(stringIO, discoveries[0].keys())
+        string_io = io.StringIO()
+        csv_writer = csv.DictWriter(string_io, discoveries[0].keys())
         csv_writer.writeheader()
         csv_writer.writerows(filtered_discoveries)
-        response_csv = make_response(stringIO.getvalue())
+        response_csv = make_response(string_io.getvalue())
         report_name = f'report-{url.split("/")[-1]}.csv'
         response_csv.headers['Content-Disposition'] = f'attachment; \
                                                     filename={report_name}'
@@ -377,6 +388,7 @@ def export_discoveries_csv():
 
 @app.route('/get_files', methods=['GET'])
 def get_files():
+    """ Get aggregated files info for a repo. """
     # Get all the discoveries of this repository
     url = request.args.get('url')
     files = c.get_files_summary(url)
@@ -385,6 +397,7 @@ def get_files():
 
 @app.route('/get_discoveries', methods=['GET'])
 def get_discoveries():
+    """ Get aggregated discoveries info for a repo. """
     # Get all the discoveries of this repository
     url = request.args.get('url')
     file_name = request.args.get('file')
@@ -465,6 +478,7 @@ def get_discoveries():
 
 @app.route('/get_scan_status')
 def get_scan_status():
+    """ Get the status of a scan. """
     url = request.args.get('url')
     active_scans = _get_active_scans()
     return jsonify({'scanning': url in active_scans})
@@ -472,6 +486,7 @@ def get_scan_status():
 
 @app.route('/update_discovery_group', methods=['POST'])
 def update_discovery_group():
+    """ Change state to a group of discoveries. """
     state = request.form.get('state')
     url = request.form.get('url')
     file = request.form.get('file')
@@ -479,12 +494,13 @@ def update_discovery_group():
     response = c.update_discovery_group(state, url, file, snippet)
     if response is False:
         return 'Error in updatating the discovery group', 500
-    else:
-        return 'OK', 200
+
+    return 'OK', 200
 
 
 @app.route('/update_similar_discoveries', methods=['POST'])
 def update_similar_discoveries():
+    """ Update group of similar discoveries. """
     target_snippet = request.form.get('snippet')
     state = request.form.get('state')
     url = request.form.get('url')

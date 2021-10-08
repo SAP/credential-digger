@@ -834,9 +834,15 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        if self.get_repo(repo_url) != {} and not force:
-            raise ValueError(f'The repository \"{repo_url}\" has already been '
-                             'scanned. Please use \"force\" to rescan it.')
+        if self.get_repo(repo_url) != {}:
+            logger.info(f'The repository \"{repo_url}\" has already been '
+                        'scanned.')
+            if force:
+                logger.info('It will be rescanned (old discoveries will be '
+                            'deleted) due to force=True')
+            else:
+                logger.info('Only the diff with the previous scan will be '
+                            'considered')
 
         rules = self._get_scan_rules(category)
         scanner = GitFileScanner(rules)
@@ -1097,6 +1103,17 @@ class Client(Interface):
 
         # Update latest scan timestamp of the repo
         latest_timestamp = int(datetime.now(timezone.utc).timestamp())
+        if scanner_kwargs.get('branch_or_commit'):
+            # Set the last_scan timestamp to the timestamp of this commit
+            # In case there is a `branch_or_commit` in the kwargs of the
+            # scanner, then the user requested to scan a snapshot.
+            # In this case, we need to set the scan time (i.e., the `last_scan`
+            # attribute of the repo in the db) to this timestamp not to lose
+            # discoveries in case of future non-forced re-scans
+            latest_timestamp = scanner.get_commit_timestamp(
+                repo_url,
+                scanner_kwargs['branch_or_commit'],
+                scanner_kwargs.get('git_token', None))
         self.update_repo(repo_url, latest_timestamp)
 
         # Check if we need to generate the extractor

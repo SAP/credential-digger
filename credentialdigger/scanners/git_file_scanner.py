@@ -93,16 +93,29 @@ class GitFileScanner(GitScanner, FileScanner):
         #       be set to False
         project_path, repo = self.get_git_repo(repo_url, local_repo=False)
 
-        # Scan the snapshot of the repository either at the last commit of
-        # a branch or at a specific commit
-        discoveries = self._scan(
-            repo, branch_or_commit, max_depth, ignore_list)
+        # Get the commit id of the snapshot to scan
+        commit_to = self.get_commit_id_from_branch(repo, branch_or_commit)
+
+        commit_from = None
+        since_timestamp = kwargs.get('since_timestamp')
+        if since_timestamp:
+            commit_from = repo.git.log('-1', pretty='format:"%H"',
+                                       before=since_timestamp).strip('"')
+            logger.debug(f'Repo was already scanned at commit {commit_from}')
+
+        discoveries = []
+        if commit_from:
+            # Scan the diff from the last scan
+            discoveries = self._scan_diff(repo, commit_to, commit_from)
+        else:
+            # Scan the snapshot of the repository either at the last commit of
+            # a branch or at a specific commit
+            discoveries = self._scan(
+                repo, commit_to, max_depth, ignore_list)
 
         # Delete repo folder
         shutil.rmtree(project_path)
 
-        # Generate a list of discoveries and return it.
-        # N.B.: This may become inefficient when the discoveries are many.
         return discoveries
 
     def _scan(self, repo, branch_or_commit, max_depth=-1, ignore_list=[]):
@@ -155,3 +168,38 @@ class GitFileScanner(GitScanner, FileScanner):
                 all_discoveries.extend(file_discoveries)
 
         return all_discoveries
+
+    def _scan_diff(self, repo, commit_to, commit_from):
+        """ Perform the actual scan of the snapshot of the repository.
+
+        Parameters
+        ----------
+        repo: `git.GitRepo`
+            The repository object
+        commit_to: str
+            The commit id of the snapshot to scan
+        commit_from: str
+            The commit id of the old scan on the same repo
+
+        Returns
+        -------
+        list
+            A list of discoveries (dictionaries). If there are no discoveries
+            return an empty list
+        """
+        logger.debug(f'Compute diff between {commit_to} and {commit_from}')
+        # Instantiate commit objects (needed to calculate the diff)
+        old_commit = repo.commit(commit_from)
+        new_commit_snapshot = repo.commit(commit_to)
+
+        # Get the diff between the two commits
+        # Ignore possible submodules (they are independent from this repo
+        diff = old_commit.diff(new_commit_snapshot,
+                               create_patch=True,
+                               ignore_submodules='all',
+                               ignore_all_space=True,
+                               unified=0,
+                               diff_filter='AM')
+
+        # Delegate the diff scan to the GitScanner parent class
+        return self._diff_worker(diff, new_commit_snapshot)

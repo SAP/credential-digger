@@ -37,9 +37,9 @@ class TestGitScanner(unittest.TestCase):
     def test_get_git_repo_invalid_url(self, url, mock_clone_from):
         """ Test raised exception on repo clone with invalid urls.
 
-        Any Github urls must be prefixed with `:@` (empty username and password)
-        in order to prevent GitPython from asking credentials in an interactive
-        shell when running the test.
+        Any Github urls must be prefixed with `:@` (empty username and
+        password) in order to prevent GitPython from asking credentials in an
+        interactive shell when running the test.
         """
         mock_clone_from.side_effect = GitCommandError([''], '')
         with self.assertRaises(GitCommandError):
@@ -54,6 +54,20 @@ class TestGitScanner(unittest.TestCase):
         with self.assertRaises(InvalidGitRepositoryError):
             self.git_scanner.get_git_repo(
                 './credentialdigger', local_repo=True)
+
+    def test_get_commit_id_from_branch(self):
+        """ Test branch name corresponds to the right commit id """
+        self.assertEqual(
+            self.git_scanner.get_commit_id_from_branch(self.repo, 'tests'),
+            'e6b8d00e28b8b4e27ae9fc17067247ba08fe0be6')
+
+    def test_get_commit_timestamp(self):
+        """ Test timestamp of commit """
+        commit_timestamp = int(self.repo.git.show(
+            '6a317d82807a3069fcbbcd0fe51b79aac488f868',
+            format='%ct',
+            quiet=True).strip())
+        self.assertEqual(commit_timestamp, 1618387146)
 
     def test_scan_since_timestamp_now(self):
         """ Test that there are no new discoveries if scanning from now. """
