@@ -28,7 +28,7 @@ app = Flask('__name__',
             static_folder=os.path.join(APP_ROOT, './res'),
             template_folder=os.path.join(APP_ROOT, './templates'))
 app.config['UPLOAD_FOLDER'] = os.path.join(APP_ROOT, './backend')
-app.config['DEBUG'] = True  # Remove this line in production
+app.config['DEBUG'] = os.getenv('DEBUG', False)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 if os.getenv('USE_PG') == 'True':
