@@ -3,7 +3,6 @@ import os
 import shutil
 
 import hyperscan
-from git import GitCommandError
 
 from .file_scanner import FileScanner
 from .git_scanner import GitScanner
