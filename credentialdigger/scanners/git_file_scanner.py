@@ -95,6 +95,9 @@ class GitFileScanner(GitScanner, FileScanner):
 
         # Get the commit id of the snapshot to scan
         commit_to = self.get_commit_id_from_branch(repo, branch_or_commit)
+        if commit_to != branch_or_commit:
+            logger.debug(f'Branch {branch_or_commit} corresponds to commit_id'
+                         f' {commit_to}')
 
         commit_from = None
         since_timestamp = kwargs.get('since_timestamp')
