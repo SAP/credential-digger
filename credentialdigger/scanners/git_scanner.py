@@ -121,9 +121,12 @@ class GitScanner(BaseScanner):
             The commit id
         """
         try:
-            # if branch_or_commit is a branch name, we have to find the
+            # If branch_or_commit is a branch name, we have to find the
             # corresponding commit id
-            commit_to = repo.git.show_ref(branch_name, hash=True)
+            # There may be more refs to a branch. In this case, let's consider
+            # the first
+            commit_to = repo.git.show_ref(
+                branch_name, hash=True).split('\n')[0].strip()
             logger.debug(f'Branch {branch_name} refers to commit id '
                          f'{commit_to}')
         except GitCommandError:
@@ -131,15 +134,19 @@ class GitScanner(BaseScanner):
             commit_to = branch_name
         return commit_to
 
-    def get_commit_timestamp(self, repo_url, commit_id, git_token=None):
+    def get_commit_timestamp(self, repo_url, branch_or_commit, git_token=None):
         """ Get the timestamp of the commit id of a repo.
+
+        In case `branch_or_commit` is a branch name, it will be converted into
+        the corresponding commit id (i.e., the most recent commit done on this
+        branch) and its timestamp is returned.
 
         Parameters
         ----------
         repo_url: str
             The url of a repository
-        commit_id: str
-            The id of a commit
+        branch_or_commit: str
+            The branch name or commit id of the repo
         git_token: str, optional
             The personal user access token to access to this repo (needed for
             private repos)
@@ -147,7 +154,7 @@ class GitScanner(BaseScanner):
         Returns
         -------
         int
-            The timestamp of commit_id
+            The timestamp of the chosen commit
         """
         if git_token:
             logger.debug('Authenticate user with token')
@@ -157,6 +164,10 @@ class GitScanner(BaseScanner):
         # TODO: once local repos are supported in scan_snapshot, we will have
         # to pass local_repo as argument
         project_path, repo = self.get_git_repo(repo_url, local_repo=False)
+
+        # Get the commit_id in case the `branch_or_commit` parameter is a
+        # branch name
+        commit_id = self.get_commit_id_from_branch(repo, branch_or_commit)
 
         # Get the commit timestamp
         commit_date = int(repo.git.show(commit_id, format='%ct', quiet=True
