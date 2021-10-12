@@ -12,9 +12,8 @@ transformers.logging.set_verbosity(transformers.logging.ERROR)
 class SnippetModel(BaseModel):
 
     def __init__(self,
-                 model='melisande1/pw1',
-                 tokenizer='microsoft/codebert-base-mlm',
-                 use_auth_token=''):
+                 model='SAPOSS/password-model',
+                 tokenizer='microsoft/codebert-base-mlm'):
         """
         Parameters
         ----------
@@ -23,13 +22,10 @@ class SnippetModel(BaseModel):
             The transformer model's path
         tokenizer: str
             The tokenizer path
-        use_auth_token: str, optional
-            The token to access and download the model on the Hugging Face hub
         """
         self.model = TFRobertaForSequenceClassification.from_pretrained(
             model,
-            num_labels=2,
-            use_auth_token=use_auth_token)
+            num_labels=2)
         self.tokenizer = RobertaTokenizer.from_pretrained(tokenizer)
 
     def analyze_batch(self, discoveries):
