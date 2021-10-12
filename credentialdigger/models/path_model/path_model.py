@@ -7,7 +7,8 @@ class PathModel(BaseModel):
 
     def __init__(self):
         self.fp_keywords = re.compile(
-            r'^(con)?test|example|demo^(cra)?^(graph)?|package-lock|makefile|gruntfile|\.md$|css$|\.rst$')
+            r'(con)?test|example|demo^(cra)?^(graph)?|package-lock|makefile|'
+            'gruntfile|\.md$|css$|\.rst$')
 
     def analyze(self, discovery):
         """ Analyze a path and predict whether it is a false positive or not.
