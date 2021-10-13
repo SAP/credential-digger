@@ -9,11 +9,6 @@ In the event that we overlooked to list required notice, please bring this to ou
 
 Components:
 
-Component: fasttext
-Licensor: Facebook, Inc.
-Website: https://github.com/facebookresearch/fastText
-License: MIT License
-
 Component: flask
 Licensor: Pallets
 Website: https://github.com/pallets/flask
@@ -79,11 +74,6 @@ Licensor: Saurabh Kumar
 Website: https://github.com/theskumar/python-dotenv
 License: BSD License
 
-Component: python-string-utils
-Licensor: Davide Zanotti
-Website: https://github.com/daveoncode/python-string-utils
-License: MIT License
-
 Component: pyyaml
 Licensor: Ingy döt Net and Kirill Simonov
 Website: https://github.com/yaml/pyyaml
@@ -109,6 +99,10 @@ Licensor: ExplosionAI UG
 Website: https://github.com/explosion/srsly
 License: MIT License
 
+Component: transformers
+Licensor: Hugging Face
+Website: https://huggingface.co/transformers/
+License: Apache 2.0 
 
 
 --------------------------------------------------------------------------------------------------------------------------

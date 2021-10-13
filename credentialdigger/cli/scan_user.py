@@ -9,8 +9,7 @@ database.
 usage: credentialdigger scan_user [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                   [--category CATEGORY]
                                   [--models MODELS [MODELS ...]] [--debug]
-                                  [--git_token GIT_TOKEN]
-                                  [--generate_snippet_extractor] [--forks]
+                                  [--git_token GIT_TOKEN] [--forks]
                                   [--similarity]
                                   [--api_endpoint API_ENDPOINT]
                                   username
@@ -37,11 +36,6 @@ optional arguments:
   --git_token GIT_TOKEN
                         Git personal access token to authenticate to the git
                         server
-  --generate_snippet_extractor
-                        Generate the extractor model to be used in the
-                        SnippetModel. The extractor is generated using the
-                        ExtractorGenerator. If `False`, use the pre-trained
-                        extractor model
   --similarity          Build and use the similarity model to compute
                         embeddings and allow for automatic update of similar
                         snippets
@@ -68,11 +62,6 @@ def configure_parser(parser):
     parser.add_argument(
         'username', type=str,
         help='The username as on github.com')
-    parser.add_argument(
-        '--generate_snippet_extractor', action='store_true',
-        help='Generate the extractor model to be used in the SnippetModel. \
-            The extractor is generated using the ExtractorGenerator. If \
-            `False`, use the pre-trained extractor model')
     parser.add_argument(
         '--similarity', action='store_true',
         help='Build and use the similarity model to compute embeddings \
@@ -105,7 +94,6 @@ def run(client, args):
         category=args.category,
         models=args.models,
         debug=args.debug,
-        generate_snippet_extractor=args.generate_snippet_extractor,
         similarity=args.similarity,
         forks=args.forks,
         git_token=args.git_token,
