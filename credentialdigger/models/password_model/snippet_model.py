@@ -9,7 +9,7 @@ tf.get_logger().setLevel('ERROR')
 transformers.logging.set_verbosity(transformers.logging.ERROR)
 
 
-class SnippetModel(BaseModel):
+class PasswordModel(BaseModel):
 
     def __init__(self,
                  model='SAPOSS/password-model',
