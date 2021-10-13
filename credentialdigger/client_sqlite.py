@@ -21,39 +21,39 @@ class SqliteClient(Client):
         cursor = self.db.cursor()
         cursor.executescript("""
             CREATE TABLE IF NOT EXISTS repos(
-                url TEXT NOT NULL UNIQUE,
-                last_scan INTEGER,
+                url         TEXT NOT NULL UNIQUE,
+                last_scan   INTEGER,
                 PRIMARY KEY (url)
             );
 
             CREATE TABLE IF NOT EXISTS rules(
-                id INTEGER,
-                regex TEXT NOT NULL UNIQUE,
-                category TEXT,
+                id          INTEGER,
+                regex       TEXT NOT NULL UNIQUE,
+                category    TEXT,
                 description TEXT,
                 PRIMARY KEY (id)
             );
 
             CREATE TABLE IF NOT EXISTS discoveries(
-                id INTEGER,
-                file_name TEXT NOT NULL,
-                commit_id TEXT NOT NULL,
+                id          INTEGER,
+                file_name   TEXT NOT NULL,
+                commit_id   TEXT NOT NULL,
                 line_number INTEGER DEFAULT -1,
-                snippet TEXT DEFAULT '',
-                repo_url TEXT,
-                rule_id INTEGER,
-                state TEXT NOT NULL DEFAULT 'new',
-                timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M','now', 'localtime')),
+                snippet     TEXT DEFAULT '',
+                repo_url    TEXT,
+                rule_id     INTEGER,
+                state       TEXT NOT NULL DEFAULT 'new',
+                timestamp   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M','now', 'localtime')),
                 PRIMARY KEY (id),
                 FOREIGN KEY (repo_url) REFERENCES repos ON DELETE CASCADE ON UPDATE CASCADE,
                 FOREIGN KEY (rule_id) REFERENCES rules ON DELETE SET NULL ON UPDATE CASCADE
             );
 
             CREATE TABLE IF NOT EXISTS embeddings (
-                id INTEGER REFERENCES discoveries,
-                snippet TEXT,
-                embedding TEXT,
-                repo_url TEXT REFERENCES repos,
+                id          INTEGER REFERENCES discoveries,
+                snippet     TEXT,
+                embedding   TEXT,
+                repo_url    TEXT REFERENCES repos,
                 PRIMARY KEY (id)
             );
 
