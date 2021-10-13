@@ -35,7 +35,7 @@ class TestScansSqlite(unittest.TestCase):
 
         with self.assertRaises(SystemExit) as cm:
             cli.main(["", "scan", "--sqlite", self.db_path,
-                      "--models", "PathModel", "SnippetModel",
+                      "--models", "PathModel", "PasswordModel",
                       "--category", "password",
                       "--force", "--local", repo_path])
         # When using the models, we expect to be left with less than 9
