@@ -5,7 +5,7 @@ import os
 from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
 
-from . import (add_rules, download, get_discoveries, scan, scan_path,
+from . import (add_rules, get_discoveries, scan, scan_path,
                scan_snapshot, scan_user, scan_wiki)
 
 logger = logging.getLogger(__name__)
@@ -52,12 +52,6 @@ def main(sys_argv):
         help='Flag used to decide whether to visualize the progressbars \
             during the scan (e.g., during the insertion of the detections in \
             the db)')
-
-    # download subparser configuration
-    parser_download = subparsers.add_parser(
-        'download', parents=[parser_dotenv],
-        help='Download and link a machine learning model')
-    download.configure_parser(parser_download)
 
     # add_rules subparser configuration
     parser_add_rules = subparsers.add_parser(
