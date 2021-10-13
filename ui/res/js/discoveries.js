@@ -159,23 +159,25 @@ function initDiscoveriesDataTable() {
               break;
           }
 
-          if (json.stateFilter != null) {
-            document.querySelector("#shownDiscoveriesCounter").innerHTML =
-              `<b><u>` + json.recordsTotal + postfix + `</u></b>`;
-            document.querySelector("#shownDiscoveriesCounter").title =
-              json.uniqueRecords + " Unique snippets";
-            document.querySelector(
-              "#totalDiscoveriesCounterWithBrackets"
-            ).style.display = "";
-            document.querySelector("#totalDiscoveriesCounter").style.display =
-              "none";
-          } else {
-            document.querySelector("#shownDiscoveriesCounter").innerHTML = "";
-            document.querySelector(
-              "#totalDiscoveriesCounterWithBrackets"
-            ).style.display = "none";
-            document.querySelector("#totalDiscoveriesCounter").style.display =
-              "";
+          if (document.querySelector("#shownDiscoveriesCounter") !== null) {
+            if (json.stateFilter != null) {
+              document.querySelector("#shownDiscoveriesCounter").innerHTML =
+                `<b><u>` + json.recordsTotal + postfix + `</u></b>`;
+              document.querySelector("#shownDiscoveriesCounter").title =
+                json.uniqueRecords + " Unique snippets";
+              document.querySelector(
+                "#totalDiscoveriesCounterWithBrackets"
+              ).style.display = "";
+              document.querySelector("#totalDiscoveriesCounter").style.display =
+                "none";
+            } else {
+              document.querySelector("#shownDiscoveriesCounter").innerHTML = "";
+              document.querySelector(
+                "#totalDiscoveriesCounterWithBrackets"
+              ).style.display = "none";
+              document.querySelector("#totalDiscoveriesCounter").style.display =
+                "";
+            }
           }
 
           return json.data.map((item) => {

@@ -16,10 +16,13 @@ class TestScans(unittest.TestCase):
         self.client.delete_discoveries = Mock()
         self.client.delete_repo = Mock()
 
-    def test_analyze_discoveries(self):
+    def test_analyze_discoveries_with_debug(self):
         """
         Mocking the ML models, assert that analyzed discoveries get retuned
-        with their status changed
+        with their status changed.
+
+        Running this test with debug triggers the model_manager.launch_model
+        method.
         """
         # Mock ML models
         model_manager = Mock()
@@ -31,7 +34,7 @@ class TestScans(unittest.TestCase):
         new_discoveries = self.client._analyze_discoveries(
             model_manager=model_manager,
             discoveries=old_discoveries,
-            debug=False)
+            debug=True)
 
         for i in range(0, 5):
             self.assertTrue(new_discoveries[i]["state"] == "false_positive")
@@ -44,12 +47,51 @@ class TestScans(unittest.TestCase):
         new_discoveries = self.client._analyze_discoveries(
             model_manager=model_manager,
             discoveries=old_discoveries,
-            debug=False)
+            debug=True)
 
         for i in range(0, 6):
             self.assertTrue(new_discoveries[i]["state"] == "false_positive")
         for i in range(6, 10):
             self.assertTrue(new_discoveries[i]["state"] == "new")
+
+    # TODO: mock launch_model_batch method
+    # def test_analyze_discoveries_without_debug(self):
+    #     """
+    #     Mocking the ML models, assert that analyzed discoveries get retuned
+    #     with their status changed
+
+    #     Running this test without debug triggers the
+    #     model_manager.launch_model_batch method.
+    #     """
+    #     # Mock ML models
+    #     model_manager = Mock()
+    #     model_manager.launch_model_batch =  # TODO
+
+    #     # Mock discoveries
+    #     old_discoveries = [{"id": i, "state": "new"} for i in range(10)]
+
+    #     new_discoveries = self.client._analyze_discoveries(
+    #         model_manager=model_manager,
+    #         discoveries=old_discoveries,
+    #         debug=False)
+
+    #     for i in range(0, 5):
+    #         self.assertTrue(new_discoveries[i]["state"] == "false_positive")
+    #     for i in range(5, 10):
+    #         self.assertTrue(new_discoveries[i]["state"] == "new")
+
+    #     # Running the analysis again should not affect already analyzed
+    #     # discoveries
+    #     model_manager.launch_model = lambda d: d["id"] < 6
+    #     new_discoveries = self.client._analyze_discoveries(
+    #         model_manager=model_manager,
+    #         discoveries=old_discoveries,
+    #         debug=False)
+
+    #     for i in range(0, 6):
+    #         self.assertTrue(new_discoveries[i]["state"] == "false_positive")
+    #     for i in range(6, 10):
+    #         self.assertTrue(new_discoveries[i]["state"] == "new")
 
     def test_analyze_discoveries_empty(self):
         """ `_analyze_discoveries` should return an empty list if input is
@@ -76,19 +118,6 @@ class TestScans(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.client._get_scan_rules()
 
-# Deprecated with v4.0, with `exclude` deprecated from the APIs of the scan
-#     def test_get_scan_rules_exclude(self):
-#         """ `exclude` parameter should correctly filter out rules """
-#         self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
-#         rules = self.client._get_scan_rules(exclude=[2])
-#         self.assertTrue(len(rules) == 1 and rules[0]["id"] == 1)
-#
-#     def test_get_scan_rules_exclude_all(self):
-#         """ A resulting empty ruleset should raise an error """
-#         self.client.get_rules.return_value = [{"id": 1}, {"id": 2}]
-#         with self.assertRaises(ValueError):
-#             self.client._get_scan_rules(exclude=[1, 2])
-
     @patch('credentialdigger.scanners.git_scanner.GitScanner')
     def test_scan_valid(self, mock_scanner):
         """ No errors should be thrown without optional parameters
@@ -99,61 +128,6 @@ class TestScans(unittest.TestCase):
         """
         mock_scanner.scan = Mock(return_value=[])
         self.client._scan("", mock_scanner)
-
-    @patch('credentialdigger.scanners.git_scanner.GitScanner')
-    def test_scan_generate_extractor_valid(self, mock_scanner):
-        """ Extractor should get generated if Snippet model is present and
-        there are still non-fp discoveries.
-
-        The generator is mocked as it takes a long time to run.
-        """
-        mock_scanner.scan = Mock(return_value=[{"state": "new"}])
-        self.client._generate_snippet_extractor = Mock(return_value=["", ""])
-        self.client._analyze_discoveries = Mock(
-            return_value=[{"state": "new"}])
-
-        self.client._scan(
-            "", mock_scanner,
-            generate_snippet_extractor=True, models=["SnippetModel"])
-
-        self.client._generate_snippet_extractor.assert_called()
-
-    @patch('credentialdigger.scanners.git_scanner.GitScanner')
-    @patch('credentialdigger.models.model_manager.ModelManager.__init__')
-    def test_scan_generate_extractor_no_snippet_model(self, mock_mm,
-                                                      mock_scanner):
-        """ Extractor should not get generated if Snippet model is not present
-
-        The generator is mocked as it takes a long time to run.
-        """
-        mock_mm.return_value = None
-        mock_scanner.scan = Mock(return_value=[{"state": "new"}])
-        self.client._generate_snippet_extractor = Mock(return_value=["", ""])
-        self.client._analyze_discoveries = Mock(
-            return_value=[{"state": "new"}])
-
-        self.client._scan(
-            "", mock_scanner,
-            generate_snippet_extractor=True, models=["PathModel"])
-
-        self.client._generate_snippet_extractor.assert_not_called()
-
-    @patch('credentialdigger.scanners.git_scanner.GitScanner')
-    def test_scan_generate_extractor_only_fp(self, mock_scanner):
-        """ Extractor should not get generated if Snippet model is not present
-
-        The generator is mocked as it takes a long time to run.
-        """
-        mock_scanner.scan = Mock(return_value=[{"state": "false_positive"}])
-        self.client._generate_snippet_extractor = Mock(return_value=["", ""])
-        self.client._analyze_discoveries = Mock(
-            return_value=[{"state": "new"}])
-
-        self.client._scan(
-            "", mock_scanner,
-            generate_snippet_extractor=True, models=["SnippetModel"])
-
-        self.client._generate_snippet_extractor.assert_not_called()
 
     @patch('credentialdigger.scanners.git_scanner.GitScanner')
     def test_scan_force(self, mock_scanner):

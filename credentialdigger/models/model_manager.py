@@ -47,3 +47,20 @@ class ModelManager:
             True if the model classifies this discovery as a false positive
         """
         return self.model.analyze(discovery)
+
+    def launch_model_batch(self, discoveries):
+        """ Classify a list of discoveries using the model loaded by this
+        instance of the class.
+
+        Parameters
+        ----------
+        discoveries: list of dict
+            The discoveries to classify
+
+        Returns
+        -------
+        list of dict
+            The discoveries with an updated state in-place for the false
+            positive ones (i.e., the spam)
+        """
+        return self.model.analyze_batch(discoveries)
