@@ -2,7 +2,7 @@ import tensorflow as tf
 import transformers
 from transformers import TFRobertaForSequenceClassification, RobertaTokenizer
 
-from ..base_model import BaseModel
+from .base_model import BaseModel
 
 # Silence loggers
 tf.get_logger().setLevel('ERROR')
