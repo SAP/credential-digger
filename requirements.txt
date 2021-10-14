@@ -1,17 +1,13 @@
 GitPython
 hyperscan==0.2.0; python_version >= "3.9"
 hyperscan==0.1.5; python_version < "3.9"
-leven
-nltk
 numpy
 pandas
 psycopg2-binary
 PyGithub
 python-dotenv
 pyyaml
-requests
 rich
-scikit-learn
 srsly>=2.4.0
 tensorflow==2.6.0; python_version >= "3.8"
 tensorflow==2.4.*; python_version < "3.8"

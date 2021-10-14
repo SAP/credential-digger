@@ -34,16 +34,6 @@ Licensor: Intel Corporation
 Website: https://www.hyperscan.io
 License: BSD
 
-Component: leven
-Licensor: undefined
-Website: https://github.com/semanticize/leven
-License: Apache 2.0
-
-Component: nltk
-Licensor: NLTK Project
-Website: https://github.com/nltk/nltk
-License: Apache 2.0
-
 Component: numpy
 Licensor: NumPy Developers
 Website: https://github.com/numpy/numpy
@@ -53,11 +43,6 @@ Component: pandas
 Licensor: AQR Capital Management, LLC, Lambda Foundry, Inc., PyData Development Team
 Website: https://github.com/pandas-dev/pandas
 License: BSD 3-Clause License
-
-Component: plac
-Licensor: Michele Simionato
-Website: https://github.com/micheles/plac
-License: BSD 2-Clause "Simplified" License
 
 Component: psycopg2-binary
 Licensor: undefined
@@ -79,20 +64,10 @@ Licensor: Ingy döt Net and Kirill Simonov
 Website: https://github.com/yaml/pyyaml
 License: MIT License
 
-Component: requests
-Licensor: Kenneth Reitz
-Website: https://github.com/psf/requests
-License: Apache 2.0
-
 Component: rich
 Licensor: Will McGugan
 Website: https://github.com/willmcgugan/rich
 License: MIT License
-
-Component: scikit-learn
-Licensor: scikit-learn developers
-Website: https://github.com/scikit-learn/scikit-learn
-License: New BSD License
 
 Component: srsly
 Licensor: ExplosionAI UG
@@ -102,7 +77,7 @@ License: MIT License
 Component: transformers
 Licensor: Hugging Face
 Website: https://huggingface.co/transformers/
-License: Apache 2.0 
+License: Apache 2.0
 
 
 --------------------------------------------------------------------------------------------------------------------------
