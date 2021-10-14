@@ -91,20 +91,40 @@
       <h1 class="topicH1">Add rule</h1>
       <span id="cancelAddRule" class="modal-closer close">&times;</span>
     </div>
+    <!-- add rule form -->
     <form action="/add_rule" method="post">
+      <!-- regex field -->
       <div class="form-item">
         <input id="regexInput" type="text" name="regex" class="textInput" placeholder="Regex">
       </div>
+
+      <!-- category field -->
       <div class="form-item">
         <input id="catInput" type="text" name="category" class="textInput" placeholder="category">
       </div>
+
+      <!-- description field -->
       <div class="form-item">
         <textarea  id="descInput" type="text" name="description" class="textInput" placeholder="Description"></textarea>
       </div>
+
+      <div class="form-item">
+        <label for="category">Category:</label>
+        <select name="category" id="catInput" class="textInput">
+          <option value="password">password</option>
+          <option value="crypto_key">crypto_key</option>
+          <option value="token">token</option>
+          <option value="other">other</option>
+        </select>
+        <br><br>
+        <!-- <input id="catInput" type="text" name="category" class="textInput" placeholder="category"> -->
+      </div>
+
       <div class="formFooter">
         <span></span>
         <button id="postAddFolder" type="submit">Add rule</button>
       </div>
+
     </form>
   </div>
 </div>
