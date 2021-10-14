@@ -13,8 +13,6 @@ RUN pip install credentialdigger
 # Install Gunicorn WSGI HTTP Server
 RUN pip install gunicorn
 
-ARG path_model
-ARG snippet_model
 ARG SSL_certificate
 ARG SSL_private_key
 
