@@ -1097,14 +1097,42 @@ class Client(Interface):
                 git_token=scanner_kwargs.get('git_token', None))
         self.update_repo(repo_url, latest_timestamp)
 
-
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
         if len(new_discoveries) > 0:
             for model in models:
                 try:
                     mm = ModelManager(model)
-                    self._analyze_discoveries(mm, new_discoveries, debug)
+                    if model != 'PasswordModel':
+                        # If the model is not PasswordModel, we can run it over
+                        # all the discoveries
+                        self._analyze_discoveries(mm, new_discoveries, debug)
+                        continue
+
+                    # The password model can be run only over password
+                    # discoveries, i.e., discoveries whose rule_id is a rule
+                    # labeled with a "password" category
+                    rules = self.get_rules()
+                    password_rules = set([
+                        r['id'] for r in rules if r['category'] == 'password'])
+                    password_discoveries = []
+                    no_password_discoveries = []
+                    for d in new_discoveries:
+                        if d['rule_id'] in password_rules:
+                            password_discoveries.append(d)
+                        else:
+                            no_password_discoveries.append(d)
+                    logger.debug('Run the PasswordModel on'
+                                 f'{len(password_discoveries)} out of'
+                                 f'{len(new_discoveries)} discoveries')
+                    # Run the model only on password_discoveries
+                    self._analyze_discoveries(mm, password_discoveries, debug)
+                    # Restore the new_discoveries list for the next model,
+                    # re-joining the password discoveries and the non-password
+                    # ones
+                    new_discoveries = password_discoveries + \
+                        no_password_discoveries
+
                 except ModuleNotFoundError:
                     logger.warning(f'Model {model} not found. Skip it.')
                     continue
