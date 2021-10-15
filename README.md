@@ -40,7 +40,7 @@ In data protection, one of the most critical threats is represented by hardcoded
 
 The goal of Credential Digger is to reduce the amount of false positive data on the output of the scanning phase by leveraging machine learning models.
 
-![Architecture](https://raw.githubusercontent.com/SAP/credential-digger/main/tutorials/img/architecture.png)
+![Architecture](https://raw.githubusercontent.com/SAP/credential-digger/main/github_assets/credential-digger-architecture.png)
 
 
 The tool supports several scan flavors: public and private repositories on
