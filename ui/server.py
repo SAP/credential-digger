@@ -262,7 +262,7 @@ def scan_repo():
     # Get scan properties
     repo_link = request.form['repolink'].strip()
     rules_to_use = request.form.get('rule_to_use')
-    use_snippet_model = request.form.get('snippetModel')
+    use_password_model = request.form.get('passwordModel')
     use_path_model = request.form.get('pathModel')
     # If the form does not contain the 'Force' checkbox,
     # then 'forceScan' will be set to False; thus, ignored.
@@ -281,8 +281,8 @@ def scan_repo():
     models = []
     if use_path_model == 'path':
         models.append('PathModel')
-    if use_snippet_model == 'snippet':
-        models.append('SnippetModel')
+    if use_password_model == 'password':
+        models.append('PasswordModel')
 
     # Setup scan arguments
     target_scan_function = c.scan
