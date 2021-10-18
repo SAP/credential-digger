@@ -10,13 +10,13 @@ import yaml
 from github import Github
 from rich.progress import Progress
 
-from .generator import ExtractorGenerator
 from .models.model_manager import ModelManager
 from .scanners.file_scanner import FileScanner
 from .scanners.git_file_scanner import GitFileScanner
 from .scanners.git_scanner import GitScanner
 from .snippet_similarity import (build_embedding_model, compute_similarity,
                                  compute_snippet_embedding)
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -139,8 +139,16 @@ class Client(Interface):
         """
         snippet = self.get_discovery(discovery_id)['snippet']
         if not embedding:
-            model = build_embedding_model()
-            embedding = compute_snippet_embedding(snippet, model)
+            # We have to compute the embedding for this snippet
+            global similarity_model
+            similarity_model = globals().get('similarity_model')
+            # If the similarity model has not been computed yet, we have to do
+            # it now. We also keep it in the global variables in order not to
+            # compute it every time (it can be time consuming)
+            if not similarity_model:
+                similarity_model = build_embedding_model()
+            embedding = compute_snippet_embedding(snippet,
+                                                  similarity_model)
         embedding = json.dumps(embedding)
         cursor = self.db.cursor()
         try:
@@ -597,7 +605,7 @@ class Client(Interface):
                 return None
             embedding_str = cursor.fetchone()[0]
             return json.loads(embedding_str)
-        except IndexError:
+        except TypeError:
             # The embedding tuple was empty when fetched
             return None
         except self.Error:
@@ -734,8 +742,7 @@ class Client(Interface):
                 query, new_state, repo_url, file_name, snippet)
 
     def scan(self, repo_url, category=None, models=None, force=False,
-             debug=False, generate_snippet_extractor=False, similarity=False,
-             local_repo=False, git_token=None):
+             debug=False, similarity=False, local_repo=False, git_token=None):
         """ Launch the scan of a git repository.
 
         Parameters
@@ -753,10 +760,6 @@ class Client(Interface):
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
-        generate_snippet_extractor: bool, default `False`
-            Generate the extractor model to be used in the SnippetModel. The
-            extractor is generated using the ExtractorGenerator. If `False`,
-            use the pre-trained extractor model
         similarity: bool, default `False`
             Decide whether to build the embedding model and to compute and add
             embeddings, to allow for updating of similar discoveries
@@ -786,12 +789,10 @@ class Client(Interface):
 
         return self._scan(
             repo_url=repo_url, scanner=scanner, models=models, force=force,
-            debug=debug, generate_snippet_extractor=generate_snippet_extractor,
-            similarity=similarity, local_repo=local_repo, git_token=git_token)
-
+            debug=debug, similarity=similarity, local_repo=local_repo,
+            git_token=git_token)
     def scan_snapshot(self, repo_url, branch_or_commit, category=None,
-                      models=None, force=False, debug=False,
-                      generate_snippet_extractor=False, similarity=False,
+                      models=None, force=False, debug=False, similarity=False,
                       git_token=None, max_depth=-1, ignore_list=[]):
         """ Launch the scan of the snapshot of a git repository.
         This scan mode takes into consideration the snapshot of the repository
@@ -814,10 +815,6 @@ class Client(Interface):
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
-        generate_snippet_extractor: bool, default `False`
-            Generate the extractor model to be used in the SnippetModel. The
-            extractor is generated using the ExtractorGenerator. If `False`,
-            use the pre-trained extractor model
         git_token: str, optional
             Git personal access token to authenticate to the git server
         max_depth: int, optional
@@ -850,13 +847,11 @@ class Client(Interface):
         return self._scan(
             repo_url=repo_url, branch_or_commit=branch_or_commit,
             scanner=scanner, models=models, force=force, debug=debug,
-            generate_snippet_extractor=generate_snippet_extractor,
             similarity=similarity, git_token=git_token, max_depth=max_depth,
             ignore_list=ignore_list)
 
     def scan_path(self, scan_path, category=None, models=None, force=False,
-                  debug=False, generate_snippet_extractor=False,
-                  similarity=False, max_depth=-1, ignore_list=[]):
+                  debug=False, similarity=False, max_depth=-1, ignore_list=[]):
         """ Launch the scan of a local directory or file.
 
         Parameters
@@ -874,10 +869,6 @@ class Client(Interface):
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
-        generate_snippet_extractor: bool, default `False`
-            Generate the extractor model to be used in the SnippetModel. The
-            extractor is generated using the ExtractorGenerator. If `False`,
-            use the pre-trained extractor model
         max_depth: int, optional
             The maximum depth to which traverse the subdirectories tree.
             A negative value will not affect the scan.
@@ -903,13 +894,11 @@ class Client(Interface):
 
         return self._scan(
             repo_url=scan_path, scanner=scanner, models=models, force=force,
-            debug=debug, generate_snippet_extractor=generate_snippet_extractor,
-            similarity=similarity, max_depth=max_depth,
+            debug=debug, similarity=similarity, max_depth=max_depth,
             ignore_list=ignore_list)
 
     def scan_user(self, username, category=None, models=None, debug=False,
-                  generate_snippet_extractor=False, forks=False,
-                  similarity=False, git_token=None,
+                  forks=False, similarity=False, git_token=None,
                   api_endpoint='https://api.github.com'):
         """ Scan all the repositories of a user.
 
@@ -929,10 +918,6 @@ class Client(Interface):
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
-        generate_snippet_extractor: bool, default `False`
-            Generate the extractor model to be used in the SnippetModel. The
-            extractor is generated using the ExtractorGenerator. If `False`,
-            use the pre-trained extractor model
         forks: bool, default `False`
             Scan also repositories forked by this user
         git_token: str, optional
@@ -992,12 +977,12 @@ class Client(Interface):
                                                git_token=git_token)
         return missing_ids
 
-    def scan_wiki(self, repo_url, category=None, models=None,
-                  debug=False, git_token=None):
+    def scan_wiki(self, repo_url, category=None, models=None, debug=False,
+                  git_token=None):
         """ Scan the wiki of a repository.
 
-        This method simply generates the url of a wiki from the url of its repo,
-        and uses the same `scan` method that we use for repositories.
+        This method simply generates the url of a wiki from the url of its
+        repo, and uses the same `scan` method that we use for repositories.
 
         Parameters
         ----------
@@ -1029,7 +1014,6 @@ class Client(Interface):
                           debug=debug, force=True, git_token=git_token)
 
     def _scan(self, repo_url, scanner, models=None, force=False, debug=False,
-              generate_snippet_extractor=False,
               similarity=False, **scanner_kwargs):
         """ Launch the scan of a repository.
 
@@ -1048,10 +1032,6 @@ class Client(Interface):
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
-        generate_snippet_extractor: bool, default `False`
-            Generate the extractor model to be used in the SnippetModel. The
-            extractor is generated using the ExtractorGenerator. If `False`,
-            use the pre-trained extractor model
         similarity: bool, default `False`
             Decide whether to build the embedding model and to compute and add
             embeddings, to allow for updating of similar discoveries
@@ -1068,6 +1048,7 @@ class Client(Interface):
             logger.setLevel(level=logging.DEBUG)
 
         if models is None:
+            logger.debug('Don\'t use ML models')
             models = []
 
         # Try to add the repository to the db
@@ -1116,46 +1097,45 @@ class Client(Interface):
                 git_token=scanner_kwargs.get('git_token', None))
         self.update_repo(repo_url, latest_timestamp)
 
-        # Check if we need to generate the extractor
-        snippet_with_generator = self._check_snippet_with_generator(
-            generate_snippet_extractor, models)
-
         # Analyze each new discovery. If it is classified as false positive,
         # update it in the list
         if len(new_discoveries) > 0:
             for model in models:
-                if model == 'SnippetModel' and snippet_with_generator is True:
-                    # We will launch this model manually at the end
-                    continue
                 try:
                     mm = ModelManager(model)
-                    self._analyze_discoveries(mm, new_discoveries, debug)
+                    if model != 'PasswordModel':
+                        # If the model is not PasswordModel, we can run it over
+                        # all the discoveries
+                        self._analyze_discoveries(mm, new_discoveries, debug)
+                        continue
+
+                    # The password model can be run only over password
+                    # discoveries, i.e., discoveries whose rule_id is a rule
+                    # labeled with a "password" category
+                    rules = self.get_rules()
+                    password_rules = set([
+                        r['id'] for r in rules if r['category'] == 'password'])
+                    password_discoveries = []
+                    no_password_discoveries = []
+                    for d in new_discoveries:
+                        if d['rule_id'] in password_rules:
+                            password_discoveries.append(d)
+                        else:
+                            no_password_discoveries.append(d)
+                    logger.debug('Run the PasswordModel on'
+                                 f'{len(password_discoveries)} out of'
+                                 f'{len(new_discoveries)} discoveries')
+                    # Run the model only on password_discoveries
+                    self._analyze_discoveries(mm, password_discoveries, debug)
+                    # Restore the new_discoveries list for the next model,
+                    # re-joining the password discoveries and the non-password
+                    # ones
+                    new_discoveries = password_discoveries + \
+                        no_password_discoveries
+
                 except ModuleNotFoundError:
                     logger.warning(f'Model {model} not found. Skip it.')
                     continue
-
-        # Check if we have to run the snippet model, and, in this case, if it
-        # will use the pre-trained extractor or the generated one
-        # Yet, since the SnippetModel may be slow, run it only if we still have
-        # discoveries to check
-        fp_discoveries = [
-            d for d in new_discoveries if d['state'] != 'false_positive']
-        if snippet_with_generator and len(fp_discoveries) == 0:
-            logger.debug('No more discoveries to filter. Skip SnippetModel.')
-        elif snippet_with_generator:
-            # Generate extractor and run the model
-            logger.info('Generating snippet model (it may take some time...)')
-            extractor_folder, extractor_name = self._generate_snippet_extractor(
-                repo_url)
-            try:
-                # Load SnippetModel with the generated extractor, instead
-                # of the default one (i.e., the pre-trained one)
-                mm = ModelManager('SnippetModel',
-                                  model_extractor=extractor_folder,
-                                  binary_extractor=extractor_name)
-                self._analyze_discoveries(mm, new_discoveries, debug)
-            except ModuleNotFoundError:
-                logger.warning('SnippetModel not found. Skip it.')
 
         # Insert the discoveries into the db
         discoveries_ids = list()
@@ -1172,39 +1152,45 @@ class Client(Interface):
                     if new_id != -1 and curr_d['state'] != 'false_positive':
                         discoveries_ids.append(new_id)
                     progress.update(inserting_task, advance=1)
-            logger.debug(f'{len(discoveries_ids)} discoveries left for manual '
-                         'review.')
         else:
             # IDs of the discoveries added to the db
             discoveries_ids = self.add_discoveries(new_discoveries, repo_url)
             discoveries_ids = [
                 d for i, d in enumerate(discoveries_ids) if d != -1
                 and new_discoveries[i]['state'] != 'false_positive']
+        logger.info(f'{len(discoveries_ids)} discoveries left for manual '
+                    'review.')
 
-        if similarity and discoveries_ids:
+        if similarity and len(discoveries_ids) > 0:
             # Compute similarities only if there are any discoveries left
             logger.info('Compute embeddings for this repository')
             self.add_embeddings(repo_url)
+            logger.debug('Done')
 
         return discoveries_ids
 
     def _analyze_discoveries(self, model_manager, discoveries, debug):
-        """ Use a model to analyze a list of discoveries.
+        """ Launch model and return discoveries with states updated.
 
         Parameters
         ----------
-        model_manager:
-        discoveries:
-        debug:
+        model_manager: ModelManager
+           The model manager
+        discoveries: list
+            The discoveries to feed to the model
+        debug: boolean
+            If true print model name and number of false positives detected
 
-        Returns
-        -------
+        Return
+        ------
+        discoveries: list
+            The discoveries with states updated according to model predictions
         """
 
-        def _analyze_discovery(d):
-            if d['state'] != 'false_positive' and \
-                    model_manager.launch_model(d):
-                d['state'] = 'false_positive'
+        def _analyze_discovery(this_discovery):
+            if this_discovery['state'] == 'new' and \
+                    model_manager.launch_model(this_discovery):
+                this_discovery['state'] = 'false_positive'
                 return 1
             return 0
 
@@ -1221,72 +1207,14 @@ class Client(Interface):
             logger.debug(f'Model {model_name} classified {false_positives} '
                          'discoveries.')
         else:
-            for d in discoveries:
-                _analyze_discovery(d)
+            # If we don't have to show debug info, we can process all the
+            # discoveries in batch
+            model_manager.launch_model_batch(discoveries)
 
         # Return updated discoveries
         return discoveries
 
-    def _generate_snippet_extractor(self, repo_url):
-        """ Generate the snippet extractor model adapted to the stylometry of
-        the developer of this repository.
-
-        Instantiate a new instance of a ExtractorGenerator, and use it to run
-        its method `generate_leak_snippets`.
-
-        Parameters
-        ----------
-        repo_url: str
-            The url of the repository
-
-        Returns
-        -------
-        str
-            The name of the model folder
-        str
-            The name of the binary for the extractor model
-        """
-        eg = ExtractorGenerator()
-        return eg.generate_leak_snippets(repo_url)
-
-    def _check_snippet_with_generator(
-            self, generate_snippet_extractor, models):
-        """ Verify if the SnippetModel is needed, and, in this case, check
-        whether the pre-trained or the generated extractor is wanted
-
-        Parameters
-        ----------
-        generate_snippet_extractor: bool
-            Generate the extractor model to be used in the SnippetModel. The
-            extractor is generated using the ExtractorGenerator. If `False`,
-            use the pre-trained extractor model
-        models: list
-            A list of models for the ML false positives detection
-
-        Returns
-        -------
-        bool
-            True if `generate_snippet_extractor` is True and the Snippet model
-            is in `models`, False otherwise
-        """
-        if generate_snippet_extractor:
-            if 'SnippetModel' in models:
-                # Here, the scan is being run with the SnippetModel and its
-                # generator. We will launch it manually at the end, as last
-                # model. In fact, the SnippetModel may take some time, and in
-                # case we need to generate its extractor this delay will be
-                # even higher
-                return True
-            else:
-                # If the SnippetModel is not chosen, but the generator flag is
-                # set to True, do not generate the model (to save time and
-                # resources)
-                logger.debug(
-                    'generate_snippet_extractor=True but SnippetModel '
-                    'is not in the chosen models. No extractor to generate.')
-        return False
-
-    def _get_scan_rules(self, category=None,):
+    def _get_scan_rules(self, category=None):
         """ Get the rules of the `category`
 
         Parameters
@@ -1332,8 +1260,17 @@ class Client(Interface):
         discoveries = disc[1] if disc and isinstance(disc[0], int) else disc
         discoveries_ids = [d['id'] for d in discoveries]
         snippets = [d['snippet'] for d in discoveries]
-        model = build_embedding_model()
-        embeddings = [compute_snippet_embedding(s, model) for s in snippets]
+
+        global similarity_model
+        similarity_model = globals().get('similarity_model')
+        # If the similarity model has not been computed yet, we have to do
+        # it now. We also keep it in the global variables in order not to
+        # compute it every time (it can be time consuming)
+        if not similarity_model:
+            similarity_model = build_embedding_model()
+
+        embeddings = [compute_snippet_embedding(s, similarity_model)
+                      for s in snippets]
         return [discoveries_ids, snippets, embeddings]
 
     def update_similar_snippets(self,
@@ -1357,8 +1294,8 @@ class Client(Interface):
         file_name: str
             Restrict to a given file the search for similar snippets
         compute_missing_embeddings: bool
-            Compute (or not) embeddings when they are missing from the db
             (default `False`)
+            Compute (or not) embeddings when they are missing from the db
         threshold: float
             Update snippets with similarity score above threshold.
             Values lesser than 0.94 do not generally imply any relevant

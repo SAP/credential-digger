@@ -1,4 +1,5 @@
 CREATE TYPE STATES AS ENUM ('new', 'false_positive', 'addressing', 'not_relevant', 'fixed');
+CREATE TYPE CATEGORIES AS ENUM ('password', 'token', 'crypto_key', 'other');
 
 CREATE TABLE repos (
   url TEXT NOT NULL UNIQUE,
@@ -9,7 +10,7 @@ CREATE TABLE repos (
 CREATE TABLE rules (
   id SERIAL NOT NULL UNIQUE,
   regex TEXT NOT NULL UNIQUE,
-  category VARCHAR(50),
+  category CATEGORIES,
   description TEXT,
   PRIMARY KEY (id)
 );

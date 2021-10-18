@@ -19,7 +19,6 @@ TLDR; watch the video ⬇️
 -  [Download and installation](#download-and-installation)
 -  [How to run](#how-to-run)
     - [Add rules](#add-rules)
-    - [Install machine learning models](#install-machine-learning-models)
     - [Scan a repository](#scan-a-repository)
 -  [Docker container](#docker-container)
 -  [Advanced installation](#advanced-install)
@@ -29,7 +28,6 @@ TLDR; watch the video ⬇️
 -  [Python library usage](#python-library-usage)
     - [Add rules](#add-rules)
     - [Scan a repository](#scan-a-repository)
-        - [Fine-tuning](#fine-tuning)
 -  [CLI - Command Line Interface](#cli-command-line-interface)
 -  [Wiki](#wiki)
 -  [Contributing](#contributing)
@@ -42,7 +40,7 @@ In data protection, one of the most critical threats is represented by hardcoded
 
 The goal of Credential Digger is to reduce the amount of false positive data on the output of the scanning phase by leveraging machine learning models.
 
-![Architecture](https://raw.githubusercontent.com/SAP/credential-digger/main/tutorials/img/architecture.png)
+![Architecture](https://raw.githubusercontent.com/SAP/credential-digger/main/github_assets/credential-digger-architecture.png)
 
 
 The tool supports several scan flavors: public and private repositories on
@@ -92,36 +90,13 @@ pip install credentialdigger
 
 ### Add rules
 
-One of the core components of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/main/ui/backend/rules.yml)). We provide a list of patterns in the `rules.yml` file, that are included in the UI.
+One of the core components of Credential Digger is the regular expression scanner. You can choose the regular expressions rules you want (just follow the template [here](https://github.com/SAP/credential-digger/blob/main/ui/backend/rules.yml)). We provide a list of patterns in the `rules.yml` file, that are included in the UI. The scanner supports rules of 4 different categories: `password`, `token`, `crypto_key`, and `other`.
 
 **Before the very first scan, you need to add the rules that will be used by the scanner.** This step is only needed once.
 
 ```bash
 python -m credentialdigger add_rules --sqlite /path/to/data.db /path/to/rules.yaml
 ```
-
-### Install machine learning models
-
-Credential Digger leverages machine learning models to filter false positives, especially in the identification of passwords:
-
-- Path Model: A lot of fake credentials reside in example files such as documentation, examples or test files, since it is very common for developers to provide test code for their projects. The Path Model analyzes the path of each discovery and classifies it as false positive when needed.
-
-- Snippet Model: Identify the portion of code used to authenticate with passwords, and distinguish between real and dummy passwords. This model is composed of a pre-processing step (Extractor) and a classification step (Classifier).
-
-
-To install the models, you first need to export them as environment variables, and them download them:
-
-```bash
-export path_model=https://github.com/SAP/credential-digger/releases/download/PM-v1.0.1/path_model-1.0.1.tar.gz
-export snippet_model=https://github.com/SAP/credential-digger/releases/download/SM-v1.0.0/snippet_model-1.0.0.tar.gz
-
-python -m credentialdigger download path_model
-python -m credentialdigger download snippet_model
-```
->  **WARNING**: Don't run the download command from the installation folder of _credentialdigger_ in order to avoid errors in linking.
-
->  **WARNING**: We provide the pre-trained models, but we do not guarantee the efficiency of these models. If you want more accurate machine learning models, you can train your own models (just replace the binaries with your own models) or use the [fine-tuning option](#fine-tuning).
-
 
 ### Scan a repository
 
@@ -134,7 +109,13 @@ python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/d
 Machine learning models are not mandatory, but highly recommended in order to reduce the manual effort of reviewing the result of a scan:
 
 ```bash
-python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --models PathModel SnippetModel
+python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --models PathModel PasswordModel
+```
+
+As for the models, also the similarity feature is not mandatory, but highly recommended in order to reduce the manual effort while assessing the discoveries after a scan:
+
+```bash
+python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --similarity --models PathModel PasswordModel
 ```
 
 
@@ -164,7 +145,7 @@ After installing the [dependencies](#install-dependencies) listed above, you can
 Configure a virtual environment for Python 3 (optional) and clone the main branch of the project:
 
 ```bash
-virtualenv --system-site-packages -p python3 ./venv
+virtualenv -p python3 ./venv
 source ./venv/bin/activate
 
 git clone https://github.com/SAP/credential-digger.git
@@ -178,7 +159,7 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-Then, you can add the rules, install the machine learning libraries, and scan a repository as described above.
+Then, you can add the rules and scan a repository as described above.
 
 ### External postgres database
 
@@ -202,7 +183,6 @@ Most advanced users may also wish to use an external postgres database instead o
 If you are already running Credential Digger and you want to update it to a
 newer version, you can 
 [refer to the wiki for the needed steps](https://github.com/SAP/credential-digger/wiki/How-to-update-Credential-Digger).
-
 
 
 
@@ -238,28 +218,15 @@ c.add_rules_from_file('/path/to/rules.yml')
 
 ```python
 new_discoveries = c.scan(repo_url='https://github.com/user/repo',
-                         models=['PathModel', 'SnippetModel'],
+                         models=['PathModel', 'PasswordModel'],
                          debug=True)
 ```
 
 >  **WARNING**: Make sure you add the rules before your first scan.
 
->  **WARNING**: Make sure you download the models before using them in a scan.
-
 Please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for further information on the arguments.
 
-#### Fine-tuning
 
-Credential Digger offers the possibility to fine-tune the snippet model, by retraining a model on each repository scanned.
-If you want to activate this option, set `generate_snippet_extractor=True` and enable the `SnippetModel` when you scan a repository. You need to install the snippet model before using the fine-tuning option.
-
-
-```python
-new_discoveries = c.scan(repo_url='https://github.com/user/repo',
-                         models=['PathModel', 'SnippetModel'],
-                         generate_snippet_extractor=True,
-                         debug=True)
-```
 
 ## CLI - Command Line Interface
 
@@ -277,10 +244,14 @@ For further information, please refer to the [Wiki](https://github.com/SAP/crede
 
 We invite your participation to the project through issues and pull requests. Please refer to the [Contributing guidelines](https://github.com/SAP/credential-digger/blob/main/CONTRIBUTING.md) for how to contribute.
 
+
+
 ## How to obtain support
 
 As a first step, we suggest to [read the wiki](https://github.com/SAP/credential-digger/wiki).
 In case you don't find the answers you need, you can open an [issue](https://github.com/SAP/credential-digger/issues) or contact the [maintainers](https://github.com/SAP/credential-digger/blob/main/setup.py#L19).
+
+
 
 ## News
 
