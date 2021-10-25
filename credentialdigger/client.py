@@ -742,7 +742,8 @@ class Client(Interface):
                 query, new_state, repo_url, file_name, snippet)
 
     def scan(self, repo_url, category=None, models=None, force=False,
-             debug=False, similarity=False, local_repo=False, git_token=None):
+             debug=False, similarity=False, local_repo=False,
+             git_username=None, git_token=None):
         """ Launch the scan of a git repository.
 
         Parameters
@@ -766,6 +767,8 @@ class Client(Interface):
         local_repo: bool, optional
             If True, get the repository from a local directory instead of the
             web
+        git_username: str, optional
+            the username of the user to authenticate to the git server
         git_token: str, optional
             Git personal access token to authenticate to the git server
 
@@ -790,10 +793,12 @@ class Client(Interface):
         return self._scan(
             repo_url=repo_url, scanner=scanner, models=models, force=force,
             debug=debug, similarity=similarity, local_repo=local_repo,
-            git_token=git_token)
+            git_username=git_username, git_token=git_token)
+
     def scan_snapshot(self, repo_url, branch_or_commit, category=None,
                       models=None, force=False, debug=False, similarity=False,
-                      git_token=None, max_depth=-1, ignore_list=[]):
+                      git_username=None, git_token=None, max_depth=-1,
+                      ignore_list=[]):
         """ Launch the scan of the snapshot of a git repository.
         This scan mode takes into consideration the snapshot of the repository
         at one specific commit, or at the last commit of a specific branch.
@@ -815,6 +820,8 @@ class Client(Interface):
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
+        git_username: str, optional
+            the username of the user to authenticate to the git server
         git_token: str, optional
             Git personal access token to authenticate to the git server
         max_depth: int, optional
@@ -847,7 +854,8 @@ class Client(Interface):
         return self._scan(
             repo_url=repo_url, branch_or_commit=branch_or_commit,
             scanner=scanner, models=models, force=force, debug=debug,
-            similarity=similarity, git_token=git_token, max_depth=max_depth,
+            similarity=similarity, git_username=git_username,
+            git_token=git_token, max_depth=max_depth,
             ignore_list=ignore_list)
 
     def scan_path(self, scan_path, category=None, models=None, force=False,
@@ -1094,6 +1102,7 @@ class Client(Interface):
             latest_timestamp = scanner.get_commit_timestamp(
                 repo_url=repo_url,
                 branch_or_commit=scanner_kwargs['branch_or_commit'],
+                git_username=scanner_kwargs.get('git_username', None),
                 git_token=scanner_kwargs.get('git_token', None))
         self.update_repo(repo_url, latest_timestamp)
 

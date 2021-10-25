@@ -12,6 +12,7 @@ usage: credentialdigger scan_snapshot [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                       [--category CATEGORY]
                                       [--models MODELS [MODELS ...]]
                                       [--force] [--debug]
+                                      [--git_username GIT_USER]
                                       [--git_token GIT_TOKEN]
                                       [--similarity]
                                       [--max_depth MAX_DEPTH]
@@ -39,6 +40,10 @@ optional arguments:
   --debug               Flag used to decide whether to visualize the
                         progressbars during the scan (e.g., during the
                         insertion of the detections in the db)
+  --git_username GIT_USER
+                        Username to be used to authenticate to the git server.
+                        It is not required for GitHub (.com and Enterprise),
+                        but it is required for Bitbucket.
   --git_token GIT_TOKEN
                         Git personal access token to authenticate to the git
                         server
@@ -83,6 +88,9 @@ def configure_parser(parser):
         help='Build and use the similarity model to compute embeddings \
             and allow for automatic update of similar snippets')
     parser.add_argument(
+        '--git_username', default=None, type=str,
+        help='Username to authenticate to the git server')
+    parser.add_argument(
         '--git_token', default=None, type=str,
         help='Git personal access token to authenticate to the git server')
     parser.add_argument(
@@ -118,6 +126,7 @@ def run(client, args):
         force=args.force,
         debug=args.debug,
         similarity=args.similarity,
+        git_username=args.git_username,
         git_token=args.git_token,
         max_depth=args.max_depth)
 

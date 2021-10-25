@@ -134,7 +134,8 @@ class GitScanner(BaseScanner):
             commit_to = branch_name
         return commit_to
 
-    def get_commit_timestamp(self, repo_url, branch_or_commit, git_token=None):
+    def get_commit_timestamp(self, repo_url, branch_or_commit,
+                             git_username=None, git_token=None):
         """ Get the timestamp of the commit id of a repo.
 
         In case `branch_or_commit` is a branch name, it will be converted into
@@ -147,6 +148,8 @@ class GitScanner(BaseScanner):
             The url of a repository
         branch_or_commit: str
             The branch name or commit id of the repo
+        git_username: str, optional
+            The username of the user to authenticate to the git server
         git_token: str, optional
             The personal user access token to access to this repo (needed for
             private repos)
@@ -158,8 +161,9 @@ class GitScanner(BaseScanner):
         """
         if git_token:
             logger.debug('Authenticate user with token')
+            username = git_username or 'oauth2'
             repo_url = repo_url.replace('https://',
-                                        f'https://oauth2:{git_token}@')
+                                        f'https://{username}:{git_token}@')
 
         # TODO: once local repos are supported in scan_snapshot, we will have
         # to pass local_repo as argument
@@ -178,7 +182,7 @@ class GitScanner(BaseScanner):
         return commit_date
 
     def scan(self, repo_url, since_timestamp=0, max_depth=1000000,
-             git_token=None, local_repo=False, debug=False):
+             git_username=None, git_token=None, local_repo=False, debug=False):
         """ Scan a repository.
 
         Parameters
@@ -190,6 +194,8 @@ class GitScanner(BaseScanner):
             The oldest timestamp to scan
         max_depth: int, optional
             The maximum number of commits to scan
+        git_username: str, optional
+            The username of the user to authenticate to the git server
         git_token: str, optional
             Git personal access token to authenticate to the git server
         local_repo: bool, optional
@@ -209,8 +215,9 @@ class GitScanner(BaseScanner):
 
         if git_token:
             logger.debug('Authenticate user with token')
+            username = git_username or 'oauth2'
             repo_url = repo_url.replace('https://',
-                                        f'https://oauth2:{git_token}@')
+                                        f'https://{username}:{git_token}@')
 
         project_path, repo = self.get_git_repo(repo_url, local_repo)
         discoveries = self._scan(repo, since_timestamp, max_depth)
