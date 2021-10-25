@@ -49,7 +49,7 @@ class GitFileScanner(GitScanner, FileScanner):
                              flags=flags)
 
     def scan(self, repo_url, branch_or_commit, max_depth=-1, ignore_list=[],
-             git_token=None, debug=False, **kwargs):
+             git_username=None, git_token=None, debug=False, **kwargs):
         """ Scan a repository.
 
         Parameters
@@ -67,6 +67,8 @@ class GitFileScanner(GitScanner, FileScanner):
             A list of paths to ignore during the scan. This can include file
             names, directory names, or whole paths. Wildcards are supported as
             per the fnmatch package.
+        git_username: str, optional
+            The username of the user to authenticate to the git server
         git_token: str, optional
             Git personal access token to authenticate to the git server
         debug: bool, optional
@@ -84,8 +86,9 @@ class GitFileScanner(GitScanner, FileScanner):
             logger.setLevel(level=logging.DEBUG)
         if git_token:
             logger.debug('Authenticate user with token')
+            username = git_username or 'oauth2'
             repo_url = repo_url.replace('https://',
-                                        f'https://oauth2:{git_token}@')
+                                        f'https://{username}:{git_token}@')
 
         # Clone the repository locally
         # TODO: add support for local repositories
