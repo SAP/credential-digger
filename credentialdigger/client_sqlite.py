@@ -367,7 +367,8 @@ class SqliteClient(Client):
         dict
             A repository (an empty dictionary if the url does not exist)
         """
-        return super().get_repo(repo_url=repo_url, query='SELECT * FROM repos WHERE url=?')
+        return super().get_repo(repo_url=repo_url,
+                                query='SELECT * FROM repos WHERE url=?')
 
     def get_rules(self, category=None):
         """ Get the rules.

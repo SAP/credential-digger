@@ -1073,6 +1073,10 @@ class Client(Interface):
         # Force complete scan
         if force:
             logger.debug('Force complete scan')
+            # Clean up discoveries and embeddings for this repo
+            # embeddings must be deleted before discoveries since they
+            # reference a discovery_id
+            self.delete_embeddings(repo_url)
             self.delete_discoveries(repo_url)
             from_timestamp = 0
 
@@ -1131,8 +1135,8 @@ class Client(Interface):
                             password_discoveries.append(d)
                         else:
                             no_password_discoveries.append(d)
-                    logger.debug('Run the PasswordModel on'
-                                 f'{len(password_discoveries)} out of'
+                    logger.debug('Run the PasswordModel on '
+                                 f'{len(password_discoveries)} out of '
                                  f'{len(new_discoveries)} discoveries')
                     # Run the model only on password_discoveries
                     self._analyze_discoveries(mm, password_discoveries, debug)

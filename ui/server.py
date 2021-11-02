@@ -42,7 +42,11 @@ if os.getenv('USE_PG') == 'True':
 else:
     app.logger.info('Use Sqlite Client')
     c = SqliteUiClient(path=os.path.join(APP_ROOT, './data.db'))
-c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
+
+# Add rules only if they are missing (therefore, only at the first startup
+# unless the user removes all of them and reboot)
+if not c.get_rules():
+    c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
 
 # ################### UTILS ####################
 
