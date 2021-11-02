@@ -74,6 +74,11 @@ Licensor: ExplosionAI UG
 Website: https://github.com/explosion/srsly
 License: MIT License
 
+Component: tensorflow, tensorflow-estimator, tensorflow-text, tf-models-official
+Licensor: Google Inc
+Website: https://www.tensorflow.org
+License: Apache 2.0
+
 Component: transformers
 Licensor: Hugging Face
 Website: https://huggingface.co/transformers/
