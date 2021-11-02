@@ -13,6 +13,8 @@ rich
 srsly>=2.4.0
 tensorflow==2.6.0; python_version >= "3.8"
 tensorflow==2.4.*; python_version < "3.8"
+tensorflow-estimator==2.6.0; python_version >= "3.8"
+tensorflow-estimator==2.4.*; python_version < "3.8"
 tensorflow-text==2.6.0; python_version >= "3.8"
 tensorflow-text==2.4.*; python_version < "3.8"
 tf-models-official
