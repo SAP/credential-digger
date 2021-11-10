@@ -358,23 +358,22 @@ def get_repos():
 def export_discoveries_csv():
     """ Export the discoveries of a repo in a csv file. """
     url = request.form.get('repo_url')
-    _, discoveries = c.get_discoveries(url)
 
-    states = []
     if request.form.get('checkAll') == 'all':
-        states = ['new', 'false_positive',
-                  'addressing', 'not_relevant', 'fixed']
+        app.logger.debug('Export all the discoveries')
+        _, discoveries = c.get_discoveries(url)
     else:
         states = request.form.getlist('check')
-
-    filtered_discoveries = list(
-        filter(lambda d: d.get('state') in states, discoveries))
+        app.logger.debug(f'Export discoveries of states {states}')
+        discoveries = []
+        for s in states:
+            discoveries.extend(c.get_discoveries(url, state_filter=s)[1])
 
     try:
         string_io = io.StringIO()
         csv_writer = csv.DictWriter(string_io, discoveries[0].keys())
         csv_writer.writeheader()
-        csv_writer.writerows(filtered_discoveries)
+        csv_writer.writerows(discoveries)
         response_csv = make_response(string_io.getvalue())
         report_name = f'report-{url.split("/")[-1]}.csv'
         response_csv.headers['Content-Disposition'] = f'attachment; \
