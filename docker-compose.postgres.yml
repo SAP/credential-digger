@@ -2,6 +2,7 @@ version: "3"
 services:
   postgres:
     image: postgres:12-alpine
+    shm_size: '1gb'
     restart: always
     container_name: postgres
     volumes:
@@ -29,5 +30,11 @@ services:
         - USE_PG=True
     ports:
       - "5000:5000"
+    deploy:
+      resources:
+        limits:
+          memory: 16G
+        reservations:
+          memory: 6G
 volumes:
   creddig_db:
