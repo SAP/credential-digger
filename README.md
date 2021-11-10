@@ -133,6 +133,8 @@ sudo docker-compose up --build
 
 The UI is available at [http://localhost:5000/](http://localhost:5000/)
 
+> It is preferrable to have at least 8 GB of RAM free when using docker containers
+
 
 ## Advanced Installation
 
