@@ -6,10 +6,6 @@ from collections import namedtuple
 
 import git
 from credentialdigger import Client
-from credentialdigger.snippet_similarity import (
-    build_embedding_model,
-    compute_similarity,
-    compute_snippet_embedding)
 from git import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 from git import Repo as GitRepo
 
