@@ -68,7 +68,9 @@ class GitFileScanner(GitScanner, FileScanner):
             names, directory names, or whole paths. Wildcards are supported as
             per the fnmatch package.
         git_username: str, optional
-            The username of the user to authenticate to the git server
+            the username of the user to authenticate to the git server. While
+            it is not needed for `github.com` and github enterprise, it is
+            needed for some private git instances and bitbucket
         git_token: str, optional
             Git personal access token to authenticate to the git server
         debug: bool, optional
