@@ -271,15 +271,17 @@ def scan_repo():
     # If the form does not contain the 'Force' checkbox,
     # then 'forceScan' will be set to False; thus, ignored.
     force_scan = request.form.get('forceScan') == 'force'
+    git_username = request.form.get('gitUsername')
     git_token = request.form.get('gitToken')
     snapshot = request.form.get('repoSnapshot')
     local_repo = not (repo_link.startswith('http://')
                       or repo_link.startswith('https://'))
 
     url_is_valid, err_code = c.check_repo(
-        repo_link, git_token, local_repo, snapshot)
+        repo_link, git_username, git_token, local_repo, snapshot)
     if not url_is_valid:
         return err_code, 401
+    app.logger.debug('Repo has been verified')
 
     # Set up models
     models = []
@@ -294,11 +296,13 @@ def scan_repo():
         'repo_url': repo_link,
         'models': models,
         'force': force_scan,
+        'git_username': git_username,
         'git_token': git_token,
         'local_repo': local_repo,
         'similarity': True
     }
     if rules_to_use != 'all':
+        app.logger.debug(f'Use rules only from {rules_to_use} category')
         args['category'] = rules_to_use
     if snapshot:
         args['branch_or_commit'] = snapshot
@@ -358,23 +362,22 @@ def get_repos():
 def export_discoveries_csv():
     """ Export the discoveries of a repo in a csv file. """
     url = request.form.get('repo_url')
-    _, discoveries = c.get_discoveries(url)
 
-    states = []
     if request.form.get('checkAll') == 'all':
-        states = ['new', 'false_positive',
-                  'addressing', 'not_relevant', 'fixed']
+        app.logger.debug('Export all the discoveries')
+        _, discoveries = c.get_discoveries(url)
     else:
         states = request.form.getlist('check')
-
-    filtered_discoveries = list(
-        filter(lambda d: d.get('state') in states, discoveries))
+        app.logger.debug(f'Export discoveries of states {states}')
+        discoveries = []
+        for s in states:
+            discoveries.extend(c.get_discoveries(url, state_filter=s)[1])
 
     try:
         string_io = io.StringIO()
         csv_writer = csv.DictWriter(string_io, discoveries[0].keys())
         csv_writer.writeheader()
-        csv_writer.writerows(filtered_discoveries)
+        csv_writer.writerows(discoveries)
         response_csv = make_response(string_io.getvalue())
         report_name = f'report-{url.split("/")[-1]}.csv'
         response_csv.headers['Content-Disposition'] = f'attachment; \

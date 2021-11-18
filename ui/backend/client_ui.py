@@ -6,10 +6,6 @@ from collections import namedtuple
 
 import git
 from credentialdigger import Client
-from credentialdigger.snippet_similarity import (
-    build_embedding_model,
-    compute_similarity,
-    compute_snippet_embedding)
 from git import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 from git import Repo as GitRepo
 
@@ -107,8 +103,8 @@ class UiClient(Client):
             result = cursor.fetchone()
         return files
 
-    def check_repo(self, repo_url, git_token=None, local_repo=False,
-                   branch_or_commit=None):
+    def check_repo(self, repo_url, git_username=None, git_token=None,
+                   local_repo=False, branch_or_commit=None):
         """ Check git token validity for the repository.
 
         Parameters
@@ -116,6 +112,10 @@ class UiClient(Client):
         repo_url: str
             The location of a git repository (an url if local_repo is False, a
             local path otherwise)
+        git_username: str, optional
+            Git username to authenticate to the git server. It is needed only
+            for some private git instances and bitbucket (`github.com` and
+            github enterprise do not require this field)
         git_token: str, optional
             Git personal access token to authenticate to the git server
         local_repo: bool, optional
@@ -140,9 +140,10 @@ class UiClient(Client):
                 return False, 'NoSuchPathError'
         else:
             g = git.cmd.Git()
-            if git_token is not None and len(git_token) > 0:
+            if git_token:
+                username = git_username or 'oauth2'
                 repo_url = repo_url.replace('https://',
-                                            f'https://oauth2:{git_token}@')
+                                            f'https://{username}:{git_token}@')
             try:
                 remote_refs = g.ls_remote(repo_url)
                 if branch_or_commit and branch_or_commit not in remote_refs:

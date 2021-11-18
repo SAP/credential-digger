@@ -118,3 +118,7 @@ config.py
 # IDE
 .vscode
 workbench.py
+
+# DBs
+data.db
+data.db.*
