@@ -768,7 +768,9 @@ class Client(Interface):
             If True, get the repository from a local directory instead of the
             web
         git_username: str, optional
-            the username of the user to authenticate to the git server
+            the username of the user to authenticate to the git server. While
+            it is not needed for `github.com` and github enterprise, it is
+            needed for some private git instances and bitbucket
         git_token: str, optional
             Git personal access token to authenticate to the git server
 
@@ -821,7 +823,9 @@ class Client(Interface):
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
         git_username: str, optional
-            the username of the user to authenticate to the git server
+            the username of the user to authenticate to the git server. While
+            it is not needed for `github.com` and github enterprise, it is
+            needed for some private git instances and bitbucket
         git_token: str, optional
             Git personal access token to authenticate to the git server
         max_depth: int, optional
