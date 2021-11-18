@@ -271,15 +271,17 @@ def scan_repo():
     # If the form does not contain the 'Force' checkbox,
     # then 'forceScan' will be set to False; thus, ignored.
     force_scan = request.form.get('forceScan') == 'force'
+    git_username = request.form.get('gitUsername')
     git_token = request.form.get('gitToken')
     snapshot = request.form.get('repoSnapshot')
     local_repo = not (repo_link.startswith('http://')
                       or repo_link.startswith('https://'))
 
     url_is_valid, err_code = c.check_repo(
-        repo_link, git_token, local_repo, snapshot)
+        repo_link, git_username, git_token, local_repo, snapshot)
     if not url_is_valid:
         return err_code, 401
+    app.logger.debug('Repo has been verified')
 
     # Set up models
     models = []
@@ -294,11 +296,13 @@ def scan_repo():
         'repo_url': repo_link,
         'models': models,
         'force': force_scan,
+        'git_username': git_username,
         'git_token': git_token,
         'local_repo': local_repo,
         'similarity': True
     }
     if rules_to_use != 'all':
+        app.logger.debug(f'Use rules only from {rules_to_use} category')
         args['category'] = rules_to_use
     if snapshot:
         args['branch_or_commit'] = snapshot
