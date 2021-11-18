@@ -149,7 +149,9 @@ class GitScanner(BaseScanner):
         branch_or_commit: str
             The branch name or commit id of the repo
         git_username: str, optional
-            The username of the user to authenticate to the git server
+            the username of the user to authenticate to the git server. While
+            it is not needed for `github.com` and github enterprise, it is
+            needed for some private git instances and bitbucket
         git_token: str, optional
             The personal user access token to access to this repo (needed for
             private repos)
@@ -195,7 +197,9 @@ class GitScanner(BaseScanner):
         max_depth: int, optional
             The maximum number of commits to scan
         git_username: str, optional
-            The username of the user to authenticate to the git server
+            the username of the user to authenticate to the git server. While
+            it is not needed for `github.com` and github enterprise, it is
+            needed for some private git instances and bitbucket
         git_token: str, optional
             Git personal access token to authenticate to the git server
         local_repo: bool, optional
