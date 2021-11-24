@@ -8,6 +8,7 @@ from collections import defaultdict
 from enum import Enum
 from itertools import groupby
 
+import psycopg2
 import yaml
 from dotenv import load_dotenv
 from flask import Flask, jsonify, make_response, redirect, render_template,\
@@ -156,6 +157,20 @@ def root():
                            len_repos=len(repos),
                            len_rules=len(rulesdict),
                            categories=list(cat))
+
+
+@app.errorhandler(psycopg2.InterfaceError)
+def handle_pg_exception(e):
+    """ Handle postgres connection lost exceptions. """
+    global c
+    app.logger.error(e)
+    app.logger.warning('Re-connect to postgres and restart app')
+    c = PgUiClient(dbname=os.getenv('POSTGRES_DB'),
+                   dbuser=os.getenv('POSTGRES_USER'),
+                   dbpassword=os.getenv('POSTGRES_PASSWORD'),
+                   dbhost=os.getenv('DBHOST'),
+                   dbport=os.getenv('DBPORT'))
+    return redirect(url_for('root'))
 
 
 @app.route('/files', methods=['GET'])
