@@ -19,6 +19,7 @@ ARG SSL_private_key
 
 COPY . /credential-digger-ui
 WORKDIR /credential-digger-ui/
+# Fix possible line-terminators errors
 RUN find . -type f -print0 | xargs -0 dos2unix
 
 RUN chmod +x run.sh
