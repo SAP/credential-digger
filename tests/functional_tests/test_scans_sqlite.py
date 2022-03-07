@@ -6,6 +6,8 @@ from credentialdigger.cli import cli
 from credentialdigger.client_sqlite import SqliteClient
 from git import Repo as GitRepo
 
+TOTAL_PW_DISCOVERIES = 11
+
 
 class TestScansSqlite(unittest.TestCase):
     repo_url = 'https://github.com/SAP/credential-digger-tests'
@@ -27,7 +29,7 @@ class TestScansSqlite(unittest.TestCase):
             cli.main(["", "scan", "--sqlite", self.db_path,
                       "--category", "password",
                       "--force", self.repo_url])
-        self.assertEqual(cm.exception.code, 9)
+        self.assertEqual(cm.exception.code, TOTAL_PW_DISCOVERIES)
 
     def test_scan_local(self):
         repo_path = os.path.join(self.tmp_path, "tmp_repo")
@@ -38,9 +40,9 @@ class TestScansSqlite(unittest.TestCase):
                       "--models", "PathModel", "PasswordModel",
                       "--category", "password",
                       "--force", "--local", repo_path])
-        # When using the models, we expect to be left with less than 9
-        # discoveries to manually review
-        self.assertTrue(cm.exception.code < 9)
+        # When using the models, we expect to be left with less than
+        # TOTAL_PW_DISCOVERIES discoveries to manually review
+        self.assertTrue(cm.exception.code < TOTAL_PW_DISCOVERIES)
 
     def test_scan_wiki(self):
         with self.assertRaises(SystemExit) as cm:
