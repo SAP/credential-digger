@@ -7,6 +7,8 @@ from credentialdigger.cli import cli
 from git import Repo as GitRepo
 from psycopg2 import connect
 
+TOTAL_PW_DISCOVERIES = 11
+
 
 class TestScansPostgres(unittest.TestCase):
     dotenv = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
@@ -35,7 +37,7 @@ class TestScansPostgres(unittest.TestCase):
             cli.main(["", "scan", "--category", "password",
                       "--dotenv", self.dotenv,
                       "--force", self.repo_url])
-        self.assertEqual(cm.exception.code, 9)
+        self.assertEqual(cm.exception.code, TOTAL_PW_DISCOVERIES)
 
     def test_scan_local(self):
         repo_path = tempfile.mkdtemp()
@@ -46,9 +48,9 @@ class TestScansPostgres(unittest.TestCase):
                       "--models", "PathModel", "PasswordModel",
                       "--category", "password",
                       "--force", "--local", repo_path])
-        # When using the models, we expect to be left with less than 9
-        # discoveries to manually review
-        self.assertTrue(cm.exception.code < 9)
+        # When using the models, we expect to be left with less than
+        # TOTAL_PW_DISCOVERIES discoveries to manually review
+        self.assertTrue(cm.exception.code < TOTAL_PW_DISCOVERIES)
 
         shutil.rmtree(repo_path)
 
