@@ -21,7 +21,8 @@ class PathModel(BaseModel):
         Returns
         -------
         bool
-            True if the discovery is classified as false positive (i.e., spam)
+            True if the discovery is classified as false positive (i.e., spam),
+            False otherwise
         """
         return bool(self.fp_keywords.search(discovery['file_name'].lower()))
 
