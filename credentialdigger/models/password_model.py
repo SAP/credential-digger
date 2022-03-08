@@ -69,11 +69,9 @@ class PasswordModel(BaseModel):
 
         Returns
         -------
-        discoveries: list of dict
-            The discoveries, with states updated according to
-            the model's predictions
-        n_false_positives: int
-            The number of false positives detected by the model
+        bool
+            True if the snippet is safe (i.e., there is no leak).
+            False otherwise
         """
         # Preprocess the snippet
         data = self._pre_process([discovery['snippet']])
@@ -84,6 +82,7 @@ class PasswordModel(BaseModel):
             # The model classified this snippet as a false positive
             # (i.e., spam)
             return True
+        return False
 
     def _pre_process(self, snippet):
         """ Compute encodings of snippets and format them to a standard

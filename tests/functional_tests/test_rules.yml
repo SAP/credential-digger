@@ -31,6 +31,6 @@ rules:
     category: token
     description: MailChimp API key
 
-  - regex: sshpass|password|pwd|passwd|pass
+  - regex: sshpass|password|pwd|passwd|pass[\W]
     category: password
     description: password keywords
