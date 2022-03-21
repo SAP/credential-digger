@@ -1366,7 +1366,7 @@ class Client(Interface):
             # Compute similarity of target_embedding and embedding
             similarity = compute_similarity(target_embedding,
                                             embedding)
-            if similarity > threshold:
-                self.update_discovery(d['id'], state)
+            #Increase counter if similar and the update is successful
+            if similarity > threshold and self.update_discovery(d['id'], state):
                 n_updated_snippets += 1
         return n_updated_snippets
