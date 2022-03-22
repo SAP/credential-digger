@@ -508,7 +508,7 @@ class PgClient(Client):
         bool
             `True` if the update is successful, `False` otherwise
         """
-        super().update_repo(
+        return super().update_repo(
             url=url, last_scan=last_scan,
             query='UPDATE repos SET last_scan=%s WHERE url=%s RETURNING true'
         )
@@ -528,7 +528,7 @@ class PgClient(Client):
         bool
             `True` if the update is successful, `False` otherwise
         """
-        super().update_discovery(
+        return super().update_discovery(
             discovery_id=discovery_id,
             new_state=new_state,
             query='UPDATE discoveries SET state=%s WHERE id=%s RETURNING true')
@@ -548,7 +548,7 @@ class PgClient(Client):
         bool
             `True` if the update is successful, `False` otherwise
         """
-        super().update_discoveries(
+        return super().update_discoveries(
             discoveries_ids=discoveries_ids,
             new_state=new_state,
             query='UPDATE discoveries SET state=%s WHERE id IN %s RETURNING true')
@@ -581,6 +581,6 @@ class PgClient(Client):
         if snippet is not None:
             query += ' and snippet=%s'
         query += ' RETURNING true'
-        super().update_discovery_group(
+        return super().update_discovery_group(
             new_state=new_state, repo_url=repo_url, file_name=file_name,
             snippet=snippet, query=query)

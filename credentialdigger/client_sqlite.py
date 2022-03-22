@@ -67,7 +67,7 @@ class SqliteClient(Client):
         try:
             cursor.execute(query, args)
             self.db.commit()
-            return cursor.rowcount < 1
+            return cursor.rowcount >= 1
         except (TypeError, IndexError):
             """ A TypeError is raised if any of the required arguments is
             missing. """
@@ -544,7 +544,7 @@ class SqliteClient(Client):
         bool
             `True` if the update is successful, `False` otherwise
         """
-        super().update_repo(
+        return super().update_repo(
             url=url, last_scan=last_scan,
             query='UPDATE repos SET last_scan=? WHERE url=?'
         )
@@ -564,7 +564,7 @@ class SqliteClient(Client):
         bool
             `True` if the update is successful, `False` otherwise
         """
-        super().update_discovery(
+        return super().update_discovery(
             new_state=new_state, discovery_id=discovery_id,
             query='UPDATE discoveries SET state=? WHERE id=?'
         )
@@ -584,7 +584,7 @@ class SqliteClient(Client):
         bool
             `True` if the update is successful, `False` otherwise
         """
-        super().update_discoveries(
+        return super().update_discoveries(
             discoveries_ids=discoveries_ids,
             new_state=new_state,
             query='UPDATE discoveries SET state=? WHERE id IN('
@@ -617,6 +617,6 @@ class SqliteClient(Client):
             query += ' and file_name=?'
         if snippet is not None:
             query += ' and snippet=?'
-        super().update_discovery_group(
+        return super().update_discovery_group(
             new_state=new_state, repo_url=repo_url, file_name=file_name,
             snippet=snippet, query=query)
