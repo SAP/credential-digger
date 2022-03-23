@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 
 import yaml
 from github import Github
+from git import GitCommandError
 from rich.progress import Progress
 
 from .models.model_manager import ModelManager
@@ -982,11 +983,16 @@ class Client(Interface):
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
             logger.info(f'{i}/{repos_num}) Scanning {repo.url}')
-            missing_ids[repo_url] = self._scan(repo_url, scanner,
-                                               models=models,
-                                               debug=debug,
-                                               similarity=similarity,
-                                               git_token=git_token)
+            try:
+                missing_ids[repo_url] = self._scan(repo_url, scanner,
+                                                   models=models,
+                                                   debug=debug,
+                                                   similarity=similarity,
+                                                   git_token=git_token)
+            except GitCommandError:
+                logger.info(f"{i}/{repos_num} Ignore {repo_url} "
+                            "(it can not be cloned)")
+
         return missing_ids
 
     def scan_wiki(self, repo_url, category=None, models=None, debug=False,
