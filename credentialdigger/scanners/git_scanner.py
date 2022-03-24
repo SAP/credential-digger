@@ -100,7 +100,7 @@ class GitScanner(BaseScanner):
                 GitRepo.clone_from(repo_url, project_path)
                 repo = GitRepo(project_path)
             except GitCommandError as e:
-                logger.debug("Repo can not be cloned")
+                logger.warning('Repo can not be cloned')
                 shutil.rmtree(project_path)
                 raise e
 

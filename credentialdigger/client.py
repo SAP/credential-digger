@@ -7,8 +7,8 @@ from collections import namedtuple
 from datetime import datetime, timezone
 
 import yaml
-from github import Github
 from git import GitCommandError
+from github import Github
 from rich.progress import Progress
 
 from .models.model_manager import ModelManager
@@ -990,8 +990,8 @@ class Client(Interface):
                                                    similarity=similarity,
                                                    git_token=git_token)
             except GitCommandError:
-                logger.info(f"{i}/{repos_num} Ignore {repo_url} "
-                            "(it can not be cloned)")
+                logger.warning(f'{i}/{repos_num} Ignore {repo_url} '
+                               '(it can not be cloned)')
 
         return missing_ids
 
