@@ -47,16 +47,18 @@ class PasswordModel(BaseModel):
         new_discoveries = [d for d in discoveries if d['state'] == 'new']
         no_new_discoveries = [d for d in discoveries if d['state'] != 'new']
         # Create a dataset with all the preprocessed (new) snippets
-        data = self._pre_process([d['snippet'] for d in new_discoveries])
-        # data = self._preprocess_batch_data(snippets)
-        # Compute a prediction for each snippet
-        outputs = self.model.predict(data)
-        logits = outputs['logits']
-        predictions = tf.argmax(logits, 1)
-        # Check predictions and set FP discoveries accordingly
-        for d, p in zip(new_discoveries, predictions):
-            if p == 0:
-                d['state'] = 'false_positive'
+        # process new_discoveries if not empty
+        if new_discoveries:
+            data = self._pre_process([d['snippet'] for d in new_discoveries])
+            # data = self._preprocess_batch_data(snippets)
+            # Compute a prediction for each snippet
+            outputs = self.model.predict(data)
+            logits = outputs['logits']
+            predictions = tf.argmax(logits, 1)
+            # Check predictions and set FP discoveries accordingly
+            for d, p in zip(new_discoveries, predictions):
+                if p == 0:
+                    d['state'] = 'false_positive'
         return new_discoveries + no_new_discoveries
 
     def analyze(self, discovery):
