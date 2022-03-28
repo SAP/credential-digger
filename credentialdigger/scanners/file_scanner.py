@@ -169,6 +169,8 @@ class FileScanner(BaseScanner):
         except UnicodeDecodeError:
             # Don't scan binary files
             pass
+        except FileNotFoundError:
+            logger.warning(f'Ignore {relative_path} (file not found)')
         return discoveries
 
     def _prune(self, rel_dir_root, dirs, files, max_depth=-1, ignore_list=[]):
