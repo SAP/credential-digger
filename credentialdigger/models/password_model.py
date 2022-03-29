@@ -46,11 +46,10 @@ class PasswordModel(BaseModel):
         # We have to classify only the "new" discoveries
         new_discoveries = [d for d in discoveries if d['state'] == 'new']
         no_new_discoveries = [d for d in discoveries if d['state'] != 'new']
-        # Create a dataset with all the preprocessed (new) snippets
-        # process new_discoveries if not empty
+        # Process new_discoveries if not empty
         if new_discoveries:
+            # Create a dataset with all the preprocessed (new) snippets
             data = self._pre_process([d['snippet'] for d in new_discoveries])
-            # data = self._preprocess_batch_data(snippets)
             # Compute a prediction for each snippet
             outputs = self.model.predict(data)
             logits = outputs['logits']
