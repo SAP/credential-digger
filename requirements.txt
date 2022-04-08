@@ -9,13 +9,13 @@ psycopg2-binary
 PyGithub
 python-dotenv
 pyyaml
-rich
+rich~=12.2
 srsly>=2.4.0
 tensorflow==2.8.0; python_version >= "3.8"
-tensorflow==2.4.*; python_version < "3.8"
+tensorflow~=2.4; python_version < "3.8"
 tensorflow-estimator==2.8.0; python_version >= "3.8"
-tensorflow-estimator==2.4.*; python_version < "3.8"
+tensorflow-estimator~=2.4; python_version < "3.8"
 tensorflow-text==2.8.1; python_version >= "3.8"
-tensorflow-text==2.4.*; python_version < "3.8"
+tensorflow-text~=2.4; python_version < "3.8"
 tf-models-official
 transformers
