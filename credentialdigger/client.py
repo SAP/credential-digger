@@ -7,6 +7,7 @@ from collections import namedtuple
 from datetime import datetime, timezone
 
 import yaml
+from git import GitCommandError
 from github import Github
 from rich.progress import Progress
 
@@ -982,11 +983,16 @@ class Client(Interface):
             # Get repo clone url without .git at the end
             repo_url = repo.clone_url[:-4]
             logger.info(f'{i}/{repos_num}) Scanning {repo.url}')
-            missing_ids[repo_url] = self._scan(repo_url, scanner,
-                                               models=models,
-                                               debug=debug,
-                                               similarity=similarity,
-                                               git_token=git_token)
+            try:
+                missing_ids[repo_url] = self._scan(repo_url, scanner,
+                                                   models=models,
+                                                   debug=debug,
+                                                   similarity=similarity,
+                                                   git_token=git_token)
+            except GitCommandError:
+                logger.warning(f'{i}/{repos_num} Ignore {repo_url} '
+                               '(it can not be cloned)')
+
         return missing_ids
 
     def scan_wiki(self, repo_url, category=None, models=None, debug=False,
@@ -1366,7 +1372,8 @@ class Client(Interface):
             # Compute similarity of target_embedding and embedding
             similarity = compute_similarity(target_embedding,
                                             embedding)
-            if similarity > threshold:
-                self.update_discovery(d['id'], state)
+            # Increase counter if similar and the update is successful
+            if (similarity > threshold and
+                    self.update_discovery(d['id'], state)):
                 n_updated_snippets += 1
         return n_updated_snippets
