@@ -46,17 +46,18 @@ class PasswordModel(BaseModel):
         # We have to classify only the "new" discoveries
         new_discoveries = [d for d in discoveries if d['state'] == 'new']
         no_new_discoveries = [d for d in discoveries if d['state'] != 'new']
-        # Create a dataset with all the preprocessed (new) snippets
-        data = self._pre_process([d['snippet'] for d in new_discoveries])
-        # data = self._preprocess_batch_data(snippets)
-        # Compute a prediction for each snippet
-        outputs = self.model.predict(data)
-        logits = outputs['logits']
-        predictions = tf.argmax(logits, 1)
-        # Check predictions and set FP discoveries accordingly
-        for d, p in zip(new_discoveries, predictions):
-            if p == 0:
-                d['state'] = 'false_positive'
+        # Process new_discoveries if not empty
+        if new_discoveries:
+            # Create a dataset with all the preprocessed (new) snippets
+            data = self._pre_process([d['snippet'] for d in new_discoveries])
+            # Compute a prediction for each snippet
+            outputs = self.model.predict(data)
+            logits = outputs['logits']
+            predictions = tf.argmax(logits, 1)
+            # Check predictions and set FP discoveries accordingly
+            for d, p in zip(new_discoveries, predictions):
+                if p == 0:
+                    d['state'] = 'false_positive'
         return new_discoveries + no_new_discoveries
 
     def analyze(self, discovery):
@@ -69,11 +70,9 @@ class PasswordModel(BaseModel):
 
         Returns
         -------
-        discoveries: list of dict
-            The discoveries, with states updated according to
-            the model's predictions
-        n_false_positives: int
-            The number of false positives detected by the model
+        bool
+            True if the snippet is safe (i.e., there is no leak).
+            False otherwise
         """
         # Preprocess the snippet
         data = self._pre_process([discovery['snippet']])
@@ -84,6 +83,7 @@ class PasswordModel(BaseModel):
             # The model classified this snippet as a false positive
             # (i.e., spam)
             return True
+        return False
 
     def _pre_process(self, snippet):
         """ Compute encodings of snippets and format them to a standard

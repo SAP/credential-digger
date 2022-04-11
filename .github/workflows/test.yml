@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: ['3.7', '3.8', '3.9', '3.10']
 
     services:
       postgres:
@@ -62,14 +62,6 @@ jobs:
       run: |
         python setup.py install --user
 
-    - name: Download and link credentialdigger's models
-      env:
-        path_model: https://github.com/SAP/credential-digger/releases/download/PM-v1.0.1/path_model-1.0.1.tar.gz
-        snippet_model: https://github.com/SAP/credential-digger/releases/download/SM-v1.0.0/snippet_model-1.0.0.tar.gz
-      run: |
-        python -m credentialdigger download path_model
-        python -m credentialdigger download snippet_model
-
     - name: Run unit tests
       run: |
         pytest tests/unit_tests
@@ -85,7 +77,5 @@ jobs:
         POSTGRES_DB: credential_digger_tests
         DBHOST: localhost
         DBPORT: 5432
-        path_model: https://github.com/SAP/credential-digger/releases/download/PM-v1.0.1/path_model-1.0.1.tar.gz
-        snippet_model: https://github.com/SAP/credential-digger/releases/download/SM-v1.0.0/snippet_model-1.0.0.tar.gz
       run: |
         pytest tests/functional_tests

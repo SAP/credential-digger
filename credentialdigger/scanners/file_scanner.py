@@ -157,7 +157,7 @@ class FileScanner(BaseScanner):
                 for row in file_to_scan:
                     rh = ResultHandler()
                     self.stream.scan(
-                        row if sys.version_info < (3, 9) else row.encode(
+                        row if sys.version_info < (3, 8) else row.encode(
                             'utf-8'),
                         match_event_handler=rh.handle_results,
                         context=[row.strip(), relative_path, commit_id,
@@ -169,6 +169,8 @@ class FileScanner(BaseScanner):
         except UnicodeDecodeError:
             # Don't scan binary files
             pass
+        except FileNotFoundError:
+            logger.warning(f'Ignore {relative_path} (file not found)')
         return discoveries
 
     def _prune(self, rel_dir_root, dirs, files, max_depth=-1, ignore_list=[]):

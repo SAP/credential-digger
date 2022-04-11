@@ -100,6 +100,7 @@ class GitScanner(BaseScanner):
                 GitRepo.clone_from(repo_url, project_path)
                 repo = GitRepo(project_path)
             except GitCommandError as e:
+                logger.warning('Repo can not be cloned')
                 shutil.rmtree(project_path)
                 raise e
 
@@ -405,7 +406,7 @@ class GitScanner(BaseScanner):
 
             rh = ResultHandler()
             self.stream.scan(
-                row if sys.version_info < (3, 9) else row.encode('utf-8'),
+                row if sys.version_info < (3, 8) else row.encode('utf-8'),
                 match_event_handler=rh.handle_results,
                 context=[row, filename, commit_hash, line_number])
             if rh.result:
