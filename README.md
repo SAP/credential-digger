@@ -68,16 +68,10 @@ In case you don't meet these requirements, you may consider running a [Docker co
 
 ## Download and Installation
 
-First, you need to install the regular expression matching library [Hyperscan](https://github.com/intel/hyperscan). Be sure to have `build-essential` and `python3-dev` too.
+First, make sure to have `build-essential` and `python3-dev` (for Linux only).
 
 ```bash
-sudo apt install -y libhyperscan-dev build-essential python3-dev
-```
-
-or (for MacOS):
-
-```bash
-brew install hyperscan
+sudo apt install -y build-essential python3-dev
 ```
 
 Then, you can install Credential Digger module using `pip`.
@@ -144,24 +138,29 @@ Credential Digger is modular, and offers a wide choice of components and adaptat
 
 After installing the [dependencies](#install-dependencies) listed above, you can install Credential Digger as follows.
 
-Configure a virtual environment for Python 3 (optional) and clone the main branch of the project:
+Configure a virtual environment for Python 3 (optional):
 
 ```bash
 virtualenv -p python3 ./venv
 source ./venv/bin/activate
+```
 
+Clone the main branch of the project:
+
+```bash
 git clone https://github.com/SAP/credential-digger.git
 cd credential-digger
 ```
 
-Install the requirements from `requirements.txt` file and install the library:
+
+Install the library and its dependencies:
 
 ```bash
-pip install -r requirements.txt
-python setup.py install
+pip install .
 ```
 
 Then, you can add the rules and scan a repository as described above.
+
 
 ### External postgres database
 
