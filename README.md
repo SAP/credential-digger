@@ -62,7 +62,7 @@ For the complete description of the approach of Credential Digger, [you can read
 
 ## Requirements
 
-Credential Digger supports Python >= 3.6 and < 3.10, and works only with Linux and MacOS systems.
+Credential Digger supports Python >= 3.7 and < 3.11, and works only with Linux and MacOS systems.
 In case you don't meet these requirements, you may consider running a [Docker container](#docker) (that also includes a user interface).
 
 
