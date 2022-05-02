@@ -1,0 +1,145 @@
+"""
+The 'hook' module can be used to run credential digger as a pre-commit hook.
+It detects hardcoded secrets in staged files.
+
+NOTE: It uses SQLite and the discoveries are saved in /home/USER/.local/data.db
+
+usage: credentialdigger hook [-h]
+"""
+
+import subprocess
+import sys
+from pathlib import Path
+
+from credentialdigger import SqliteClient
+from credentialdigger.models.model_manager import ModelManager
+
+
+def configure_parser(parser):
+    """ Configure arguments for command line parser.
+
+    Parameters
+    ----------
+    parser: `credentialdigger.cli.customParser`
+        Command line parser
+    """
+    parser.set_defaults(func=run)
+
+
+def system(*args, **kwargs):
+    """Run a command and get the result."""
+    kwargs.setdefault('stdout', subprocess.PIPE)
+    proc = subprocess.Popen(args, **kwargs)
+    out, err = proc.communicate()
+    return out
+
+
+def print_msg(msg):
+    """Print messages to /dev/tty"""
+    subprocess.run(f'echo \"\n{msg}\n\" > /dev/tty',
+                   shell=True,
+                   stdout=subprocess.PIPE)
+
+
+def ask_commit(str_discoveries):
+    """Ask for the commit confirmation in case of possible leaks"""
+
+    msg = 'You have the following disoveries:\n' \
+          f'{str_discoveries}\ncontinue? (y/n)'
+    print_msg(msg)
+
+    sys.stdin = open('/dev/tty', 'r')
+    # Create a process on /dev/tty to capture the input (commit or not)
+    # It reads the input, saves it in userinput and echos it
+    # subprocess.check_output return the output of the command i.e., userinpput
+    user_input = subprocess.check_output('read -p \"\" userinput && echo '
+                                         '\"$userinput\"',
+                                         shell=True, stdin=sys.stdin).rstrip()
+
+    return user_input.decode('utf-8')
+
+
+def run(args):
+    """Run credential digger on staged files
+
+    Parameters
+    ----------
+    args: `argparse.Namespace`
+        Arguments from command line parser.
+    """
+
+    files_status = system('git', 'diff', '--name-status', '--staged'
+                          ).decode('utf-8').splitlines()
+    files = []
+    for fs in files_status:
+        print(fs.split())
+        stats = fs.split()
+        status = stats[0]
+        filename = stats[-1]
+        if status[0] not in 'DR':
+            files.append(filename)
+
+    home_path = str(Path.home())
+    db_path = f'{home_path}/.local/data.db'
+    c = SqliteClient(path=db_path)
+
+    if not c.get_rules():
+        c.add_rules_from_file('./ui/backend/rules.yml')
+
+    new_discoveries = []
+    subprocess.run(f'echo \"\nChecking files={files} \" > /dev/tty',
+                   shell=True,
+                   stdout=subprocess.PIPE)
+
+    for file in files:
+        new_discoveries += c.scan_path(scan_path=file,
+                                       models=['PathModel'],
+                                       force=True,
+                                       debug=False)
+
+    if not new_discoveries:
+        print_msg('No hardcoded secrets found in your commit')
+        sys.exit(0)
+
+    rules = c.get_rules()
+    password_rules = set([
+        r['id'] for r in rules if r['category'] == 'password'])
+    password_discoveries = []
+    no_password_discoveries = []
+    for d in new_discoveries:
+        disc = c.get_discovery(d)
+        if disc['rule_id'] in password_rules:
+            password_discoveries.append(disc)
+        else:
+            no_password_discoveries.append(disc)
+
+    # Run the PasswordModel
+    disc = []
+    if password_discoveries:
+        mm = ModelManager('PasswordModel')
+        disc = c._analyze_discoveries(mm, password_discoveries, debug=False)
+
+    list_of_discoveries = []
+    for d in disc:
+        if d['state'] == 'new':
+            list_of_discoveries.append(d)
+
+    # If there are keys, token ...
+    list_of_discoveries += no_password_discoveries
+    # If all the discoveries were false positive discoveries
+    if not list_of_discoveries:
+        print_msg('No hardcoded secrets found in your commit')
+        sys.exit(0)
+
+    str_discoveries = ''
+    for d in list_of_discoveries:
+        str_discoveries += (f'file: {d["file_name"]}\n'
+                            f'secret: {d["snippet"]}\n'
+                            f'line number: {d["line_number"]}\n' +
+                            40*'-')
+
+    ans = ask_commit(str_discoveries)
+    if ans.lower() == 'y':
+        print_msg('Committing...')
+        sys.exit(0)
+    sys.exit(1)

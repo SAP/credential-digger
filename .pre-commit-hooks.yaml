@@ -1,0 +1,7 @@
+-   id: credential-digger-hook
+    name: credential digger hook
+    description: This hook run credential digger on pre-commited files
+    entry: credentialdigger
+    args: ['hook']
+    language: python
+    pass_filenames: false

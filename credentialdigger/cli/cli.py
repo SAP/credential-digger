@@ -5,7 +5,7 @@ import os
 from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
 
-from . import (add_rules, get_discoveries, scan, scan_path,
+from . import (add_rules, get_discoveries, hook, scan, scan_path,
                scan_snapshot, scan_user, scan_wiki)
 
 logger = logging.getLogger(__name__)
@@ -94,6 +94,12 @@ def main(sys_argv):
         'get_discoveries', help='Get discoveries of a scanened repository',
         parents=[parser_dotenv, parser_sqlite])
     get_discoveries.configure_parser(parser_get_discoveries)
+
+    # hook subparser configuration
+    parser_get_discoveries = subparsers.add_parser(
+        'hook', help='Launch credential digger as a pre-commit hook',
+        parents=[parser_dotenv])
+    hook.configure_parser(parser_get_discoveries)
 
     # Run the parser
     if len(sys_argv) == 1:
