@@ -75,12 +75,17 @@ def run(args):
         print(fs.split())
         stats = fs.split()
         status = stats[0]
+        # Takes the last filename which is, in case of renamed files,
+        # the new name
         filename = stats[-1]
+        # D = deleted files
+        # R = renamed files
+        # It considers the first char because the renamed files are displayed
+        # as Rxxx where xxx is a number
         if status[0] not in 'DR':
             files.append(filename)
 
-    home_path = str(Path.home())
-    db_path = f'{home_path}/.local/data.db'
+    db_path = str(Path.home() / '.local' / 'data.db')
     c = SqliteClient(path=db_path)
 
     if not c.get_rules():
@@ -91,6 +96,10 @@ def run(args):
                    shell=True,
                    stdout=subprocess.PIPE)
 
+    # For optimization purposes, the PathModel and the PasswordModel are
+    # separated, otherwise scan_path will call both models for each file
+    # With this implementation the discoveries are accumulated and the
+    # PasswordModel will be used only once for the password discoveries
     for file in files:
         new_discoveries += c.scan_path(scan_path=file,
                                        models=['PathModel'],
@@ -139,7 +148,7 @@ def run(args):
                             40*'-')
 
     ans = ask_commit(str_discoveries)
-    if ans.lower() == 'y':
+    if ans.startswith(('y', 'Y')):
         print_msg('Committing...')
         sys.exit(0)
     sys.exit(1)
