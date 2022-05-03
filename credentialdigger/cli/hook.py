@@ -2,9 +2,25 @@
 The 'hook' module can be used to run credential digger as a pre-commit hook.
 It detects hardcoded secrets in staged files.
 
-NOTE: It uses SQLite and the discoveries are saved in /home/USER/.local/data.db
+NOTE: It uses SQLite and the discoveries are saved (by default)
+in /home/USER/.local/data.db
 
-usage: credentialdigger hook [-h]
+usage: credentialdigger hook [-h] [--dotenv DOTENV] [--rules RULES]
+                             [--db_path DB_PATH] [--no_interaction]
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --dotenv DOTENV    The path to the .env file which will be used in all
+                     commands. If not specified, the one in the current
+                     directory will be used (if present).
+  --rules RULES      Specify the yaml file path containing the scan rules
+                     e.g., /path/to/rules.yaml
+  --db_path DB_PATH  Specify the database file path where to save the results
+                     e.g., /path/to/data.db
+  --no_interaction   Flag used to remove the interaction i.e.,
+                     do not prompt if the commit should continue
+                     in case of discoveries. If specified, the hook will
+                     fail in case of discoveries.
 """
 
 import subprocess
@@ -66,13 +82,17 @@ def run(args):
     ----------
     args: `argparse.Namespace`
         Arguments from command line parser.
+
+    Returns
+    -------
+        It exits with success code 0 if there are no discoveries, otherwise
+        it exits with an error code != 0 printing the leaks
     """
 
     files_status = system('git', 'diff', '--name-status', '--staged'
                           ).decode('utf-8').splitlines()
     files = []
     for fs in files_status:
-        print(fs.split())
         stats = fs.split()
         status = stats[0]
         # Takes the last filename which is, in case of renamed files,
@@ -85,10 +105,16 @@ def run(args):
         if status[0] not in 'DR':
             files.append(filename)
 
-    db_path = str(Path.home() / '.local' / 'data.db')
+    if args.db_path:
+        db_path = args.db_path
+    else:
+        db_path = str(Path.home() / '.local' / 'data.db')
+
     c = SqliteClient(path=db_path)
 
-    if not c.get_rules():
+    if args.rules:
+        c.add_rules_from_file(args.rules)
+    elif not c.get_rules():
         c.add_rules_from_file('./ui/backend/rules.yml')
 
     new_discoveries = []
@@ -147,8 +173,8 @@ def run(args):
                             f'line number: {d["line_number"]}\n' +
                             40*'-')
 
-    ans = ask_commit(str_discoveries)
-    if ans.startswith(('y', 'Y')):
+    if not args.no_interaction and \
+       ask_commit(str_discoveries).startswith(('y', 'Y')):
         print_msg('Committing...')
         sys.exit(0)
     sys.exit(1)
