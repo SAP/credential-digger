@@ -171,7 +171,7 @@ def run(args):
         str_discoveries += (f'file: {d["file_name"]}\n'
                             f'secret: {d["snippet"]}\n'
                             f'line number: {d["line_number"]}\n' +
-                            40*'-')
+                            40 * '-')
 
     if not args.no_interaction and \
        ask_commit(str_discoveries).startswith(('y', 'Y')):
