@@ -14,25 +14,27 @@ TLDR; watch the video ⬇️
 
 
 
--  [Why](#why)
--  [Requirements](#requirements)
--  [Download and installation](#download-and-installation)
--  [How to run](#how-to-run)
+- [Credential Digger](#credential-digger)
+  - [Why](#why)
+  - [Requirements](#requirements)
+  - [Download and Installation](#download-and-installation)
+  - [How to run](#how-to-run)
     - [Add rules](#add-rules)
     - [Scan a repository](#scan-a-repository)
--  [Docker container](#docker-container)
--  [Advanced installation](#advanced-install)
+  - [Docker container](#docker-container)
+  - [Advanced Installation](#advanced-installation)
     - [Build from source](#build-from-source)
     - [External postgres database](#external-postgres-database)
--  [How to update the project](#how-to-updade-the-project)
--  [Python library usage](#python-library-usage)
-    - [Add rules](#add-rules)
-    - [Scan a repository](#scan-a-repository)
--  [CLI - Command Line Interface](#cli-command-line-interface)
--  [Wiki](#wiki)
--  [Contributing](#contributing)
--  [How to obtain support](#how-to-obtain-support)
--  [News](#news)
+  - [How to update the project](#how-to-update-the-project)
+  - [Python library usage](#python-library-usage)
+    - [Add rules](#add-rules-1)
+    - [Scan a repository](#scan-a-repository-1)
+  - [CLI - Command Line Interface](#cli---command-line-interface)
+  - [pre-commit hook](#pre-commit-hook)
+  - [Wiki](#wiki)
+  - [Contributing](#contributing)
+  - [How to obtain support](#how-to-obtain-support)
+  - [News](#news)
 
 
 ## Why
@@ -235,6 +237,14 @@ Please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for fu
 Credential Digger also offers a simple CLI to scan a repository. The CLI supports both sqlite and postgres databases. In case of postgres, you need either to export the credentials needed to connect to the database as environment variables or to setup a `.env` file. In case of sqlite, the path of the db must be passed as argument.
 
 Refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for all the supported commands and their usage.
+
+
+
+## pre-commit hook
+
+Credential Digger can be used with the [pre-commit](https://pre-commit.com/) framework to scan staged files before each commit.
+
+Please, refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for further information on installation and functioning.
 
 
 
