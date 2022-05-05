@@ -3,20 +3,21 @@ The 'hook' module can be used to run credential digger as a pre-commit hook.
 It detects hardcoded secrets in staged files.
 
 NOTE: It uses SQLite and the discoveries are saved (by default)
-in /home/USER/.local/data.db
+in $HOME/.local/data.db
 
-usage: credentialdigger hook [-h] [--dotenv DOTENV] [--rules RULES]
-                             [--db_path DB_PATH] [--no_interaction]
+usage: credentialdigger hook [-h] [--dotenv DOTENV] [--sqlite SQLITE]
+                             [--rules RULES] [--no_interaction]
 
 optional arguments:
   -h, --help         show this help message and exit
   --dotenv DOTENV    The path to the .env file which will be used in all
                      commands. If not specified, the one in the current
                      directory will be used (if present).
+  --sqlite SQLITE    If specified, scan the repo using the sqlite client
+                     passing as argument the path of the db.
+                     Otherwise, use postgres (must be up and running)
   --rules RULES      Specify the yaml file path containing the scan rules
                      e.g., /path/to/rules.yaml
-  --db_path DB_PATH  Specify the database file path where to save the results
-                     e.g., /path/to/data.db
   --no_interaction   Flag used to remove the interaction i.e.,
                      do not prompt if the commit should continue
                      in case of discoveries. If specified, the hook will
@@ -25,9 +26,7 @@ optional arguments:
 
 import subprocess
 import sys
-from pathlib import Path
 
-from credentialdigger import SqliteClient
 from credentialdigger.models.model_manager import ModelManager
 
 
@@ -75,47 +74,44 @@ def ask_commit(str_discoveries):
     return user_input.decode('utf-8')
 
 
-def run(args):
-    """Run credential digger on staged files
+def run(client, args):
+    """Run Credential Digger on staged files
 
     Parameters
     ----------
+    client: `credentialdigger.Client`
+        Instance of the client on which to save results
     args: `argparse.Namespace`
         Arguments from command line parser.
 
     Returns
     -------
-        It exits with success code 0 if there are no discoveries, otherwise
-        it exits with an error code != 0 printing the leaks
+        While this function returns nothing, it gives an exit status (integer)
+        that is equal to the number of discoveries causing the hook to fail.
+        If it exits with a value that is equal to 0, then it means
+        that the scan detected no leaks in the staged files, or it means,
+        in case interaction, that the user choosed to commit even
+        in case of leaks. If the exit value is 0 the hook is successful.
     """
 
     files_status = system('git', 'diff', '--name-status', '--staged'
                           ).decode('utf-8').splitlines()
     files = []
     for fs in files_status:
-        stats = fs.split()
+        stats = fs.split('\t')
         status = stats[0]
-        # Takes the last filename which is, in case of renamed files,
-        # the new name
-        filename = stats[-1]
+        # Check status using the first char
         # D = deleted files
         # R = renamed files
-        # It considers the first char because the renamed files are displayed
-        # as Rxxx where xxx is a number
         if status[0] not in 'DR':
+            # Get the name of the staged file
+            filename = stats[1]
             files.append(filename)
 
-    if args.db_path:
-        db_path = args.db_path
-    else:
-        db_path = str(Path.home() / '.local' / 'data.db')
-
-    c = SqliteClient(path=db_path)
-
     if args.rules:
-        c.add_rules_from_file(args.rules)
-    elif not c.get_rules():
-        c.add_rules_from_file('./ui/backend/rules.yml')
+        client.add_rules_from_file(args.rules)
+    elif not client.get_rules():
+        client.add_rules_from_file('./ui/backend/rules.yml')
 
     new_discoveries = []
     subprocess.run(f'echo \"\nChecking files={files} \" > /dev/tty',
@@ -125,24 +121,24 @@ def run(args):
     # For optimization purposes, the PathModel and the PasswordModel are
     # separated, otherwise scan_path will call both models for each file
     # With this implementation the discoveries are accumulated and the
-    # PasswordModel will be used only once for the password discoveries
-    for file in files:
-        new_discoveries += c.scan_path(scan_path=file,
-                                       models=['PathModel'],
-                                       force=True,
-                                       debug=False)
+    # PasswordModel will be run only once for the password discoveries
+    for staged_file in files:
+        new_discoveries += client.scan_path(scan_path=staged_file,
+                                            models=['PathModel'],
+                                            force=True,
+                                            debug=False)
 
     if not new_discoveries:
         print_msg('No hardcoded secrets found in your commit')
         sys.exit(0)
 
-    rules = c.get_rules()
+    rules = client.get_rules()
     password_rules = set([
         r['id'] for r in rules if r['category'] == 'password'])
     password_discoveries = []
     no_password_discoveries = []
     for d in new_discoveries:
-        disc = c.get_discovery(d)
+        disc = client.get_discovery(d)
         if disc['rule_id'] in password_rules:
             password_discoveries.append(disc)
         else:
@@ -152,14 +148,14 @@ def run(args):
     disc = []
     if password_discoveries:
         mm = ModelManager('PasswordModel')
-        disc = c._analyze_discoveries(mm, password_discoveries, debug=False)
+        disc = mm.launch_model_batch(password_discoveries)
 
     list_of_discoveries = []
     for d in disc:
         if d['state'] == 'new':
             list_of_discoveries.append(d)
 
-    # If there are keys, token ...
+    # There may be also discoveries other than passwords
     list_of_discoveries += no_password_discoveries
     # If all the discoveries were false positive discoveries
     if not list_of_discoveries:
@@ -177,4 +173,4 @@ def run(args):
        ask_commit(str_discoveries).startswith(('y', 'Y')):
         print_msg('Committing...')
         sys.exit(0)
-    sys.exit(1)
+    sys.exit(len(list_of_discoveries))

@@ -59,10 +59,6 @@ def main(sys_argv):
         help='Specify the yaml file path containing the scan rules \
              e.g., /path/to/rules.yaml')
     parser_hook_base.add_argument(
-        '--sqlite', default=None, type=str,
-        help='Specify the database file path where to save the results \
-             e.g., /path/to/data.db')
-    parser_hook_base.add_argument(
         '--no_interaction', action='store_true',
         help='Flag used to remove the interaction i.e., do not prompt if the \
              commit should continue in case of discoveries. If specified, \
@@ -113,7 +109,7 @@ def main(sys_argv):
     # hook subparser configuration
     parser_get_discoveries = subparsers.add_parser(
         'hook', help='Launch Credential Digger as a pre-commit hook',
-        parents=[parser_dotenv, parser_hook_base])
+        parents=[parser_dotenv, parser_sqlite, parser_hook_base])
     hook.configure_parser(parser_get_discoveries)
 
     # Run the parser
@@ -128,6 +124,7 @@ def main(sys_argv):
     if args.func in [
         add_rules.run,
         get_discoveries.run,
+        hook.run,
         scan.run,
         scan_user.run,
         scan_wiki.run,
