@@ -59,7 +59,7 @@ def main(sys_argv):
         help='Specify the yaml file path containing the scan rules \
              e.g., /path/to/rules.yaml')
     parser_hook_base.add_argument(
-        '--db_path', default=None, type=str,
+        '--sqlite', default=None, type=str,
         help='Specify the database file path where to save the results \
              e.g., /path/to/data.db')
     parser_hook_base.add_argument(
@@ -112,7 +112,7 @@ def main(sys_argv):
 
     # hook subparser configuration
     parser_get_discoveries = subparsers.add_parser(
-        'hook', help='Launch credential digger as a pre-commit hook',
+        'hook', help='Launch Credential Digger as a pre-commit hook',
         parents=[parser_dotenv, parser_hook_base])
     hook.configure_parser(parser_get_discoveries)
 
