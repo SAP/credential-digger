@@ -2,9 +2,6 @@
 The 'hook' module can be used to run credential digger as a pre-commit hook.
 It detects hardcoded secrets in staged files.
 
-NOTE: It uses SQLite and the discoveries are saved (by default)
-in $HOME/.local/data.db
-
 usage: credentialdigger hook [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                              [--rules RULES] [--no_interaction]
 
