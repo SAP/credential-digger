@@ -5,7 +5,7 @@ import os
 from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
 
-from . import (add_rules, get_discoveries, scan, scan_path,
+from . import (add_rules, get_discoveries, hook, scan, scan_path,
                scan_snapshot, scan_user, scan_wiki)
 
 logger = logging.getLogger(__name__)
@@ -53,6 +53,17 @@ def main(sys_argv):
             during the scan (e.g., during the insertion of the detections in \
             the db)')
 
+    parser_hook_base = customParser(add_help=False)
+    parser_hook_base.add_argument(
+        '--rules', default=None, type=str,
+        help='Specify the yaml file path containing the scan rules \
+             e.g., /path/to/rules.yaml')
+    parser_hook_base.add_argument(
+        '--no_interaction', action='store_true',
+        help='Flag used to remove the interaction i.e., do not prompt if the \
+             commit should continue in case of discoveries. If specified, \
+             the hook will fail in case of discoveries are found.')
+
     # add_rules subparser configuration
     parser_add_rules = subparsers.add_parser(
         'add_rules', help='Add scanning rules from a file to the database',
@@ -95,6 +106,12 @@ def main(sys_argv):
         parents=[parser_dotenv, parser_sqlite])
     get_discoveries.configure_parser(parser_get_discoveries)
 
+    # hook subparser configuration
+    parser_get_discoveries = subparsers.add_parser(
+        'hook', help='Launch Credential Digger as a pre-commit hook',
+        parents=[parser_dotenv, parser_sqlite, parser_hook_base])
+    hook.configure_parser(parser_get_discoveries)
+
     # Run the parser
     if len(sys_argv) == 1:
         main_parser.print_help()
@@ -107,6 +124,7 @@ def main(sys_argv):
     if args.func in [
         add_rules.run,
         get_discoveries.run,
+        hook.run,
         scan.run,
         scan_user.run,
         scan_wiki.run,
