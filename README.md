@@ -97,7 +97,7 @@ One of the core components of Credential Digger is the regular expression scanne
 **Before the very first scan, you need to add the rules that will be used by the scanner.** This step is only needed once.
 
 ```bash
-python -m credentialdigger add_rules --sqlite /path/to/data.db /path/to/rules.yaml
+credentialdigger add_rules --sqlite /path/to/data.db /path/to/rules.yaml
 ```
 
 ### Scan a repository
@@ -105,19 +105,19 @@ python -m credentialdigger add_rules --sqlite /path/to/data.db /path/to/rules.ya
 After adding the rules, you can scan a repository:
 
 ```bash
-python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db
+credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db
 ```
 
 Machine learning models are not mandatory, but highly recommended in order to reduce the manual effort of reviewing the result of a scan:
 
 ```bash
-python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --models PathModel PasswordModel
+credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --models PathModel PasswordModel
 ```
 
 As for the models, also the similarity feature is not mandatory, but highly recommended in order to reduce the manual effort while assessing the discoveries after a scan:
 
 ```bash
-python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --similarity --models PathModel PasswordModel
+credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --similarity --models PathModel PasswordModel
 ```
 
 
