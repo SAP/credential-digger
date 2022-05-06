@@ -1,6 +1,7 @@
 """
 The 'hook' module can be used to run credential digger as a pre-commit hook.
-It detects hardcoded secrets in staged files.
+It detects hardcoded secrets in staged files blocking the commit before the
+code gets public.
 
 usage: credentialdigger hook [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                              [--rules RULES] [--no_interaction]
@@ -47,17 +48,23 @@ def system(*args, **kwargs):
 
 
 def print_msg(msg):
-    """Print messages to /dev/tty"""
+    """Print a message to /dev/tty."""
     subprocess.run(f'echo \"\n{msg}\n\" > /dev/tty',
                    shell=True,
                    stdout=subprocess.PIPE)
 
 
 def ask_commit(str_discoveries):
-    """Ask for the commit confirmation in case of possible leaks"""
+    """Ask for the commit confirmation in case of possible leaks.
 
-    msg = 'You have the following disoveries:\n' \
-          f'{str_discoveries}\ncontinue? (y/n)'
+    Parameters
+    ----------
+    str_discoveries: str
+        Discoveries formatted as a string
+    """
+
+    msg = 'You have the following disoveries:\n\n' \
+          f'{str_discoveries}\nWould you like to commit anyway? (y/N)'
     print_msg(msg)
 
     sys.stdin = open('/dev/tty', 'r')
@@ -72,7 +79,7 @@ def ask_commit(str_discoveries):
 
 
 def run(client, args):
-    """Run Credential Digger on staged files
+    """Run Credential Digger on staged files.
 
     Parameters
     ----------
