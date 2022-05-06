@@ -133,7 +133,7 @@ def main(sys_argv):
     ]:
         # Connect to db only when running commands that need it
         if args.sqlite:
-            client = SqliteClient(args.sqlite)
+            client = SqliteClient(os.path.expanduser(args.sqlite))
             logger.info('Database in use: Sqlite')
         else:
             client = PgClient(dbname=os.getenv('POSTGRES_DB'),
