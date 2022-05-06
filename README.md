@@ -244,7 +244,7 @@ Refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for all the s
 
 Credential Digger can be used with the [pre-commit](https://pre-commit.com/) framework to scan staged files before each commit.
 
-Please, refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for further information on installation and functioning.
+Please, refer to the [Wiki page of the pre-commit hook](https://github.com/SAP/credential-digger/wiki/pre-commit-hook) for further information on its installation and execution.
 
 
 
