@@ -14,27 +14,27 @@ TLDR; watch the video ⬇️
 
 
 
--  [Why](#why)
--  [Requirements](#requirements)
--  [Download and installation](#download-and-installation)
--  [How to run](#how-to-run)
+- [Credential Digger](#credential-digger)
+  - [Why](#why)
+  - [Requirements](#requirements)
+  - [Download and Installation](#download-and-installation)
+  - [How to run](#how-to-run)
     - [Add rules](#add-rules)
     - [Scan a repository](#scan-a-repository)
--  [Docker container](#docker-container)
--  [Advanced installation](#advanced-install)
+  - [Docker container](#docker-container)
+  - [Advanced Installation](#advanced-installation)
     - [Build from source](#build-from-source)
     - [External postgres database](#external-postgres-database)
--  [How to update the project](#how-to-updade-the-project)
--  [Python library usage](#python-library-usage)
-    - [Add rules](#add-rules)
-    - [Scan a repository](#scan-a-repository)
--  [CLI - Command Line Interface](#cli-command-line-interface)
--  [Pypi install source](#pypi-install-source)
--  [Wiki](#wiki)
--  [Contributing](#contributing)
--  [How to obtain support](#how-to-obtain-support)
--  [News](#news)
-
+  - [How to update the project](#how-to-update-the-project)
+  - [Python library usage](#python-library-usage)
+    - [Add rules](#add-rules-1)
+    - [Scan a repository](#scan-a-repository-1)
+  - [CLI - Command Line Interface](#cli---command-line-interface)
+  - [pre-commit hook](#pre-commit-hook)
+  - [Wiki](#wiki)
+  - [Contributing](#contributing)
+  - [How to obtain support](#how-to-obtain-support)
+  - [News](#news)
 
 ## Why
 In data protection, one of the most critical threats is represented by hardcoded (or plaintext) credentials in open-source projects. Several tools are already available to detect leaks in open-source platforms, but the diversity of credentials (depending on multiple factors such as the programming language, code development conventions, or developers' personal habits) is a bottleneck for the effectiveness of these tools. Their lack of precision leads to a very high number of pieces of code incorrectly detected as leaked secrets. Data wrongly detected as a leak is called _false positive_ data, and compose the huge majority of the data detected by currently available tools.
@@ -96,7 +96,7 @@ One of the core components of Credential Digger is the regular expression scanne
 **Before the very first scan, you need to add the rules that will be used by the scanner.** This step is only needed once.
 
 ```bash
-python -m credentialdigger add_rules --sqlite /path/to/data.db /path/to/rules.yaml
+credentialdigger add_rules --sqlite /path/to/data.db /path/to/rules.yaml
 ```
 
 ### Scan a repository
@@ -104,19 +104,19 @@ python -m credentialdigger add_rules --sqlite /path/to/data.db /path/to/rules.ya
 After adding the rules, you can scan a repository:
 
 ```bash
-python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db
+credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db
 ```
 
 Machine learning models are not mandatory, but highly recommended in order to reduce the manual effort of reviewing the result of a scan:
 
 ```bash
-python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --models PathModel PasswordModel
+credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --models PathModel PasswordModel
 ```
 
 As for the models, also the similarity feature is not mandatory, but highly recommended in order to reduce the manual effort while assessing the discoveries after a scan:
 
 ```bash
-python -m credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --similarity --models PathModel PasswordModel
+credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --similarity --models PathModel PasswordModel
 ```
 
 
@@ -237,9 +237,14 @@ Credential Digger also offers a simple CLI to scan a repository. The CLI support
 
 Refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for all the supported commands and their usage.
 
-## Pypi install source
 
-Credential Digger Python install is also avaialble as a Pypi project https://pypi.org/project/credentialdigger/
+## pre-commit hook
+
+Credential Digger can be used with the [pre-commit](https://pre-commit.com/) framework to scan staged files before each commit.
+
+Please, refer to the [Wiki page of the pre-commit hook](https://github.com/SAP/credential-digger/wiki/pre-commit-hook) for further information on its installation and execution.
+
+
 
 ## Wiki
 
