@@ -36,7 +36,6 @@ TLDR; watch the video ⬇️
   - [How to obtain support](#how-to-obtain-support)
   - [News](#news)
 
-
 ## Why
 In data protection, one of the most critical threats is represented by hardcoded (or plaintext) credentials in open-source projects. Several tools are already available to detect leaks in open-source platforms, but the diversity of credentials (depending on multiple factors such as the programming language, code development conventions, or developers' personal habits) is a bottleneck for the effectiveness of these tools. Their lack of precision leads to a very high number of pieces of code incorrectly detected as leaked secrets. Data wrongly detected as a leak is called _false positive_ data, and compose the huge majority of the data detected by currently available tools.
 
@@ -237,7 +236,6 @@ Please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for fu
 Credential Digger also offers a simple CLI to scan a repository. The CLI supports both sqlite and postgres databases. In case of postgres, you need either to export the credentials needed to connect to the database as environment variables or to setup a `.env` file. In case of sqlite, the path of the db must be passed as argument.
 
 Refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for all the supported commands and their usage.
-
 
 
 ## pre-commit hook
