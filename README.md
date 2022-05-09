@@ -29,6 +29,7 @@ TLDR; watch the video ⬇️
     - [Add rules](#add-rules)
     - [Scan a repository](#scan-a-repository)
 -  [CLI - Command Line Interface](#cli-command-line-interface)
+-  [Pypi install source](#pypi-install-source)
 -  [Wiki](#wiki)
 -  [Contributing](#contributing)
 -  [How to obtain support](#how-to-obtain-support)
@@ -236,7 +237,9 @@ Credential Digger also offers a simple CLI to scan a repository. The CLI support
 
 Refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for all the supported commands and their usage.
 
+## Pypi install source
 
+Credential Digger Python install is also avaialble as a Pypi project https://pypi.org/project/credentialdigger/
 
 ## Wiki
 
