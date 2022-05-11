@@ -39,7 +39,7 @@ class TestScansSqlite(unittest.TestCase):
             cli.main(["", "scan", "--sqlite", self.db_path,
                       "--models", "PathModel", "PasswordModel",
                       "--category", "password",
-                      "--force", "--local", repo_path])
+                      "--force", repo_path])
         # When using the models, we expect to be left with less than
         # TOTAL_PW_DISCOVERIES discoveries to manually review
         self.assertTrue(cm.exception.code < TOTAL_PW_DISCOVERIES)

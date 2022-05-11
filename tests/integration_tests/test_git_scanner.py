@@ -49,11 +49,11 @@ class TestGitScanner(unittest.TestCase):
         """ Test repo copy with invalid paths """
         # Inexistent path
         with self.assertRaises(FileNotFoundError):
-            self.git_scanner.get_git_repo('./inexistent_path', local_repo=True)
+            self.git_scanner.get_git_repo('./inexistent_path')
         # Non-repo path
         with self.assertRaises(InvalidGitRepositoryError):
             self.git_scanner.get_git_repo(
-                './credentialdigger', local_repo=True)
+                './credentialdigger')
 
     def test_get_commit_id_from_branch(self):
         """ Test branch name corresponds to the right commit id """
