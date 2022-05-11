@@ -82,27 +82,26 @@ class GitScanner(BaseScanner):
             If the url in repo_url is not a git repository, or access to the
             repository is denied
         """
-        project_path = tempfile.mkdtemp()
         if local_repo:
-            project_path = os.path.join(tempfile.mkdtemp(), 'repo')
-            try:
-                shutil.copytree(repo_url, project_path)
-                repo = GitRepo(project_path)
-            except FileNotFoundError as e:
-                shutil.rmtree(project_path)
-                raise e
-            except InvalidGitRepositoryError as e:
-                shutil.rmtree(project_path)
-                raise InvalidGitRepositoryError(
-                    f'\"{repo_url}\" is not a local git repository.') from e
-        else:
-            try:
-                GitRepo.clone_from(repo_url, project_path)
-                repo = GitRepo(project_path)
-            except GitCommandError as e:
-                logger.warning('Repo can not be cloned')
-                shutil.rmtree(project_path)
-                raise e
+            logger.warning('The parameter --local is now redundant,'
+                           'and will be deprecated. Local repos can be scanned' 
+                           'with the scan option as if they were remote ones.'
+                           'They are automatically managed by the tool.')
+
+        project_path = tempfile.mkdtemp()
+
+        try:
+            repo = GitRepo.clone_from(repo_url, project_path)
+        except GitCommandError as e:
+            logger.warning('Repo can not be cloned')
+            shutil.rmtree(project_path)
+            raise e
+        except FileNotFoundError as e:
+            shutil.rmtree(project_path)
+            raise e
+        except InvalidGitRepositoryError as e:
+            shutil.rmtree(project_path)
+            raise e
 
         return project_path, repo
 
