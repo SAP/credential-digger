@@ -53,7 +53,7 @@ class GitScanner(BaseScanner):
                              elements=len(patterns),
                              flags=flags)
 
-    def get_git_repo(self, repo_url, local_repo):
+    def get_git_repo(self, repo_url, local_repo=False):
         """ Get a git repository.
 
         Parameters
