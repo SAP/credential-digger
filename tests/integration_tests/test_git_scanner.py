@@ -48,10 +48,10 @@ class TestGitScanner(unittest.TestCase):
     def test_get_git_repo_local_invalid(self):
         """ Test repo copy with invalid paths """
         # Inexistent path
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(GitCommandError):
             self.git_scanner.get_git_repo('./inexistent_path')
         # Non-repo path
-        with self.assertRaises(InvalidGitRepositoryError):
+        with self.assertRaises(GitCommandError):
             self.git_scanner.get_git_repo(
                 './credentialdigger')
 
