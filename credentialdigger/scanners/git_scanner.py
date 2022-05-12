@@ -84,7 +84,7 @@ class GitScanner(BaseScanner):
         """
         if local_repo:
             logger.warning('The parameter --local is now redundant,'
-                           'and will be deprecated. Local repos can be scanned' 
+                           'and will be deprecated. Local repos can be scanned'
                            'with the scan option as if they were remote ones.'
                            'They are automatically managed by the tool.')
 
