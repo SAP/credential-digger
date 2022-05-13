@@ -404,9 +404,10 @@ class GitScanner(BaseScanner):
                     row = r_groups.group(1)
 
             rh = ResultHandler()
-            self.stream.scan(row.encode('utf-8'),
-                             match_event_handler=rh.handle_results,
-                             context=[row, filename, commit_hash, line_number])
+            self.stream.scan(
+                row.encode('utf-8'),
+                match_event_handler=rh.handle_results,
+                context=[row, filename, commit_hash, line_number])
             if rh.result:
                 detections.append(rh.result)
             line_number += 1

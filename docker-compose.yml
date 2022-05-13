@@ -14,3 +14,7 @@ services:
       - ./.env
     ports:
       - "5000:5000"
+    deploy:
+      resources:
+        limits:
+          memory: 6G

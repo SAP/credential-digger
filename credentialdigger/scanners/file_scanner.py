@@ -156,11 +156,12 @@ class FileScanner(BaseScanner):
             with open(full_path, 'r', encoding='utf-8') as file_to_scan:
                 for row in file_to_scan:
                     rh = ResultHandler()
-                    self.stream.scan(row.encode('utf-8'),
-                                     match_event_handler=rh.handle_results,
-                                     context=[row.strip(), relative_path,
-                                              commit_id,
-                                              line_number])
+                    self.stream.scan(
+                        row.encode('utf-8'),
+                        match_event_handler=rh.handle_results,
+                        context=[row.strip(), relative_path, commit_id,
+                                 line_number]
+                    )
                     if rh.result:
                         discoveries.append(rh.result)
                     line_number += 1
