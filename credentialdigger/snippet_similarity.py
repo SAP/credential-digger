@@ -1,5 +1,8 @@
 import logging
 import os
+import shutil
+import sys
+from pathlib import Path
 
 import numpy as np
 # In order not to raise tensorflow warnings, we need to set this environment
@@ -30,11 +33,26 @@ def build_embedding_model():
     # Define model input type and name
     inputs = tf.keras.layers.Input(shape=(), dtype=tf.string, name='snippet')
     # Define preprocessing layer
-    preprocessing_layer = hub.KerasLayer(tfhub_preprocessing,
-                                         name='preprocessing')
+    try:
+        preprocessing_layer = hub.KerasLayer(tfhub_preprocessing,
+                                             name='preprocessing')
+    except OSError as oserr:
+        # It may raise an OSError if cache is messed up
+        cache_dir = Path(os.getenv('TMPDIR')) / 'tfhub_modules'
+        if sys.platform == 'darwin' and os.path.exists(cache_dir):
+            # This cache directory for tf models is supposed to exist in MacOS
+            # only.
+            # Remove it and re-load layer
+            shutil.rmtree(cache_dir)
+            preprocessing_layer = hub.KerasLayer(tfhub_preprocessing,
+                                                 name='preprocessing')
+        else:
+            raise oserr
+
     # Define encoding layer
     encoder = hub.KerasLayer(tfhub_encoder,
-                             trainable=True, name='BERT_encoder')
+                             trainable=True,
+                             name='BERT_encoder')
     # Stack up the three layers
     outputs = encoder(preprocessing_layer(inputs))
     # Retrieve token embeddings i.e. the 'sequence_output' values
