@@ -228,7 +228,7 @@ class PgClient(Client):
         super().add_embeddings(query, repo_url)
 
     def delete_rule(self, ruleid):
-        """Delete a rule from database
+        """ Delete a rule from the database.
 
         Parameters
         ----------
@@ -237,10 +237,8 @@ class PgClient(Client):
 
         Returns
         ------
-        False
-            If the removal operation fails
-        True
-            Otherwise
+        bool
+            `True` if the removal operation is successful, `False` otherwise
         """
         return super().delete_rule(
             ruleid=ruleid,
