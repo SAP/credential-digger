@@ -254,7 +254,7 @@ class Client(Interface):
                           rule.get('description', ''))
 
     def delete_rule(self, query, ruleid):
-        """Delete a rule from database
+        """ Delete a rule from the database.
 
         Parameters
         ----------
@@ -265,16 +265,14 @@ class Client(Interface):
 
         Returns
         ------
-        False
-            If the removal operation fails
-        True
-            Otherwise
+        bool
+            `True` if the removal operation is successful, `False` otherwise
         """
         cursor = self.db.cursor()
         try:
             cursor.execute(query, (ruleid,))
             self.db.commit()
-            return bool(cursor.fetchone()[0])
+            return cursor.rowcount > 0
         except (TypeError, IndexError):
             # A TypeError is raised if any of the required arguments is missing
             self.db.rollback()
