@@ -5,7 +5,7 @@ hyperscan==0.2.0; python_version >= "3.8"
 hyperscan==0.1.5; python_version < "3.8"
 numpy
 pandas
-psycopg2-binary
+psycopg[binary]>~3.1
 PyGithub
 python-dotenv
 pyyaml

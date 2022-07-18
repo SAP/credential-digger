@@ -44,9 +44,9 @@ Licensor: AQR Capital Management, LLC, Lambda Foundry, Inc., PyData Development 
 Website: https://github.com/pandas-dev/pandas
 License: BSD 3-Clause License
 
-Component: psycopg2-binary
+Component: psycopg-binary
 Licensor: undefined
-Website: https://github.com/psycopg/psycopg2
+Website: https://github.com/psycopg/psycopg
 License: LGPL and BSD
 
 Component: PyGithub
