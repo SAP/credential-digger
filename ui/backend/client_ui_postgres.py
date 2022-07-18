@@ -71,13 +71,13 @@ class PgUiClient(UiClient, PgClient):
 
         # Execute inner query
         snippets = []
-        cursor = self.db.cursor()
-        cursor.execute(inner_query, tuple(inner_params))
-        result = cursor.fetchone()
-        total_discoveries = result[2] if result else 0
-        while result:
-            snippets.append((result[0], result[1]))
+        with self.db.cursor() as cursor:
+            cursor.execute(inner_query, tuple(inner_params))
             result = cursor.fetchone()
+            total_discoveries = result[2] if result else 0
+            while result:
+                snippets.append((result[0], result[1]))
+                result = cursor.fetchone()
 
         if len(snippets) == 0:
             return 0, []
@@ -96,11 +96,12 @@ class PgUiClient(UiClient, PgClient):
 
         # Execute outer query
         discoveries = []
-        cursor.execute(query, tuple(params))
-        result = cursor.fetchone()
-        while result:
-            discoveries.append(dict(Discovery(*result)._asdict()))
+        with self.db.cursor() as cursor:
+            cursor.execute(query, tuple(params))
             result = cursor.fetchone()
+            while result:
+                discoveries.append(dict(Discovery(*result)._asdict()))
+                result = cursor.fetchone()
 
         return total_discoveries, discoveries
 
