@@ -31,17 +31,22 @@ class GitPRScanner(GitScanner):
             int(pr_number))
         return commits.get_commits()
 
-    def scan(self, repo_url, user_name, repo_name, pr_number,
-             git_token=None, api_endpoint='https://api.github.com',
-             debug=False):
-        """ TODO
+    def scan(self, repo_url, pr_number, api_endpoint='https://api.github.com',
+             git_token=None, debug=False):
+        """ Scan a pull request.
 
-        Local repos are not supported because pull requests can't be treated
-        locally. They need a remote ()
+        Differently from other scanners, here local repos are not supported
+        because pull requests need a remote (indeed, locally, only merge is
+        allowed).
 
+        TODO
         """
         if debug:
             logger.setLevel(level=logging.DEBUG)
+
+        # Retrieve user_name and repo_name from repository url
+        user_name, repo_name = repo_url.split('/')[-2:]
+        logger.debug(f'Repo {user_name}/{repo_name}')
 
         # Get commits part of this PR
         commits = self.get_commits_from_pr(user_name, repo_name, pr_number,

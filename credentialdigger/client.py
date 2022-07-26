@@ -907,7 +907,7 @@ class Client(Interface):
             debug=debug, similarity=similarity, max_depth=max_depth,
             ignore_list=ignore_list)
 
-    def scan_pull_request(self, repo_url, user_name, repo_name, pr_number,
+    def scan_pull_request(self, repo_url, pr_number,
                           api_endpoint='https://api.github.com',
                           category=None, models=None, force=False, debug=False,
                           similarity=False, git_token=None):
@@ -968,8 +968,7 @@ class Client(Interface):
         return self._scan(
             repo_url=repo_url, scanner=scanner, models=models, force=force,
             debug=debug, similarity=similarity,
-            user_name=user_name, repo_name=repo_name, pr_number=pr_number,
-            git_token=git_token)
+            pr_number=pr_number, git_token=git_token)
 
     def scan_user(self, username, category=None, models=None, debug=False,
                   forks=False, similarity=False, git_token=None,
