@@ -784,8 +784,13 @@ class Client(Interface):
             repo_url = os.path.abspath(repo_url)
         else:
             # Trim the tail of the repo's url by removing '/' and '.git'
-            repo_url = repo_url.rstrip('/')
-            repo_url = repo_url.rstrip('.git')
+            if repo_url.endswith('/'):
+                repo_url = repo_url[:-1]
+            if repo_url.endswith('.git'):
+                repo_url = repo_url[:-4]
+            # NB: removesuffix not supported with py<3.9
+            # repo_url = repo_url.removesuffix('/')
+            # repo_url = repo_url.removesuffix('.git')
 
         rules = self._get_scan_rules(category)
         scanner = GitScanner(rules)
@@ -947,8 +952,10 @@ class Client(Interface):
             ones classified as false positives).
         """
         # Trim the tail of the repo's url by removing '/' and '.git'
-        repo_url = repo_url.rstrip('/')
-        repo_url = repo_url.rstrip('.git')
+        if repo_url.endswith('/'):
+            repo_url = repo_url[:-1]
+        if repo_url.endswith('.git'):
+            repo_url = repo_url[:-4]
 
         if self.get_repo(repo_url):
             logger.info(f'The repository \"{repo_url}\" has already been '
