@@ -32,7 +32,7 @@ class GitPRScanner(GitScanner):
         return commits.get_commits()
 
     def scan(self, repo_url, pr_number, api_endpoint='https://api.github.com',
-             git_token=None, debug=False):
+             git_token=None, debug=False, **kwargs):
         """ Scan a pull request.
 
         Differently from other scanners, here local repos are not supported
