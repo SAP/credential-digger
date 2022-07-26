@@ -512,7 +512,7 @@ class Client(Interface):
         """
         cursor = self.db.cursor()
         all_discoveries = []
-        params = (repo_url,) if file_name is None else (
+        params = (repo_url,) if not file_name else (
             repo_url, file_name)
         cursor.execute(query, params)
         result = cursor.fetchone()
@@ -840,7 +840,7 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        if self.get_repo(repo_url) != {}:
+        if self.get_repo(repo_url):
             logger.info(f'The repository \"{repo_url}\" has already been '
                         'scanned.')
             if force:
@@ -895,7 +895,7 @@ class Client(Interface):
         """
         scan_path = os.path.abspath(scan_path)
 
-        if self.get_repo(scan_path) != {} and force is False:
+        if self.get_repo(scan_path) and not force:
             raise ValueError(f'The directory \"{scan_path}\" has already been '
                              'scanned. Please use \"force\" to rescan it.')
 
@@ -949,6 +949,18 @@ class Client(Interface):
         # Trim the tail of the repo's url by removing '/' and '.git'
         repo_url = repo_url.rstrip('/')
         repo_url = repo_url.rstrip('.git')
+
+        if self.get_repo(repo_url):
+            logger.info(f'The repository \"{repo_url}\" has already been '
+                        'scanned.')
+            if force:
+                logger.info(f'The pull request {pr_number} will be scanned, '
+                            'and the old discoveries will be deleted) due to '
+                            'force=True')
+            else:
+                logger.info('Impossible to scan this pull request. Consider '
+                            'relaunching the scan with force=True')
+                return
 
         rules = self._get_scan_rules(category)
         scanner = GitPRScanner(rules)
@@ -1114,7 +1126,7 @@ class Client(Interface):
         if debug:
             logger.setLevel(level=logging.DEBUG)
 
-        if models is None:
+        if not models:
             logger.debug('Don\'t use ML models')
             models = []
 
