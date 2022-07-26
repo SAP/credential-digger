@@ -14,6 +14,7 @@ from rich.progress import Progress
 from .models.model_manager import ModelManager
 from .scanners.file_scanner import FileScanner
 from .scanners.git_file_scanner import GitFileScanner
+from .scanners.git_pr_scanner import GitPRScanner
 from .scanners.git_scanner import GitScanner
 from .snippet_similarity import (build_embedding_model, compute_similarity,
                                  compute_snippet_embedding)
@@ -783,10 +784,8 @@ class Client(Interface):
             repo_url = os.path.abspath(repo_url)
         else:
             # Trim the tail of the repo's url by removing '/' and '.git'
-            if repo_url.endswith('/'):
-                repo_url = repo_url[:-1]
-            if repo_url.endswith('.git'):
-                repo_url = repo_url[:-4]
+            repo_url = repo_url.rstrip('/')
+            repo_url = repo_url.rstrip('.git')
 
         rules = self._get_scan_rules(category)
         scanner = GitScanner(rules)
@@ -907,6 +906,58 @@ class Client(Interface):
             repo_url=scan_path, scanner=scanner, models=models, force=force,
             debug=debug, similarity=similarity, max_depth=max_depth,
             ignore_list=ignore_list)
+
+    def scan_pull_request(self, repo_url, user_name, repo_name, pr_number,
+                          api_endpoint='https://api.github.com',
+                          category=None, models=None, force=False, debug=False,
+                          similarity=False, git_token=None):
+        """ Launch the scan of a pull request.
+
+        Only the commits part of the pull request get scanned.
+        TODO
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repo to scan
+
+        TODO ...
+
+        category: str, optional
+            If specified, scan the repo using all the rules of this category,
+            otherwise use all the rules in the db
+        models: list, optional
+            A list of models for the ML false positives detection
+        force: bool, default `False`
+            Force a complete re-scan of the repository, in case it has already
+            been scanned previously
+        debug: bool, default `False`
+            Flag used to decide whether to visualize the progressbars during
+            the scan (e.g., during the insertion of the detections in the db)
+        similarity: bool, default `False`
+            Decide whether to build the embedding model and to compute and add
+            embeddings, to allow for updating of similar discoveries
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
+
+        Returns
+        -------
+        list
+            The id of the discoveries detected by the scanner (excluded the
+            ones classified as false positives).
+        """
+        # Trim the tail of the repo's url by removing '/' and '.git'
+        repo_url = repo_url.rstrip('/')
+        repo_url = repo_url.rstrip('.git')
+
+        rules = self._get_scan_rules(category)
+        scanner = GitPRScanner(rules)
+
+        return self._scan(
+            repo_url=repo_url, scanner=scanner, models=models, force=force,
+            debug=debug, similarity=similarity,
+            user_name=user_name, repo_name=repo_name, pr_number=pr_number,
+            git_token=git_token)
 
     def scan_user(self, username, category=None, models=None, debug=False,
                   forks=False, similarity=False, git_token=None,
