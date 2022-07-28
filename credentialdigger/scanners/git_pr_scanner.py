@@ -58,24 +58,12 @@ class GitPRScanner(GitScanner):
             logger.debug(f'scan commit {commit}')
             # Use `raw_data` because it only consumes 1 api call
             files = commit.raw_data['files']
-            print(f'There are {len(files)} files in this commit')
+            logger.debug(f'There are {len(files)} files in this commit')
             for committed_file in files:
                 if 'patch' not in committed_file:
                     # Empty file
                     continue
                 patch = committed_file['patch']
-                # for line in patch.split('\n'):
-                #     if line[0] == '+':
-                #         # If the line starts with a '+' then this line is new
-                #         if category := _scan(line[1:].strip()):
-                #             results.append(
-                #                 {
-                #                     'snippet': line[1:].strip(),
-                #                     'file_name': committed_file['filename'],
-                #                     'link': committed_file['raw_url'],
-                #                     'category': category
-                #                 }
-                #             )
                 detections = detections + self._regex_check(
                     patch, committed_file['filename'], commit.sha)
 
