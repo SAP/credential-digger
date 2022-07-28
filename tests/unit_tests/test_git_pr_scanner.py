@@ -30,7 +30,6 @@ class TestGitPRScanner(unittest.TestCase):
         """ Test get_commit_from_pr failure with nonexistent repository or
         pull request numer """
         with self.assertRaises(UnknownObjectException):
-            # self.pr_scanner.scan(user_name, repo_name, pr_number)
             self.pr_scanner.get_commits_from_pr(
                 user_name, repo_name, pr_number)
 
