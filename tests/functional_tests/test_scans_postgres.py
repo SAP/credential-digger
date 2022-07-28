@@ -5,6 +5,7 @@ import unittest
 
 from credentialdigger.cli import cli
 from git import Repo as GitRepo
+from parameterized import param, parameterized
 from psycopg2 import connect
 
 TOTAL_PW_DISCOVERIES = 11
@@ -59,3 +60,17 @@ class TestScansPostgres(unittest.TestCase):
             cli.main(["", "scan_wiki", "--dotenv", self.dotenv,
                       "--category", "password", self.repo_url])
         self.assertEqual(cm.exception.code, 5)
+
+    @parameterized.expand([
+        param(pr_num=1, leaks=5),
+        param(pr_num=2, leaks=0)
+    ])
+    def test_scan_pr(self, pr_num, leaks):
+        """ Test scan_pull_request method on vulnerable and clean pull
+        requests  """
+        with self.assertRaises(SystemExit) as cm:
+            cli.main(["", "scan_pull_request", "--dotenv", self.dotenv,
+                      "--category", "password",
+                      "--pr", pr_num,
+                      self.repo_url])
+        self.assertEqual(cm.exception.code, leaks)
