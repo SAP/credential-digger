@@ -919,15 +919,15 @@ class Client(Interface):
         """ Launch the scan of a pull request.
 
         Only the commits part of the pull request get scanned.
-        TODO
 
         Parameters
         ----------
         repo_url: str
             The url of the repo to scan
-
-        TODO ...
-
+        pr_number: int
+            The number of pull request
+        api_endpoint: str, default `https://api.github.com`
+            API endpoint of the git server (default is github.com)
         category: str, optional
             If specified, scan the repo using all the rules of this category,
             otherwise use all the rules in the db
