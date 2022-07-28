@@ -23,7 +23,32 @@ class GitPRScanner(GitScanner):
 
     def get_commits_from_pr(self, user_name, repo_name, pr_number, token=None,
                             api_endpoint='https://api.github.com'):
-        """ TODO """
+        """ Get the commits from a pull request.
+
+        Parameters
+        ----------
+        user_name: str
+            The owner of the repository
+        repo_name: str
+            The name the repository
+        pr_number: int
+            The number of the pull request to scan
+        token: str, optional
+            Git personal access token to authenticate to the git server
+        api_endpoint: str
+            The GitHub API endpoint
+
+        Returns
+        -------
+        `github.PaginatedList.PaginatedList`
+            A (paginated) list of commits (`github.Commit`)
+
+        Raises
+        ------
+        `github.UnknownObjectException`
+            If user_name, repo_name, or pull request number are not found
+            in the given api endpoint
+        """
         g = Github(login_or_token=token, base_url=api_endpoint)
         logger.debug(f'Get commits of PR {pr_number} from '
                      f'{user_name}/{repo_name}')
@@ -39,7 +64,33 @@ class GitPRScanner(GitScanner):
         because pull requests need a remote (indeed, locally, only merge is
         allowed).
 
-        TODO
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repo to scan
+        pr_number: int
+            The number of the pull request to scan
+        api_endpoint: str
+            The GitHub API endpoint (default is github.com)
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
+        debug: bool, default `False`
+            Flag used to decide whether to visualize the progressbars during
+            the scan (e.g., during the insertion of the detections in the db)
+        kwargs: kwargs
+            Keyword arguments to be passed to the scanner
+
+        Returns
+        -------
+        list
+            A list of discoveries (dictionaries). If there are no discoveries
+            return an empty list
+
+        Raises
+        ------
+        `github.UnknownObjectException`
+            If either the given repository or pull request number is not found
+            in the given api endpoint
         """
         if debug:
             logger.setLevel(level=logging.DEBUG)
