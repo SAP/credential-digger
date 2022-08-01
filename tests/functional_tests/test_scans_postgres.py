@@ -76,3 +76,5 @@ class TestScansPostgres(unittest.TestCase):
             # pr_num needed to be cast to str not to raise TypeError here, but
             # its type will later be managed by the scanner
         self.assertEqual(cm.exception.code, leaks)
+
+    def test_scan_snapshot(self): ...
