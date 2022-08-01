@@ -69,8 +69,10 @@ class TestScansPostgres(unittest.TestCase):
         """ Test scan_pull_request method on vulnerable and clean pull
         requests  """
         with self.assertRaises(SystemExit) as cm:
-            cli.main(["", "scan_pull_request", "--dotenv", self.dotenv,
+            cli.main(["", "scan_pr", "--dotenv", self.dotenv,
                       "--category", "password",
-                      "--pr", pr_num,
+                      "--pr", str(pr_num),
                       self.repo_url])
+            # pr_num needed to be cast to str not to raise TypeError here, but
+            # its type will later be managed by the scanner
         self.assertEqual(cm.exception.code, leaks)
