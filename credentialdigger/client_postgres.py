@@ -549,9 +549,11 @@ class PgClient(Client):
         return super().update_discoveries(
             discoveries_ids=discoveries_ids,
             new_state=new_state,
-            query='UPDATE discoveries SET state=%s WHERE id IN %s RETURNING true')
+            query='UPDATE discoveries SET state=%s WHERE id IN %s \
+                    RETURNING true')
 
-    def update_discovery_group(self, new_state, repo_url, file_name, snippet=None):
+    def update_discovery_group(self, new_state, repo_url, file_name,
+                               snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
