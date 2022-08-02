@@ -104,7 +104,7 @@ def main(sys_argv):
     parser_scan_pr = subparsers.add_parser(
         'scan_pr', help='Scan a pull request',
         parents=[parser_dotenv, parser_sqlite, parser_scan_base])
-    scan_snapshot.configure_parser(parser_scan_pr)
+    scan_pr.configure_parser(parser_scan_pr)
 
     # get_discoveries subparser configuration
     parser_get_discoveries = subparsers.add_parser(
@@ -135,6 +135,7 @@ def main(sys_argv):
         scan_user.run,
         scan_wiki.run,
         scan_path.run,
+        scan_pr.run,
         scan_snapshot.run
     ]:
         # Connect to db only when running commands that need it
