@@ -6,7 +6,7 @@ from credentialdigger import PgClient, SqliteClient
 from dotenv import load_dotenv
 
 from . import (add_rules, get_discoveries, hook, scan, scan_path,
-               scan_snapshot, scan_user, scan_wiki)
+               scan_pr, scan_snapshot, scan_user, scan_wiki)
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +100,12 @@ def main(sys_argv):
         parents=[parser_dotenv, parser_sqlite, parser_scan_base])
     scan_snapshot.configure_parser(parser_scan_snapshot)
 
+    # scan_pr subparser configuration
+    parser_scan_pr = subparsers.add_parser(
+        'scan_pr', help='Scan a pull request',
+        parents=[parser_dotenv, parser_sqlite, parser_scan_base])
+    scan_pr.configure_parser(parser_scan_pr)
+
     # get_discoveries subparser configuration
     parser_get_discoveries = subparsers.add_parser(
         'get_discoveries', help='Get discoveries of a scanened repository',
@@ -129,6 +135,7 @@ def main(sys_argv):
         scan_user.run,
         scan_wiki.run,
         scan_path.run,
+        scan_pr.run,
         scan_snapshot.run
     ]:
         # Connect to db only when running commands that need it

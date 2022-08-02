@@ -77,5 +77,6 @@ jobs:
         POSTGRES_DB: credential_digger_tests
         DBHOST: localhost
         DBPORT: 5432
+        GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
       run: |
         pytest tests/functional_tests
