@@ -967,7 +967,7 @@ class Client(Interface):
             else:
                 logger.info('Impossible to scan this pull request. Consider '
                             'relaunching the scan with force=True')
-                return
+                return []
 
         rules = self._get_scan_rules(category)
         scanner = GitPRScanner(rules)
