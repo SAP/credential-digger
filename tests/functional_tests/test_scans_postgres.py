@@ -15,6 +15,7 @@ TOTAL_PW_DISCOVERIES = 11
 class TestScansPostgres(unittest.TestCase):
     dotenv = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
     repo_url = 'https://github.com/SAP/credential-digger-tests'
+    git_token = os.getenv('GIT_TOKEN')
 
     @classmethod
     def setUpClass(cls):
@@ -73,6 +74,7 @@ class TestScansPostgres(unittest.TestCase):
         with self.assertRaises(SystemExit) as cm:
             cli.main(["", "scan_pr", "--dotenv", self.dotenv,
                       "--category", "password",
+                      "--git_token", self.git_token,
                       "--force",
                       "--pr", str(pr_num),
                       self.repo_url])
@@ -101,6 +103,7 @@ class TestScansPostgres(unittest.TestCase):
         with self.assertRaises(SystemExit) as cm:
             args = ["", "scan_pr", "--dotenv", self.dotenv,
                     "--category", "password",
+                    "--git_token", self.git_token,
                     "--pr", "1",
                     self.repo_url]
             # force is a flag (store_true parameter)

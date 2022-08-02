@@ -13,6 +13,7 @@ TOTAL_PW_DISCOVERIES = 11
 
 class TestScansSqlite(unittest.TestCase):
     repo_url = 'https://github.com/SAP/credential-digger-tests'
+    git_token = os.getenv('GIT_TOKEN')
 
     @classmethod
     def setUpClass(cls):
@@ -62,6 +63,7 @@ class TestScansSqlite(unittest.TestCase):
         with self.assertRaises(SystemExit) as cm:
             cli.main(["", "scan_pr", "--sqlite", self.db_path,
                       "--category", "password",
+                      "--git_token", self.git_token,
                       "--force",
                       "--pr", str(pr_num),
                       self.repo_url])
@@ -90,6 +92,7 @@ class TestScansSqlite(unittest.TestCase):
         with self.assertRaises(SystemExit) as cm:
             args = ["", "scan_pr", "--sqlite", self.db_path,
                     "--category", "password",
+                    "--git_token", self.git_token,
                     "--pr", "1",
                     self.repo_url]
             # force is a flag (store_true parameter)
