@@ -69,33 +69,33 @@ class TestScansSqlite(unittest.TestCase):
             # its type will later be managed by the scanner
         self.assertEqual(cm.exception.code, leaks)
 
-#     @parameterized.expand([
-#         # param(force=True, leaks=5),
-#         # param(force=False, leaks=0)
-#         # parameterized is buggy with mock (as of #66 in its repo) so we
-#         # cannot use param here as long as the issue doesn't get solved
-#         # ref: https://github.com/wolever/parameterized/issues/66
-#         param(True, 5),
-#         param(False, 0)
-#     ])
-#     @patch('credentialdigger.client_sqlite.SqliteClient.get_repo')
-#     def test_scan_pr_with_force(self, force, leaks, mock_get_repo):
-#         """ Test scan_pull_request method with force parameter.
-#
-#         To trigger the force behavior, the get_repo has been mocked to return
-#         a value. In this case, the PR is scanned only if force is True (i.e.,
-#         it is set in the arguments), otherwise an error message is printed by
-#         the client and no discoveries are returned. """
-#         mock_get_repo.side_effect = {'url': self.repo_url, 'last_scan': 123}
-#         with self.assertRaises(SystemExit) as cm:
-#             args = ["", "scan_pr", "--sqlite", self.db_path,
-#                     "--category", "password",
-#                     "--pr", "1",
-#                     self.repo_url]
-#             # force is a flag (store_true parameter)
-#             if force:
-#                 args.insert(-1, "--force")
-#             cli.main(args)
-#         self.assertEqual(cm.exception.code, leaks)
+    @parameterized.expand([
+        # param(force=True, leaks=5),
+        # param(force=False, leaks=0)
+        # parameterized is buggy with mock (as of #66 in its repo) so we
+        # cannot use param here as long as the issue doesn't get solved
+        # ref: https://github.com/wolever/parameterized/issues/66
+        param(True, 5),
+        param(False, 0)
+    ])
+    @patch('credentialdigger.client_sqlite.SqliteClient.get_repo')
+    def test_scan_pr_with_force(self, force, leaks, mock_get_repo):
+        """ Test scan_pull_request method with force parameter.
+
+        To trigger the force behavior, the get_repo has been mocked to return
+        a value. In this case, the PR is scanned only if force is True (i.e.,
+        it is set in the arguments), otherwise an error message is printed by
+        the client and no discoveries are returned. """
+        mock_get_repo.return_value = {'url': self.repo_url, 'last_scan': 123}
+        with self.assertRaises(SystemExit) as cm:
+            args = ["", "scan_pr", "--sqlite", self.db_path,
+                    "--category", "password",
+                    "--pr", "1",
+                    self.repo_url]
+            # force is a flag (store_true parameter)
+            if force:
+                args.insert(-1, "--force")
+            cli.main(args)
+        self.assertEqual(cm.exception.code, leaks)
 
     def test_scan_snapshot(self): ...
