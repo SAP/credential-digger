@@ -14,6 +14,7 @@ from rich.progress import Progress
 from .models.model_manager import ModelManager
 from .scanners.file_scanner import FileScanner
 from .scanners.git_file_scanner import GitFileScanner
+from .scanners.git_pr_scanner import GitPRScanner
 from .scanners.git_scanner import GitScanner
 from .snippet_similarity import (build_embedding_model, compute_similarity,
                                  compute_snippet_embedding)
@@ -511,7 +512,7 @@ class Client(Interface):
         """
         cursor = self.db.cursor()
         all_discoveries = []
-        params = (repo_url,) if file_name is None else (
+        params = (repo_url,) if not file_name else (
             repo_url, file_name)
         cursor.execute(query, params)
         result = cursor.fetchone()
@@ -787,6 +788,9 @@ class Client(Interface):
                 repo_url = repo_url[:-1]
             if repo_url.endswith('.git'):
                 repo_url = repo_url[:-4]
+            # NB: removesuffix not supported with py<3.9
+            # repo_url = repo_url.removesuffix('/')
+            # repo_url = repo_url.removesuffix('.git')
 
         rules = self._get_scan_rules(category)
         scanner = GitScanner(rules)
@@ -841,7 +845,7 @@ class Client(Interface):
             The id of the discoveries detected by the scanner (excluded the
             ones classified as false positives).
         """
-        if self.get_repo(repo_url) != {}:
+        if self.get_repo(repo_url):
             logger.info(f'The repository \"{repo_url}\" has already been '
                         'scanned.')
             if force:
@@ -896,7 +900,7 @@ class Client(Interface):
         """
         scan_path = os.path.abspath(scan_path)
 
-        if self.get_repo(scan_path) != {} and force is False:
+        if self.get_repo(scan_path) and not force:
             raise ValueError(f'The directory \"{scan_path}\" has already been '
                              'scanned. Please use \"force\" to rescan it.')
 
@@ -907,6 +911,71 @@ class Client(Interface):
             repo_url=scan_path, scanner=scanner, models=models, force=force,
             debug=debug, similarity=similarity, max_depth=max_depth,
             ignore_list=ignore_list)
+
+    def scan_pull_request(self, repo_url, pr_number,
+                          api_endpoint='https://api.github.com',
+                          category=None, models=None, force=False, debug=False,
+                          similarity=False, git_token=None):
+        """ Launch the scan of a pull request.
+
+        Only the commits part of the pull request get scanned.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repo to scan
+        pr_number: int
+            The number of pull request
+        api_endpoint: str, default `https://api.github.com`
+            API endpoint of the git server (default is github.com)
+        category: str, optional
+            If specified, scan the repo using all the rules of this category,
+            otherwise use all the rules in the db
+        models: list, optional
+            A list of models for the ML false positives detection
+        force: bool, default `False`
+            Force a complete re-scan of the repository, in case it has already
+            been scanned previously
+        debug: bool, default `False`
+            Flag used to decide whether to visualize the progressbars during
+            the scan (e.g., during the insertion of the detections in the db)
+        similarity: bool, default `False`
+            Decide whether to build the embedding model and to compute and add
+            embeddings, to allow for updating of similar discoveries
+        git_token: str, optional
+            Git personal access token to authenticate to the git server
+
+        Returns
+        -------
+        list
+            The id of the discoveries detected by the scanner (excluded the
+            ones classified as false positives).
+        """
+        # Trim the tail of the repo's url by removing '/' and '.git'
+        if repo_url.endswith('/'):
+            repo_url = repo_url[:-1]
+        if repo_url.endswith('.git'):
+            repo_url = repo_url[:-4]
+
+        if self.get_repo(repo_url):
+            logger.info(f'The repository \"{repo_url}\" has already been '
+                        'scanned.')
+            if force:
+                logger.info(f'The pull request {pr_number} will be scanned, '
+                            'and the old discoveries will be deleted) due to '
+                            'force=True')
+            else:
+                logger.info('Impossible to scan this pull request. Consider '
+                            'relaunching the scan with force=True')
+                return []
+
+        rules = self._get_scan_rules(category)
+        scanner = GitPRScanner(rules)
+
+        return self._scan(
+            repo_url=repo_url, scanner=scanner, models=models, force=force,
+            debug=debug, similarity=similarity,
+            pr_number=pr_number, git_token=git_token)
 
     def scan_user(self, username, category=None, models=None, debug=False,
                   forks=False, similarity=False, git_token=None,
@@ -1063,7 +1132,7 @@ class Client(Interface):
         if debug:
             logger.setLevel(level=logging.DEBUG)
 
-        if models is None:
+        if not models:
             logger.debug('Don\'t use ML models')
             models = []
 
