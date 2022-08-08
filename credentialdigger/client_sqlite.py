@@ -58,7 +58,7 @@ class SqliteClient(Client):
             );
 
             PRAGMA foreign_keys=ON;
-        """)
+        """)  # noqa: E501
         cursor.close()
         self.db.commit()
 
@@ -205,9 +205,9 @@ class SqliteClient(Client):
         query = 'INSERT INTO embeddings (id, snippet, embedding, repo_url) \
                 VALUES (?, ?, ?, ?);'
         super().add_embedding(query,
-                                     discovery_id,
-                                     repo_url,
-                                     embedding)
+                              discovery_id,
+                              repo_url,
+                              embedding)
 
     def add_embeddings(self, repo_url):
         """ Bulk add embeddings.
@@ -261,7 +261,8 @@ class SqliteClient(Client):
             regex=regex,
             category=category,
             description=description,
-            query='INSERT INTO rules (regex, category, description) VALUES (?, ?, ?)'
+            query='INSERT INTO rules (regex, category, description) \
+                    VALUES (?, ?, ?)'
         )
 
     def delete_rule(self, ruleid):
@@ -588,7 +589,8 @@ class SqliteClient(Client):
             query='UPDATE discoveries SET state=? WHERE id IN('
                   f'VALUES {", ".join(["?"]*len(discoveries_ids))})')
 
-    def update_discovery_group(self, new_state, repo_url, file_name, snippet=None):
+    def update_discovery_group(self, new_state, repo_url, file_name,
+                               snippet=None):
         """ Change the state of a group of discoveries.
 
         A group of discoveries is identified by the url of their repository,
