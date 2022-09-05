@@ -1,4 +1,5 @@
 import logging
+import urllib3
 from github import Github
 
 from .git_scanner import GitScanner
@@ -49,7 +50,10 @@ class GitPRScanner(GitScanner):
             If user_name, repo_name, or pull request number are not found
             in the given api endpoint
         """
-        g = Github(login_or_token=token, base_url=api_endpoint)
+        # Disable warnings due to verify=false at login
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+        g = Github(login_or_token=token, base_url=api_endpoint, verify=False)
         logger.debug(f'Get commits of PR {pr_number} from '
                      f'{user_name}/{repo_name}')
         commits = g.get_user(user_name).get_repo(repo_name).get_pull(
