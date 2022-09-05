@@ -8,7 +8,7 @@ from credentialdigger.client_sqlite import SqliteClient
 from git import Repo as GitRepo
 from parameterized import param, parameterized
 
-TOTAL_PW_DISCOVERIES = 11
+TOTAL_PW_DISCOVERIES = 12
 
 
 class TestScansSqlite(unittest.TestCase):
@@ -54,7 +54,7 @@ class TestScansSqlite(unittest.TestCase):
         self.assertEqual(cm.exception.code, 5)
 
     @parameterized.expand([
-        param(pr_num=1, leaks=5),
+        param(pr_num=1, leaks=11),
         param(pr_num=2, leaks=0)
     ])
     def test_scan_pr(self, pr_num, leaks):
@@ -72,12 +72,12 @@ class TestScansSqlite(unittest.TestCase):
         self.assertEqual(cm.exception.code, leaks)
 
     @parameterized.expand([
-        # param(force=True, leaks=5),
+        # param(force=True, leaks=11),
         # param(force=False, leaks=0)
         # parameterized is buggy with mock (as of #66 in its repo) so we
         # cannot use param here as long as the issue doesn't get solved
         # ref: https://github.com/wolever/parameterized/issues/66
-        param(True, 5),
+        param(True, 11),
         param(False, 0)
     ])
     @patch('credentialdigger.client_sqlite.SqliteClient.get_repo')
