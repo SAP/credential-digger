@@ -974,7 +974,7 @@ class Client(Interface):
 
         return self._scan(
             repo_url=repo_url, scanner=scanner, models=models, force=force,
-            debug=debug, similarity=similarity,
+            debug=debug, similarity=similarity, api_endpoint=api_endpoint,
             pr_number=pr_number, git_token=git_token)
 
     def scan_user(self, username, category=None, models=None, debug=False,
