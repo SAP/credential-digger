@@ -37,7 +37,7 @@ class TestGitPRScanner(unittest.TestCase):
         param(user_name='SAP',
               repo_name='credential-digger-tests',
               pr_number=1,
-              commits_nr=4),
+              commits_nr=6),
         param(user_name='SAP',
               repo_name='credential-digger-tests',
               pr_number=2,
