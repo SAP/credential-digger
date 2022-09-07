@@ -168,7 +168,7 @@ def export_csv(discoveries, client, save=False):
         path = save
 
     try:
-        csv_file = open(path, newline='', mode='w')
+        csv_file = open(path, newline='', mode='w', encoding='utf-8')
     except IOError as e:
         console.print(f'[red]{e}\n'
                       '[bold][!] Failed to export discoveries.[/]')
