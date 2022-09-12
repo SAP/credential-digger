@@ -1,7 +1,7 @@
 FROM python:3.9-bullseye as builder
 
 RUN pip install flask_jwt_extended Flask python-dotenv
-RUN apt-get update && apt-get install -y libhyperscan5 libpq-dev gunicorn3
+RUN apt-get update && apt-get install -y libhyperscan5 libpq5 gunicorn3
 RUN apt-get install -y dos2unix
 
 # Don't verify ssl for github enterprise

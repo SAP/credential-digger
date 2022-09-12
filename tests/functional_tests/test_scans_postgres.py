@@ -5,7 +5,7 @@ import unittest
 
 from credentialdigger.cli import cli
 from git import Repo as GitRepo
-from psycopg2 import connect
+from psycopg import connect
 
 TOTAL_PW_DISCOVERIES = 11
 
