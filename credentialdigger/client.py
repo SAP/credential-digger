@@ -969,6 +969,9 @@ class Client(Interface):
                             'relaunching the scan with force=True')
                 return []
 
+        # Strip '/' at the end of api endpoint
+        api_endpoint = api_endpoint.rstrip('/')
+
         rules = self._get_scan_rules(category)
         scanner = GitPRScanner(rules)
 
@@ -1014,6 +1017,8 @@ class Client(Interface):
         # Disable warnings due to verify=false at login
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+        # Strip '/' at the end of api endpoint
+        api_endpoint = api_endpoint.rstrip('/')
         logger.debug(f'Use API endpoint {api_endpoint}')
 
         rules = self._get_scan_rules(category)
