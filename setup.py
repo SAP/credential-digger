@@ -13,7 +13,7 @@ def requirements():
 
 setuptools.setup(
     name='credentialdigger',
-    version='4.9.2',
+    version='4.9.3',
     author='SAP SE',
     maintainer='Marco Rosa, Slim Trabelsi',
     maintainer_email='marco.rosa@sap.com, slim.trabelsi@sap.com',
@@ -28,7 +28,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
         'Operating System :: OS Independent',
     ],
-    python_requires='>3.5, <3.10',
+    python_requires='>3.5, <3.11',
     entry_points={'console_scripts': ['credentialdigger=credentialdigger'
                                       '.__main__:main']},
 )
