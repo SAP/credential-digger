@@ -1063,7 +1063,7 @@ class Client(Interface):
                                                    git_token=git_token)
             except GitCommandError:
                 logger.warning(f'{i}/{repos_num} Ignore {repo_url} '
-                               '(it can not be cloned)')
+                               '(it cannot be cloned)')
 
         return missing_ids
 
