@@ -93,7 +93,7 @@ class GitScanner(BaseScanner):
         try:
             repo = GitRepo.clone_from(repo_url, project_path)
         except GitCommandError as e:
-            logger.warning('Repo can not be cloned')
+            logger.warning('Repo cannot be cloned')
             shutil.rmtree(project_path)
             raise e
         except FileNotFoundError as e:
