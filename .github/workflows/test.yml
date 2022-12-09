@@ -14,7 +14,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres
+        image: postgres:alpine
         env:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
