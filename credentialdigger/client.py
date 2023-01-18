@@ -1149,7 +1149,7 @@ class Client(Interface):
         else:
             # Get the latest commit recorded on the db
             # `or` clause needed in case the previous scan attempt was broken
-            from_timestamp = self.get_repo(repo_url)['last_scan'] or 0
+            from_timestamp = self.get_repo(repo_url).get('last_scan') or 0
             new_repo = False
 
         # Force complete scan
