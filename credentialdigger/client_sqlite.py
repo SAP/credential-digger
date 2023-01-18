@@ -127,7 +127,7 @@ class SqliteClient(Client):
             repo_url=repo_url,
             rule_id=rule_id,
             state=state,
-            query='INSERT INTO discoveries (file_name, commit_id, line_number, \
+            query='INSERT INTO discoveries (file_name, commit_id, line_number,\
             snippet, repo_url, rule_id, state) VALUES \
             (?, ?, ?, ?, ?, ?, ?)'
         )
