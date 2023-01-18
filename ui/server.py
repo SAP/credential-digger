@@ -8,7 +8,7 @@ from collections import defaultdict
 from enum import Enum
 from itertools import groupby
 
-import psycopg2
+import psycopg
 import yaml
 from dotenv import load_dotenv
 from flask import Flask, jsonify, make_response, redirect, render_template,\
@@ -159,7 +159,7 @@ def root():
                            categories=list(cat))
 
 
-@app.errorhandler(psycopg2.InterfaceError)
+@app.errorhandler(psycopg.InterfaceError)
 def handle_pg_exception(e):
     """ Handle postgres connection lost exceptions. """
     global c
