@@ -1,4 +1,4 @@
-from psycopg2 import Error, connect, extras
+from psycopg import Error, connect
 
 from .client import Client
 
@@ -38,11 +38,11 @@ class PgClient(Client):
             Error)
 
     def query_check(self, query, *args):
-        cursor = self.db.cursor()
         try:
-            cursor.execute(query, args)
-            self.db.commit()
-            return bool(cursor.fetchone()[0])
+            with self.db.cursor() as cursor:
+                cursor.execute(query, args)
+                self.db.commit()
+                return bool(cursor.fetchone()[0])
         except (TypeError, IndexError):
             """ A TypeError is raised if any of the required arguments is
             missing. """
@@ -50,13 +50,14 @@ class PgClient(Client):
             return False
         except self.Error:
             self.db.rollback()
+            return False
 
     def query_id(self, query, *args):
-        cursor = self.db.cursor()
         try:
-            cursor.execute(query, args)
-            self.db.commit()
-            return int(cursor.fetchone()[0])
+            with self.db.cursor() as cursor:
+                cursor.execute(query, args)
+                self.db.commit()
+                return int(cursor.fetchone()[0])
         except (TypeError, IndexError):
             """ A TypeError is raised if any of the required arguments is
             missing. """
@@ -121,23 +122,24 @@ class PgClient(Client):
         """
         try:
             # Batch insert all discoveries
-            cursor = self.db.cursor()
-            discoveries_tuples = extras.execute_values(
-                cursor,
-                'INSERT INTO discoveries(file_name, commit_id, line_number, \
-                    snippet, repo_url, rule_id, state) \
-                    VALUES %s RETURNING id',
-                ((
-                    d['file_name'],
-                    d['commit_id'],
-                    d['line_number'],
-                    d['snippet'],
-                    repo_url,
-                    d['rule_id'],
-                    d['state']
-                ) for d in iter(discoveries)), page_size=1000, fetch=True)
-            self.db.commit()
-            return [d[0] for d in discoveries_tuples]
+            with self.db.cursor() as cursor:
+                discoveries_tuples = cursor.executemany(
+                    'INSERT INTO discoveries(file_name, commit_id, \
+                        line_number, snippet, repo_url, rule_id, state) \
+                        VALUES %s RETURNING id',
+                    ((
+                        d['file_name'],
+                        d['commit_id'],
+                        d['line_number'],
+                        d['snippet'],
+                        repo_url,
+                        d['rule_id'],
+                        d['state']
+                    ) for d in iter(discoveries)),
+                    returning=True
+                )
+                self.db.commit()
+                return [d[0] for d in discoveries_tuples]
         except Error:
             # In case of error in the bulk operation, fall back to adding
             # discoveries RBAR
