@@ -153,6 +153,10 @@ def export_csv(discoveries, client, save=False):
         If True, we do not ask the user to enter a file path for the CSV
         to be exported
     """
+    # If there were no discoveries, do not generate any report
+    if not discoveries:
+        console.print('[bold][!] No discoveries found. Report not generated.')
+        return
     # Check if --save is specified
     if not save:
         path = ''
@@ -164,7 +168,7 @@ def export_csv(discoveries, client, save=False):
         path = save
 
     try:
-        csv_file = open(path, newline='', mode='w')
+        csv_file = open(path, newline='', mode='w', encoding='utf-8')
     except IOError as e:
         console.print(f'[red]{e}\n'
                       '[bold][!] Failed to export discoveries.[/]')
