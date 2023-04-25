@@ -10,6 +10,7 @@ usage: credentialdigger get_discoveries [-h] [--dotenv DOTENV]
                                         [--filename FILENAME]
                                         [--state STATE]
                                         [--save SAVE]
+                                        [--with_rules]
                                         repo_url
 
 positional arguments:
@@ -29,6 +30,7 @@ optional arguments:
                         [new, false_positive, addressing, not_relevant, fixed]'
     --save SAVE         If specified, export the discoveries to the path passed
                         as an argument instead of showing them on the terminal
+    --with_rules        If specified, add the rule details to the discoveries
 
 """
 
@@ -71,9 +73,12 @@ def configure_parser(parser):
     parser.add_argument(
         '--save', default=None, type=str,
         help='Path of the .csv file to which we export the discoveries')
+    parser.add_argument(
+        '--with_rules', action='store_true',
+        help='Return for each discovery its associated rule details')
 
 
-def print_discoveries(discoveries, repo_url):
+def print_discoveries(discoveries, repo_url, with_rules):
     """ Print discoveries on the terminal in a tabular format.
 
     Parameters
@@ -82,6 +87,8 @@ def print_discoveries(discoveries, repo_url):
         List of the discoveries to be printed.
     repo_url: str
         The url of the repo from which we retrieved the discoveries
+    with_rules: bool
+        Enhance list of discoveries with rule details
     """
     with console.status(f'[bold]Processing {len(discoveries)} discoveries...'):
         discoveries_df = pd.DataFrame(discoveries)
@@ -101,6 +108,10 @@ def print_discoveries(discoveries, repo_url):
         discoveries_list = discoveries_df.values.tolist()
         columns = ['id', 'file_name', 'commit_id', 'line_number',
                    'snippet', 'state']
+        if with_rules:
+            columns.append('rule_regex')
+            columns.append('rule_category')
+            columns.append('rule_description')
 
         table = Table(title=f'Discoveries found in "{repo_url}"',
                       pad_edge=False,
@@ -216,7 +227,7 @@ def run(client, args):
     """
     try:
         discoveries = client.get_discoveries(
-            repo_url=args.repo_url, file_name=args.filename)
+            repo_url=args.repo_url, file_name=args.filename, with_rules=args.with_rules)
     except Exception as e:
         console.print(f'[red]{e}[/]')
 
@@ -239,11 +250,11 @@ def run(client, args):
                 f'[bold]This repository has more than {MAX_NUMBER_DISCOVERIES}'
                 ' discoveries, export them as .csv instead? (Y/N) ')
         if response.upper() in ['N', 'NO']:
-            print_discoveries(discoveries, args.repo_url)
+            print_discoveries(discoveries, args.repo_url, args.with_rules)
         else:
             export_csv(discoveries, client)
     else:
-        print_discoveries(discoveries, args.repo_url)
+        print_discoveries(discoveries, args.repo_url, args.with_rules)
         console.print(
             f'[bold] {args.repo_url} has {len(discoveries)} discoveries.')
 
