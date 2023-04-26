@@ -249,6 +249,18 @@ Please, refer to the [Wiki page of the pre-commit hook](https://github.com/SAP/c
 
 ![Piper](https://github.com/SAP/credential-digger/blob/main/github_assets/piper.png)
 
+Credential Digger is intergrated with the continuous delivery CI/CD pipeline [Piper](https://www.project-piper.io/) in order to automate secrets scans for your Github projects and repositories.
+In order to activate the Credential Diggger Step please refer to this [Credential Digger step documentation for Piper](https://www.project-piper.io/steps/credentialdiggerScan/)
+
+### How Piper works with Jenkins
+
+- Once the step for credentialdigger is reached, its docker image is downloaded from the internal SAP registry. (A public instance will be avaialble soon)
+- Jenkins runs this container and runs a scan using credentialdigger, based on the step configuration. Indeed, the step supports full scan of a repo, scan of a snapshot and scan of a pull request. It is also supporting orchestrators.
+- The result of the scan (an excel file) is stored in Jenkins workspace as an output artifact
+- Jenkins destroys the container after the scan
+
+There is no need to deploy or install a Credential Digger instance !!
+
 ## Wiki
 
 For further information, please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki)
