@@ -31,6 +31,7 @@ TLDR; watch the video ⬇️
     - [Scan a repository](#scan-a-repository-1)
   - [CLI - Command Line Interface](#cli---command-line-interface)
   - [pre-commit hook](#pre-commit-hook)
+  - [CI/CD Pipeline Intergation on Piper](ci/cd-pipeline-intergation-on-piper)
   - [Wiki](#wiki)
   - [Contributing](#contributing)
   - [How to obtain support](#how-to-obtain-support)
@@ -244,7 +245,9 @@ Credential Digger can be used with the [pre-commit](https://pre-commit.com/) fra
 
 Please, refer to the [Wiki page of the pre-commit hook](https://github.com/SAP/credential-digger/wiki/pre-commit-hook) for further information on its installation and execution.
 
+## CI/CD Pipeline Intergation on Piper
 
+![Piper](https://github.com/SAP/credential-digger/blob/main/github_assets/piper.png)
 
 ## Wiki
 
