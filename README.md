@@ -31,7 +31,7 @@ TLDR; watch the video ⬇️
     - [Scan a repository](#scan-a-repository-1)
   - [CLI - Command Line Interface](#cli---command-line-interface)
   - [pre-commit hook](#pre-commit-hook)
-  - [CI/CD Pipeline Intergation on Piper](ci/cd-pipeline-intergation-on-piper)
+  - [CI/CD Pipeline Intergation on Piper](#cicd-pipeline-intergation-on-piper)
   - [Wiki](#wiki)
   - [Contributing](#contributing)
   - [How to obtain support](#how-to-obtain-support)
