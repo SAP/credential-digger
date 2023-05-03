@@ -408,7 +408,7 @@ class SqliteClient(Client):
         return super().get_rule(rule_id=rule_id,
                                 query='SELECT * FROM rules WHERE id=?')
 
-    def get_discoveries(self, repo_url, file_name=None):
+    def get_discoveries(self, repo_url, file_name=None, with_rules=False):
         """ Get all the discoveries of a repository.
 
         Parameters
@@ -417,6 +417,8 @@ class SqliteClient(Client):
             The url of the repository
         file_name: str, optional
             The filename to filter discoveries on
+        with_rules: bool, optional
+            Enhance list of discoveries with rule details
 
         Returns
         -------
@@ -424,12 +426,21 @@ class SqliteClient(Client):
             A list of discoveries (dictionaries)
         """
         query = 'SELECT * FROM discoveries WHERE repo_url=?'
+        if with_rules:
+            query = '''
+                SELECT discoveries.*, r.regex as rule_regex, r.category as rule_category, r.description as rule_description
+                FROM discoveries
+                LEFT JOIN rules r
+                ON rule_id=r.id
+                WHERE repo_url=?
+            '''
         if file_name:
             query += ' AND file_name=?'
         return super().get_discoveries(
             repo_url=repo_url,
             file_name=file_name,
-            query=query)
+            query=query,
+            with_rules=with_rules)
 
     def get_discovery(self, discovery_id):
         """ Get a discovery.

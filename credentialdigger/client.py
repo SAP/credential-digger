@@ -29,7 +29,10 @@ Discovery = namedtuple(
     'Discovery',
     'id file_name commit_id line_number snippet repo_url rule_id state \
     timestamp')
-
+DiscoveryWithRule = namedtuple(
+    'DiscoveryWithRule',
+    'id file_name commit_id line_number snippet repo_url rule_id state \
+    timestamp rule_regex rule_category rule_description')
 
 class Interface(ABC):
     """ Abstract class that simplifies queries for python database module
@@ -488,7 +491,7 @@ class Client(Interface):
         """
         return self.query_as(query, Rule, rule_id,)
 
-    def get_discoveries(self, query, repo_url, file_name=None):
+    def get_discoveries(self, query, repo_url, file_name=None, with_rules=False):
         """ Get all the discoveries of a repository.
 
         Parameters
@@ -499,6 +502,8 @@ class Client(Interface):
             The url of the repository
         file_name: str, optional
             The name of the file to filter discoveries on
+        with_rules: bool, optional
+            Enhance list of discoveries with rule details
 
         Returns
         -------
@@ -517,7 +522,10 @@ class Client(Interface):
         cursor.execute(query, params)
         result = cursor.fetchone()
         while result:
-            all_discoveries.append(dict(Discovery(*result)._asdict()))
+            if with_rules:
+                all_discoveries.append(dict(DiscoveryWithRule(*result)._asdict()))
+            else:
+                all_discoveries.append(dict(Discovery(*result)._asdict()))
             result = cursor.fetchone()
         return all_discoveries
 
