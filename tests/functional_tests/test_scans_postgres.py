@@ -7,7 +7,7 @@ from unittest.mock import patch
 from credentialdigger.cli import cli
 from git import Repo as GitRepo
 from parameterized import param, parameterized
-from psycopg import connect
+from psycopg2 import connect
 
 TOTAL_PW_DISCOVERIES = 12
 
