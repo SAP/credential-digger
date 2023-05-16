@@ -132,6 +132,10 @@ class TestGetDiscoveries(unittest.TestCase):
         data_frame = pd.read_csv(self.csv_path)
         try:
             assert data_frame.notna().values.all()
+            self.assertEqual(len(data_frame.columns), 9)
+            self.assertFalse('rule_regex' in data_frame.columns)
+            self.assertFalse('rule_category' in data_frame.columns)
+            self.assertFalse('rule_description' in data_frame.columns)
         except AssertionError:
             assert False, 'CSV file contains NaN'
 
