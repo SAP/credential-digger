@@ -595,7 +595,6 @@ def scan_file():
             os.remove(file_path)
     return jsonify(discoveriesWithRules)
 
-
 jwt = JWTManager(app)
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
