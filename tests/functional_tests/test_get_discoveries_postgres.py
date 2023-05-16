@@ -58,7 +58,12 @@ class TestGetDiscoveries(unittest.TestCase):
         """ Remove the repo and all its discoveries. """
         cls.client.delete_repo(REPO_URL)
         cls.client.delete_discoveries(REPO_URL)
-        os.remove(cls.csv_path)
+        try:
+            os.remove(cls.csv_path)
+        except Exception as ex:
+            print(f'Failed to cleanup {cls.csv_path}, error={ex}')
+            pass
+
 
     @parameterized.expand([
         param(state='new', count=5),
