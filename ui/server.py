@@ -538,6 +538,64 @@ def update_similar_discoveries():
         return 'OK', 200
 
 
+@app.route('/scan_file', methods=['POST'])
+def scan_file():
+    """ Scan a file. """
+    # Get scan properties
+    rules_to_use = request.form.get('rule_to_use')
+    use_password_model = request.form.get('passwordModel')
+    use_path_model = request.form.get('pathModel')
+    force_scan = request.form.get('forceScan') == 'force'
+    file = request.files['filename']
+    filename = secure_filename(file.filename)
+    # Save file
+    # TODO: perform malware scan on the file
+    try:
+        file_path = os.path.abspath(os.path.join(app.config['UPLOAD_FOLDER'], 'uploads', filename))
+        file.save(file_path)
+        app.logger.debug(f'File saved to {file_path}')
+    except Exception as ex:
+        app.logger.error(
+            f'Error occured when saving file={filename}, file path={file_path}, error={ex}')
+        return 'Error in saving file', 500
+
+    # Set up models
+    models = []
+    if use_path_model == 'path':
+        models.append('PathModel')
+    if use_password_model == 'password':
+        models.append('PasswordModel')
+
+    # Setup scan arguments
+    if rules_to_use != 'all':
+        app.logger.debug(f'Use rules only from {rules_to_use} category')
+    else:
+        rules_to_use = None
+
+    # Scan
+    try:
+        discoveries = c.scan_path(scan_path=file_path, models=models, force=force_scan, 
+                                  similarity=False, max_depth=-1, ignore_list=[], category=rules_to_use)
+    except Exception as ex:
+        app.logger.error(
+            f'Error occured when scanning file={filename}, file path={file_path}, error={ex}')
+        os.remove(file_path)
+        return f'Error in scanning file {filename}', 500
+
+    # Get discoveries
+    discoveriesWithRules = []
+    if len(discoveries):
+        try:
+            discoveriesWithRules = c.get_discoveries_with_rules(repo_url=file_path)
+        except Exception as ex:
+            app.logger.error(
+                f'Error occured when getting discoveries of file={filename}, file path={file_path}, error={ex}')
+            return f'Error in getting discoveries of file {filename}', 500
+        finally:
+            os.remove(file_path)
+    return jsonify(discoveriesWithRules)
+
+
 jwt = JWTManager(app)
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
