@@ -60,9 +60,8 @@ class TestGetDiscoveries(unittest.TestCase):
         cls.client.delete_discoveries(REPO_URL)
         try:
             os.remove(cls.csv_path)
-        except Exception as ex:
+        except OSError as ex:
             print(f'Failed to cleanup {cls.csv_path}, error={ex}')
-            pass
 
     @parameterized.expand([
         param(state='new', count=5),
