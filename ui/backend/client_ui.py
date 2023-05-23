@@ -8,7 +8,6 @@ import git
 from credentialdigger import Client
 from git import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 from git import Repo as GitRepo
-
 from credentialdigger.client import DiscoveryWithRule
 
 FilesSummary = namedtuple(
@@ -225,7 +224,7 @@ class UiClient(Client):
                 return False, 'WrongBranchError'
 
         return True, None
-    
+
     def get_discoveries_with_rules(self, query, repo_url, file_name=None):
         """ Get all the discoveries of a repository with rule details.
 

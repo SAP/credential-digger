@@ -551,7 +551,8 @@ def scan_file():
     # Save file
     # TODO: perform malware scan on the file
     try:
-        file_path = os.path.abspath(os.path.join(app.config['UPLOAD_FOLDER'], 'uploads', filename))
+        file_path = os.path.abspath(os.path.join(
+            app.config['UPLOAD_FOLDER'], 'uploads', filename))
         file.save(file_path)
         app.logger.debug(f'File saved to {file_path}')
     except Exception as ex:
@@ -574,26 +575,28 @@ def scan_file():
 
     # Scan
     try:
-        discoveries = c.scan_path(scan_path=file_path, models=models, force=force_scan, 
+        discoveries = c.scan_path(scan_path=file_path, models=models, force=force_scan,
                                   similarity=False, max_depth=-1, ignore_list=[], category=rules_to_use)
-    except Exception as ex:
+    except OSError as ex:
         app.logger.error(
             f'Error occured when scanning file={filename}, file path={file_path}, error={ex}')
         os.remove(file_path)
         return f'Error in scanning file {filename}', 500
 
     # Get discoveries
-    discoveriesWithRules = []
+    discoveries_with_rules = []
     if len(discoveries):
         try:
-            discoveriesWithRules = c.get_discoveries_with_rules(repo_url=file_path)
-        except Exception as ex:
+            discoveries_with_rules = c.get_discoveries_with_rules(
+                repo_url=file_path)
+        except OSError as ex:
             app.logger.error(
                 f'Error occured when getting discoveries of file={filename}, file path={file_path}, error={ex}')
             return f'Error in getting discoveries of file {filename}', 500
         finally:
             os.remove(file_path)
-    return jsonify(discoveriesWithRules)
+    return jsonify(discoveries_with_rules)
+
 
 jwt = JWTManager(app)
 if __name__ == '__main__':
