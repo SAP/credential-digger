@@ -555,8 +555,10 @@ def scan_file():
     # Save file
     # TODO: perform malware scan on the file
     try:
+        # Generate a uniq id to prevent concurrent requests with same filename
+        request_id = str(uuid.uuid4())
         file_path = os.path.abspath(os.path.join(
-            app.config['UPLOAD_FOLDER'], 'uploads', filename))
+            app.config['UPLOAD_FOLDER'], 'uploads', request_id, filename))
         file.save(file_path)
         app.logger.debug(f'File saved to {file_path}')
     except Exception as ex:
@@ -585,6 +587,7 @@ def scan_file():
         app.logger.error(
             f'Error occured when scanning file={filename}, file path={file_path}, error={ex}')
         os.remove(file_path)
+        os.rmdir(os.path.dirname(file_path))
         return f'Error in scanning file {filename}', 500
 
     # Get discoveries
@@ -599,6 +602,7 @@ def scan_file():
             return f'Error in getting discoveries of file {filename}', 500
         finally:
             os.remove(file_path)
+            os.rmdir(os.path.dirname(file_path))
     return jsonify(discoveries_with_rules)
 
 
