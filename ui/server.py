@@ -557,6 +557,8 @@ def scan_file():
     try:
         # Generate a uniq id to prevent concurrent requests with same filename
         request_id = str(uuid.uuid4())
+        Path(app.config['UPLOAD_FOLDER'], 'uploads',
+             request_id).mkdir(exist_ok=True)
         file_path = os.path.abspath(os.path.join(
             app.config['UPLOAD_FOLDER'], 'uploads', request_id, filename))
         file.save(file_path)
