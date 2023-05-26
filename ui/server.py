@@ -7,6 +7,7 @@ import uuid
 from collections import defaultdict
 from enum import Enum
 from itertools import groupby
+from pathlib import Path
 
 import psycopg2
 import yaml
@@ -48,6 +49,9 @@ else:
 # unless the user removes all of them and reboot)
 if not c.get_rules():
     c.add_rules_from_file(os.path.join(APP_ROOT, './backend/rules.yml'))
+
+# Create upload folder
+Path(app.config['UPLOAD_FOLDER'], 'uploads').mkdir(exist_ok=True)
 
 # ################### UTILS ####################
 
