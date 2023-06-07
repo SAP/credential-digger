@@ -170,3 +170,32 @@ class SqliteUiClient(UiClient, SqliteClient):
                 " FROM discoveries WHERE repo_url=?"
                 " GROUP BY file_name"
             ))
+
+    def get_discoveries_with_rules(self, repo_url, file_name=None):
+        """ Get all the discoveries of a repository with rule details.
+
+        Parameters
+        ----------
+        repo_url: str
+            The url of the repository
+        file_name: str, optional
+            The filename to filter discoveries on
+
+        Returns
+        -------
+        list
+            A list of discoveries (dictionaries)
+        """
+        query = '''
+            SELECT discoveries.*, r.regex as rule_regex, r.category as rule_category, r.description as rule_description
+            FROM discoveries
+            LEFT JOIN rules r
+            ON rule_id=r.id
+            WHERE repo_url=?
+        '''
+        if file_name:
+            query += ' AND file_name=?'
+        return super().get_discoveries_with_rules(
+            repo_url=repo_url,
+            file_name=file_name,
+            query=query)
