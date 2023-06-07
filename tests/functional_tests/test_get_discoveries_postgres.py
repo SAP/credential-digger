@@ -58,7 +58,10 @@ class TestGetDiscoveries(unittest.TestCase):
         """ Remove the repo and all its discoveries. """
         cls.client.delete_repo(REPO_URL)
         cls.client.delete_discoveries(REPO_URL)
-        os.remove(cls.csv_path)
+        try:
+            os.remove(cls.csv_path)
+        except OSError as ex:
+            print(f'Failed to cleanup {cls.csv_path}, error={ex}')
 
     @parameterized.expand([
         param(state='new', count=5),
@@ -142,5 +145,33 @@ class TestGetDiscoveries(unittest.TestCase):
         data_frame = pd.read_csv(self.csv_path)
         try:
             assert data_frame.notna().values.all()
+            self.assertEqual(len(data_frame.columns), 9)
+            self.assertFalse('rule_regex' in data_frame.columns)
+            self.assertFalse('rule_category' in data_frame.columns)
+            self.assertFalse('rule_description' in data_frame.columns)
         except AssertionError:
             assert False, 'CSV file contains NaN'
+
+    def test_csv_written_with_rules(self):
+        """ Test if the CLI command writes correctly the CSV file with the rule details. """
+        with self.assertRaises(SystemExit) as cm:
+            cli.main(
+                [
+                    '',
+                    'get_discoveries',
+                    REPO_URL,
+                    '--save',
+                    self.csv_path,
+                    '--dotenv',
+                    self.dotenv,
+                    '--with_rules',
+                ]
+            )
+        data_frame = pd.read_csv(self.csv_path)
+        try:
+            self.assertEqual(len(data_frame.columns), 12)
+            self.assertTrue('rule_regex' in data_frame.columns)
+            self.assertTrue('rule_category' in data_frame.columns)
+            self.assertTrue('rule_description' in data_frame.columns)
+        except AssertionError:
+            assert False, 'CSV file does not contain the rule details'
