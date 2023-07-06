@@ -65,7 +65,7 @@ class TestScansPostgres(unittest.TestCase):
         self.assertEqual(cm.exception.code, 5)
 
     @parameterized.expand([
-        param(pr_num=1, leaks=11),
+        param(pr_num=8, leaks=11),
         param(pr_num=2, leaks=0)
     ])
     def test_scan_pr(self, pr_num, leaks):
@@ -104,7 +104,7 @@ class TestScansPostgres(unittest.TestCase):
             args = ["", "scan_pr", "--dotenv", self.dotenv,
                     "--category", "password",
                     "--git_token", self.git_token,
-                    "--pr", "1",
+                    "--pr", "8",
                     self.repo_url]
             # force is a flag (store_true parameter)
             if force:

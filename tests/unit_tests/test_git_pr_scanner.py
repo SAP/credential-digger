@@ -18,13 +18,13 @@ class TestGitPRScanner(unittest.TestCase):
     @parameterized.expand([
         param(user_name='SAP-error',
               repo_name='credential-digger-tests',
-              pr_number=1),
+              pr_number=8),
         param(user_name='SAP',
               repo_name='credential-digger-tests-error',
-              pr_number=1),
+              pr_number=8),
         param(user_name='SAP',
               repo_name='credential-digger-tests',
-              pr_number=-1)
+              pr_number=-8)
     ])
     def test_get_commits_from_pr_error(self, user_name, repo_name, pr_number):
         """ Test get_commit_from_pr failure with nonexistent repository or
@@ -36,7 +36,7 @@ class TestGitPRScanner(unittest.TestCase):
     @parameterized.expand([
         param(user_name='SAP',
               repo_name='credential-digger-tests',
-              pr_number=1,
+              pr_number=8,
               commits_nr=6),
         param(user_name='SAP',
               repo_name='credential-digger-tests',
