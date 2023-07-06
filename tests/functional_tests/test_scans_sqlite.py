@@ -8,7 +8,7 @@ from credentialdigger.client_sqlite import SqliteClient
 from git import Repo as GitRepo
 from parameterized import param, parameterized
 
-TOTAL_PW_DISCOVERIES = 12
+TOTAL_PW_DISCOVERIES = 20
 
 
 class TestScansSqlite(unittest.TestCase):
