@@ -9,7 +9,7 @@ from git import Repo as GitRepo
 from parameterized import param, parameterized
 from psycopg2 import connect
 
-TOTAL_PW_DISCOVERIES = 12
+TOTAL_PW_DISCOVERIES = 20
 
 
 class TestScansPostgres(unittest.TestCase):
