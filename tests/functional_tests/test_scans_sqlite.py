@@ -8,7 +8,7 @@ from credentialdigger.client_sqlite import SqliteClient
 from git import Repo as GitRepo
 from parameterized import param, parameterized
 
-TOTAL_PW_DISCOVERIES = 12
+TOTAL_PW_DISCOVERIES = 20
 
 
 class TestScansSqlite(unittest.TestCase):
@@ -54,7 +54,7 @@ class TestScansSqlite(unittest.TestCase):
         self.assertEqual(cm.exception.code, 5)
 
     @parameterized.expand([
-        param(pr_num=1, leaks=11),
+        param(pr_num=8, leaks=11),
         param(pr_num=2, leaks=0)
     ])
     def test_scan_pr(self, pr_num, leaks):
@@ -93,7 +93,7 @@ class TestScansSqlite(unittest.TestCase):
             args = ["", "scan_pr", "--sqlite", self.db_path,
                     "--category", "password",
                     "--git_token", self.git_token,
-                    "--pr", "1",
+                    "--pr", "8",
                     self.repo_url]
             # force is a flag (store_true parameter)
             if force:
