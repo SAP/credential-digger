@@ -122,3 +122,6 @@ workbench.py
 # DBs
 data.db
 data.db.*
+
+# Generated test reports
+*.csv
