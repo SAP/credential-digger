@@ -245,7 +245,7 @@ VS Code extension for project "Credential Digger" is a free IDE extension that l
 
 The VS Code extension can be donwloaded from the [Microsoft VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=SAPOSS.vs-code-extension-for-project-credential-digger)   
 
-![VSCODE](https://github.com/SAP/credential-digger/tree/SlimTrabelsi-patch-1/github_assets/credential-digger-how-it-works.gif)
+![VSCODE](https://github.com/SAP/credential-digger/blob/SlimTrabelsi-patch-1/github_assets/credential-digger-how-it-works.gif)
 
 ## pre-commit hook
 
