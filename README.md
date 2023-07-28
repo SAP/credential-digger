@@ -238,6 +238,10 @@ Credential Digger also offers a simple CLI to scan a repository. The CLI support
 
 Refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for all the supported commands and their usage.
 
+## Micosoft Visual Studio Plug-in
+
+VS Code extension for project "Credential Digger" is a free IDE extension that let you detect secrets and credentials in your code before they get leaked! Like a spell checker, the extension scans your files using the Credential Digger and highlights the secrets as you write code, so you can fix them before the code is even committed.
+The VS Code extension can be donwloaded from the [Microsoft VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=SAPOSS.vs-code-extension-for-project-credential-digger)   
 
 ## pre-commit hook
 
