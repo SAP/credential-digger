@@ -30,6 +30,7 @@ TLDR; watch the video ⬇️
     - [Add rules](#add-rules-1)
     - [Scan a repository](#scan-a-repository-1)
   - [CLI - Command Line Interface](#cli---command-line-interface)
+  - [Micosoft Visual Studio Plug-in](#Micosoft-Visual-Studio-Plugin)
   - [pre-commit hook](#pre-commit-hook)
   - [CI/CD Pipeline Intergation on Piper](#cicd-pipeline-intergation-on-piper)
   - [Wiki](#wiki)
@@ -238,10 +239,13 @@ Credential Digger also offers a simple CLI to scan a repository. The CLI support
 
 Refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for all the supported commands and their usage.
 
-## Micosoft Visual Studio Plug-in
+## Micosoft Visual Studio Plugin
 
 VS Code extension for project "Credential Digger" is a free IDE extension that let you detect secrets and credentials in your code before they get leaked! Like a spell checker, the extension scans your files using the Credential Digger and highlights the secrets as you write code, so you can fix them before the code is even committed.
+
 The VS Code extension can be donwloaded from the [Microsoft VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=SAPOSS.vs-code-extension-for-project-credential-digger)   
+
+![VSCODE](https://github.com/SAP/credential-digger/blob/main/github_assets/credential-digger-how-it-works.gif)
 
 ## pre-commit hook
 
