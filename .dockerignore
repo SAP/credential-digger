@@ -9,6 +9,8 @@ venv?
 
 # Local tests
 */__pycache__
+*/*.pem
+ui/*.csv
 ui/*.db
 ui/*.db.*
-ui/*.csv
+ui/*.txt
