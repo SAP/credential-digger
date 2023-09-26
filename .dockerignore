@@ -1,0 +1,14 @@
+.env
+.git
+
+.DS_Store
+
+# Virtual environments
+venv
+venv?
+
+# Local tests
+*/__pycache__
+ui/*.db
+ui/*.db.*
+ui/*.csv
