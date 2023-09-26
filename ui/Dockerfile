@@ -18,6 +18,8 @@ ARG SSL_certificate
 ARG SSL_private_key
 
 COPY . /credential-digger-ui
+# Copy LICENSE file into package (compliance)
+COPY ../LICENSE /credential-digger-ui/.
 WORKDIR /credential-digger-ui/
 # Fix possible line-terminators errors
 RUN find . -type f -print0 | xargs -0 dos2unix
