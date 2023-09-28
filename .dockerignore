@@ -8,9 +8,13 @@ venv
 venv?
 
 # Local tests
-*/__pycache__
-*/*.pem
-ui/*.csv
-ui/*.db
-ui/*.db.*
-ui/*.txt
+**/__pycache__
+**/*.pem
+**/*.csv
+**/*.db
+**/*.db.*
+*/*.txt
+
+# Rule files except original one
+ui/backend/*.yml
+!ui/backend/rules.yml
