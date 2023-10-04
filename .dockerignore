@@ -1,0 +1,20 @@
+.env
+.git
+
+.DS_Store
+
+# Virtual environments
+venv
+venv?
+
+# Local tests
+**/__pycache__
+**/*.pem
+**/*.csv
+**/*.db
+**/*.db.*
+*/*.txt
+
+# Rule files except original one
+ui/backend/*.yml
+!ui/backend/rules.yml

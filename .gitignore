@@ -123,5 +123,8 @@ workbench.py
 data.db
 data.db.*
 
+# Test keys
+*.pem
+
 # Generated test reports
 *.csv

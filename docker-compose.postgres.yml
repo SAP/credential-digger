@@ -16,8 +16,8 @@ services:
       - "5432:${DBPORT}"
   credential_digger:
     build:
-      context: ./ui
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./ui/Dockerfile
       args:
         - SSL_certificate=$SSL_certificate
         - SSL_private_key=$SSL_private_key
