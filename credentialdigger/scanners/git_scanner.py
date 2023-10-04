@@ -255,6 +255,7 @@ class GitScanner(BaseScanner):
         discoveries = []
 
         branches = repo.remotes.origin.fetch()
+        logger.debug(f'Found {len(branches)} remote branches to scan')
 
         logger.debug('Scanning commits...')
         for remote_branch in branches:
