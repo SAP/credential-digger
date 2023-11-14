@@ -10,8 +10,8 @@ python-dotenv
 pyyaml
 rich~=12.2
 srsly>=2.4.0
-tensorflow==2.11.1; python_version >= "3.8"
-tensorflow-estimator==2.11.0; python_version >= "3.8"
-tensorflow-text==2.11.0; python_version >= "3.8"
+tensorflow==2.14.0
+tensorflow-estimator==2.14.0
+tensorflow-text==2.14.0
 tf-models-official
 transformers
