@@ -45,10 +45,10 @@ The goal of Credential Digger is to reduce the amount of false positive data on 
 
 
 The tool supports several scan flavors: public and private repositories on
-github and gitlab, wiki pages, github organizations, local git repositories, local files and folders.
+github and gitlab, pull requests, wiki pages, github organizations, local git repositories, local files and folders.
 Please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for the complete documentation.
 
-For the complete description of the approach of Credential Digger, [you can read this publication](https://www.scitepress.org/Papers/2021/102381/102381.pdf).
+For the complete description of the approach of Credential Digger (versions <4.4), [you can read this publication](https://www.scitepress.org/Papers/2021/102381/102381.pdf).
 
 ```
 @InProceedings {lrnto-icissp21,
@@ -63,22 +63,16 @@ For the complete description of the approach of Credential Digger, [you can read
 
 ## Requirements
 
-Credential Digger supports Python >= 3.6 and < 3.10, and works only with Linux and MacOS systems.
+Credential Digger supports Python >= 3.8 and < 3.12, and works only with Linux and MacOS systems.
 In case you don't meet these requirements, you may consider running a [Docker container](#docker) (that also includes a user interface).
 
 
 ## Download and Installation
 
-First, you need to install the regular expression matching library [Hyperscan](https://github.com/intel/hyperscan). Be sure to have `build-essential` and `python3-dev` too.
+First, you need to install some dependencies (namely, `build-essential` and `python3-dev`). No need to explicitely install hyperscan anymore.
 
 ```bash
-sudo apt install -y libhyperscan-dev build-essential python3-dev
-```
-
-or (for MacOS):
-
-```bash
-brew install hyperscan
+sudo apt install -y build-essential python3-dev
 ```
 
 Then, you can install Credential Digger module using `pip`.
@@ -122,8 +116,16 @@ credentialdigger scan https://github.com/user/repo --sqlite /path/to/data.db --s
 
 ## Docker container
 
-To have a ready-to-use instance of Credential Digger, with a user interface, you can build the docker container. 
+To have a ready-to-use instance of Credential Digger, with a user interface, you can use a docker container. 
 This option requires the installation of [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/).
+
+Credential Digger is published on [dockerhub](https://hub.docker.com/r/saposs/credentialdigger). You can pull the latest release
+
+```bash
+sudo docker pull saposs/credentialdigger
+```
+
+Or build and run containers with docker-compose
 
 ```bash
 git clone https://github.com/SAP/credential-digger.git
