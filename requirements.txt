@@ -9,7 +9,7 @@ psycopg2-binary
 PyGithub
 python-dotenv
 pyyaml
-rich~=12.2
+rich~=13.7
 srsly>=2.4.0
 tensorflow==2.15.0; python_version > "3.8"
 tensorflow==2.13.1; python_version <= "3.8"
