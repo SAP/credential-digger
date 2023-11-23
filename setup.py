@@ -28,7 +28,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
         'Operating System :: OS Independent',
     ],
-    python_requires='>3.5, <3.11',
+    python_requires='>3.7, <3.12',
     entry_points={'console_scripts': ['credentialdigger=credentialdigger'
                                       '.__main__:main']},
 )
