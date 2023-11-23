@@ -58,8 +58,8 @@ jobs:
         pip install . --user
 
     - name: Install tests dependencies
-       run: |
-         pip install -r ./tests/tests-requirements.txt
+      run: |
+        pip install -r ./tests/tests-requirements.txt
 
     - name: Run unit tests
       run: |
