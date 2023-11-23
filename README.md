@@ -157,11 +157,10 @@ git clone https://github.com/SAP/credential-digger.git
 cd credential-digger
 ```
 
-Install the requirements from `requirements.txt` file and install the library:
+Install the tool from source:
 
 ```bash
-pip install -r requirements.txt
-python setup.py install
+pip install .
 ```
 
 Then, you can add the rules and scan a repository as described above.

@@ -43,7 +43,7 @@ jobs:
 
     - name: Install OS dependencies
       run: |
-        sudo apt install -y build-essential python3-dev libhyperscan-dev
+        sudo apt install -y build-essential python3-dev
 
     - name: Cache python dependencies
       uses: actions/cache@v3
@@ -53,14 +53,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
-    - name: Install python dependencies
-      run: |
-        pip install -r ./requirements.txt
-        pip install -r ./tests/tests-requirements.txt
-
     - name: Install credentialdigger
       run: |
-        python setup.py install --user
+        pip install . --user
 
     - name: Run unit tests
       run: |
