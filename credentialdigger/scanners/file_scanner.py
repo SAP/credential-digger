@@ -157,8 +157,7 @@ class FileScanner(BaseScanner):
                 for row in file_to_scan:
                     rh = ResultHandler()
                     self.stream.scan(
-                        row if sys.version_info < (3, 8) else row.encode(
-                            'utf-8'),
+                        row.encode('utf-8'),
                         match_event_handler=rh.handle_results,
                         context=[row.strip(), relative_path, commit_id,
                                  line_number]
