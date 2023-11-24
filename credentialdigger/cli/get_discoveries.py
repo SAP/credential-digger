@@ -225,7 +225,7 @@ def run(client, args):
     args: `argparse.Namespace`
         Arguments from command line parser.
     """
-    discoveries = [] 
+    discoveries = []
     try:
         discoveries = client.get_discoveries(
             repo_url=args.repo_url, file_name=args.filename, with_rules=args.with_rules)

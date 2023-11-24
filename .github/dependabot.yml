@@ -9,3 +9,5 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+    # Open pull requests for version updates on the `develop` branch
+    target-branch: "develop"

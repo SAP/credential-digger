@@ -1,7 +1,7 @@
-FROM python:3.9-bullseye as builder
+FROM python:3.10-bookworm as builder
 
 # Install system packages
-RUN apt-get update && apt-get install -y libhyperscan5 libpq-dev gunicorn3
+RUN apt-get update && apt-get install -y libpq-dev gunicorn3
 RUN apt-get install -y dos2unix
 
 # Install python packages
