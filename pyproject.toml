@@ -31,7 +31,7 @@ credentialdigger = 'credentialdigger.__main__:main'
 
 [tool.setuptools.dynamic]
 dependencies = {file = ['requirements.txt']}
-version = {file = ['__version__']}
+version = {file = ['version.py']}
 
 [project.urls]
 Homepage = 'https://github.com/sap/credential-digger'
