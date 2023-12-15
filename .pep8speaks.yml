@@ -10,6 +10,8 @@ flake8:  # Same as scanner.linter value
         - W292  # no newline at the end of file (introduces W391)
         - W503  # line break before binary operator
         - W504  # line break after binary operator
+    exclude:  # Exclude some files
+        - version.py
 
 no_blank_comment: True  # If True, no comment is made on PR without any errors.
 descending_issues_order: False  # If True, PEP 8 issues in message will be displayed in descending order of line numbers in the file
