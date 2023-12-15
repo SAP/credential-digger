@@ -1,0 +1,40 @@
+[build-system]
+requires = ['setuptools >= 61.0']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'credentialdigger'
+dynamic = ['dependencies', 'version']
+authors = [
+    {name = 'SAP SE'}
+]
+maintainers = [
+    {name = 'Marco Rosa', email = 'marco.rosa@sap.com'},
+    {name = 'Slim Trabelsi', email = 'slim.trabelsi@sap.com'}
+]
+description = 'Credential Digger'
+readme = 'README.md'
+license = {file = 'LICENSE'}
+requires-python = '>= 3.8, < 3.12'
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Operating System :: OS Independent',
+    'Topic :: Security',
+]
+
+[project.scripts]
+credentialdigger = 'credentialdigger.__main__:main'
+
+[tool.setuptools.dynamic]
+dependencies = {file = ['requirements.txt']}
+version = {file = ['version.py']}
+
+[project.urls]
+Homepage = 'https://github.com/sap/credential-digger'
+Documentation = 'https://github.com/SAP/credential-digger/wiki'
+Repository = 'https://github.com/sap/credential-digger.git'
+Issues = 'https://github.com/SAP/credential-digger/issues'
