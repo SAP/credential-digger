@@ -2,7 +2,7 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/SAP/credential-digger?logo=github)
 ![PyPI](https://img.shields.io/pypi/v/credentialdigger?logo=pypi)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/credentialdigger?logo=python)
-[![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/saposs/credentialdigger)
+[![Docker](https://badgen.net/badge/icon/docker?icon=docker&label&color=0db7ed)](https://hub.docker.com/r/saposs/credentialdigger)
 [![Visual Studio Plugin](https://badgen.net/badge/icon/visualstudio?icon=visualstudio&label)](https://marketplace.visualstudio.com/items?itemName=SAPOSS.vs-code-extension-for-project-credential-digger)
 
 
