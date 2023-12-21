@@ -2,6 +2,7 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/SAP/credential-digger?logo=github)
 ![PyPI](https://img.shields.io/pypi/v/credentialdigger?logo=pypi)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/credentialdigger)
+[![Docker](https://badgen.net/badge/icon/docker?icon=docker&label)](https://hub.docker.com/r/saposs/credentialdigger)
 
 
 ![Logo](https://raw.githubusercontent.com/SAP/credential-digger/main/github_assets/Logo-CD-Mint_48.png)
