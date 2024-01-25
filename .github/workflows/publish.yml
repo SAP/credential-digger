@@ -83,6 +83,7 @@ jobs:
 
   docker:
     name: Push Docker image to Docker Hub 🐳
+    if: github.event.pull_request.merged == 'true'
     needs:
       - check_version_update
       - publish-to-pypi
