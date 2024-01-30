@@ -16,8 +16,8 @@ jobs:
       postgres:
         image: postgres:alpine
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_DB: credential_digger_tests
           DBHOST: localhost
           DBPORT: 5432
