@@ -4,7 +4,8 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'credentialdigger'
-dynamic = ['dependencies', 'version']
+version = '4.13.0'
+dynamic = ['dependencies']
 authors = [
     {name = 'SAP SE'}
 ]
@@ -31,7 +32,6 @@ credentialdigger = 'credentialdigger.__main__:main'
 
 [tool.setuptools.dynamic]
 dependencies = {file = ['requirements.txt']}
-version = {file = ['version.py']}
 
 [project.urls]
 Homepage = 'https://github.com/sap/credential-digger'
