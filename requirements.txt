@@ -1,7 +1,8 @@
 Flask
 flask_jwt_extended
 GitPython
-hyperscan==0.7.7
+hyperscan==0.7.7; python_version > "3.8"
+hyperscan==0.7.0; python_version <= "3.8"
 numpy
 pandas
 psycopg2-binary
