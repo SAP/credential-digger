@@ -30,14 +30,14 @@ jobs:
           --health-retries 5
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Create PostgreSQL database
       run: |
         PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -U ${{ secrets.POSTGRES_USER }} -h 127.0.0.1 -p 5432 -d credential_digger_tests -f sql/create_table.sql
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -46,7 +46,7 @@ jobs:
         sudo apt install -y build-essential python3-dev
 
     - name: Cache python dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip # This path is specific to Ubuntu
         key: ${{ runner.os }}-pip-${{ hashFiles('./requirements.txt') }}-${{ hashFiles('./tests/tests-requirements.txt') }}
