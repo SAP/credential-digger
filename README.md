@@ -69,9 +69,8 @@ For the complete description of the approach of Credential Digger (versions <4.4
 
 ## Requirements
 
-Credential Digger supports Python >= 3.8 and < 3.12, and works only with Linux and MacOS systems.
+Credential Digger supports Python >= 3.8 and < 3.13, and works only with Linux and MacOS systems.
 In case you don't meet these requirements, you may consider running a [Docker container](#docker) (that also includes a user interface).
-
 
 ## Download and Installation
 
@@ -86,6 +85,9 @@ Then, you can install Credential Digger module using `pip`.
 ```bash
 pip install credentialdigger
 ```
+
+> For ARM machines (e.g., new MacBooks), installation is possible [following this guide](https://github.com/SAP/credential-digger/wiki/MacOS-ARM-Installation)
+
 
 ## How to run
 
