@@ -9,7 +9,7 @@ on:
 
 jobs:
   check_version_update:
-    if: github.event.pull_request.merged == 'true'
+    if: github.event.pull_request.merged
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -59,7 +59,7 @@ jobs:
   publish-to-pypi:
     name: Publish Python 🐍 distribution 📦 to PyPI
     #if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
-    if: github.event.pull_request.merged == 'true'  # publish on PR merge
+    if: github.event.pull_request.merged       # publish on PR merge
     needs:
     - check_version_update  # Only publish if there is a version update
     - build                 # Only publish if the package was built
@@ -83,7 +83,7 @@ jobs:
 
   docker:
     name: Push Docker image to Docker Hub 🐳
-    if: github.event.pull_request.merged == 'true'
+    if: github.event.pull_request.merged
     needs:
       - check_version_update
       - publish-to-pypi
