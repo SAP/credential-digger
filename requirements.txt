@@ -1,8 +1,8 @@
 Flask
 flask_jwt_extended
 GitPython
-hyperscan==0.6.0; python_version != "3.9"
-hyperscan==0.5.0; python_version == "3.9"
+hyperscan==0.7.7; python_version > "3.8"
+hyperscan==0.7.0; python_version <= "3.8"
 numpy
 pandas
 psycopg2-binary
@@ -11,11 +11,9 @@ python-dotenv
 pyyaml
 rich~=13.7
 srsly>=2.4.0
-tensorflow==2.15.0; python_version > "3.8"
+tensorflow==2.16.1; python_version > "3.8"
 tensorflow==2.13.1; python_version <= "3.8"
-tensorflow-estimator==2.15.0; python_version > "3.8"
-tensorflow-estimator==2.13.0; python_version <= "3.8"
-tensorflow-text==2.15.0; python_version > "3.8"
+tensorflow-text==2.16.1; python_version > "3.8"
 tensorflow-text==2.13.0; python_version <= "3.8"
 tf-models-official
 transformers

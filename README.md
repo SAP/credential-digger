@@ -1,7 +1,9 @@
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/credential-digger)](https://api.reuse.software/info/github.com/SAP/credential-digger)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/SAP/credential-digger?logo=github)
 ![PyPI](https://img.shields.io/pypi/v/credentialdigger?logo=pypi)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/credentialdigger)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/credentialdigger?logo=python)
+[![Docker](https://badgen.net/badge/icon/docker?icon=docker&label&color=0db7ed)](https://hub.docker.com/r/saposs/credentialdigger)
+[![Visual Studio Plugin](https://badgen.net/badge/icon/visualstudio?icon=visualstudio&label)](https://marketplace.visualstudio.com/items?itemName=SAPOSS.vs-code-extension-for-project-credential-digger)
 
 
 ![Logo](https://raw.githubusercontent.com/SAP/credential-digger/main/github_assets/Logo-CD-Mint_48.png)
@@ -67,9 +69,8 @@ For the complete description of the approach of Credential Digger (versions <4.4
 
 ## Requirements
 
-Credential Digger supports Python >= 3.8 and < 3.12, and works only with Linux and MacOS systems.
+Credential Digger supports Python >= 3.8 and < 3.13, and works only with Linux and MacOS systems.
 In case you don't meet these requirements, you may consider running a [Docker container](#docker) (that also includes a user interface).
-
 
 ## Download and Installation
 
@@ -84,6 +85,9 @@ Then, you can install Credential Digger module using `pip`.
 ```bash
 pip install credentialdigger
 ```
+
+> For ARM machines (e.g., new MacBooks), installation is possible [following this guide](https://github.com/SAP/credential-digger/wiki/MacOS-ARM-Installation)
+
 
 ## How to run
 

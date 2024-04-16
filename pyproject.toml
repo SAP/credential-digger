@@ -4,7 +4,8 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'credentialdigger'
-dynamic = ['dependencies', 'version']
+version = '4.14.0'
+dynamic = ['dependencies']
 authors = [
     {name = 'SAP SE'}
 ]
@@ -15,13 +16,14 @@ maintainers = [
 description = 'Credential Digger'
 readme = 'README.md'
 license = {file = 'LICENSE'}
-requires-python = '>= 3.8, < 3.12'
+requires-python = '>= 3.8, < 3.13'
 classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
     'Operating System :: OS Independent',
     'Topic :: Security',
 ]
@@ -31,7 +33,6 @@ credentialdigger = 'credentialdigger.__main__:main'
 
 [tool.setuptools.dynamic]
 dependencies = {file = ['requirements.txt']}
-version = {file = ['version.py']}
 
 [project.urls]
 Homepage = 'https://github.com/sap/credential-digger'

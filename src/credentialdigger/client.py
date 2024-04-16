@@ -991,16 +991,19 @@ class Client(Interface):
     def scan_user(self, username, category=None, models=None, debug=False,
                   forks=False, similarity=False, git_token=None,
                   api_endpoint='https://api.github.com'):
-        """ Scan all the repositories of a user.
+        """ Scan all the repositories of a user or of an organization.
 
         Find all the repositories of a user, and scan
         them. Please note that git limits the list of repositories to maximum
         100 (due to pagination).
 
+        It is possible to enter the name of an organization instead of a user,
+        and the scan will work on all the repos of that org.
+
         Parameters
         ----------
         username: str
-            The username as on github.com
+            The username (or organization name) as on github.com
         category: str, optional
             If specified, scan the repo using all the rules of this category,
             otherwise use all the rules in the db

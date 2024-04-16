@@ -15,6 +15,7 @@ services:
     ports:
       - "5432:${DBPORT}"
   credential_digger:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: ./ui/Dockerfile

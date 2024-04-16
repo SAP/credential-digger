@@ -15,7 +15,7 @@ usage: credentialdigger scan_user [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                   username
 
 positional arguments:
-  username              The username as on github.com
+  username              The username or organization name as on github.com
 
 optional arguments:
   -h, --help            show this help message and exit
