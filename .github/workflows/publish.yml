@@ -89,6 +89,10 @@ jobs:
       - publish-to-pypi
     runs-on: ubuntu-latest
     steps:
+      - name: Sleep for 5 minutes (wait for pypi registry update)
+        run: sleep 5m
+        shell: bash
+
       - name: Check out the repo
         uses: actions/checkout@v4
 
