@@ -133,13 +133,13 @@ Credential Digger is published on [dockerhub](https://hub.docker.com/r/saposs/cr
 sudo docker pull saposs/credentialdigger
 ```
 
-Or build and run containers with docker-compose
+Or build and run containers with docker compose
 
 ```bash
 git clone https://github.com/SAP/credential-digger.git
 cd credential-digger
 cp .env.sample .env
-sudo docker-compose up --build
+docker compose up --build
 ```
 
 The UI is available at [http://localhost:5000/](http://localhost:5000/)
@@ -182,7 +182,7 @@ git clone https://github.com/SAP/credential-digger.git
 cd credential-digger
 cp .env.sample .env
 vim .env  # set credentials for postgres
-sudo docker-compose -f docker-compose.postgres.yml up --build
+docker compose -f docker-compose.postgres.yml up --build
 ```
 
 > **WARNING**: Differently from the sqlite version, here we need to configure the `.env` file with the credentials for postgres (by modifying `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB`).
