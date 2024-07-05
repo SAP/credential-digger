@@ -15,7 +15,7 @@ RUN git config --global http.sslverify false
 RUN git config --global core.autocrlf false
 
 # Install Credential Digger
-RUN pip install credentialdigger==4.13.0
+RUN pip install credentialdigger
 
 # Keys args (optional, for HTTPS)
 ARG SSL_certificate
