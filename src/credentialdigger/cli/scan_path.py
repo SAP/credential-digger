@@ -8,9 +8,11 @@ database.
 
 usage: credentialdigger scan_path [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                   [--category CATEGORY]
-                                  [--models MODELS [MODELS ...]] [--debug]
+                                  [--models MODELS [MODELS ...]]
+                                  [--debug]
                                   [--force] [--similarity]
                                   [--max_depth MAX_DEPTH]
+                                  [--ignore_list PATHS [PATHS ...]]
                                   scan_path
 
 positional arguments:
@@ -42,6 +44,10 @@ optional arguments:
                         Maximum depth for subdirectories scanning (If it is
                         set to -1 or not specified, all subdirectories will be
                         scanned)
+  --ignore_list [PATHS ...]
+                        A list of paths to ignore during the scan. This can
+                        include file names, directory names, or whole paths.
+                        Wildcards are supported.
 """
 import logging
 import sys
@@ -74,6 +80,9 @@ def configure_parser(parser):
         '--max_depth', type=int, default='-1',
         help='Maximum depth for subdirectories scanning (If it is set to -1 or\
             not specified, all subdirectories will be scanned)')
+    parser.add_argument(
+        '--ignore_list', default=None, nargs='+',
+        help='A list of paths to ignore during the scan')
 
 
 def run(client, args):
@@ -102,6 +111,7 @@ def run(client, args):
         force=args.force,
         debug=args.debug,
         similarity=args.similarity,
-        max_depth=args.max_depth)
+        max_depth=args.max_depth,
+        ignore_list=args.ignore_list)
 
     sys.exit(len(discoveries))

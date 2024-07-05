@@ -16,6 +16,7 @@ usage: credentialdigger scan_snapshot [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                       [--git_token GIT_TOKEN]
                                       [--similarity]
                                       [--max_depth MAX_DEPTH]
+                                      [--ignore_list PATHS [PATHS ...]]
                                       repo_url
 
 positional arguments:
@@ -47,13 +48,17 @@ optional arguments:
   --git_token GIT_TOKEN
                         Git personal access token to authenticate to the git
                         server
- --similarity           Build and use the similarity model to compute
+  --similarity          Build and use the similarity model to compute
                         embeddings and allow for automatic update of similar
                         snippets
   --max_depth MAX_DEPTH
                         Maximum depth for subdirectories scanning (If it is
                         set to -1 or not specified, all subdirectories will be
                         scanned)
+  --ignore_list [PATHS ...]
+                        A list of paths to ignore during the scan. This can
+                        include file names, directory names, or whole paths.
+                        Wildcards are supported.
 """
 import logging
 import sys
@@ -97,6 +102,9 @@ def configure_parser(parser):
         '--max_depth', type=int, default='-1',
         help='Maximum depth for subdirectories scanning (If it is set to -1 or\
             not specified, all subdirectories will be scanned)')
+    parser.add_argument(
+        '--ignore_list', default=None, nargs='+',
+        help='A list of paths to ignore during the scan')
 
 
 def run(client, args):
@@ -128,6 +136,7 @@ def run(client, args):
         similarity=args.similarity,
         git_username=args.git_username,
         git_token=args.git_token,
-        max_depth=args.max_depth)
+        max_depth=args.max_depth,
+        ignore_list=args.ignore_list)
 
     sys.exit(len(discoveries))
