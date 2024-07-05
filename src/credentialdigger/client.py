@@ -988,8 +988,8 @@ class Client(Interface):
             debug=debug, similarity=similarity, api_endpoint=api_endpoint,
             pr_number=pr_number, git_token=git_token)
 
-    def scan_user(self, username, category=None, models=None, debug=False,
-                  forks=False, similarity=False, git_token=None,
+    def scan_user(self, username, category=None, models=None, force=False,
+                  debug=False, forks=False, similarity=False, git_token=None,
                   api_endpoint='https://api.github.com'):
         """ Scan all the repositories of a user or of an organization.
 
@@ -1009,6 +1009,9 @@ class Client(Interface):
             otherwise use all the rules in the db
         models: list, optional
             A list of models for the ML false positives detection
+        force: bool, default `False`
+            Force a complete re-scan of the repository, in case it has already
+            been scanned previously
         debug: bool, default `False`
             Flag used to decide whether to visualize the progressbars during
             the scan (e.g., during the insertion of the detections in the db)
@@ -1069,6 +1072,7 @@ class Client(Interface):
             try:
                 missing_ids[repo_url] = self._scan(repo_url, scanner,
                                                    models=models,
+                                                   force=force,
                                                    debug=debug,
                                                    similarity=similarity,
                                                    git_token=git_token)
@@ -1111,8 +1115,11 @@ class Client(Interface):
 
         # The url of a wiki is same as the url of its repo, but ending with
         # `.wiki.git`
-        return self._scan(repo_url + '.wiki.git', scanner, models=models,
-                          debug=debug, force=True, git_token=git_token)
+        if not repo_url.endswith('.wiki.git'):
+            repo_url = f'{repo_url}.wiki.git'
+        # When scanning a wiki, force the rescan every time
+        return self._scan(repo_url, scanner, models=models, debug=debug,
+                          force=True, git_token=git_token)
 
     def _scan(self, repo_url, scanner, models=None, force=False, debug=False,
               similarity=False, **scanner_kwargs):

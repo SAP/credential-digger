@@ -10,7 +10,7 @@ usage: credentialdigger scan_user [-h] [--dotenv DOTENV] [--sqlite SQLITE]
                                   [--category CATEGORY]
                                   [--models MODELS [MODELS ...]] [--debug]
                                   [--git_token GIT_TOKEN] [--forks]
-                                  [--similarity]
+                                  [--force] [--similarity]
                                   [--api_endpoint API_ENDPOINT]
                                   username
 
@@ -36,6 +36,8 @@ optional arguments:
   --git_token GIT_TOKEN
                         Git personal access token to authenticate to the git
                         server
+  --force               Force a complete re-scan of repositories that
+                        have already been scanned previously
   --similarity          Build and use the similarity model to compute
                         embeddings and allow for automatic update of similar
                         snippets
@@ -62,6 +64,10 @@ def configure_parser(parser):
     parser.add_argument(
         'username', type=str,
         help='The username as on github.com')
+    parser.add_argument(
+        '--force', action='store_true',
+        help='Force a complete re-scan repositories that have already been \
+            scanned previously for the same user/org')
     parser.add_argument(
         '--similarity', action='store_true',
         help='Build and use the similarity model to compute embeddings \
@@ -94,6 +100,7 @@ def run(client, args):
         category=args.category,
         models=args.models,
         debug=args.debug,
+        force=args.force,
         similarity=args.similarity,
         forks=args.forks,
         git_token=args.git_token,
