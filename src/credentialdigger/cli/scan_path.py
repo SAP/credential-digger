@@ -81,7 +81,7 @@ def configure_parser(parser):
         help='Maximum depth for subdirectories scanning (If it is set to -1 or\
             not specified, all subdirectories will be scanned)')
     parser.add_argument(
-        '--ignore_list', default=None, nargs='+',
+        '--ignore_list', default=[], nargs='+',
         help='A list of paths to ignore during the scan')
 
 
