@@ -246,6 +246,7 @@ Credential Digger also offers a simple CLI to scan a repository. The CLI support
 
 Refer to the [Wiki](https://github.com/SAP/credential-digger/wiki) for all the supported commands and their usage.
 
+
 ## Micosoft Visual Studio Plugin
 
 VS Code extension for project "Credential Digger" is a free IDE extension that let you detect secrets and credentials in your code before they get leaked! Like a spell checker, the extension scans your files using the Credential Digger and highlights the secrets as you write code, so you can fix them before the code is even committed.
@@ -254,31 +255,26 @@ The VS Code extension can be donwloaded from the [Microsoft VS Code Marketplace]
 
 ![VSCODE](https://github.com/SAP/credential-digger/blob/main/github_assets/credential-digger-how-it-works.gif)
 
+
 ## pre-commit hook
 
 Credential Digger can be used with the [pre-commit](https://pre-commit.com/) framework to scan staged files before each commit.
 
 Please, refer to the [Wiki page of the pre-commit hook](https://github.com/SAP/credential-digger/wiki/pre-commit-hook) for further information on its installation and execution.
 
-## CI/CD Pipeline Intergation on Piper
+
+## CI/CD Pipeline Intergation on Piper (SAP Jenkins Library)
 
 ![Piper](https://github.com/SAP/credential-digger/blob/main/github_assets/piper.png)
 
 Credential Digger is intergrated with the continuous delivery CI/CD pipeline [Piper](https://www.project-piper.io/) in order to automate secrets scans for your Github projects and repositories.
 In order to activate the Credential Diggger Step please refer to this [Credential Digger step documentation for Piper](https://www.project-piper.io/steps/credentialdiggerScan/)
 
-### How Piper works with Jenkins
-
-- Once the step for credentialdigger is reached, its docker image is downloaded from the internal SAP registry. (A public instance will be avaialble soon)
-- Jenkins runs this container and runs a scan using credentialdigger, based on the step configuration. Indeed, the step supports full scan of a repo, scan of a snapshot and scan of a pull request. It is also supporting orchestrators.
-- The result of the scan (an excel file) is stored in Jenkins workspace as an output artifact
-- Jenkins destroys the container after the scan
-
-There is no need to deploy or install a Credential Digger instance !!
 
 ## Wiki
 
 For further information, please refer to the [Wiki](https://github.com/SAP/credential-digger/wiki)
+
 
 ## Contributing
 
