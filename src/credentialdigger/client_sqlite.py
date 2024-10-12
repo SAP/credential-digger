@@ -129,9 +129,9 @@ class SqliteClient(Client):
             rule_id=rule_id,
             branch_name=branch_name,
             state=state,
-            query='INSERT INTO discoveries (file_name, commit_id, line_number,\
-            snippet, repo_url, rule_id, branch_name, state) VALUES \
-            (?, ?, ?, ?, ?, ?, ?, ?)'
+            query='INSERT INTO discoveries (file_name, commit_id, \
+            line_number, snippet, repo_url, rule_id, branch_name, state) \
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         )
 
     def add_discoveries(self, discoveries, repo_url):

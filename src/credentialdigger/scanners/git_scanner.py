@@ -322,11 +322,11 @@ class GitScanner(BaseScanner):
 
                 current_discoveries = current_discoveries + \
                     self._diff_worker(diff, prev_commit)
-            
+
             for discovery in current_discoveries:
                 discovery['branch_name'] = branch_name
             discoveries.extend(current_discoveries)
-        
+
         return discoveries
 
     def _diff_worker(self, diff, commit):

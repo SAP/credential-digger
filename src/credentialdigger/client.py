@@ -27,12 +27,12 @@ Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_scan')
 Discovery = namedtuple(
     'Discovery',
-    'id file_name commit_id line_number snippet repo_url rule_id branch_name state \
-    timestamp')
+    'id file_name commit_id line_number snippet repo_url rule_id \
+    branch_name state timestamp')
 DiscoveryWithRule = namedtuple(
     'DiscoveryWithRule',
-    'id file_name commit_id line_number snippet repo_url rule_id branch_name state \
-    timestamp rule_regex rule_category rule_description')
+    'id file_name commit_id line_number snippet repo_url rule_id \
+    branch_name state timestamp rule_regex rule_category rule_description')
 
 class Interface(ABC):
     """ Abstract class that simplifies queries for python database module
