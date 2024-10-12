@@ -395,6 +395,7 @@ def export_discoveries_csv():
     try:
         string_io = io.StringIO()
         csv_writer = csv.DictWriter(string_io, discoveries[0].keys())
+        breakpoint()
         csv_writer.writeheader()
         csv_writer.writerows(discoveries)
         response_csv = make_response(string_io.getvalue())

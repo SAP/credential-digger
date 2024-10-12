@@ -67,7 +67,7 @@ class PgClient(Client):
             return -1
 
     def add_discovery(self, file_name, commit_id, line_number, snippet,
-                      repo_url, rule_id, state='new'):
+                      repo_url, rule_id, branch_name, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -99,10 +99,11 @@ class PgClient(Client):
             snippet=snippet,
             repo_url=repo_url,
             rule_id=rule_id,
+            branch_name=branch_name,
             state=state,
             query='INSERT INTO discoveries (file_name, commit_id, line_number, \
-            snippet, repo_url, rule_id, state) VALUES \
-            (%s, %s, %s, %s, %s, %s, %s) RETURNING id')
+            snippet, repo_url, rule_id, branch_name, state) VALUES \
+            (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id')
 
     def add_discoveries(self, discoveries, repo_url):
         """ Bulk add new discoveries.
@@ -125,7 +126,7 @@ class PgClient(Client):
             discoveries_tuples = extras.execute_values(
                 cursor,
                 'INSERT INTO discoveries(file_name, commit_id, line_number, \
-                    snippet, repo_url, rule_id, state) \
+                    snippet, repo_url, rule_id, branch_name, state) \
                     VALUES %s RETURNING id',
                 ((
                     d['file_name'],
@@ -134,6 +135,7 @@ class PgClient(Client):
                     d['snippet'],
                     repo_url,
                     d['rule_id'],
+                    d['branch_name'],
                     d['state']
                 ) for d in iter(discoveries)), page_size=1000, fetch=True)
             self.db.commit()
@@ -149,6 +151,7 @@ class PgClient(Client):
                 snippet=d['snippet'],
                 repo_url=repo_url,
                 rule_id=d['rule_id'],
+                branch_name=d['branch_name'],
                 state=d['state']
             ), discoveries)
 

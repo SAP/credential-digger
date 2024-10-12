@@ -264,6 +264,7 @@ class GitScanner(BaseScanner):
             prev_commit = None
             # Note that the iteration of the commits is backwards, so the
             # prev_commit is newer than curr_commit
+            current_discoveries = []
             for curr_commit in repo.iter_commits(branch_name,
                                                  max_count=max_depth):
                 # if not prev_commit, then curr_commit is the newest commit
@@ -303,7 +304,7 @@ class GitScanner(BaseScanner):
                                         diff_filter='AM')
 
                 # Diff between the current commit and the previous one
-                discoveries.extend(self._diff_worker(diff, prev_commit))
+                current_discoveries = self._diff_worker(diff, prev_commit)
 
                 prev_commit = curr_commit
 
@@ -319,8 +320,13 @@ class GitScanner(BaseScanner):
                                         ignore_submodules='all',
                                         ignore_all_space=True)
 
-                discoveries = discoveries + \
+                current_discoveries = current_discoveries + \
                     self._diff_worker(diff, prev_commit)
+            
+            for discovery in current_discoveries:
+                discovery['branch_name'] = branch_name
+            discoveries.extend(current_discoveries)
+        
         return discoveries
 
     def _diff_worker(self, diff, commit):

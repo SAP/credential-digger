@@ -21,6 +21,7 @@ CREATE TABLE discoveries (
   commit_id TEXT NOT NULL,
   line_number INTEGER DEFAULT -1,
   snippet TEXT DEFAULT '',
+  branch_name TEXT DEFAULT '',
   repo_url TEXT,
   rule_id INTEGER,
   state STATES NOT NULL DEFAULT 'new',

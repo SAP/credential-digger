@@ -27,11 +27,11 @@ Rule = namedtuple('Rule', 'id regex category description')
 Repo = namedtuple('Repo', 'url last_scan')
 Discovery = namedtuple(
     'Discovery',
-    'id file_name commit_id line_number snippet repo_url rule_id state \
+    'id file_name commit_id line_number snippet repo_url rule_id branch_name state \
     timestamp')
 DiscoveryWithRule = namedtuple(
     'DiscoveryWithRule',
-    'id file_name commit_id line_number snippet repo_url rule_id state \
+    'id file_name commit_id line_number snippet repo_url rule_id branch_name state \
     timestamp rule_regex rule_category rule_description')
 
 class Interface(ABC):
@@ -90,7 +90,7 @@ class Client(Interface):
         super().__init__(db, error)
 
     def add_discovery(self, query, file_name, commit_id, line_number, snippet,
-                      repo_url, rule_id, state='new'):
+                      repo_url, rule_id, branch_name, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -120,7 +120,7 @@ class Client(Interface):
         return self.query_id(
             query, file_name,
             commit_id, line_number, snippet,
-            repo_url, rule_id, state)
+            repo_url, rule_id, branch_name, state)
 
     @abstractmethod
     def add_discoveries(self, query, discoveries, repo_url):
@@ -1261,7 +1261,7 @@ class Client(Interface):
                     new_id = self.add_discovery(
                         curr_d['file_name'], curr_d['commit_id'],
                         curr_d['line_number'], curr_d['snippet'], repo_url,
-                        curr_d['rule_id'], curr_d['state'])
+                        curr_d['rule_id'], curr_d['branch_name'], curr_d['state'])
                     if new_id != -1 and curr_d['state'] != 'false_positive':
                         discoveries_ids.append(new_id)
                     progress.update(inserting_task, advance=1)

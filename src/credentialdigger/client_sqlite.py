@@ -40,6 +40,7 @@ class SqliteClient(Client):
                 commit_id   TEXT NOT NULL,
                 line_number INTEGER DEFAULT -1,
                 snippet     TEXT DEFAULT '',
+                branch_name TEXT DEFAULT '',
                 repo_url    TEXT,
                 rule_id     INTEGER,
                 state       TEXT NOT NULL DEFAULT 'new',
@@ -94,7 +95,7 @@ class SqliteClient(Client):
         cursor.close()
 
     def add_discovery(self, file_name, commit_id, line_number, snippet,
-                      repo_url, rule_id, state='new'):
+                      repo_url, rule_id, branch_name, state='new'):
         """ Add a new discovery.
 
         Parameters
@@ -126,10 +127,11 @@ class SqliteClient(Client):
             snippet=snippet,
             repo_url=repo_url,
             rule_id=rule_id,
+            branch_name=branch_name,
             state=state,
             query='INSERT INTO discoveries (file_name, commit_id, line_number,\
-            snippet, repo_url, rule_id, state) VALUES \
-            (?, ?, ?, ?, ?, ?, ?)'
+            snippet, repo_url, rule_id, branch_name, state) VALUES \
+            (?, ?, ?, ?, ?, ?, ?, ?)'
         )
 
     def add_discoveries(self, discoveries, repo_url):
@@ -156,7 +158,7 @@ class SqliteClient(Client):
         # Transform argument in list of tuples
         discoveries = [
             (d['file_name'], d['commit_id'], d['line_number'],
-             d['snippet'], repo_url, d['rule_id'], d['state'])
+             d['snippet'], repo_url, d['rule_id'], d['branch_name'], d['state'])
             for d in discoveries]
 
         cursor = self.db.cursor()
@@ -164,8 +166,8 @@ class SqliteClient(Client):
             # Batch insert all discoveries
             cursor.executemany(
                 'INSERT INTO discoveries (file_name, commit_id, \
-                line_number, snippet, repo_url, rule_id, state) \
-                VALUES (?, ?, ?, ?, ?, ?, ?)',
+                line_number, snippet, repo_url, rule_id, branch_name, state) \
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                 discoveries
             )
             self.db.commit()
@@ -187,6 +189,7 @@ class SqliteClient(Client):
                 snippet=d['snippet'],
                 repo_url=repo_url,
                 rule_id=d['rule_id'],
+                branch_name=d['branch_name'],
                 state=d['state']
             ), discoveries)
 
