@@ -90,12 +90,16 @@ class TestFileScanner(unittest.TestCase):
             ignore_list=["*_a*"],
             expected_ignored_dirs=[],
             expected_ignored_files=["file_a.txt", "scan_a.py"]),
-        # Test wildcards of dir ignore dir and all files wthin
+        # Test wildcard ignores all files that end with .txt
+        param(
+            ignore_list=["*.txt"],
+            expected_ignored_dirs=[""],
+            expected_ignored_files=["file_b.txt", "file_ABa.txt"]),
+        # Test wildcard ignores dir and all files within
         param(
             ignore_list=["*subdir_A*"],
             expected_ignored_dirs=["subdir_A", "subdir_AB"],
             expected_ignored_files=["file_Aa.yml", "file_ABa.txt"]),
-        # Test nonexistent files and wildcards
         param(
             ignore_list=["nonexistent_file.txt", "*z*"],
             expected_ignored_dirs=[],
