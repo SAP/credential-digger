@@ -177,4 +177,6 @@ def run(client, args):
        ask_commit(str_discoveries).startswith(('y', 'Y')):
         print_msg('Committing...')
         sys.exit(0)
-    sys.exit(len(list_of_discoveries))
+    elif len(str_discoveries) > 0:
+        print(f'You have the following disoveries:\n\n{str_discoveries}\n')
+        sys.exit(1)
