@@ -178,5 +178,5 @@ def run(client, args):
         print_msg('Committing...')
         sys.exit(0)
     elif len(str_discoveries) > 0:
-        print(f'You have the following disoveries:\n\n{str_discoveries}\n')
+        print_msg(f'You have the following disoveries:\n\n{str_discoveries}\n')
         sys.exit(1)
