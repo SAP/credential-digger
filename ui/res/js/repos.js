@@ -88,9 +88,9 @@ function initReposDataTable() {
               </div>`,
               scan_active: item.scan_active
                 ? `
-              <span class="icon icon-timelapse warning-color"></span>
-            `
-                : `
+              <span class="icon icon-timelapse warning-color"></span>`
+                : (item.TP + item.total) === 0 ? 
+                `<span class="icon icon-error_outline danger-color"></span>`:`
               <span class="icon icon-check_circle_outline success-color"></span>`,
               lendiscoveries: item.TP + ` (${item.total} Total)`,
               actions: `
