@@ -26,6 +26,7 @@ import subprocess
 import sys
 
 from credentialdigger.models.model_manager import ModelManager
+import os
 
 
 def configure_parser(parser):
@@ -97,86 +98,107 @@ def run(client, args):
         in case interaction, that the user choosed to commit even
         in case of leaks. If the exit value is 0 the hook is successful.
     """
+    diff_path = os.path.expanduser("~/.credentialdigger/diff")
+    os.makedirs(diff_path, exist_ok=True)
+    try:
+        files_status = system('git', 'diff', '--name-status', '--staged'
+                              ).decode('utf-8').splitlines()
+        files = []
+        for fs in files_status:
+            stats = fs.split('\t')
+            status = stats[0]
+            # Check status using the first char
+            # D = deleted files
+            # R = renamed files
+            if status[0] not in 'DR':
+                # Get the name of the staged file
+                filename = stats[1]
+                files.append(filename)
+        for staged_file in files:
+            with open(f"{diff_path}/{staged_file}", 'w') as diff_file:
+                proc = subprocess.Popen(['git', 'diff', '--cached', '--unified=0', staged_file],
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, _ = proc.communicate()
+                for line in stdout.decode('utf-8').splitlines():
+                    if line.startswith('+') and not line.startswith('+++'):
+                        diff_file.write(line[1:] + '\n')
 
-    files_status = system('git', 'diff', '--name-status', '--staged'
-                          ).decode('utf-8').splitlines()
-    files = []
-    for fs in files_status:
-        stats = fs.split('\t')
-        status = stats[0]
-        # Check status using the first char
-        # D = deleted files
-        # R = renamed files
-        if status[0] not in 'DR':
-            # Get the name of the staged file
-            filename = stats[1]
-            files.append(filename)
+        if args.rules:
+            client.add_rules_from_file(args.rules)
+        elif not client.get_rules():
+            client.add_rules_from_file('./ui/backend/rules.yml')
 
-    if args.rules:
-        client.add_rules_from_file(args.rules)
-    elif not client.get_rules():
-        client.add_rules_from_file('./ui/backend/rules.yml')
+        new_discoveries = []
+        subprocess.run(f'echo \"\nChecking files={files} \" > /dev/tty',
+                       shell=True,
+                       stdout=subprocess.PIPE)
 
-    new_discoveries = []
-    subprocess.run(f'echo \"\nChecking files={files} \" > /dev/tty',
-                   shell=True,
-                   stdout=subprocess.PIPE)
+        # For optimization purposes, the PathModel and the PasswordModel are
+        # separated, otherwise scan_path will call both models for each file
+        # With this implementation the discoveries are accumulated and the
+        # PasswordModel will be run only once for the password discoveries
+        for staged_file in files:
+            new_discoveries += client.scan_path(scan_path=f"{diff_path}/{staged_file}",
+                                                models=['PathModel'],
+                                                force=True,
+                                                debug=False)
 
-    # For optimization purposes, the PathModel and the PasswordModel are
-    # separated, otherwise scan_path will call both models for each file
-    # With this implementation the discoveries are accumulated and the
-    # PasswordModel will be run only once for the password discoveries
-    for staged_file in files:
-        new_discoveries += client.scan_path(scan_path=staged_file,
-                                            models=['PathModel'],
-                                            force=True,
-                                            debug=False)
+        if not new_discoveries:
+            print_msg('No hardcoded secrets found in your commit')
+            sys.exit(0)
 
-    if not new_discoveries:
-        print_msg('No hardcoded secrets found in your commit')
-        sys.exit(0)
+        rules = client.get_rules()
+        password_rules = set([
+            r['id'] for r in rules if r['category'] == 'password'])
+        password_discoveries = []
+        no_password_discoveries = []
+        for d in new_discoveries:
+            disc = client.get_discovery(d)
+            if disc['rule_id'] in password_rules:
+                password_discoveries.append(disc)
+            else:
+                no_password_discoveries.append(disc)
 
-    rules = client.get_rules()
-    password_rules = set([
-        r['id'] for r in rules if r['category'] == 'password'])
-    password_discoveries = []
-    no_password_discoveries = []
-    for d in new_discoveries:
-        disc = client.get_discovery(d)
-        if disc['rule_id'] in password_rules:
-            password_discoveries.append(disc)
-        else:
-            no_password_discoveries.append(disc)
+        # Run the PasswordModel
+        disc = []
+        if password_discoveries:
+            mm = ModelManager('PasswordModel')
+            disc = mm.launch_model_batch(password_discoveries)
 
-    # Run the PasswordModel
-    disc = []
-    if password_discoveries:
-        mm = ModelManager('PasswordModel')
-        disc = mm.launch_model_batch(password_discoveries)
+        list_of_discoveries = []
+        for d in disc:
+            if d['state'] == 'new':
+                list_of_discoveries.append(d)
 
-    list_of_discoveries = []
-    for d in disc:
-        if d['state'] == 'new':
-            list_of_discoveries.append(d)
+        # There may be also discoveries other than passwords
+        list_of_discoveries += no_password_discoveries
+        # If all the discoveries were false positive discoveries
+        if not list_of_discoveries:
+            print_msg('No hardcoded secrets found in your commit')
+            sys.exit(0)
 
-    # There may be also discoveries other than passwords
-    list_of_discoveries += no_password_discoveries
-    # If all the discoveries were false positive discoveries
-    if not list_of_discoveries:
-        print_msg('No hardcoded secrets found in your commit')
-        sys.exit(0)
+        str_discoveries = ''
+        for d in list_of_discoveries:
+            str_discoveries += (f'file: {d["file_name"]}\n'
+                                f'secret: {d["snippet"]}\n'
+                                f'line number: {d["line_number"]}\n' +
+                                40 * '-')
 
-    str_discoveries = ''
-    for d in list_of_discoveries:
-        str_discoveries += (f'file: {d["file_name"]}\n'
-                            f'secret: {d["snippet"]}\n'
-                            f'line number: {d["line_number"]}\n' +
-                            40 * '-')
-
-    if not args.no_interaction and \
-       ask_commit(str_discoveries).startswith(('y', 'Y')):
-        print_msg('Committing...')
-        sys.exit(0)
-    elif len(str_discoveries) > 0:
-        print_msg(f'You have the following disoveries:\n\n{str_discoveries}\n')
+        if not args.no_interaction and \
+           ask_commit(str_discoveries).startswith(('y', 'Y')):
+            print_msg('Committing...')
+            sys.exit(0)
+        elif len(str_discoveries) > 0:
+            print_msg(f'You have the following disoveries:\n\n{str_discoveries}\n')
+            sys.exit(1)
+    except Exception as e:
+        print_msg(f'An error occurred: {str(e)}')
         sys.exit(1)
+    finally:
+        if os.path.exists(diff_path):
+            for root, dirs, files in os.walk(diff_path, topdown=False):
+                for file in files:
+                    os.remove(os.path.join(root, file))
+                for dir in dirs:
+                    os.rmdir(os.path.join(root, dir))
+                os.rmdir(diff_path)
