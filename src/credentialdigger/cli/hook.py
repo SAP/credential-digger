@@ -24,9 +24,9 @@ optional arguments:
 
 import subprocess
 import sys
+import os
 
 from credentialdigger.models.model_manager import ModelManager
-import os
 
 
 def configure_parser(parser):
@@ -98,9 +98,10 @@ def run(client, args):
         in case interaction, that the user choosed to commit even
         in case of leaks. If the exit value is 0 the hook is successful.
     """
-    diff_path = os.path.expanduser("~/.credentialdigger/diff")
-    os.makedirs(diff_path, exist_ok=True)
+    #diff_path = os.path.expanduser("~/.credentialdigger/diff")
+    diff_path = os.path.join(os.path.expanduser('~'), '.credentialdigger' ,'diff')
     try:
+        os.makedirs(diff_path, exist_ok=True)
         files_status = system('git', 'diff', '--name-status', '--staged'
                               ).decode('utf-8').splitlines()
         files = []
@@ -115,7 +116,7 @@ def run(client, args):
                 filename = stats[1]
                 files.append(filename)
         for staged_file in files:
-            with open(f"{diff_path}/{staged_file}", 'w') as diff_file:
+            with open(os.path.join(diff_path, staged_file), 'w') as diff_file:
                 proc = subprocess.Popen(['git', 'diff', '--cached', '--unified=0', staged_file],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, _ = proc.communicate()
@@ -126,7 +127,7 @@ def run(client, args):
         if args.rules:
             client.add_rules_from_file(args.rules)
         elif not client.get_rules():
-            client.add_rules_from_file('./ui/backend/rules.yml')
+            client.add_rules_from_file(os.path.join('.', 'ui', 'backend', 'rules.yml'))
 
         new_discoveries = []
         subprocess.run(f'echo \"\nChecking files={files} \" > /dev/tty',
@@ -138,7 +139,7 @@ def run(client, args):
         # With this implementation the discoveries are accumulated and the
         # PasswordModel will be run only once for the password discoveries
         for staged_file in files:
-            new_discoveries += client.scan_path(scan_path=f"{diff_path}/{staged_file}",
+            new_discoveries += client.scan_path(scan_path=os.path.join(diff_path, staged_file),
                                                 models=['PathModel'],
                                                 force=True,
                                                 debug=False)
@@ -202,3 +203,4 @@ def run(client, args):
                 for dir in dirs:
                     os.rmdir(os.path.join(root, dir))
                 os.rmdir(diff_path)
+                os.rmdir(os.path.join(os.path.expanduser('~'), '.credentialdigger'))
