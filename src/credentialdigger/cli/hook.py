@@ -98,7 +98,6 @@ def run(client, args):
         in case interaction, that the user choosed to commit even
         in case of leaks. If the exit value is 0 the hook is successful.
     """
-    #diff_path = os.path.expanduser("~/.credentialdigger/diff")
     diff_path = os.path.join(os.path.expanduser('~'), '.credentialdigger' ,'diff')
     try:
         os.makedirs(diff_path, exist_ok=True)
