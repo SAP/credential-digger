@@ -25,6 +25,7 @@ optional arguments:
 import subprocess
 import sys
 import os
+from pathlib import Path
 
 from credentialdigger.models.model_manager import ModelManager
 
@@ -78,6 +79,14 @@ def ask_commit(str_discoveries):
 
     return user_input.decode('utf-8')
 
+def rmdir(directory):
+    directory = Path(directory)
+    for item in directory.iterdir():
+        if item.is_dir():
+            rmdir(item)
+        else:
+            item.unlink()
+    directory.rmdir()
 
 def run(client, args):
     """Run Credential Digger on staged files.
@@ -115,13 +124,16 @@ def run(client, args):
                 filename = stats[1]
                 files.append(filename)
         for staged_file in files:
-            with open(os.path.join(diff_path, staged_file), 'w') as diff_file:
+            staged_file_path = os.path.join(diff_path, staged_file)
+            os.makedirs(os.path.dirname(staged_file_path), exist_ok=True)
+            with open(staged_file_path, 'w') as diff_file:
                 proc = subprocess.Popen(['git', 'diff', '--cached', '--unified=0', staged_file],
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, _ = proc.communicate()
                 for line in stdout.decode('utf-8').splitlines():
                     if line.startswith('+') and not line.startswith('+++'):
                         diff_file.write(line[1:] + '\n')
+
 
         if args.rules:
             client.add_rules_from_file(args.rules)
@@ -196,10 +208,4 @@ def run(client, args):
         sys.exit(1)
     finally:
         if os.path.exists(diff_path):
-            for root, dirs, files in os.walk(diff_path, topdown=False):
-                for file in files:
-                    os.remove(os.path.join(root, file))
-                for dir in dirs:
-                    os.rmdir(os.path.join(root, dir))
-                os.rmdir(diff_path)
-                os.rmdir(os.path.join(os.path.expanduser('~'), '.credentialdigger'))
+            rmdir(diff_path)
