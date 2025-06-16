@@ -11,6 +11,6 @@ pyyaml
 rich~=14.0
 srsly>=2.4.0
 tensorflow==2.18.1
-tensorflow-text==2.18.1
+tensorflow-text==2.19.0
 tf-models-official
 transformers
