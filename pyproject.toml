@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'credentialdigger'
-version = '4.14.8'
+version = '4.14.9'
 dynamic = ['dependencies']
 authors = [
     {name = 'SAP SE'}
