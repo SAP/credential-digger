@@ -9,7 +9,7 @@ psycopg2-binary
 PyGithub
 python-dotenv
 pyyaml
-rich~=14.0
+rich~=14.1
 srsly>=2.4.0
 tensorflow==2.19.0
 tensorflow-text==2.19.0
