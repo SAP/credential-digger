@@ -12,7 +12,7 @@ transformers.logging.set_verbosity(transformers.logging.ERROR)
 class PasswordModel(BaseModel):
 
     def __init__(self,
-                 model='SAPOSS/password-model',
+                 model='SAP/password-model',
                  tokenizer='microsoft/codebert-base-mlm'):
         """
         Parameters
